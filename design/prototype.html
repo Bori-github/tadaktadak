@@ -1,0 +1,1325 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>타닥타닥 시안</title>
+    <style>
+      :root {
+        --ground: #100d1a;
+        --panel: #181426;
+        --panel-2: #1f1a30;
+        --line: #2e2743;
+        --line-soft: #231d36;
+        --ink: #ece7f5;
+        --ink-dim: #a49bbd;
+        --ink-faint: #6f6688;
+        --ember: #f0a03c;
+        --ember-deep: #c76a20;
+        --cool: #7fb0c4;
+        --mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+        --sans: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard', Segoe UI, Roboto, sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--ground);
+        color: var(--ink);
+        font-family: var(--sans);
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 48px 24px 96px;
+      }
+      header {
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 28px;
+        margin-bottom: 28px;
+      }
+      .eyebrow {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--ember);
+        margin: 0 0 12px;
+      }
+      h1 {
+        font-size: clamp(26px, 4vw, 36px);
+        line-height: 1.2;
+        margin: 0 0 12px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        text-wrap: balance;
+      }
+      .lede {
+        margin: 0;
+        color: var(--ink-dim);
+        max-width: 64ch;
+        font-size: 15px;
+      }
+      .lede b {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .lede .c {
+        color: var(--cool);
+      }
+
+      .stage {
+        display: grid;
+        grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+        gap: 32px;
+        align-items: start;
+      }
+      @media (max-width: 840px) {
+        .stage {
+          grid-template-columns: 1fr;
+        }
+      }
+      .phoneCard {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 2px;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+      }
+      .phoneBox {
+        position: relative;
+        overflow: hidden;
+      }
+      .phone {
+        position: relative;
+        background: #141021;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        overflow: hidden;
+        cursor: pointer;
+      }
+      .phone canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .phone canvas.px {
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+      .cap {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        color: var(--ink-faint);
+        text-align: center;
+      }
+      .state {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        padding: 8px 12px;
+        border: 1px solid var(--line);
+        border-radius: 2px;
+        align-self: stretch;
+        text-align: center;
+      }
+      .state.focus {
+        color: var(--ember);
+        border-color: var(--ember-deep);
+      }
+      .state.rest {
+        color: var(--cool);
+        border-color: #3d5f6d;
+      }
+
+      .side {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .group {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 2px;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .group h3 {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ember);
+        font-weight: 500;
+      }
+      .ctl {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+      .ctl label {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--ink-faint);
+        display: flex;
+        justify-content: space-between;
+      }
+      .ctl label span {
+        color: var(--ink);
+        font-size: 12.5px;
+        font-variant-numeric: tabular-nums;
+      }
+      input[type='range'] {
+        width: 100%;
+        accent-color: var(--ember);
+        cursor: pointer;
+      }
+      input[type='range']:focus-visible {
+        outline: 2px solid var(--ember);
+        outline-offset: 4px;
+      }
+      .seg {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+      }
+      .seg button {
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        border-radius: 2px;
+        padding: 8px 11px;
+        color: var(--ink-dim);
+        font-family: var(--mono);
+        font-size: 11px;
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          color 0.15s;
+      }
+      .seg button:hover {
+        border-color: var(--ember-deep);
+      }
+      .seg button[aria-pressed='true'] {
+        border-color: var(--ember);
+        color: var(--ink);
+      }
+      .seg button:focus-visible {
+        outline: 2px solid var(--ember);
+        outline-offset: 2px;
+      }
+      .hint {
+        margin: 0;
+        font-size: 12.5px;
+        color: var(--ink-faint);
+      }
+
+      .notes {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        max-width: 70ch;
+      }
+      .note {
+        border-left: 2px solid var(--line);
+        padding-left: 16px;
+      }
+      .note p {
+        margin: 0;
+        font-size: 14.5px;
+        color: var(--ink-dim);
+      }
+      .note p + p {
+        margin-top: 8px;
+      }
+      .note strong {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .note .c {
+        color: var(--cool);
+      }
+      h2 {
+        font-size: 13px;
+        font-family: var(--mono);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+        margin: 0 0 16px;
+        font-weight: 500;
+      }
+      section {
+        margin-top: 44px;
+      }
+      code {
+        font-family: var(--mono);
+        font-size: 0.92em;
+        color: var(--ember);
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-family: var(--mono);
+        font-size: 12.5px;
+      }
+      .scroll {
+        overflow-x: auto;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 9px 16px 9px 0;
+        border-bottom: 1px solid var(--line-soft);
+        white-space: nowrap;
+        vertical-align: top;
+      }
+      th {
+        color: var(--ink-faint);
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 10.5px;
+      }
+      td:first-child {
+        color: var(--ink-dim);
+      }
+      td.n {
+        color: var(--ink);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <p class="eyebrow">타닥타닥 · 확정 시안</p>
+        <h1>타닥타닥 시안</h1>
+        <p class="lede">타닥타닥의 동작하는 시안.</p>
+      </header>
+
+      <div class="stage">
+        <div class="phoneCard">
+          <div class="state focus" id="state">집중 · 대기</div>
+          <div class="phoneBox" id="phoneBox">
+            <div class="phone" id="phone"><canvas id="gl"></canvas><canvas id="px" class="px"></canvas></div>
+          </div>
+          <div class="cap">숫자를 눌러 대상을 바꾸고<br />아래 슬라이더로 손잡이를 돌립니다</div>
+        </div>
+
+        <div class="side">
+          <div class="group">
+            <h3>손잡이를 돌린다</h3>
+            <div class="ctl">
+              <label for="dialv">지금 고른 값 (분) <span id="dialvv">25분</span></label>
+              <input type="range" id="dialv" min="0" max="60" step="1" value="25" />
+            </div>
+            <p class="hint" id="editHint">가운데 숫자가 선택돼 있습니다. 집중 시간은 1분부터입니다.</p>
+          </div>
+          <div class="group">
+            <h3>휴식 자동 시작</h3>
+            <div class="seg" id="autoSeg">
+              <button type="button" data-v="1" aria-pressed="true">켬</button>
+              <button type="button" data-v="0">끔</button>
+            </div>
+            <p class="hint">
+              완료하면 가운데 숫자 위에 <b>5, 4, 3, 2, 1</b>이 청록으로 세어집니다. 다 세면 휴식이 시작됩니다. 휴식이 0분이면 자동 시작도
+              카운트다운도 없습니다.
+            </p>
+          </div>
+          <div class="group">
+            <h3>확정값 · 고를 수 없음</h3>
+            <div class="scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>항목</th>
+                    <th>값</th>
+                    <th>단위</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>버튼 크기</td>
+                    <td class="n">28 × 28</td>
+                    <td>도트 (56 × 56 논리 픽셀)</td>
+                  </tr>
+                  <tr>
+                    <td>아이콘 크기</td>
+                    <td class="n">12 × 12</td>
+                    <td>도트</td>
+                  </tr>
+                  <tr>
+                    <td>버튼 위계</td>
+                    <td class="n">같은 크기</td>
+                    <td>—</td>
+                  </tr>
+                  <tr>
+                    <td>버튼 색</td>
+                    <td class="n">돌</td>
+                    <td>면 #6b6280</td>
+                  </tr>
+                  <tr>
+                    <td>버튼 세로 위치</td>
+                    <td class="n">660</td>
+                    <td>논리 픽셀 (중심 y)</td>
+                  </tr>
+                  <tr>
+                    <td>두 버튼 사이</td>
+                    <td class="n">88</td>
+                    <td>논리 픽셀 (중심 간격)</td>
+                  </tr>
+                  <tr>
+                    <td>타이머 숫자</td>
+                    <td class="n">21</td>
+                    <td>도트 (5×7 배율 3)</td>
+                  </tr>
+                  <tr>
+                    <td>아래 숫자</td>
+                    <td class="n">7</td>
+                    <td>도트 (5×7 배율 1)</td>
+                  </tr>
+                  <tr>
+                    <td>카운트다운 숫자</td>
+                    <td class="n">7</td>
+                    <td>도트 (5×7 배율 1)</td>
+                  </tr>
+                  <tr>
+                    <td>카운트다운과 0 눈금 사이</td>
+                    <td class="n">12</td>
+                    <td>논리 픽셀</td>
+                  </tr>
+                  <tr>
+                    <td>타이머와 아래 숫자 사이</td>
+                    <td class="n">10</td>
+                    <td>도트</td>
+                  </tr>
+                  <tr>
+                    <td>도트 크기</td>
+                    <td class="n">2</td>
+                    <td>논리 픽셀 (배율 1)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="hint">전부 결정이 끝난 값이라 고를 수 없게 두었다. 바꾸려면 <code>DESIGN.md</code>와 이 파일을 함께 고친다.</p>
+          </div>
+          <div class="group">
+            <h3>시연</h3>
+            <div class="ctl">
+              <label for="speed">속도 (실제 시간의 몇 배) <span id="speedv">60배</span></label>
+              <input type="range" id="speed" min="1" max="300" step="1" value="60" />
+            </div>
+            <p class="hint">버튼을 눌러 시작하세요. 집중이 끝나면 휴식이 이어집니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <section>
+        <h2>선택에 따라 바뀌는 것</h2>
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>고른 대상</th>
+                <th>호 색</th>
+                <th>손잡이</th>
+                <th>밝은 숫자</th>
+                <th>범위</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>집중 (가운데)</td>
+                <td class="n">보라</td>
+                <td class="n">스파크, 크림색, 반짝임</td>
+                <td class="n">가운데</td>
+                <td class="n">1 ~ 60분</td>
+              </tr>
+              <tr>
+                <td>휴식 (아래)</td>
+                <td class="n">청록</td>
+                <td class="n">스파크, 청록, 정지</td>
+                <td class="n">아래</td>
+                <td class="n">0 ~ 60분</td>
+              </tr>
+              <tr>
+                <td>휴식 진행 중</td>
+                <td class="n">보라</td>
+                <td class="n">스파크, <b>크림 그대로</b>, 정지</td>
+                <td class="n">아래</td>
+                <td class="n">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      (function () {
+        'use strict';
+
+        var PAL = {
+          bg: '#141021',
+          W: '#8a6238',
+          D: '#4a3220',
+          f: '#ffd94a',
+          F: '#ff9d2e',
+          y: '#fff2a8',
+          o: '#ffb43c',
+          r: '#e04a2b',
+          h: '#c9bb98',
+          H: '#fff8e0',
+          m: '#5c5180',
+          L: '#7a6ea8',
+          k: '#2f7b85', // 휴식 손잡이 갈래
+          K: '#9fe3ea', // 휴식 손잡이 심
+          arc: '#6a5b9c',
+          arcRest: '#3f9aa6',
+          num: '#f4ead6',
+          numRest: '#8fdbe4',
+          glow: '#ff9d2e',
+          bEdge: '#3a2718',
+          bFace: '#8a6238',
+          bHi: '#b8895a',
+          bSh: '#5e4226',
+          bIcon: '#f4ead6',
+          dEdge: '#2b2032',
+          dFace: '#3f3550',
+          dSh: '#332a42',
+          dIcon: '#6f6688',
+        };
+
+        var S = {
+          logCold: ['.W.', 'DWD', 'DWD', '.D.'],
+          logHotA: ['.f.', 'FWF', 'DWD', '.D.'],
+          logHotB: ['.F.', 'fWf', 'DWD', '.D.'],
+          fireCold: ['.......', '.......', '.......', '.......', '.......', '.......', '..DDD..', '.DWWWD.', 'DWWWWWD'],
+          fireA: ['...y...', '..yoy..', '.yoooy.', '.roooor', '.rroorr', '..rrr..', '..DDD..', '.DWWWD.', 'DWWWWWD'],
+          fireB: ['..y....', '.yoyo..', '.yoooy.', 'rooooor', '.rroorr', '..rrr..', '..DDD..', '.DWWWD.', 'DWWWWWD'],
+          sparkA: ['...h...', '...h...', '..hHh..', 'hHHHHHh', '..hHh..', '...h...', '...h...'],
+          sparkB: ['.......', '...h...', '..hHh..', '.hHHHh.', '..hHh..', '...h...', '.......'],
+          // 휴식 손잡이는 모양이 같고 색만 다르며 반짝이지 않는다
+          sparkRest: ['...k...', '...k...', '..kKk..', 'kKKKKKk', '..kKk..', '...k...', '...k...'],
+          start: ['.m.', 'mmm', '.m.', '.m.', '.m.'],
+        };
+
+        // 아이콘 세 가지 크기
+        var ICONS = {
+          8: {
+            play: ['..I.....', '..II....', '..III...', '..IIII..', '..IIII..', '..III...', '..II....', '..I.....'],
+            pause: ['.II..II.', '.II..II.', '.II..II.', '.II..II.', '.II..II.', '.II..II.', '.II..II.', '.II..II.'],
+            stop: ['........', '.IIIIII.', '.IIIIII.', '.IIIIII.', '.IIIIII.', '.IIIIII.', '.IIIIII.', '........'],
+          },
+          10: {
+            play: [
+              '..I.......',
+              '..II......',
+              '..III.....',
+              '..IIII....',
+              '..IIIII...',
+              '..IIIII...',
+              '..IIII....',
+              '..III.....',
+              '..II......',
+              '..I.......',
+            ],
+            pause: [
+              '..II..II..',
+              '..II..II..',
+              '..II..II..',
+              '..II..II..',
+              '..II..II..',
+              '..II..II..',
+              '..II..II..',
+              '..II..II..',
+              '..II..II..',
+              '..II..II..',
+            ],
+            stop: [
+              '..........',
+              '..........',
+              '..IIIIII..',
+              '..IIIIII..',
+              '..IIIIII..',
+              '..IIIIII..',
+              '..IIIIII..',
+              '..IIIIII..',
+              '..........',
+              '..........',
+            ],
+          },
+          12: {
+            play: [
+              '...I........',
+              '...II.......',
+              '...III......',
+              '...IIII.....',
+              '...IIIII....',
+              '...IIIIII...',
+              '...IIIIII...',
+              '...IIIII....',
+              '...IIII.....',
+              '...III......',
+              '...II.......',
+              '...I........',
+            ],
+            pause: [
+              '..III..III..',
+              '..III..III..',
+              '..III..III..',
+              '..III..III..',
+              '..III..III..',
+              '..III..III..',
+              '..III..III..',
+              '..III..III..',
+              '..III..III..',
+              '..III..III..',
+              '..III..III..',
+              '..III..III..',
+            ],
+            stop: [
+              '............',
+              '............',
+              '..IIIIIIII..',
+              '..IIIIIIII..',
+              '..IIIIIIII..',
+              '..IIIIIIII..',
+              '..IIIIIIII..',
+              '..IIIIIIII..',
+              '..IIIIIIII..',
+              '..IIIIIIII..',
+              '............',
+              '............',
+            ],
+          },
+        };
+
+        var GLYPH = {
+          0: ['.###.', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.'],
+          1: ['..#..', '.##..', '..#..', '..#..', '..#..', '..#..', '.###.'],
+          2: ['.###.', '#...#', '....#', '...#.', '..#..', '.#...', '#####'],
+          3: ['.###.', '#...#', '....#', '..##.', '....#', '#...#', '.###.'],
+          4: ['...#.', '..##.', '.#.#.', '#..#.', '#####', '...#.', '...#.'],
+          5: ['#####', '#....', '####.', '....#', '....#', '#...#', '.###.'],
+          6: ['..##.', '.#...', '#....', '####.', '#...#', '#...#', '.###.'],
+          7: ['#####', '....#', '...#.', '..#..', '.#...', '.#...', '.#...'],
+          8: ['.###.', '#...#', '#...#', '.###.', '#...#', '#...#', '.###.'],
+          9: ['.###.', '#...#', '#...#', '.####', '....#', '...#.', '.##..'],
+          ':': ['.....', '..#..', '..#..', '.....', '..#..', '..#..', '.....'],
+        };
+        // 10과 7 사이를 만들려면 자형이 하나 더 필요하다. 5 × 8 자형
+        var MID = {
+          0: ['.###.', '#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.'],
+          1: ['..#..', '.##..', '..#..', '..#..', '..#..', '..#..', '..#..', '.###.'],
+          2: ['.###.', '#...#', '....#', '...#.', '..#..', '.#...', '#....', '#####'],
+          3: ['.###.', '#...#', '....#', '..##.', '....#', '....#', '#...#', '.###.'],
+          4: ['...#.', '..##.', '.#.#.', '#..#.', '#####', '...#.', '...#.', '...#.'],
+          5: ['#####', '#....', '#....', '####.', '....#', '....#', '#...#', '.###.'],
+          6: ['..##.', '.#...', '#....', '####.', '#...#', '#...#', '#...#', '.###.'],
+          7: ['#####', '....#', '....#', '...#.', '...#.', '..#..', '..#..', '..#..'],
+          8: ['.###.', '#...#', '#...#', '.###.', '#...#', '#...#', '#...#', '.###.'],
+          9: ['.###.', '#...#', '#...#', '#...#', '.####', '....#', '...#.', '.##..'],
+          ':': ['.....', '.....', '..#..', '..#..', '.....', '..#..', '..#..', '.....'],
+        };
+        var SMALL = {
+          0: ['###', '#.#', '#.#', '#.#', '###'],
+          1: ['.#.', '##.', '.#.', '.#.', '###'],
+          2: ['###', '..#', '###', '#..', '###'],
+          3: ['###', '..#', '.##', '..#', '###'],
+          4: ['#.#', '#.#', '###', '..#', '..#'],
+          5: ['###', '#..', '###', '..#', '###'],
+          6: ['###', '#..', '###', '#.#', '###'],
+          7: ['###', '..#', '..#', '..#', '..#'],
+          8: ['###', '#.#', '###', '#.#', '###'],
+          9: ['###', '#.#', '###', '..#', '###'],
+          ':': ['...', '.#.', '...', '.#.', '...'],
+        };
+
+        var DOT = 2,
+          W = 390,
+          H = 844,
+          SLOTS = 60;
+        var R_OBJ = 153,
+          R_ARC = 131,
+          R_LABEL = 175,
+          ARC_W = 6;
+        var DX = W / DOT,
+          DY = H / DOT,
+          CX = 195,
+          CY = 360,
+          cdx = CX / DOT,
+          cdy = CY / DOT;
+        // 버튼 두 개. 반복은 설정 기능으로 미뤘다
+        // 확정값. 화면에서 고를 수 없다
+        var btnH = 28; // 버튼 한 변, 도트
+        var iconH = 12; // 아이콘 한 변, 도트
+        var btnHier = false; // 위계 없음. 두 버튼이 같은 크기
+        var btnY = 660; // 버튼 중심 y, 논리 픽셀
+        var BTN_GAP = 88; // 두 버튼 중심 간격, 논리 픽셀
+        var btnTone = 'stone'; // 버튼 색
+        function btnX() {
+          return [CX - BTN_GAP / 2, CX + BTN_GAP / 2];
+        }
+        function btnSize(i) {
+          return btnHier ? (i === 0 ? btnH : btnH - 4) : btnH;
+        }
+        function hitOf(i) {
+          return Math.max(56, btnSize(i) * DOT + 8);
+        }
+
+        var TONE = {
+          same: {
+            edge: '#3a2718',
+            face: '#8a6238',
+            hi: '#b8895a',
+            sh: '#5e4226',
+            name: '장작',
+            why: '시계판의 장작과 같은 색입니다. 화면이 한 세계로 묶이지만 정보와 조작이 같은 색이 됩니다.',
+          },
+          wood: {
+            edge: '#3a2e22',
+            face: '#a08461',
+            hi: '#c9ad86',
+            sh: '#6e5a3f',
+            name: '밝은 나무',
+            why: '장작보다 밝고 채도가 낮습니다. 같은 재질이되 손때 탄 물건으로 읽힙니다.',
+          },
+          stone: {
+            edge: '#2b2638',
+            face: '#6b6280',
+            hi: '#8f86a8',
+            sh: '#4a4360',
+            name: '돌',
+            why: '배경과 같은 남보라 계열이라 밤 분위기를 깨지 않으면서, 시계판 어디에도 없는 색이라 조작 요소로 분리됩니다.',
+          },
+          char: {
+            edge: '#241f2c',
+            face: '#55505c',
+            hi: '#746e7d',
+            sh: '#3d3944',
+            name: '숯',
+            why: '모닥불 옆 숯덩이입니다. 가장 어둡고 절제돼서 아이콘이 제일 또렷합니다.',
+          },
+          brass: {
+            edge: '#3d2a13',
+            face: '#a5763f',
+            hi: '#d19f66',
+            sh: '#7a5529',
+            name: '황동',
+            why: '불빛에 반사되는 금속입니다. 나무보다 도구답게 보이지만 불의 주황과 가까워 섞일 수 있습니다.',
+          },
+          moss: {
+            edge: '#232b22',
+            face: '#5f7060',
+            hi: '#83957f',
+            sh: '#43503f',
+            name: '이끼 낀 돌',
+            why: '자연물이라 차분합니다. 다만 초록 계열이라 청록 휴식색과 헷갈릴 여지가 있습니다.',
+          },
+          burnt: {
+            edge: '#2a1a13',
+            face: '#6e4a3a',
+            hi: '#966950',
+            sh: '#4d3226',
+            name: '그을린 나무',
+            why: '불에 탄 나무입니다. 시계판 장작과 같은 재질인데 더 어둡고 붉어 구분됩니다.',
+          },
+        };
+        var PAUSE_FADE = 500,
+          OUT_FADE = 500,
+          PRESS = 90;
+        var OUT_ALPHA = 0.28; // 설정 밖 개체 알파
+
+        var SPEED = 60,
+          setFocus = 25,
+          setRest = 5,
+          editTarget = 'focus';
+        var mainH = 21; // 타이머 숫자 높이, 도트
+        var subH = 7; // 아래 숫자 높이, 도트
+        var cdH = 7; // 카운트다운 숫자 높이, 도트
+        var subGap = 10; // 타이머와 아래 숫자 사이, 도트
+        var CD_GAP = 12; // 카운트다운과 0분 눈금 사이, 논리 픽셀
+        var autoRest = true;
+        var AUTO_DELAY = 5000;
+
+        var st = {
+          mode: 'focus',
+          phase: 'idle',
+          remaining: 25,
+          pauseT: 0,
+          fireLevel: 0,
+          outT: 0,
+          press: [0, 0, 0],
+          restLen: 5,
+          doneT: 0,
+          repeat: false,
+          sparks: [],
+          spawned: false,
+        };
+
+        // 완료 연출: 타오름 1200밀리초, 불티 80개가 200밀리초 뒤부터 2.8초
+        var FLARE_MUL = 2.5,
+          FLARE_DUR = 1200,
+          SPARK_N = 80,
+          SPARK_DELAY = 200,
+          SPARK_LIFE = 2.8;
+
+        function spawnRise() {
+          var arr = [],
+            r0 = R_OBJ / DOT;
+          for (var i = 0; i < SPARK_N; i++) {
+            var a = Math.random() * Math.PI * 2,
+              rr = r0 * (0.86 + Math.random() * 0.18);
+            arr.push({
+              x: cdx + rr * Math.cos(a),
+              y: cdy + rr * Math.sin(a),
+              vx: Math.cos(a) * 0.1 + (Math.random() - 0.5) * 0.44,
+              vy: -(0.6 * (0.55 + Math.random() * 0.9)),
+              grav: -0.0,
+              life: 1,
+              decay: (1 / (SPARK_LIFE * 60)) * (0.75 + Math.random() * 0.5),
+            });
+          }
+          st.sparks = arr;
+        }
+        // 완료한 뒤 다음에 무엇이 올지. 없으면 null
+        function nextAfterDone() {
+          if (st.phase !== 'done') return null;
+          if (st.mode === 'focus') {
+            if (setRest > 0 && autoRest) return 'rest';
+            if (st.repeat) return 'focus';
+            return null;
+          }
+          return st.repeat ? 'focus' : null;
+        }
+
+        var pxc = document.getElementById('px'),
+          glc = document.getElementById('gl'),
+          phone = document.getElementById('phone');
+
+        function angleOf(d) {
+          return ((d - 90) * Math.PI) / 180;
+        }
+        function hexA(hex, a) {
+          var n = parseInt(hex.slice(1), 16);
+          return (
+            'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + Math.max(0, Math.min(1, a)).toFixed(3) + ')'
+          );
+        }
+        function easeInOut(x) {
+          return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+        }
+
+        function blit(ctx, grid, cx, cy, alpha) {
+          var h = grid.length,
+            w = grid[0].length;
+          var x0 = Math.round(cx - w / 2),
+            y0 = Math.round(cy - h / 2);
+          ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+          for (var r = 0; r < h; r++) {
+            var row = grid[r];
+            for (var c = 0; c < w; c++) {
+              var k = row[c];
+              if (k === '.') continue;
+              var col = PAL[k];
+              if (!col) continue;
+              ctx.fillStyle = col;
+              ctx.fillRect(x0 + c, y0 + r, 1, 1);
+            }
+          }
+          ctx.globalAlpha = 1;
+        }
+        function drawText(ctx, text, cx, cy, color, scale, alpha, set) {
+          var face = set || GLYPH,
+            gh = face['0'].length,
+            gw = face['0'][0].length,
+            gap = 1;
+          var total = text.length * (gw + gap) - gap;
+          var x0 = Math.round(cx - (total * scale) / 2),
+            y0 = Math.round(cy - (gh * scale) / 2);
+          ctx.globalAlpha = alpha === undefined ? 1 : alpha;
+          ctx.fillStyle = color;
+          for (var i = 0; i < text.length; i++) {
+            var g = face[text[i]];
+            if (!g) continue;
+            for (var r = 0; r < gh; r++)
+              for (var c = 0; c < gw; c++)
+                if (g[r][c] === '#') ctx.fillRect(x0 + (i * (gw + gap) + c) * scale, y0 + r * scale, scale, scale);
+          }
+          ctx.globalAlpha = 1;
+        }
+        function clock(v) {
+          var mm = Math.floor(v),
+            ss = Math.round((v - mm) * 60);
+          if (ss === 60) {
+            mm++;
+            ss = 0;
+          }
+          return String(mm).padStart(2, '0') + ':' + String(ss).padStart(2, '0');
+        }
+
+        // 도트 높이에 맞는 자형과 배율
+        function faceFor(h) {
+          if (h === 14) return { f: GLYPH, s: 2 };
+          if (h === 10) return { f: SMALL, s: 2 };
+          if (h === 8) return { f: MID, s: 1 };
+          if (h === 5) return { f: SMALL, s: 1 };
+          return { f: GLYPH, s: 1 }; // 7
+        }
+
+        function drawButton(p, cxD, cyD, iconKey, enabled, pressed, n) {
+          var T = TONE[btnTone];
+          var x0 = Math.round(cxD - n / 2),
+            y0 = Math.round(cyD - n / 2) + (pressed ? 1 : 0);
+          var edge = enabled ? T.edge : PAL.dEdge,
+            face = enabled ? T.face : PAL.dFace;
+          var hi = enabled ? T.hi : PAL.dFace,
+            sh = enabled ? T.sh : PAL.dSh,
+            icon = enabled ? PAL.bIcon : PAL.dIcon;
+          p.fillStyle = face;
+          p.fillRect(x0, y0, n, n);
+          p.fillStyle = edge;
+          p.fillRect(x0, y0, n, 1);
+          p.fillRect(x0, y0 + n - 1, n, 1);
+          p.fillRect(x0, y0, 1, n);
+          p.fillRect(x0 + n - 1, y0, 1, n);
+          if (!pressed) {
+            p.fillStyle = hi;
+            p.fillRect(x0 + 1, y0 + 1, n - 2, 1);
+            p.fillRect(x0 + 1, y0 + 1, 1, n - 2);
+          }
+          p.fillStyle = sh;
+          p.fillRect(x0 + 1, y0 + n - 2, n - 2, 1);
+          p.fillRect(x0 + n - 2, y0 + 1, 1, n - 2);
+          p.fillStyle = edge;
+          [
+            [3, 3],
+            [n - 4, 3],
+            [3, n - 4],
+            [n - 4, n - 4],
+          ].forEach(function (q) {
+            p.fillRect(x0 + q[0], y0 + q[1], 1, 1);
+          });
+          var g = ICONS[iconH][iconKey],
+            gh = g.length,
+            gw = g[0].length;
+          var ix = Math.round(x0 + n / 2 - gw / 2),
+            iy = Math.round(y0 + n / 2 - gh / 2);
+          p.fillStyle = icon;
+          for (var r = 0; r < gh; r++) for (var c = 0; c < gw; c++) if (g[r][c] === 'I') p.fillRect(ix + c, iy + r, 1, 1);
+        }
+
+        // 가운데 숫자는 시계판 중심에 그대로 둔다
+        function mainCenterY() {
+          return CY;
+        }
+        function subCenterY() {
+          return CY + (mainH * DOT) / 2 + subGap * DOT + (subH * DOT) / 2;
+        }
+        // 카운트다운은 시계 문자판의 0분 눈금 바깥에 놓는다
+        function cdCenterY() {
+          var labelOuter = R_LABEL + 7; // 눈금 숫자 높이 7도트의 절반이 논리픽셀 7
+          return CY - (labelOuter + CD_GAP + (cdH * DOT) / 2);
+        }
+
+        function goFocusIdle() {
+          if (st.mode === 'rest' && st.phase === 'done') st.fireLevel = 0;
+          st.mode = 'focus';
+          st.phase = 'idle';
+          st.remaining = setFocus;
+          st.pauseT = 0;
+          st.outT = st.fireLevel > 0 ? OUT_FADE : 0;
+          st.doneT = 0;
+          st.spawned = false;
+          editTarget = 'focus';
+          syncSlider();
+        }
+        function pressPlay() {
+          var m = st.mode,
+            p = st.phase;
+          if (m === 'focus') {
+            if (p === 'idle') {
+              st.phase = 'running';
+              st.remaining = setFocus;
+              st.fireLevel = 1;
+              st.outT = 0;
+            } else if (p === 'running') st.phase = 'paused';
+            else if (p === 'paused') st.phase = 'running';
+            else if (p === 'done') {
+              if (setRest <= 0) {
+                goFocusIdle();
+              } else {
+                st.mode = 'rest';
+                st.phase = 'running';
+                st.restLen = setRest;
+                st.remaining = setRest;
+              }
+            }
+          } else {
+            if (p === 'running') st.phase = 'paused';
+            else if (p === 'paused') st.phase = 'running';
+            else if (p === 'done') goFocusIdle();
+          }
+        }
+        function stopEnabled() {
+          return !(st.mode === 'focus' && st.phase === 'idle');
+        }
+
+        // 정지: 즉시 집중 대기로 돌아간다
+        function pressStop() {
+          st.fireLevel = 0;
+          goFocusIdle();
+        }
+
+        phone.addEventListener('click', function (e) {
+          var rect = phone.getBoundingClientRect();
+          var x = (e.clientX - rect.left) * (W / rect.width),
+            y = (e.clientY - rect.top) * (H / rect.height);
+          // 버튼
+          var bxs = btnX();
+          for (var i = 0; i < 2; i++) {
+            var hh = hitOf(i);
+            if (Math.abs(y - btnY) <= hh / 2 && Math.abs(x - bxs[i]) <= hh / 2) {
+              if (i === 1 && !stopEnabled()) return;
+              st.press[i] = PRESS;
+              if (i === 0) pressPlay();
+              else pressStop();
+              return;
+            }
+          }
+          // 숫자 (대기 상태에서만)
+          if (st.phase !== 'idle' || st.mode !== 'focus') return;
+          if (Math.abs(x - CX) <= 70 && Math.abs(y - mainCenterY()) <= (mainH * DOT) / 2 + 8) {
+            editTarget = 'focus';
+            syncSlider();
+            return;
+          }
+          if (Math.abs(x - CX) <= 60 && Math.abs(y - subCenterY()) <= (subH * DOT) / 2 + 8) {
+            editTarget = 'rest';
+            syncSlider();
+            return;
+          }
+        });
+
+        function seg(id, fn) {
+          var box = document.getElementById(id);
+          box.addEventListener('click', function (e) {
+            var b = e.target.closest('button');
+            if (!b) return;
+            Array.prototype.forEach.call(box.children, function (el) {
+              el.setAttribute('aria-pressed', el === b ? 'true' : 'false');
+            });
+            fn(b.dataset.v);
+          });
+        }
+        seg('autoSeg', function (v) {
+          autoRest = v === '1';
+        });
+
+        var dialEl = document.getElementById('dialv');
+        function syncSlider() {
+          var isF = editTarget === 'focus';
+          dialEl.min = isF ? 1 : 0;
+          dialEl.max = 60;
+          dialEl.value = String(isF ? setFocus : setRest);
+          document.getElementById('dialvv').textContent = dialEl.value + '분';
+          document.getElementById('editHint').textContent = isF
+            ? '가운데 숫자가 선택돼 있습니다. 집중 시간은 1분부터 60분까지입니다.'
+            : '아래 숫자가 선택돼 있습니다. 0분으로 두면 휴식 없이 단순 타이머가 됩니다.';
+        }
+        dialEl.addEventListener('input', function () {
+          var v = +dialEl.value;
+          if (editTarget === 'focus') {
+            setFocus = v;
+            if (st.mode === 'focus' && st.phase === 'idle') st.remaining = v;
+          } else setRest = v;
+          document.getElementById('dialvv').textContent = v + '분';
+        });
+
+        function bind(id, fn, fmt) {
+          var el = document.getElementById(id),
+            out = document.getElementById(id + 'v');
+          el.addEventListener('input', function () {
+            fn(+el.value);
+            out.textContent = fmt(+el.value);
+          });
+          out.textContent = fmt(+el.value);
+        }
+        bind(
+          'speed',
+          function (v) {
+            SPEED = v;
+          },
+          function (v) {
+            return v + '배';
+          },
+        ); // 시연 속도만 조절한다
+
+        function render(dt) {
+          dt = dt || 16;
+          if (pxc.width !== DX) {
+            pxc.width = DX;
+            pxc.height = DY;
+          }
+          var p = pxc.getContext('2d');
+          p.imageSmoothingEnabled = false;
+          p.clearRect(0, 0, DX, DY);
+          var dpr = Math.min(window.devicePixelRatio || 1, 2);
+          if (glc.width !== Math.round(W * dpr)) {
+            glc.width = Math.round(W * dpr);
+            glc.height = Math.round(H * dpr);
+          }
+          var g = glc.getContext('2d');
+          g.setTransform(dpr, 0, 0, dpr, 0, 0);
+          g.clearRect(0, 0, W, H);
+          g.fillStyle = PAL.bg;
+          g.fillRect(0, 0, W, H);
+
+          var isRest = st.mode === 'rest',
+            idle = st.phase === 'idle';
+          var editingRest = idle && !isRest && editTarget === 'rest';
+          var q = easeInOut(Math.min(1, st.pauseT / PAUSE_FADE));
+          var dimMul = 1 - 0.65 * q,
+            frozen = q > 0.5;
+          var frame = frozen ? 0 : Math.floor(performance.now() / 125);
+          var outQ = st.outT > 0 ? easeInOut(st.outT / OUT_FADE) : 0;
+          var fireMul = st.fireLevel * dimMul * (1 - outQ);
+
+          // 되감기 휴식
+          var restProg = isRest && st.restLen > 0 ? Math.min(1, Math.max(0, 1 - st.remaining / st.restLen)) : 0;
+          var virtualRem = setFocus * restProg;
+
+          function litOf(i) {
+            if (isRest) return i - 1 >= virtualRem ? 1 : i > virtualRem ? i - virtualRem : 0;
+            if (st.phase === 'done' || st.outT > 0) return i <= setFocus ? 1 : 0;
+            if (idle) return 0;
+            if (i - 1 >= st.remaining) return 1;
+            if (i > st.remaining) return i - st.remaining;
+            return 0;
+          }
+
+          // 완료 타오름
+          var flareK = st.phase === 'done' && st.mode === 'focus' ? Math.max(0, 1 - st.doneT / FLARE_DUR) : 0;
+          var radiusMul = 1 + (FLARE_MUL - 1) * flareK * flareK;
+
+          // 손잡이·호가 가리키는 값
+          var dialVal;
+          if (idle && !isRest) dialVal = editingRest ? setRest : setFocus;
+          else if (isRest) dialVal = virtualRem;
+          else dialVal = st.remaining;
+
+          var litCount = 0;
+          for (var i = 1; i <= setFocus; i++) if (litOf(i) >= 1) litCount++;
+          var cA = Math.min(litCount / SLOTS, 1) * fireMul;
+          if (cA > 0) {
+            var cg = g.createRadialGradient(CX, CY, 0, CX, CY, R_OBJ * 0.95);
+            cg.addColorStop(0, hexA(PAL.glow, 0.3 * cA + 0.04));
+            cg.addColorStop(1, hexA(PAL.glow, 0));
+            g.fillStyle = cg;
+            g.fillRect(0, 0, W, H);
+          }
+          for (var i = 1; i <= setFocus; i++) {
+            var lit = litOf(i);
+            if (lit <= 0.01) continue;
+            var isFire = i % 5 === 0,
+              a = angleOf((i - 0.5) * 6);
+            var gx = CX + R_OBJ * Math.cos(a),
+              gy = CY + R_OBJ * Math.sin(a);
+            var flick = frozen ? 1 : 0.9 + (0.2 * ((i + frame) % 3)) / 2;
+            var rad =
+              (isFire ? 32 : 16) * (0.55 + 0.45 * lit) * flick * (0.4 + 0.6 * fireMul) * (isFire ? radiusMul : 1 + (radiusMul - 1) * 0.5);
+            if (rad < 0.5) continue;
+            var rg = g.createRadialGradient(gx, gy, 0, gx, gy, rad);
+            rg.addColorStop(0, hexA(PAL.glow, (isFire ? 0.55 : 0.32) * lit * fireMul));
+            rg.addColorStop(1, hexA(PAL.glow, 0));
+            g.fillStyle = rg;
+            g.fillRect(gx - rad, gy - rad, rad * 2, rad * 2);
+          }
+
+          if (dialVal > 0.01) {
+            g.beginPath();
+            g.arc(CX, CY, R_ARC, angleOf(0), angleOf(dialVal * 6));
+            g.strokeStyle = editingRest ? PAL.arcRest : PAL.arc;
+            g.lineWidth = ARC_W;
+            g.lineCap = 'butt';
+            g.stroke();
+          }
+
+          for (var v = 0; v < 60; v += 5) {
+            var a = angleOf(v * 6),
+              rl = R_LABEL / DOT;
+            drawText(p, String(v), cdx + rl * Math.cos(a), cdy + rl * Math.sin(a), PAL.L, 1);
+          }
+          for (var i = 1; i <= SLOTS; i++) {
+            var isFive = i % 5 === 0,
+              a = angleOf((i - 0.5) * 6);
+            var x = cdx + (R_OBJ / DOT) * Math.cos(a),
+              y = cdy + (R_OBJ / DOT) * Math.sin(a);
+            // 설정 밖 칸도 그린다. 타지 않은 상태로 알파를 낮춘다
+            var outside = i > setFocus,
+              base = outside ? OUT_ALPHA : 1;
+            var lit = outside ? 0 : litOf(i) * fireMul,
+              phase = (i + frame) % 2 === 0;
+            if (isFive) {
+              blit(p, S.fireCold, x, y, base);
+              if (lit > 0) blit(p, phase ? S.fireA : S.fireB, x, y, lit);
+            } else {
+              blit(p, S.logCold, x, y, base);
+              if (lit > 0) blit(p, phase ? S.logHotA : S.logHotB, x, y, lit);
+            }
+          }
+
+          // 불티 갱신과 그리기
+          if (st.sparks.length) {
+            var step = dt / 16;
+            for (var s = 0; s < st.sparks.length; s++) {
+              var q2 = st.sparks[s];
+              if (q2.life <= 0) continue;
+              q2.x += q2.vx * step;
+              q2.y += q2.vy * step;
+              q2.vy = q2.vy * 0.994 + q2.grav * step;
+              q2.vx *= 0.985;
+              q2.life -= q2.decay * step;
+              if (q2.life <= 0) continue;
+              g.beginPath();
+              g.arc(q2.x * DOT, q2.y * DOT, 3.0, 0, Math.PI * 2);
+              g.fillStyle = hexA(PAL.glow, 0.15 * q2.life);
+              g.fill();
+              p.globalAlpha = Math.max(0, Math.min(1, q2.life * 1.2));
+              p.fillStyle = q2.life > 0.66 ? PAL.y : q2.life > 0.33 ? PAL.o : PAL.r;
+              p.fillRect(Math.round(q2.x), Math.round(q2.y), 1, 1);
+            }
+            p.globalAlpha = 1;
+          }
+          blit(p, S.start, cdx + (R_OBJ / DOT) * Math.cos(angleOf(0)), cdy + (R_OBJ / DOT) * Math.sin(angleOf(0)), 1);
+
+          // 손잡이: 휴식을 고르고 있으면 모양이 바뀐다
+          var ka = angleOf(dialVal * 6),
+            rk = R_ARC / DOT;
+          // 모양은 언제나 같다. 휴식 시간을 설정하는 동안만 청록이고,
+          // 휴식이 도는 동안에는 색을 그대로 두고 반짝임만 멈춘다 (2026-08-14 결정)
+          var knob = editingRest ? S.sparkRest : isRest || frozen ? S.sparkA : frame % 2 ? S.sparkB : S.sparkA;
+          blit(p, knob, cdx + rk * Math.cos(ka), cdy + rk * Math.sin(ka), 1);
+
+          // 숫자: 위치 고정. 밝기로 지금 무엇이 도는지 알린다
+          var topVal = isRest || (idle && !isRest) || st.phase === 'done' ? (isRest ? setFocus : st.remaining) : st.remaining;
+          if (idle && !isRest) topVal = setFocus;
+          var restVal = isRest ? st.remaining : setRest;
+          var topActive = !isRest && (!idle || editTarget === 'focus');
+          var subActive = isRest || (idle && editTarget === 'rest');
+
+          drawText(p, clock(topVal), cdx, mainCenterY() / DOT, PAL.num, mainH / 7, topActive ? 1 : 0.4);
+          var sub = faceFor(subH);
+          drawText(p, clock(restVal), cdx, subCenterY() / DOT, PAL.numRest, sub.s, subActive ? 1 : 0.4, sub.f);
+
+          // 자동 시작까지 남은 초. 시계 0분 눈금 바깥에 놓고, 색은 다음에 올 구간을 가리킨다
+          var nxt = nextAfterDone();
+          if (nxt) {
+            var left = Math.ceil((AUTO_DELAY - st.doneT) / 1000);
+            if (left > 0) {
+              var cf = faceFor(cdH);
+              drawText(p, String(left), cdx, cdCenterY() / DOT, nxt === 'rest' ? PAL.numRest : PAL.num, cf.s, 1, cf.f);
+            }
+          }
+
+          var bx = btnX();
+          drawButton(p, bx[0] / DOT, btnY / DOT, st.phase === 'running' ? 'pause' : 'play', true, st.press[0] > 0, btnSize(0));
+          drawButton(p, bx[1] / DOT, btnY / DOT, 'stop', stopEnabled(), st.press[1] > 0, btnSize(1));
+
+          var names = { idle: '대기', running: '진행', paused: '일시정지', done: '완료' };
+          var el = document.getElementById('state');
+          el.className = 'state ' + (isRest ? 'rest' : 'focus');
+          el.textContent =
+            (isRest ? '휴식' : '집중') +
+            ' · ' +
+            names[st.phase] +
+            (idle && !isRest ? (editTarget === 'rest' ? ' · 휴식 시간 고르는 중' : ' · 집중 시간 고르는 중') : '');
+        }
+
+        function fit() {
+          var box = document.getElementById('phoneBox');
+          var avail = Math.min(260, box.parentNode.clientWidth - 36),
+            s = avail / W;
+          phone.style.width = W + 'px';
+          phone.style.height = H + 'px';
+          phone.style.transform = 'scale(' + s.toFixed(4) + ')';
+          phone.style.transformOrigin = 'top left';
+          box.style.width = W * s + 'px';
+          box.style.height = H * s + 'px';
+        }
+        window.addEventListener('resize', fit);
+        fit();
+
+        var last = 0;
+        function loop(now) {
+          var dt = last ? Math.min(now - last, 50) : 16;
+          last = now;
+          if (st.phase === 'running') {
+            st.remaining -= (dt / 60000) * SPEED;
+            st.pauseT = Math.max(0, st.pauseT - dt);
+            if (st.remaining <= 0) {
+              st.remaining = 0;
+              st.phase = 'done';
+              st.doneT = 0;
+              if (st.mode === 'focus') {
+                st.spawned = false;
+                st.sparks = [];
+              }
+            }
+          } else if (st.phase === 'paused') {
+            st.pauseT = Math.min(PAUSE_FADE, st.pauseT + dt);
+          } else {
+            st.pauseT = Math.max(0, st.pauseT - dt);
+          }
+
+          // 완료 불티
+          if (st.phase === 'done' && st.mode === 'focus' && !st.spawned && st.doneT >= SPARK_DELAY) {
+            spawnRise();
+            st.spawned = true;
+          }
+
+          // 완료 뒤 자동 진행. 반복이 켜져 있으면 휴식이 끝나고 집중으로 돌아온다
+          if (st.phase === 'done') {
+            st.doneT += dt;
+            var nx = nextAfterDone();
+            if (nx && st.doneT >= AUTO_DELAY) {
+              if (nx === 'rest') {
+                st.mode = 'rest';
+                st.phase = 'running';
+                st.restLen = setRest;
+                st.remaining = setRest;
+              } else {
+                st.fireLevel = 1;
+                st.outT = 0;
+                st.mode = 'focus';
+                st.phase = 'running';
+                st.remaining = setFocus;
+              }
+              st.doneT = 0;
+            }
+          }
+          if (st.outT > 0) {
+            st.outT -= dt;
+            if (st.outT <= 0) {
+              st.outT = 0;
+              st.fireLevel = 0;
+            }
+          }
+          for (var i = 0; i < 2; i++) if (st.press[i] > 0) st.press[i] -= dt;
+          render(dt);
+          requestAnimationFrame(loop);
+        }
+        syncSlider();
+        requestAnimationFrame(loop);
+      })();
+    </script>
+  </body>
+</html>
