@@ -33,6 +33,10 @@ targets/*/Assets.xcassets/
 google-services.json
 GoogleService-Info.plist
 
+# PR에 붙이는 녹화. GitHub에 올리고 저장소에는 두지 않는다
+*.mp4
+*.mov
+
 # 환경 변수
 .env
 .env.*
