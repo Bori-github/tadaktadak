@@ -6,10 +6,10 @@
 
 ### 초기 세팅
 
-- [ ] 프로젝트 생성
-- [ ] 패키지 설치 (Expo SDK 버전에 맞춤)
+- [x] 프로젝트 생성
+- [x] 패키지 설치 (Expo SDK 버전에 맞춤)
   - `expo-notifications` 로컬 알림이 Expo Go에서 동작하는지 첫날 확인한다
-- [ ] 팔레트와 수치 상수 파일. 상수는 `DESIGN.md` §7의 확정값 4개만 두고 나머지는 계산한다
+- [x] 팔레트와 수치 상수 파일. 상수는 `DESIGN.md` §7의 확정값 4개만 두고 나머지는 계산한다
 - [ ] 빈 Widget Extension 타겟과 App Group으로 prebuild·서명·설치 확인 (무료 Apple ID, Intel Mac 빌드 시간). 되지 않으면 Apple Developer Program을 앞당긴다
 
 ### 기능·화면 구현 (Expo Go)
