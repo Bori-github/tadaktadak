@@ -1,0 +1,6 @@
+node_modules/
+ios/
+android/
+targets/*/Assets.xcassets/
+pnpm-lock.yaml
+design/prototype.html
