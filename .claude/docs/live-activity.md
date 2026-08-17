@@ -33,6 +33,32 @@
 - 예약된 로컬 알림은 앱이 죽어도 시간이 되면 울린다
 - 남은 Live Activity를 정리할 수 있는 다음 순간은 앱 재실행 때다. `Activity.activities`로 찾아 이어가거나 끝낸다. Apple도 이 방식을 안내한다
 
+## App Group
+
+- 정지 버튼 App Intent는 앱이 아니라 Widget Extension 프로세스에서 실행된다. 둘은 각자의 샌드박스 컨테이너를 쓴다
+- 앱과 Widget Extension은 서로의 `UserDefaults.standard`를 읽지 못한다
+- 정지 버튼을 눌러도 앱이 저장한 끝날 시각은 그대로 남는다. 재실행한 앱은 그 값만 보고 타이머가 진행 중이라고 판단한다
+- App Group은 앱과 Widget Extension이 함께 여는 컨테이너다. 정지됨 플래그를 여기에 둔다
+
+### 서명 제약
+
+| 항목 | 무료 Personal Team | Apple Developer Program |
+| ---- | ------------------ | ----------------------- |
+| Widget Extension 서명 | 가능 | 가능 |
+| Live Activity | 가능. `Info.plist`의 `NSSupportsLiveActivities` 키만 요구한다 | 가능 |
+| App Group | **불가능** | 가능 |
+| 프로파일 유효 기간 | 7일 | 1년 |
+
+- App Group은 개발자 포털에서 App ID에 등록해야 켜진다. 무료 Personal Team은 포털을 쓸 수 없어 프로파일에 `com.apple.security.application-groups`가 들어가지 않는다
+- 서명 단계에서 막힌다. 빌드를 시작하기 전에 결과가 나온다
+
+### App Group 대안
+
+| 방법 | 단점 |
+| ---- | ---- |
+| 앱이 재실행 때 `Activity.activities`로 추론한다 | 스와이프 해제도 정지로 읽혀 타이머가 취소된다 |
+| App Intent에 `openAppWhenRun = true`를 준다 | 잠금화면에서 정지를 누르면 앱이 열린다. 정리는 앱이 자기 프로세스에서 한다 |
+
 ## 사례
 
 | 앱    | 방식                                                                                                                                               |
@@ -46,5 +72,7 @@
 - Apple, [Starting and updating Live Activities with ActivityKit push notifications](https://developer.apple.com/documentation/activitykit/starting-and-updating-live-activities-with-activitykit-push-notifications)
 - Apple, [applicationWillTerminate(_:)](<https://developer.apple.com/documentation/uikit/uiapplicationdelegate/applicationwillterminate(_:)>)
 - Apple Developer Forums, [Force quitting the app doesn't end the Live Activities](https://developer.apple.com/forums/thread/729651)
+- Apple Developer Forums, [App Groups capability is not available](https://developer.apple.com/forums/thread/656271)
+- Apple, [Your (Personal Team) cannot be used to Code Sign your App for submission to the App Store](https://developer.apple.com/library/archive/qa/qa1915/_index.html)
 - Flow, [Live Activity, Dynamic Island, and App Blocking](https://www.flow.app/blog/devblog-live-activity-dynamic-island-and-app-blocking)
 - Corca, [Live Activity 더 깊게 사용해보기: 실시간 일정 기능 개발기](https://medium.com/corca/live-activity-%EB%8D%94-%EA%B9%8A%EA%B2%8C-%EC%82%AC%EC%9A%A9%ED%95%B4%EB%B3%B4%EA%B8%B0-%EC%8B%A4%EC%8B%9C%EA%B0%84-%EC%9D%BC%EC%A0%95-%EA%B8%B0%EB%8A%A5-%EA%B0%9C%EB%B0%9C%EA%B8%B0-eb10c12bb4ce)
