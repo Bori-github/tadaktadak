@@ -4,11 +4,11 @@
 
 ## 기술 스택
 
-| 항목        | 값                          |
-| ----------- | --------------------------- |
-| 플랫폼      | iOS, Android                |
-| 프레임워크  | React Native, Expo          |
-| 번들 식별자 | `com.boriguri.tadaktadak`   |
+| 항목        | 값                        |
+| ----------- | ------------------------- |
+| 플랫폼      | iOS, Android              |
+| 프레임워크  | React Native, Expo        |
+| 번들 식별자 | `com.boriguri.tadaktadak` |
 
 ## 문서
 
@@ -22,22 +22,9 @@
 
 - 시안은 `design/prototype.html` 하나다. 아티팩트 주소를 시안의 출처로 인용하지 않는다
 
-## 프로젝트 구조
+## 규칙
 
-FSD(Feature-Sliced Design) 아키텍처를 적용한다.
-
-```
-src/
-  app/
-  screens/
-    timer/
-  entities/
-    timer/
-  shared/
-    constants/
-```
-
-- 남은 시간에서 각도·점화·진행률·숫자를 구하는 함수는 `entities/timer`에 한 벌만 둔다. `'worklet'`으로 표시해 UI 스레드와 JS 스레드가 같은 함수를 쓴다
+@.claude/rules/architecture/feature-sliced-design.md
 
 ## 작업 순서
 
