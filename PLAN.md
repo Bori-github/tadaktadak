@@ -10,7 +10,7 @@
 - [x] 패키지 설치 (Expo SDK 버전에 맞춤)
   - `expo-notifications` 로컬 알림이 Expo Go에서 동작하는지 첫날 확인한다
 - [x] 팔레트와 수치 상수 파일. 상수는 `DESIGN.md` §7의 확정값 4개만 두고 나머지는 계산한다
-- [ ] 빈 Widget Extension 타겟과 App Group으로 prebuild·서명·설치 확인 (무료 Apple ID, Intel Mac 빌드 시간). 되지 않으면 Apple Developer Program을 앞당긴다
+- [x] 빈 Widget Extension 타겟으로 prebuild·서명·설치 확인. App Group은 무료 Personal Team으로 켤 수 없어 뺀다
 
 ### 기능·화면 구현 (Expo Go)
 
@@ -48,7 +48,8 @@
 - [ ] 개발 빌드 전환 (서명). 120Hz 설정 (`app.json` `ios.infoPlist`의 `CADisableMinimumFrameDurationOnPhone`)
 - [ ] Widget Extension 타겟 추가와 앱 연결 (`@bacons/apple-targets`)
   - 실시간 현황 스위치가 켜져 있는지 확인하는 방법을 정한다
-- [ ] ActivityKit 브리지 모듈 (Expo 로컬 모듈, Swift와 TypeScript). 시작·종료, App Group의 정지됨 플래그 읽기
+- [ ] 정지됨 플래그를 앱에 전달하는 방식을 정한다. App Group은 Apple Developer Program 가입이 필요하다. 대안은 App Intent의 `openAppWhenRun`. 근거는 `.claude/docs/live-activity.md`
+- [ ] ActivityKit 브리지 모듈 (Expo 로컬 모듈, Swift와 TypeScript). 시작·종료, 정지됨 플래그 읽기
 - [ ] Live Activity 화면 (SwiftUI. 아이콘, 남은 시간, 진행 막대, 정지 버튼)
 - [ ] 정지 버튼 App Intent (Swift). 알림 취소, Live Activity 종료, 정지됨 플래그 쓰기
 - [ ] 상태 전달과 시작·일시정지·종료 연동
@@ -91,11 +92,15 @@ Expo SDK 57 기준. `npx expo install`이 SDK에 맞는 버전을 고른다.
 ### 개발 빌드
 
 - `@bacons/apple-targets`: `targets/` 폴더의 SwiftUI 코드를 prebuild 때 Widget Extension 타겟으로 붙여 준다. Xcode 16 이상을 요구한다
+- Team ID는 `.env`의 `EXPO_APPLE_TEAM_ID`에 둔다. `app.config.js`가 읽어 두 타겟의 서명 팀을 채운다
 
 | 서명                    | 비용      | 기기 직접 설치       | TestFlight | App Store |
 | ----------------------- | --------- | -------------------- | ---------- | --------- |
-| 무료 Apple ID           | 없음      | 가능. 7일마다 재설치 | 불가       | 불가      |
+| 무료 Personal Team      | 없음      | 가능. 7일마다 재설치 | 불가       | 불가      |
 | Apple Developer Program | 연 99달러 | 가능. 1년            | 가능       | 가능      |
+
+- 무료 Personal Team은 App Group과 Push Notifications를 켤 수 없다
+- 로컬 알림만 쓰므로 `plugins/withoutPushEntitlement.js`가 `expo-notifications`의 `aps-environment`를 지운다. 원격 푸시가 필요해지면 이 파일을 지우고 Apple Developer Program에 가입한다
 
 ### Android
 
