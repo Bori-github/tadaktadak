@@ -11,6 +11,9 @@ expo-env.d.ts
 # 네이티브 프로젝트. app.config에서 다시 만든다
 /ios/
 /android/
+
+# prebuild가 expo-target.config.js에서 만든다
+targets/*/Assets.xcassets/
 .kotlin/
 *.orig.*
 
