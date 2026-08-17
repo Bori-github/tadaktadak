@@ -42,22 +42,22 @@
 
 ### 서명 제약
 
-| 항목 | 무료 Personal Team | Apple Developer Program |
-| ---- | ------------------ | ----------------------- |
-| Widget Extension 서명 | 가능 | 가능 |
-| Live Activity | 가능. `Info.plist`의 `NSSupportsLiveActivities` 키만 요구한다 | 가능 |
-| App Group | **불가능** | 가능 |
-| 프로파일 유효 기간 | 7일 | 1년 |
+| 항목                  | 무료 Personal Team                                            | Apple Developer Program |
+| --------------------- | ------------------------------------------------------------- | ----------------------- |
+| Widget Extension 서명 | 가능                                                          | 가능                    |
+| Live Activity         | 가능. `Info.plist`의 `NSSupportsLiveActivities` 키만 요구한다 | 가능                    |
+| App Group             | **불가능**                                                    | 가능                    |
+| 프로파일 유효 기간    | 7일                                                           | 1년                     |
 
 - App Group은 개발자 포털에서 App ID에 등록해야 켜진다. 무료 Personal Team은 포털을 쓸 수 없어 프로파일에 `com.apple.security.application-groups`가 들어가지 않는다
 - 서명 단계에서 막힌다. 빌드를 시작하기 전에 결과가 나온다
 
 ### App Group 대안
 
-| 방법 | 단점 |
-| ---- | ---- |
-| 앱이 재실행 때 `Activity.activities`로 추론한다 | 스와이프 해제도 정지로 읽혀 타이머가 취소된다 |
-| App Intent에 `openAppWhenRun = true`를 준다 | 잠금화면에서 정지를 누르면 앱이 열린다. 정리는 앱이 자기 프로세스에서 한다 |
+| 방법                                            | 단점                                                                       |
+| ----------------------------------------------- | -------------------------------------------------------------------------- |
+| 앱이 재실행 때 `Activity.activities`로 추론한다 | 스와이프 해제도 정지로 읽혀 타이머가 취소된다                              |
+| App Intent에 `openAppWhenRun = true`를 준다     | 잠금화면에서 정지를 누르면 앱이 열린다. 정리는 앱이 자기 프로세스에서 한다 |
 
 ## 사례
 
