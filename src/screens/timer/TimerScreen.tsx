@@ -1,7 +1,7 @@
 import { Canvas, Fill } from '@shopify/react-native-skia';
 import { StyleSheet, View } from 'react-native';
 
-import { COLORS } from '../../shared/constants/colors';
+import { COLORS } from '@/shared/constants';
 
 export function TimerScreen() {
   return (
