@@ -1,8 +1,8 @@
 ---
-id: tadak
+id: tadaktadak
 name: "타닥타닥"
 category: personal-tool
-bundle_id: "com.boriguri.tadak"
+bundle_id: "com.boriguri.tadaktadak"
 primary_color: "#ffb43c"
 omd: "0.1"
 tokens:

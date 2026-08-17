@@ -4,11 +4,11 @@
 
 ## 기술 스택
 
-| 항목        | 값                   |
-| ----------- | -------------------- |
-| 플랫폼      | iOS, Android         |
-| 프레임워크  | React Native, Expo   |
-| 번들 식별자 | `com.boriguri.tadak` |
+| 항목        | 값                          |
+| ----------- | --------------------------- |
+| 플랫폼      | iOS, Android                |
+| 프레임워크  | React Native, Expo          |
+| 번들 식별자 | `com.boriguri.tadaktadak`   |
 
 ## 문서
 
