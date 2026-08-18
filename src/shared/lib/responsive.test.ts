@@ -1,3 +1,5 @@
+import { describe, expect, it } from '@jest/globals';
+
 import { resolveLayout } from './responsive';
 
 // 390×844 화면. safe area 아래 34이므로 아래 끝은 810
