@@ -31,6 +31,7 @@
     "eslint-plugin-fsd-lint": "^1.2.1",
     "eslint-plugin-unicorn": "^73.0.0",
     "lefthook": "^2.1.10",
+    "npm-run-all2": "^9.0.3",
     "prettier": "^3.9.6",
     "typescript": "~6.0.3"
   },
@@ -39,6 +40,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
+    "check": "run-p -c lint typecheck format:check",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -46,6 +48,7 @@
     "typecheck": "tsc --noEmit"
   },
   "private": true,
+  "packageManager": "pnpm@10.33.0",
   "pnpm": {
     "onlyBuiltDependencies": [
       "@shopify/react-native-skia",

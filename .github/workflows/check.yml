@@ -1,0 +1,36 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: 의존성 설치
+        run: pnpm install --frozen-lockfile
+
+      - name: 검사
+        run: pnpm check
+
+      # squash 병합으로 PR 제목이 main의 커밋 메시지가 되므로, 개별 커밋 대신 제목을 검사한다
+      - name: PR 제목
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: echo "$TITLE" | pnpm exec commitlint
