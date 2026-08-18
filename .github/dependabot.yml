@@ -7,6 +7,32 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: chore
+    groups:
+      expo:
+        patterns:
+          - expo
+          - expo-*
+          - '@expo/*'
+          - react
+          - '@types/react'
+          - react-native
+          - react-native-*
+          - '@react-native-async-storage/*'
+          - '@shopify/react-native-skia'
+          - eslint-config-expo
+      expo-security:
+        applies-to: security-updates
+        patterns:
+          - expo
+          - expo-*
+          - '@expo/*'
+          - react
+          - '@types/react'
+          - react-native
+          - react-native-*
+          - '@react-native-async-storage/*'
+          - '@shopify/react-native-skia'
+          - eslint-config-expo
 
   - package-ecosystem: github-actions
     directory: /
