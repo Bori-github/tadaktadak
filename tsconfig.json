@@ -10,5 +10,6 @@
     "allowUnreachableCode": false,
     "verbatimModuleSyntax": true,
     "isolatedModules": true
-  }
+  },
+  "exclude": ["node_modules", "references"]
 }

@@ -48,10 +48,13 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
+# 참고 레포
+/references/
+
 # 편집기와 운영체제
 .DS_Store
 .idea/
 *.swp
 
-# 기기에 묶인 설정. 절대 경로가 들어 있다
+# 로컬 설정
 .claude/settings.local.json
