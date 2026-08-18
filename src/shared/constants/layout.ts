@@ -1,7 +1,5 @@
-// DESIGN.md §7 확정값 네 개. 나머지 수치는 계산 순서로 구한다
-
-/** 배율이 오르는 기준 너비. 논리 픽셀 */
-export const BASE_WIDTH = 375;
+/** 배율이 오르는 기준. 계산용 너비가 이 아래로 내려가지 않는다. 논리 픽셀 */
+export const MIN_WIDTH = 338;
 
 /** 시계판 기준 지름. 논리 픽셀 */
 export const BASE_DIAMETER = 306;
