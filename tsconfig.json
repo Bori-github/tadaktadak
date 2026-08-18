@@ -9,7 +9,8 @@
     "noFallthroughCasesInSwitch": true,
     "allowUnreachableCode": false,
     "verbatimModuleSyntax": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "types": ["jest"]
   },
   "exclude": ["node_modules", "references"]
 }
