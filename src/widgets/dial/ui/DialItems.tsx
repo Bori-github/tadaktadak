@@ -1,3 +1,4 @@
+import { pointOnDial } from '../lib';
 import { BONFIRE_COLD_7, BONFIRE_COLD_9, DotSprite, LOG_COLD } from '@/shared/ui';
 
 const SLOTS = 60;
@@ -18,17 +19,8 @@ export function DialItems({ centerX, centerY, radius, dotSize, bonfireDots }: Di
   return (
     <>
       {SLOT_NUMBERS.map((slot) => {
-        // 각도 0을 3시에서 12시로 옮긴다
-        const angle = (((slot - 0.5) * 6 - 90) * Math.PI) / 180;
-        return (
-          <DotSprite
-            key={slot}
-            grid={slot % 5 === 0 ? bonfire : LOG_COLD}
-            centerX={centerX + radius * Math.cos(angle)}
-            centerY={centerY + radius * Math.sin(angle)}
-            dotSize={dotSize}
-          />
-        );
+        const point = pointOnDial(centerX, centerY, radius, (slot - 0.5) * 6);
+        return <DotSprite key={slot} grid={slot % 5 === 0 ? bonfire : LOG_COLD} centerX={point.x} centerY={point.y} dotSize={dotSize} />;
       })}
     </>
   );
