@@ -1,5 +1,7 @@
 import { Group, Rect } from '@shopify/react-native-skia';
 
+import { topLeftOnGrid } from '@/shared/lib';
+
 import { SPRITE_COLORS } from './sprites';
 
 type DotSpriteProps = {
@@ -15,9 +17,7 @@ type DotSpriteProps = {
 export function DotSprite({ grid, centerX, centerY, dotSize, opacity = 1 }: DotSpriteProps) {
   const width = grid[0]?.length ?? 0;
 
-  // 중심은 실수로 잡고 왼쪽 위 모서리에서 격자에 맞춘다. `DESIGN.md` §5
-  const left = Math.round(centerX / dotSize - width / 2);
-  const top = Math.round(centerY / dotSize - grid.length / 2);
+  const { left, top } = topLeftOnGrid({ centerX, centerY, widthInDots: width, heightInDots: grid.length, dotSize });
 
   const dots = [];
   for (const [row, line] of grid.entries()) {

@@ -1,5 +1,7 @@
 import { Group, Rect } from '@shopify/react-native-skia';
 
+import { topLeftOnGrid } from '@/shared/lib';
+
 import { GLYPH, GLYPH_GAP, GLYPH_HEIGHT, GLYPH_WIDTH } from './glyph';
 
 type DotNumberProps = {
@@ -18,9 +20,13 @@ export function DotNumber({ text, centerX, centerY, color, dotSize, glyphScale =
   const advance = GLYPH_WIDTH + GLYPH_GAP;
   const widthInDots = (text.length * advance - GLYPH_GAP) * glyphScale;
 
-  // 중심은 실수로 잡고 왼쪽 위 모서리에서 격자에 맞춘다. `DESIGN.md` §5
-  const left = Math.round(centerX / dotSize - widthInDots / 2);
-  const top = Math.round(centerY / dotSize - (GLYPH_HEIGHT * glyphScale) / 2);
+  const { left, top } = topLeftOnGrid({
+    centerX,
+    centerY,
+    widthInDots,
+    heightInDots: GLYPH_HEIGHT * glyphScale,
+    dotSize,
+  });
   const size = dotSize * glyphScale;
 
   const dots = [];
