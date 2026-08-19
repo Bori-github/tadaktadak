@@ -1,5 +1,5 @@
 import { pointOnDial } from '../lib';
-import { BONFIRE_COLD_7, BONFIRE_COLD_9, DotSprite, LOG_COLD } from '@/shared/ui';
+import { BONFIRE_COLD_7, BONFIRE_COLD_9, DotSprite, LOG_COLD, MARKER } from '@/shared/ui';
 
 const SLOTS = 60;
 
@@ -22,6 +22,7 @@ export function DialItems({ centerX, centerY, radius, dotSize, bonfireDots }: Di
         const point = pointOnDial(centerX, centerY, radius, (slot - 0.5) * 6);
         return <DotSprite key={slot} grid={slot % 5 === 0 ? bonfire : LOG_COLD} centerX={point.x} centerY={point.y} dotSize={dotSize} />;
       })}
+      <DotSprite grid={MARKER} centerX={centerX} centerY={centerY - radius} dotSize={dotSize} />
     </>
   );
 }

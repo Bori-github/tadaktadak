@@ -1,1 +1,1 @@
-export { DialItems, TickNumbers } from './ui';
+export { DialArc, DialHandle, DialItems, TickNumbers } from './ui';
