@@ -1,5 +1,5 @@
-import { pointOnDial } from '../lib';
-import { DotSprite, SPARK_A } from '@/shared/ui';
+import { pointOnDial } from '../lib/geometry';
+import { DotSprite, SPARK_A } from '@/shared/ui/dot-sprite';
 
 type DialHandleProps = {
   centerX: number;

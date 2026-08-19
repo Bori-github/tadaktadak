@@ -1,6 +1,6 @@
-import { pointOnDial } from '../lib';
+import { pointOnDial } from '../lib/geometry';
 import { COLORS } from '@/shared/constants';
-import { DotNumber } from '@/shared/ui';
+import { DotNumber } from '@/shared/ui/dot-number';
 
 const TICK_VALUES = Array.from({ length: 12 }, (_, index) => index * 5);
 

@@ -1,5 +1,5 @@
-import { pointOnDial } from '../lib';
-import { BONFIRE_COLD_7, BONFIRE_COLD_9, DotSprite, LOG_COLD, MARKER } from '@/shared/ui';
+import { pointOnDial } from '../lib/geometry';
+import { BONFIRE_COLD_7, BONFIRE_COLD_9, DotSprite, LOG_COLD, MARKER } from '@/shared/ui/dot-sprite';
 
 const SLOTS = 60;
 
