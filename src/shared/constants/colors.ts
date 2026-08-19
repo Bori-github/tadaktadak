@@ -1,5 +1,3 @@
-// DESIGN.md §2
-
 export const COLORS = {
   canvas: '#141021',
 

@@ -58,3 +58,6 @@ yarn-error.*
 
 # 로컬 설정
 .claude/settings.local.json
+
+# 개발 중에만 보는 문서
+.claude/prd/

@@ -30,6 +30,10 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm check
 
+      - name: 테스트
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: pnpm test
+
       - name: Expo 정합성
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm exec expo-doctor

@@ -12,7 +12,7 @@ module.exports = [
   ...expoConfig,
   prettierConfig,
   {
-    ignores: ['ios/', 'android/', 'targets/*/Assets.xcassets/', 'node_modules/'],
+    ignores: ['ios/', 'android/', 'targets/*/Assets.xcassets/', 'node_modules/', 'references/'],
   },
   {
     files: ['src/**/*.{ts,tsx}'],
