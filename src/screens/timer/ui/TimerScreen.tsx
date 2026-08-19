@@ -2,12 +2,15 @@ import { Canvas, Fill } from '@shopify/react-native-skia';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { DialArc, DialHandle, DialItems, TickNumbers } from '@/widgets/dial';
+import { DialArc, DialHandle, DialItems, DialReadout, TickNumbers } from '@/widgets/dial';
 import { COLORS } from '@/shared/constants';
 import { resolveLayout } from '@/shared/lib';
 
 /** 집중 타이머 기본값: 25분 */
 const FOCUS_MINUTES = 25;
+
+/** 휴식 타이머 기본값: 5분 */
+const REST_MINUTES = 5;
 
 export const TimerScreen = () => {
   const { width, height } = useWindowDimensions();
@@ -30,6 +33,7 @@ export const TimerScreen = () => {
         <DialItems centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} bonfireDots={layout.bonfireDots} />
         <DialHandle centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={FOCUS_MINUTES} />
         <TickNumbers centerX={centerX} centerY={centerY} radius={layout.tickNumberRadius} dotSize={layout.dotSize} />
+        <DialReadout centerX={centerX} centerY={centerY} dotSize={layout.dotSize} focusMinutes={FOCUS_MINUTES} restMinutes={REST_MINUTES} active="focus" />
       </Canvas>
     </View>
   );
