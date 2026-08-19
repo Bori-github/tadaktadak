@@ -173,3 +173,58 @@ describe('safe area 높이와 시계판 위 끝', () => {
     expect(dialTopEdge(500)).toBeLessThan(0);
   });
 });
+
+// 실제 기기의 safe area. 짧은 변, 위 끝, 아래 끝
+const DEVICES = {
+  iPhoneSE: { shortSide: 375, topEdge: 20, bottomEdge: 667 },
+  iPhone17e: { shortSide: 390, topEdge: 47, bottomEdge: 810 },
+  iPadMini: { shortSide: 744, topEdge: 24, bottomEdge: 1113 },
+  androidSmall: { shortSide: 360, topEdge: 24, bottomEdge: 592 },
+};
+
+const onDevice = (name: keyof typeof DEVICES) => {
+  const { shortSide, topEdge, bottomEdge } = DEVICES[name];
+  return resolveLayout({ shortSide, safeAreaTopEdge: topEdge, safeAreaBottomEdge: bottomEdge });
+};
+
+describe('기기별 세로 위치', () => {
+  it('iPhone SE는 safe area 높이 647이라 버튼 중심 y가 아래 끝 667에서 150을 뺀 517이다', () => {
+    expect(onDevice('iPhoneSE').buttonCenterY).toBe(517);
+  });
+
+  it('iPhone 17e는 기준 화면과 같아 버튼 660, 시계판 360이다', () => {
+    expect(onDevice('iPhone17e').buttonCenterY).toBe(660);
+    expect(onDevice('iPhone17e').dialCenterY).toBe(360);
+  });
+
+  it('iPad mini는 safe area 높이 1089라 버튼 중심 y가 아래 끝 1113에서 150을 뺀 963이다', () => {
+    expect(onDevice('iPadMini').buttonCenterY).toBe(963);
+  });
+
+  it('안드로이드 360×640은 safe area 높이 568이라 띄움이 96으로 줄어 496이다', () => {
+    expect(onDevice('androidSmall').buttonCenterY).toBe(496);
+  });
+});
+
+describe('시계판 위 끝이 safe area 안에 들어간다', () => {
+  const topEdgeOf = (name: keyof typeof DEVICES) => {
+    const { dialCenterY, tickNumberRadius } = onDevice(name);
+    return dialCenterY - tickNumberRadius - 7;
+  };
+
+  it('iPhone SE에서 safe area 위 끝 20보다 아래다', () => {
+    expect(topEdgeOf('iPhoneSE')).toBeGreaterThanOrEqual(DEVICES.iPhoneSE.topEdge);
+  });
+
+  it('iPhone 17e에서 safe area 위 끝 47보다 아래다', () => {
+    expect(topEdgeOf('iPhone17e')).toBeGreaterThanOrEqual(DEVICES.iPhone17e.topEdge);
+  });
+
+  it('iPad mini에서 safe area 위 끝 24보다 아래다', () => {
+    expect(topEdgeOf('iPadMini')).toBeGreaterThanOrEqual(DEVICES.iPadMini.topEdge);
+  });
+
+  it('안드로이드 360×640에서 safe area 위 끝 24보다 아래다', () => {
+    expect(topEdgeOf('androidSmall')).toBeGreaterThanOrEqual(DEVICES.androidSmall.topEdge);
+  });
+});
