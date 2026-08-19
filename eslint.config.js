@@ -19,13 +19,12 @@ module.exports = [
     plugins: { fsd, boundaries, unicorn },
     settings: {
       'boundaries/elements': [
-        { type: 'app', pattern: 'src/app/**' },
-        { type: 'screens', pattern: 'src/screens/**' },
-        { type: 'widgets', pattern: 'src/widgets/**' },
-        { type: 'entities', pattern: 'src/entities/**' },
-        { type: 'shared', pattern: 'src/shared/**' },
+        { type: 'app', pattern: 'src/app' },
+        { type: 'shared', pattern: 'src/shared/*' },
+        { type: 'segment', pattern: 'src/{screens,widgets,features,entities}/*/*' },
       ],
       'boundaries/include': ['src/**/*'],
+      'boundaries/files': [{ pattern: 'src/{screens,widgets,features,entities}/*/index.{ts,tsx}', category: 'slice-api' }],
     },
     rules: {
       'fsd/forbidden-imports': ['error', fsdLayers],
