@@ -11,7 +11,7 @@ type TickNumbersProps = {
   dotSize: number;
 };
 
-export function TickNumbers({ centerX, centerY, radius, dotSize }: TickNumbersProps) {
+export const TickNumbers = ({ centerX, centerY, radius, dotSize }: TickNumbersProps) => {
   return (
     <>
       {TICK_VALUES.map((value) => {
@@ -20,4 +20,4 @@ export function TickNumbers({ centerX, centerY, radius, dotSize }: TickNumbersPr
       })}
     </>
   );
-}
+};

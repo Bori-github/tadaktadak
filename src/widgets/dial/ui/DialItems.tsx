@@ -13,7 +13,7 @@ type DialItemsProps = {
   bonfireDots: number;
 };
 
-export function DialItems({ centerX, centerY, radius, dotSize, bonfireDots }: DialItemsProps) {
+export const DialItems = ({ centerX, centerY, radius, dotSize, bonfireDots }: DialItemsProps) => {
   const bonfire = bonfireDots === 9 ? BONFIRE_COLD_9 : BONFIRE_COLD_7;
 
   return (
@@ -25,4 +25,4 @@ export function DialItems({ centerX, centerY, radius, dotSize, bonfireDots }: Di
       <DotSprite grid={MARKER} centerX={centerX} centerY={centerY - radius} dotSize={dotSize} />
     </>
   );
-}
+};

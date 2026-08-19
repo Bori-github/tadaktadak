@@ -16,7 +16,7 @@ type DotNumberProps = {
   opacity?: number;
 };
 
-export function DotNumber({ text, centerX, centerY, color, dotSize, glyphScale = 1, opacity = 1 }: DotNumberProps) {
+export const DotNumber = ({ text, centerX, centerY, color, dotSize, glyphScale = 1, opacity = 1 }: DotNumberProps) => {
   const advance = GLYPH_WIDTH + GLYPH_GAP;
   const widthInDots = (text.length * advance - GLYPH_GAP) * glyphScale;
 
@@ -53,4 +53,4 @@ export function DotNumber({ text, centerX, centerY, color, dotSize, glyphScale =
       ))}
     </Group>
   );
-}
+};

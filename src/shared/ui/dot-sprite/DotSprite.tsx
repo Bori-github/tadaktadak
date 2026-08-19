@@ -14,7 +14,7 @@ type DotSpriteProps = {
   opacity?: number;
 };
 
-export function DotSprite({ grid, centerX, centerY, dotSize, opacity = 1 }: DotSpriteProps) {
+export const DotSprite = ({ grid, centerX, centerY, dotSize, opacity = 1 }: DotSpriteProps) => {
   const width = grid[0]?.length ?? 0;
 
   const { left, top } = topLeftOnGrid({ centerX, centerY, widthInDots: width, heightInDots: grid.length, dotSize });
@@ -40,4 +40,4 @@ export function DotSprite({ grid, centerX, centerY, dotSize, opacity = 1 }: DotS
       ))}
     </Group>
   );
-}
+};

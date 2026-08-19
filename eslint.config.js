@@ -44,6 +44,8 @@ module.exports = [
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-non-null-assertion': 'warn',
       'prefer-const': 'error',
+      'func-style': ['error', 'expression', { allowArrowFunctions: true }],
+      'prefer-arrow-callback': 'error',
       eqeqeq: ['error', 'smart'],
 
       'react/jsx-no-leaked-render': 'error',
