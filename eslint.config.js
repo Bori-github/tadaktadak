@@ -19,13 +19,12 @@ module.exports = [
     plugins: { fsd, boundaries, unicorn },
     settings: {
       'boundaries/elements': [
-        { type: 'app', pattern: 'src/app/**' },
-        { type: 'screens', pattern: 'src/screens/**' },
-        { type: 'widgets', pattern: 'src/widgets/**' },
-        { type: 'entities', pattern: 'src/entities/**' },
-        { type: 'shared', pattern: 'src/shared/**' },
+        { type: 'app', pattern: 'src/app' },
+        { type: 'shared', pattern: 'src/shared/*' },
+        { type: 'segment', pattern: 'src/{screens,widgets,features,entities}/*/*' },
       ],
       'boundaries/include': ['src/**/*'],
+      'boundaries/files': [{ pattern: 'src/{screens,widgets,features,entities}/*/index.{ts,tsx}', category: 'slice-api' }],
     },
     rules: {
       'fsd/forbidden-imports': ['error', fsdLayers],
@@ -45,6 +44,8 @@ module.exports = [
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-non-null-assertion': 'warn',
       'prefer-const': 'error',
+      'func-style': ['error', 'expression', { allowArrowFunctions: true }],
+      'prefer-arrow-callback': 'error',
       eqeqeq: ['error', 'smart'],
 
       'react/jsx-no-leaked-render': 'error',

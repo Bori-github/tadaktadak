@@ -1,1 +1,1 @@
-export { TimerScreen } from './ui';
+export { TimerScreen } from './ui/TimerScreen';

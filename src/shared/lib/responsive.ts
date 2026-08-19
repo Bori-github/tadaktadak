@@ -29,7 +29,7 @@ type Layout = {
   dialCenterY: number;
 };
 
-export function resolveLayout({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }: LayoutInput): Layout {
+export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }: LayoutInput): Layout => {
   const scale = Math.max(1, Math.floor(shortSide / MIN_WIDTH));
   const width = shortSide / scale;
 
@@ -56,4 +56,4 @@ export function resolveLayout({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }
     buttonCenterY,
     dialCenterY: buttonCenterY - DIAL_OFFSET_FROM_BUTTON,
   };
-}
+};

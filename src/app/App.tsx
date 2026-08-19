@@ -5,7 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { TimerScreen } from '@/screens/timer';
 
-export default function App() {
+const App = () => {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
@@ -14,7 +14,9 @@ export default function App() {
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
-}
+};
+
+export default App;
 
 const styles = StyleSheet.create({
   root: {

@@ -1,1 +1,5 @@
-export { DialArc, DialHandle, DialItems, DialReadout, TickNumbers } from './ui';
+export { DialArc } from './ui/DialArc';
+export { DialHandle } from './ui/DialHandle';
+export { DialItems } from './ui/DialItems';
+export { DialReadout } from './ui/DialReadout';
+export { TickNumbers } from './ui/TickNumbers';

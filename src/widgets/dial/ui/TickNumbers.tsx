@@ -1,6 +1,6 @@
-import { pointOnDial } from '../lib';
+import { pointOnDial } from '../lib/geometry';
 import { COLORS } from '@/shared/constants';
-import { DotNumber } from '@/shared/ui';
+import { DotNumber } from '@/shared/ui/dot-number';
 
 const TICK_VALUES = Array.from({ length: 12 }, (_, index) => index * 5);
 
@@ -11,7 +11,7 @@ type TickNumbersProps = {
   dotSize: number;
 };
 
-export function TickNumbers({ centerX, centerY, radius, dotSize }: TickNumbersProps) {
+export const TickNumbers = ({ centerX, centerY, radius, dotSize }: TickNumbersProps) => {
   return (
     <>
       {TICK_VALUES.map((value) => {
@@ -20,4 +20,4 @@ export function TickNumbers({ centerX, centerY, radius, dotSize }: TickNumbersPr
       })}
     </>
   );
-}
+};

@@ -1,5 +1,5 @@
 import { COLORS } from '@/shared/constants';
-import { DotNumber } from '@/shared/ui';
+import { DotNumber } from '@/shared/ui/dot-number';
 
 /** 집중 숫자 배율. 5×7 자형이 21 도트가 된다. `DESIGN.md` §3 */
 const FOCUS_GLYPH_SCALE = 3;
