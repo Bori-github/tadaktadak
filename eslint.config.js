@@ -21,6 +21,7 @@ module.exports = [
       'boundaries/elements': [
         { type: 'app', pattern: 'src/app/**' },
         { type: 'screens', pattern: 'src/screens/**' },
+        { type: 'widgets', pattern: 'src/widgets/**' },
         { type: 'entities', pattern: 'src/entities/**' },
         { type: 'shared', pattern: 'src/shared/**' },
       ],
