@@ -2,10 +2,19 @@ import { describe, expect, it } from '@jest/globals';
 
 import { resolveLayout } from './responsive';
 
-// 390×844 화면. safe area 아래 34이므로 아래 끝은 810
+// 390×844 화면. safe area 위 47·아래 34이므로 위 끝은 47, 아래 끝은 810
+const SAFE_AREA_TOP_EDGE = 47;
 const SAFE_AREA_BOTTOM_EDGE = 810;
 
-const layout = (shortSide: number, safeAreaBottomEdge = SAFE_AREA_BOTTOM_EDGE) => resolveLayout({ shortSide, safeAreaBottomEdge });
+const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: SAFE_AREA_TOP_EDGE, safeAreaBottomEdge: SAFE_AREA_BOTTOM_EDGE });
+
+// iPad mini 744×1133. safe area 위 24·아래 20
+const ipadMini = () => resolveLayout({ shortSide: 744, safeAreaTopEdge: 24, safeAreaBottomEdge: 1113 });
+
+// 위 끝을 0으로 두면 safe area 높이가 그대로 아래 끝 좌표가 된다
+const buttonOffset = (safeAreaHeight: number) => safeAreaHeight - resolveLayout({ shortSide: 390, safeAreaTopEdge: 0, safeAreaBottomEdge: safeAreaHeight }).buttonCenterY;
+
+const dialTopEdge = (safeAreaHeight: number) => resolveLayout({ shortSide: 390, safeAreaTopEdge: 0, safeAreaBottomEdge: safeAreaHeight }).dialCenterY - 182;
 
 describe('배율', () => {
   it('지원 최소 너비에서 1배다', () => {
@@ -109,12 +118,12 @@ describe('도트 크기', () => {
 });
 
 describe('세로 위치에는 k를 곱하지 않는다', () => {
-  it('배율 2에서도 버튼 중심 y는 safe area 그대로다', () => {
-    expect(layout(744).buttonCenterY).toBe(660);
+  it('iPad mini에서 버튼 중심 y는 아래 끝 1113에서 150을 뺀 963이다', () => {
+    expect(ipadMini().buttonCenterY).toBe(963);
   });
 
-  it('배율 2에서도 시계판 중심 y는 safe area 그대로다', () => {
-    expect(layout(744).dialCenterY).toBe(360);
+  it('iPad mini에서 시계판 중심 y는 버튼 963에서 300을 뺀 663이다', () => {
+    expect(ipadMini().dialCenterY).toBe(663);
   });
 });
 
@@ -125,5 +134,42 @@ describe('세로 위치', () => {
 
   it('시계판 중심 y는 360이다', () => {
     expect(layout(390).dialCenterY).toBe(360);
+  });
+});
+
+describe('safe area 높이와 버튼 띄움', () => {
+  it('632에서 기준값 150을 지킨다', () => {
+    expect(buttonOffset(632)).toBe(150);
+  });
+
+  it('900으로 넉넉해도 150을 넘지 않는다', () => {
+    expect(buttonOffset(900)).toBe(150);
+  });
+
+  it('631에서 모자란 1만큼 줄어 149다', () => {
+    expect(buttonOffset(631)).toBe(149);
+  });
+
+  it('526에서 하한 44에 닿는다', () => {
+    expect(buttonOffset(526)).toBe(44);
+  });
+
+  it('500에서도 하한 44에 머문다', () => {
+    expect(buttonOffset(500)).toBe(44);
+  });
+});
+
+describe('safe area 높이와 시계판 위 끝', () => {
+  it('632에서 safe area 위 끝에 닿는다', () => {
+    expect(dialTopEdge(632)).toBe(0);
+  });
+
+  it('600과 526에서도 safe area 위 끝에 붙는다', () => {
+    expect(dialTopEdge(600)).toBe(0);
+    expect(dialTopEdge(526)).toBe(0);
+  });
+
+  it('500에서는 safe area 위 끝을 넘어 잘린다', () => {
+    expect(dialTopEdge(500)).toBeLessThan(0);
   });
 });

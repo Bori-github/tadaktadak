@@ -9,10 +9,12 @@ const TICK_NUMBER_HALF_HEIGHT = 7;
 const ARC_GAP = 13;
 
 const BUTTON_OFFSET_FROM_SAFE_AREA = 150;
+const BUTTON_OFFSET_MIN = 44;
 const DIAL_OFFSET_FROM_BUTTON = 300;
 
 type LayoutInput = {
   shortSide: number;
+  safeAreaTopEdge: number;
   safeAreaBottomEdge: number;
 };
 
@@ -27,7 +29,7 @@ type Layout = {
   dialCenterY: number;
 };
 
-export function resolveLayout({ shortSide, safeAreaBottomEdge }: LayoutInput): Layout {
+export function resolveLayout({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }: LayoutInput): Layout {
   const scale = Math.max(1, Math.floor(shortSide / MIN_WIDTH));
   const width = shortSide / scale;
 
@@ -38,7 +40,11 @@ export function resolveLayout({ shortSide, safeAreaBottomEdge }: LayoutInput): L
   const arcRadius = itemRadius - bonfireHalfHeight - ARC_GAP;
   const tickNumberRadius = itemRadius + bonfireHalfHeight + TICK_NUMBER_GAP + TICK_NUMBER_HALF_HEIGHT;
 
-  const buttonCenterY = safeAreaBottomEdge - BUTTON_OFFSET_FROM_SAFE_AREA;
+  const dialTopHalfHeight = (tickNumberRadius + TICK_NUMBER_HALF_HEIGHT) * scale;
+  const safeAreaHeight = safeAreaBottomEdge - safeAreaTopEdge;
+  const roomAboveDial = safeAreaHeight - dialTopHalfHeight - DIAL_OFFSET_FROM_BUTTON;
+  const buttonOffset = Math.min(BUTTON_OFFSET_FROM_SAFE_AREA, Math.max(BUTTON_OFFSET_MIN, roomAboveDial));
+  const buttonCenterY = safeAreaBottomEdge - buttonOffset;
 
   return {
     scale,
