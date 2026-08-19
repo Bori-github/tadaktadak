@@ -36,7 +36,7 @@ description: 타닥타닥 저장소에 커밋할 때 쓴다. 사용자가 "커�
 ## 순서
 
 1. `git status --short`와 `git diff`로 변경 사항을 읽는다
-2. 최소한의 논리적인 단위로 커밋을 나눈다
+2. 최소한의 논리적인 단위로 커밋을 나눈다. 한 커밋 200줄을 넘으면 `git add -p`로 더 나눈다 (`.claude/rules/workflow/work-scope.md`)
 3. 커밋 메시지 초안을 보여 주고 **멈춘다**
 4. 사용자가 지시하면 그때 `git add`와 `git commit`을 실행한다
 

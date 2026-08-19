@@ -1,5 +1,8 @@
 pre-commit:
   jobs:
+    - name: work-scope
+      run: sh .lefthook/check-work-scope.sh commit
+
     - name: eslint
       glob: '*.{ts,tsx,js}'
       run: pnpm exec eslint --fix --no-warn-ignored {staged_files}
@@ -12,6 +15,12 @@ pre-commit:
 
     - name: typecheck
       run: pnpm exec tsc --noEmit
+
+pre-push:
+  jobs:
+    - name: work-scope
+      use_stdin: true
+      run: sh .lefthook/check-work-scope.sh push
 
 commit-msg:
   jobs:
