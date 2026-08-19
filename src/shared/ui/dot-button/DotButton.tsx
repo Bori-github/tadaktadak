@@ -1,6 +1,7 @@
 import { Group, Rect } from '@shopify/react-native-skia';
 
 import { COLORS } from '@/shared/constants';
+import { topLeftOnGrid } from '@/shared/lib';
 
 import { DotSprite } from '@/shared/ui/dot-sprite';
 import { ICONS, type IconName } from './icons';
@@ -10,6 +11,13 @@ const SIZE_IN_DOTS = 28;
 
 /** 리벳이 놓이는 모서리 안쪽 거리 (dot) */
 const RIVET_INSET = 3;
+
+const RIVETS: readonly (readonly [number, number])[] = [
+  [RIVET_INSET, RIVET_INSET],
+  [SIZE_IN_DOTS - 1 - RIVET_INSET, RIVET_INSET],
+  [RIVET_INSET, SIZE_IN_DOTS - 1 - RIVET_INSET],
+  [SIZE_IN_DOTS - 1 - RIVET_INSET, SIZE_IN_DOTS - 1 - RIVET_INSET],
+];
 
 type Cell = { key: string; x: number; y: number; width: number; height: number; color: string };
 
@@ -27,9 +35,10 @@ type DotButtonProps = {
 
 export const DotButton = ({ centerX, centerY, dotSize, icon, enabled = true, pressed = false }: DotButtonProps) => {
   const size = SIZE_IN_DOTS;
-  const left = Math.round(centerX / dotSize - size / 2);
+  const corner = topLeftOnGrid({ centerX, centerY, widthInDots: size, heightInDots: size, dotSize });
+  const left = corner.left;
   // 눌리면 한 도트 내려앉는다
-  const top = Math.round(centerY / dotSize - size / 2) + (pressed ? 1 : 0);
+  const top = corner.top + (pressed ? 1 : 0);
 
   const { highlight } = COLORS.button;
   const edge = enabled ? COLORS.button.edge : COLORS.button.lockedEdge;
@@ -53,14 +62,8 @@ export const DotButton = ({ centerX, centerY, dotSize, icon, enabled = true, pre
     );
   }
 
-  const rivet = size - 1 - RIVET_INSET;
-  for (const [x, y] of [
-    [RIVET_INSET, RIVET_INSET],
-    [rivet, RIVET_INSET],
-    [RIVET_INSET, rivet],
-    [rivet, rivet],
-  ]) {
-    cells.push({ key: `rivet-${x}-${y}`, x: x ?? 0, y: y ?? 0, width: 1, height: 1, color: edge });
+  for (const [x, y] of RIVETS) {
+    cells.push({ key: `rivet-${x}-${y}`, x, y, width: 1, height: 1, color: edge });
   }
 
   return (
