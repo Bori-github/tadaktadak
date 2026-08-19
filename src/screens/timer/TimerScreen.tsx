@@ -2,7 +2,7 @@ import { Canvas, Fill } from '@shopify/react-native-skia';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { TickNumbers } from '@/widgets/dial';
+import { DialItems, TickNumbers } from '@/widgets/dial';
 import { COLORS } from '@/shared/constants';
 import { resolveLayout } from '@/shared/lib';
 
@@ -20,6 +20,7 @@ export function TimerScreen() {
     <View style={styles.root}>
       <Canvas style={StyleSheet.absoluteFill}>
         <Fill color={COLORS.canvas} />
+        <DialItems centerX={width / 2} centerY={layout.dialCenterY} radius={layout.itemRadius} dotSize={layout.dotSize} bonfireDots={layout.bonfireDots} />
         <TickNumbers centerX={width / 2} centerY={layout.dialCenterY} radius={layout.tickNumberRadius} dotSize={layout.dotSize} />
       </Canvas>
     </View>
