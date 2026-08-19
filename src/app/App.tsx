@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { TimerScreen } from '@/screens/timer/TimerScreen';
+import { TimerScreen } from '@/screens/timer';
 
 export default function App() {
   return (
