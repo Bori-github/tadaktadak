@@ -189,6 +189,11 @@ describe('버튼 아래 끝이 safe area 아래 끝을 넘지 않는다', () => 
     const buttonBottomEdge = buttonCenterY + (BUTTON_SIZE_IN_DOTS / 2) * dotSize;
     expect(buttonBottomEdge).toBeLessThanOrEqual(DEVICES[name].bottomEdge);
   });
+
+  it('배율 2에서 하한 클램프에 걸려도 넘지 않는다', () => {
+    const { buttonCenterY, dotSize } = resolveLayout({ shortSide: 744, safeAreaTopEdge: 24, safeAreaBottomEdge: 724 });
+    expect(buttonCenterY + (BUTTON_SIZE_IN_DOTS / 2) * dotSize).toBeLessThanOrEqual(724);
+  });
 });
 
 describe('시계판 위 끝이 safe area 위 끝을 넘지 않는다', () => {

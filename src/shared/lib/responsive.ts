@@ -9,7 +9,7 @@ const TICK_NUMBER_HALF_HEIGHT = 7;
 const ARC_GAP = 13;
 
 const BUTTON_OFFSET_FROM_SAFE_AREA = 150;
-const BUTTON_OFFSET_MIN = 44;
+const BUTTON_BOTTOM_MARGIN_MIN = 16;
 const DIAL_TO_BUTTON_GAP = 90;
 
 type LayoutInput = {
@@ -48,7 +48,9 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }
   const stackHeight = dialTopHalfHeight + dialToButton;
 
   const safeAreaHeight = safeAreaBottomEdge - safeAreaTopEdge;
-  const buttonOffset = Math.min(BUTTON_OFFSET_FROM_SAFE_AREA, Math.max(BUTTON_OFFSET_MIN, safeAreaHeight - stackHeight));
+  // 배율 2에서 버튼 반높이는 56이라 하한을 상수 44로 두면 버튼 아래 끝이 safe area 아래 끝보다 12 낮아진다
+  const buttonOffsetMin = buttonHalfHeight + BUTTON_BOTTOM_MARGIN_MIN;
+  const buttonOffset = Math.min(BUTTON_OFFSET_FROM_SAFE_AREA, Math.max(buttonOffsetMin, safeAreaHeight - stackHeight));
   const buttonCenterY = safeAreaBottomEdge - buttonOffset;
 
   return {
