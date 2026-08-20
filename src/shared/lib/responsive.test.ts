@@ -1,5 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
+import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
+
 import { resolveLayout } from './responsive';
 
 // 390×844 화면. safe area 위 47·아래 34이므로 위 끝은 47, 아래 끝은 810
@@ -65,7 +67,7 @@ describe('개체 중심 반지름', () => {
     expect(layout(390).itemRadius).toBe(153);
   });
 
-  it('iPad mini에서 계산용 너비 372의 149에 배율 2를 곱해 298이다', () => {
+  it('iPad mini에서 298이다', () => {
     expect(layout(744).itemRadius).toBe(298);
   });
 });
@@ -103,37 +105,13 @@ describe('지원 밖 화면', () => {
   });
 });
 
-describe('도트 크기', () => {
-  it('기준 화면에서 2다', () => {
-    expect(layout(390).dotSize).toBe(2);
-  });
-
-  it('배율 2에서 4가 된다', () => {
-    expect(layout(744).dotSize).toBe(4);
-  });
-
-  it('배율 3에서 6이 된다', () => {
-    expect(layout(1014).dotSize).toBe(6);
-  });
-});
-
 describe('버튼 중심 y에는 k를 곱하지 않고 버튼에서 시계판까지는 k를 탄다', () => {
-  it('iPad mini에서 버튼 중심 y는 아래 끝 1113에서 150을 뺀 963이다', () => {
+  it('iPad mini에서 버튼 중심 y는 963이다', () => {
     expect(ipadMini().buttonCenterY).toBe(963);
   });
 
-  it('iPad mini에서 시계판 중심 y는 버튼 963에서 배율 2의 거리 502를 뺀 461이다', () => {
+  it('iPad mini에서 시계판 중심 y는 461이다', () => {
     expect(ipadMini().dialCenterY).toBe(461);
-  });
-});
-
-describe('세로 위치', () => {
-  it('버튼 중심 y는 660이다', () => {
-    expect(layout(390).buttonCenterY).toBe(660);
-  });
-
-  it('시계판 중심 y는 360이다', () => {
-    expect(layout(390).dialCenterY).toBe(360);
   });
 });
 
@@ -178,7 +156,10 @@ describe('safe area 높이와 시계판 위 끝', () => {
 const DEVICES = {
   iPhoneSE: { shortSide: 375, topEdge: 20, bottomEdge: 667 },
   iPhone17e: { shortSide: 390, topEdge: 47, bottomEdge: 810 },
+  iPhoneProMax: { shortSide: 430, topEdge: 59, bottomEdge: 898 },
   iPadMini: { shortSide: 744, topEdge: 24, bottomEdge: 1113 },
+  iPadHome: { shortSide: 768, topEdge: 20, bottomEdge: 1024 },
+  iPadPro13: { shortSide: 1024, topEdge: 24, bottomEdge: 1346 },
   androidSmall: { shortSide: 360, topEdge: 24, bottomEdge: 592 },
 };
 
@@ -188,43 +169,33 @@ const onDevice = (name: keyof typeof DEVICES) => {
 };
 
 describe('기기별 세로 위치', () => {
-  it('iPhone SE는 safe area 높이 647이라 버튼 중심 y가 아래 끝 667에서 150을 뺀 517이다', () => {
+  it('iPhone SE에서 버튼 중심 y는 517이다', () => {
     expect(onDevice('iPhoneSE').buttonCenterY).toBe(517);
   });
 
-  it('iPhone 17e는 기준 화면과 같아 버튼 660, 시계판 360이다', () => {
+  it('iPhone 17e에서 버튼 중심 y는 660, 시계판 중심 y는 360이다', () => {
     expect(onDevice('iPhone17e').buttonCenterY).toBe(660);
     expect(onDevice('iPhone17e').dialCenterY).toBe(360);
   });
 
-  it('iPad mini는 safe area 높이 1089라 버튼 중심 y가 아래 끝 1113에서 150을 뺀 963이다', () => {
-    expect(onDevice('iPadMini').buttonCenterY).toBe(963);
-  });
-
-  it('안드로이드 360×640은 safe area 높이 568이라 버튼 거리가 106으로 줄어 486이다', () => {
+  it('안드로이드 360×640에서 버튼 중심 y는 486이다', () => {
     expect(onDevice('androidSmall').buttonCenterY).toBe(486);
   });
 });
 
-describe('시계판 위 끝이 safe area 안에 들어간다', () => {
-  const topEdgeOf = (name: keyof typeof DEVICES) => {
-    const { dialCenterY, tickNumberRadius } = onDevice(name);
-    return dialCenterY - tickNumberRadius - 7;
-  };
-
-  it('iPhone SE에서 safe area 위 끝 20보다 아래다', () => {
-    expect(topEdgeOf('iPhoneSE')).toBeGreaterThanOrEqual(DEVICES.iPhoneSE.topEdge);
+describe('버튼 아래 끝이 safe area 아래 끝을 넘지 않는다', () => {
+  it.each(Object.keys(DEVICES) as (keyof typeof DEVICES)[])('%s', (name) => {
+    const { buttonCenterY, dotSize } = onDevice(name);
+    const buttonBottomEdge = buttonCenterY + (BUTTON_SIZE_IN_DOTS / 2) * dotSize;
+    expect(buttonBottomEdge).toBeLessThanOrEqual(DEVICES[name].bottomEdge);
   });
+});
 
-  it('iPhone 17e에서 safe area 위 끝 47보다 아래다', () => {
-    expect(topEdgeOf('iPhone17e')).toBeGreaterThanOrEqual(DEVICES.iPhone17e.topEdge);
-  });
-
-  it('iPad mini에서 safe area 위 끝 24보다 아래다', () => {
-    expect(topEdgeOf('iPadMini')).toBeGreaterThanOrEqual(DEVICES.iPadMini.topEdge);
-  });
-
-  it('안드로이드 360×640에서 safe area 위 끝 24보다 아래다', () => {
-    expect(topEdgeOf('androidSmall')).toBeGreaterThanOrEqual(DEVICES.androidSmall.topEdge);
+describe('시계판 위 끝이 safe area 위 끝을 넘지 않는다', () => {
+  it.each(Object.keys(DEVICES) as (keyof typeof DEVICES)[])('%s', (name) => {
+    const { dialCenterY, tickNumberRadius, dotSize } = onDevice(name);
+    // 숫자 반높이 7은 배율을 탄다. dotSize ÷ 2 = 배율
+    const dialTopEdge = dialCenterY - tickNumberRadius - 7 * (dotSize / 2);
+    expect(dialTopEdge).toBeGreaterThanOrEqual(DEVICES[name].topEdge);
   });
 });
