@@ -16,13 +16,16 @@ const RIVETS: readonly (readonly [number, number])[] = [
   [BUTTON_SIZE_IN_DOTS - 1 - RIVET_INSET, BUTTON_SIZE_IN_DOTS - 1 - RIVET_INSET],
 ];
 
+const ICON_COLORS = { I: COLORS.button.icon };
+const LOCKED_ICON_COLORS = { I: COLORS.button.lockedIcon };
+
 type Cell = { key: string; x: number; y: number; width: number; height: number; color: string };
 
 type DotButtonProps = {
   /** 버튼 중심 (px) */
   centerX: number;
   centerY: number;
-  /** 배율 1에서 도트 한 변 (px) */
+  /** 도트 한 변 (px) */
   dotSize: number;
   icon: IconName;
   /** 잠긴 버튼은 면과 아이콘이 어두워지고 하이라이트가 없다 */
@@ -77,7 +80,7 @@ export const DotButton = ({ centerX, centerY, dotSize, icon, enabled = true, pre
         centerX={(left + size / 2) * dotSize}
         centerY={(top + size / 2) * dotSize}
         dotSize={dotSize}
-        colors={{ I: enabled ? COLORS.button.icon : COLORS.button.lockedIcon }}
+        colors={enabled ? ICON_COLORS : LOCKED_ICON_COLORS}
       />
     </Group>
   );

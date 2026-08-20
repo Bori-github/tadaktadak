@@ -1,12 +1,14 @@
 import { describe, expect, it } from '@jest/globals';
 
+import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
+
 import { resolveLayout } from './responsive';
 
 /** 최대 투영 (dot). `DESIGN.md` §4 */
 const PROJECTION = { log: 4, bonfire: 9, marker: 5 };
 
 /** 개체 높이 (dot). `DESIGN.md` §4 */
-const HEIGHT = { bonfire: 9, spark: 7, tickNumber: 7, button: 28 };
+const HEIGHT = { bonfire: 9, spark: 7, tickNumber: 7, button: BUTTON_SIZE_IN_DOTS };
 
 const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: 47, safeAreaBottomEdge: 810 });
 

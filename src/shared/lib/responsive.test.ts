@@ -199,7 +199,7 @@ describe('버튼 아래 끝이 safe area 아래 끝을 넘지 않는다', () => 
 describe('시계판 위 끝이 safe area 위 끝을 넘지 않는다', () => {
   it.each(Object.keys(DEVICES) as (keyof typeof DEVICES)[])('%s', (name) => {
     const { dialCenterY, tickNumberRadius, dotSize } = onDevice(name);
-    // 숫자 반높이 7은 배율을 탄다. dotSize ÷ 2 = 배율
+    // 숫자 반높이 = 7 × 배율. 배율 = dotSize ÷ 2
     const dialTopEdge = dialCenterY - tickNumberRadius - 7 * (dotSize / 2);
     expect(dialTopEdge).toBeGreaterThanOrEqual(DEVICES[name].topEdge);
   });
