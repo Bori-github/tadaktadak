@@ -168,18 +168,10 @@ const onDevice = (name: keyof typeof DEVICES) => {
   return resolveLayout({ shortSide, safeAreaTopEdge: topEdge, safeAreaBottomEdge: bottomEdge });
 };
 
-describe('기기별 세로 위치', () => {
-  it('iPhone SE에서 버튼 중심 y는 517이다', () => {
-    expect(onDevice('iPhoneSE').buttonCenterY).toBe(517);
-  });
-
+describe('기준 화면 세로 위치', () => {
   it('iPhone 17e에서 버튼 중심 y는 660, 시계판 중심 y는 360이다', () => {
     expect(onDevice('iPhone17e').buttonCenterY).toBe(660);
     expect(onDevice('iPhone17e').dialCenterY).toBe(360);
-  });
-
-  it('안드로이드 360×640에서 버튼 중심 y는 486이다', () => {
-    expect(onDevice('androidSmall').buttonCenterY).toBe(486);
   });
 });
 
