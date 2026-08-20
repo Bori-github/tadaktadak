@@ -341,7 +341,7 @@ hHHHHHh     .hHHHh.     kKKKKKk
 
 ## 7. Responsive Behavior
 
-브레이크포인트가 없다. **정수 배율만 쓴다.**
+브레이크포인트가 없다. **정수 배율만 쓴다.** 화면은 세로 전용이다 — iPad도 `requireFullScreen`으로 가로와 Split View를 열지 않는다.
 
 ### 확정값 네 개
 
