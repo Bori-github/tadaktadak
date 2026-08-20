@@ -48,8 +48,6 @@ export const DotButton = ({ centerX, centerY, dotSize, icon, enabled = true, pre
     { key: 'edge-bottom', x: 0, y: size - 1, width: size, height: 1, color: edge },
     { key: 'edge-left', x: 0, y: 0, width: 1, height: size, color: edge },
     { key: 'edge-right', x: size - 1, y: 0, width: 1, height: size, color: edge },
-    { key: 'shadow-bottom', x: 1, y: size - 2, width: size - 2, height: 1, color: shadow },
-    { key: 'shadow-right', x: size - 2, y: 1, width: 1, height: size - 2, color: shadow },
   ];
 
   if (enabled && !pressed) {
@@ -58,6 +56,12 @@ export const DotButton = ({ centerX, centerY, dotSize, icon, enabled = true, pre
       { key: 'highlight-left', x: 1, y: 1, width: 1, height: size - 2, color: highlight },
     );
   }
+
+  // 그림자를 하이라이트보다 나중에 그린다. 두 칸 (1, size-2)와 (size-2, 1)에서 겹치는데, 시안은 그림자 색이다
+  cells.push(
+    { key: 'shadow-bottom', x: 1, y: size - 2, width: size - 2, height: 1, color: shadow },
+    { key: 'shadow-right', x: size - 2, y: 1, width: 1, height: size - 2, color: shadow },
+  );
 
   for (const [x, y] of RIVETS) {
     cells.push({ key: `rivet-${x}-${y}`, x, y, width: 1, height: 1, color: edge });
