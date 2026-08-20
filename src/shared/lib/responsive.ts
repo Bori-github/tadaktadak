@@ -43,11 +43,12 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }
   const dialTopHalfHeight = (tickNumberRadius + TICK_NUMBER_HALF_HEIGHT) * scale;
   const buttonHalfHeight = (BUTTON_SIZE_IN_DOTS / 2) * DOT_SIZE * scale;
   // 배율이 올라도 이 여백이 지켜지도록 거리를 늘린다. 배율 1에서 182 + 90 + 28 = 300
-  const dialOffset = dialTopHalfHeight + DIAL_TO_BUTTON_GAP + buttonHalfHeight;
+  const dialToButton = dialTopHalfHeight + DIAL_TO_BUTTON_GAP + buttonHalfHeight;
+  // 시계판 위 끝부터 버튼 중심까지
+  const stackHeight = dialTopHalfHeight + dialToButton;
 
   const safeAreaHeight = safeAreaBottomEdge - safeAreaTopEdge;
-  const roomAboveDial = safeAreaHeight - dialTopHalfHeight - dialOffset;
-  const buttonOffset = Math.min(BUTTON_OFFSET_FROM_SAFE_AREA, Math.max(BUTTON_OFFSET_MIN, roomAboveDial));
+  const buttonOffset = Math.min(BUTTON_OFFSET_FROM_SAFE_AREA, Math.max(BUTTON_OFFSET_MIN, safeAreaHeight - stackHeight));
   const buttonCenterY = safeAreaBottomEdge - buttonOffset;
 
   return {
@@ -58,6 +59,6 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }
     arcRadius: arcRadius * scale,
     tickNumberRadius: tickNumberRadius * scale,
     buttonCenterY,
-    dialCenterY: buttonCenterY - dialOffset,
+    dialCenterY: buttonCenterY - dialToButton,
   };
 };
