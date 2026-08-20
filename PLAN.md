@@ -81,15 +81,15 @@ Expo SDK 57 기준. `npx expo install`이 SDK에 맞는 버전을 고른다.
 
 | 패키지                                      | 버전    | 역할                                   | Expo Go               |
 | ------------------------------------------- | ------- | -------------------------------------- | --------------------- |
-| `expo`                                      | 57.0.14 | SDK                                    | —                     |
+| `expo`                                      | 57.0.15 | SDK                                    | —                     |
 | `@shopify/react-native-skia`                | 2.6.2   | 렌더링                                 | 포함됨                |
 | `react-native-reanimated`                   | 4.5.1   | 애니메이션                             | 포함됨                |
 | `react-native-gesture-handler`              | 2.32.0  | 제스처                                 | 포함됨                |
 | `expo-haptics`                              | 57.0.1  | 진동                                   | 포함됨                |
-| `expo-audio`                                | 57.0.3  | 소리와 오디오 세션                     | 포함됨                |
+| `expo-audio`                                | 57.0.4  | 소리와 오디오 세션                     | 포함됨                |
 | `expo-keep-awake`                           | 57.0.1  | 화면 꺼짐 방지                         | 포함됨                |
 | `@react-native-async-storage/async-storage` | 2.2.0   | 영속 저장                              | 포함됨                |
-| `expo-notifications` 로컬 알림              | 57.0.12 | 종료 알림                              | 사용 가능             |
+| `expo-notifications` 로컬 알림              | 57.0.13 | 종료 알림                              | 사용 가능             |
 | Widget Extension (SwiftUI)                  | —       | Live Activity                          | **불가능. 개발 빌드** |
 | ActivityKit 브리지 (Expo 로컬 모듈)         | —       | Live Activity 시작·종료, 정지됨 플래그 | **불가능. 개발 빌드** |
 
