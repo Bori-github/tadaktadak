@@ -1,4 +1,4 @@
-import { BONFIRE_TALL_WIDTH, DOT_SIZE, MIN_WIDTH } from '@/shared/constants';
+import { BONFIRE_TALL_WIDTH, BUTTON_SIZE_IN_DOTS, DOT_SIZE, MIN_WIDTH } from '@/shared/constants';
 
 const EDGE_MARGIN = 8;
 const TICK_NUMBER_MARGIN = 20;
@@ -9,8 +9,8 @@ const TICK_NUMBER_HALF_HEIGHT = 7;
 const ARC_GAP = 13;
 
 const BUTTON_OFFSET_FROM_SAFE_AREA = 150;
-const BUTTON_OFFSET_MIN = 44;
-const DIAL_OFFSET_FROM_BUTTON = 300;
+const BUTTON_BOTTOM_MARGIN_MIN = 16;
+const DIAL_TO_BUTTON_GAP = 90;
 
 type LayoutInput = {
   shortSide: number;
@@ -41,9 +41,16 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }
   const tickNumberRadius = itemRadius + bonfireHalfHeight + TICK_NUMBER_GAP + TICK_NUMBER_HALF_HEIGHT;
 
   const dialTopHalfHeight = (tickNumberRadius + TICK_NUMBER_HALF_HEIGHT) * scale;
+  const buttonHalfHeight = (BUTTON_SIZE_IN_DOTS / 2) * DOT_SIZE * scale;
+  // 배율이 달라져도 시계판-버튼 여백 90px 유지. 배율 1에서 182 + 90 + 28 = 300px
+  const dialToButton = dialTopHalfHeight + DIAL_TO_BUTTON_GAP + buttonHalfHeight;
+  // 시계판 위 끝부터 버튼 중심까지
+  const stackHeight = dialTopHalfHeight + dialToButton;
+
   const safeAreaHeight = safeAreaBottomEdge - safeAreaTopEdge;
-  const roomAboveDial = safeAreaHeight - dialTopHalfHeight - DIAL_OFFSET_FROM_BUTTON;
-  const buttonOffset = Math.min(BUTTON_OFFSET_FROM_SAFE_AREA, Math.max(BUTTON_OFFSET_MIN, roomAboveDial));
+  // 배율이 달라져도 버튼 아래 여백 16px 유지. 배율 1에서 28 + 16 = 44px
+  const buttonOffsetMin = buttonHalfHeight + BUTTON_BOTTOM_MARGIN_MIN;
+  const buttonOffset = Math.min(BUTTON_OFFSET_FROM_SAFE_AREA, Math.max(buttonOffsetMin, safeAreaHeight - stackHeight));
   const buttonCenterY = safeAreaBottomEdge - buttonOffset;
 
   return {
@@ -54,6 +61,6 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }
     arcRadius: arcRadius * scale,
     tickNumberRadius: tickNumberRadius * scale,
     buttonCenterY,
-    dialCenterY: buttonCenterY - DIAL_OFFSET_FROM_BUTTON,
+    dialCenterY: buttonCenterY - dialToButton,
   };
 };

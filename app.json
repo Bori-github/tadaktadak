@@ -9,7 +9,8 @@
     "backgroundColor": "#141021",
     "ios": {
       "bundleIdentifier": "com.boriguri.tadaktadak",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "requireFullScreen": true
     },
     "android": {
       "package": "com.boriguri.tadaktadak",

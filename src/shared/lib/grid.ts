@@ -4,7 +4,7 @@ type GridPlacement = {
   centerY: number;
   widthInDots: number;
   heightInDots: number;
-  /** 배율 1에서 도트 한 변 (px) */
+  /** 도트 한 변 (px) */
   dotSize: number;
 };
 

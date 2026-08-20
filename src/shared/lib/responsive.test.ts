@@ -1,5 +1,8 @@
 import { describe, expect, it } from '@jest/globals';
 
+import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
+
+import { DEVICES, type DeviceName } from './devices';
 import { resolveLayout } from './responsive';
 
 // 390×844 화면. safe area 위 47·아래 34이므로 위 끝은 47, 아래 끝은 810
@@ -11,7 +14,7 @@ const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge
 // iPad mini 744×1133. safe area 위 24·아래 20
 const ipadMini = () => resolveLayout({ shortSide: 744, safeAreaTopEdge: 24, safeAreaBottomEdge: 1113 });
 
-// 위 끝을 0으로 두면 safe area 높이가 그대로 아래 끝 좌표가 된다
+// 위 끝을 0으로 두면 safe area 높이가 그대로 아래 끝 좌표가 됨
 const buttonOffset = (safeAreaHeight: number) => safeAreaHeight - resolveLayout({ shortSide: 390, safeAreaTopEdge: 0, safeAreaBottomEdge: safeAreaHeight }).buttonCenterY;
 
 const dialTopEdge = (safeAreaHeight: number) => resolveLayout({ shortSide: 390, safeAreaTopEdge: 0, safeAreaBottomEdge: safeAreaHeight }).dialCenterY - 182;
@@ -65,7 +68,7 @@ describe('개체 중심 반지름', () => {
     expect(layout(390).itemRadius).toBe(153);
   });
 
-  it('iPad mini에서 계산용 너비 372의 149에 배율 2를 곱해 298이다', () => {
+  it('iPad mini에서 298이다', () => {
     expect(layout(744).itemRadius).toBe(298);
   });
 });
@@ -103,41 +106,17 @@ describe('지원 밖 화면', () => {
   });
 });
 
-describe('도트 크기', () => {
-  it('기준 화면에서 2다', () => {
-    expect(layout(390).dotSize).toBe(2);
-  });
-
-  it('배율 2에서 4가 된다', () => {
-    expect(layout(744).dotSize).toBe(4);
-  });
-
-  it('배율 3에서 6이 된다', () => {
-    expect(layout(1014).dotSize).toBe(6);
-  });
-});
-
-describe('세로 위치에는 k를 곱하지 않는다', () => {
-  it('iPad mini에서 버튼 중심 y는 아래 끝 1113에서 150을 뺀 963이다', () => {
+describe('버튼 중심 y에는 k를 곱하지 않고 버튼에서 시계판까지는 k를 탄다', () => {
+  it('iPad mini에서 버튼 중심 y는 963이다', () => {
     expect(ipadMini().buttonCenterY).toBe(963);
   });
 
-  it('iPad mini에서 시계판 중심 y는 버튼 963에서 300을 뺀 663이다', () => {
-    expect(ipadMini().dialCenterY).toBe(663);
+  it('iPad mini에서 시계판 중심 y는 461이다', () => {
+    expect(ipadMini().dialCenterY).toBe(461);
   });
 });
 
-describe('세로 위치', () => {
-  it('버튼 중심 y는 660이다', () => {
-    expect(layout(390).buttonCenterY).toBe(660);
-  });
-
-  it('시계판 중심 y는 360이다', () => {
-    expect(layout(390).dialCenterY).toBe(360);
-  });
-});
-
-describe('safe area 높이와 버튼 띄움', () => {
+describe('safe area 높이와 버튼 거리', () => {
   it('632에서 기준값 150을 지킨다', () => {
     expect(buttonOffset(632)).toBe(150);
   });
@@ -171,5 +150,39 @@ describe('safe area 높이와 시계판 위 끝', () => {
 
   it('500에서는 safe area 위 끝을 넘어 잘린다', () => {
     expect(dialTopEdge(500)).toBeLessThan(0);
+  });
+});
+
+const onDevice = (name: DeviceName) => {
+  const { shortSide, topEdge, bottomEdge } = DEVICES[name];
+  return resolveLayout({ shortSide, safeAreaTopEdge: topEdge, safeAreaBottomEdge: bottomEdge });
+};
+
+describe('기준 화면 세로 위치', () => {
+  it('iPhone 17e에서 버튼 중심 y는 660, 시계판 중심 y는 360이다', () => {
+    expect(onDevice('iPhone17e').buttonCenterY).toBe(660);
+    expect(onDevice('iPhone17e').dialCenterY).toBe(360);
+  });
+});
+
+describe('버튼 아래 끝이 safe area 아래 끝을 넘지 않는다', () => {
+  it.each(Object.keys(DEVICES) as DeviceName[])('%s', (name) => {
+    const { buttonCenterY, dotSize } = onDevice(name);
+    const buttonBottomEdge = buttonCenterY + (BUTTON_SIZE_IN_DOTS / 2) * dotSize;
+    expect(buttonBottomEdge).toBeLessThanOrEqual(DEVICES[name].bottomEdge);
+  });
+
+  it('배율 2에서 하한 클램프에 걸려도 넘지 않는다', () => {
+    const { buttonCenterY, dotSize } = resolveLayout({ shortSide: 744, safeAreaTopEdge: 24, safeAreaBottomEdge: 724 });
+    expect(buttonCenterY + (BUTTON_SIZE_IN_DOTS / 2) * dotSize).toBeLessThanOrEqual(724);
+  });
+});
+
+describe('시계판 위 끝이 safe area 위 끝을 넘지 않는다', () => {
+  it.each(Object.keys(DEVICES) as DeviceName[])('%s', (name) => {
+    const { dialCenterY, tickNumberRadius, dotSize } = onDevice(name);
+    // 숫자 반높이 = 7 × 배율 (px). 배율 = dotSize ÷ 2
+    const dialTopEdge = dialCenterY - tickNumberRadius - 7 * (dotSize / 2);
+    expect(dialTopEdge).toBeGreaterThanOrEqual(DEVICES[name].topEdge);
   });
 });

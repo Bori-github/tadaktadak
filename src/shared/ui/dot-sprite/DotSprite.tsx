@@ -9,12 +9,13 @@ type DotSpriteProps = {
   /** 시계판 좌표계의 중심 (px) */
   centerX: number;
   centerY: number;
-  /** 배율 1에서 도트 한 변 (px) */
+  /** 도트 한 변 (px) */
   dotSize: number;
+  colors?: Record<string, string | undefined>;
   opacity?: number;
 };
 
-export const DotSprite = ({ grid, centerX, centerY, dotSize, opacity = 1 }: DotSpriteProps) => {
+export const DotSprite = ({ grid, centerX, centerY, dotSize, colors = SPRITE_COLORS, opacity = 1 }: DotSpriteProps) => {
   const width = grid[0]?.length ?? 0;
 
   const { left, top } = topLeftOnGrid({ centerX, centerY, widthInDots: width, heightInDots: grid.length, dotSize });
@@ -22,7 +23,7 @@ export const DotSprite = ({ grid, centerX, centerY, dotSize, opacity = 1 }: DotS
   const dots = [];
   for (const [row, line] of grid.entries()) {
     for (let column = 0; column < width; column++) {
-      const color = SPRITE_COLORS[line[column] ?? ''];
+      const color = colors[line[column] ?? ''];
       if (!color) continue;
       dots.push({
         key: `${row}-${column}`,
