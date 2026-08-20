@@ -2,6 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 
 import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
 
+import { DEVICES, type DeviceName } from './devices';
 import { resolveLayout } from './responsive';
 
 // 390×844 화면. safe area 위 47·아래 34이므로 위 끝은 47, 아래 끝은 810
@@ -152,18 +153,7 @@ describe('safe area 높이와 시계판 위 끝', () => {
   });
 });
 
-// 실제 기기의 safe area. 짧은 변, 위 끝, 아래 끝
-const DEVICES = {
-  iPhoneSE: { shortSide: 375, topEdge: 20, bottomEdge: 667 },
-  iPhone17e: { shortSide: 390, topEdge: 47, bottomEdge: 810 },
-  iPhoneProMax: { shortSide: 430, topEdge: 59, bottomEdge: 898 },
-  iPadMini: { shortSide: 744, topEdge: 24, bottomEdge: 1113 },
-  iPadHome: { shortSide: 768, topEdge: 20, bottomEdge: 1024 },
-  iPadPro13: { shortSide: 1024, topEdge: 24, bottomEdge: 1346 },
-  androidSmall: { shortSide: 360, topEdge: 24, bottomEdge: 592 },
-};
-
-const onDevice = (name: keyof typeof DEVICES) => {
+const onDevice = (name: DeviceName) => {
   const { shortSide, topEdge, bottomEdge } = DEVICES[name];
   return resolveLayout({ shortSide, safeAreaTopEdge: topEdge, safeAreaBottomEdge: bottomEdge });
 };
@@ -176,7 +166,7 @@ describe('기준 화면 세로 위치', () => {
 });
 
 describe('버튼 아래 끝이 safe area 아래 끝을 넘지 않는다', () => {
-  it.each(Object.keys(DEVICES) as (keyof typeof DEVICES)[])('%s', (name) => {
+  it.each(Object.keys(DEVICES) as DeviceName[])('%s', (name) => {
     const { buttonCenterY, dotSize } = onDevice(name);
     const buttonBottomEdge = buttonCenterY + (BUTTON_SIZE_IN_DOTS / 2) * dotSize;
     expect(buttonBottomEdge).toBeLessThanOrEqual(DEVICES[name].bottomEdge);
@@ -189,7 +179,7 @@ describe('버튼 아래 끝이 safe area 아래 끝을 넘지 않는다', () => 
 });
 
 describe('시계판 위 끝이 safe area 위 끝을 넘지 않는다', () => {
-  it.each(Object.keys(DEVICES) as (keyof typeof DEVICES)[])('%s', (name) => {
+  it.each(Object.keys(DEVICES) as DeviceName[])('%s', (name) => {
     const { dialCenterY, tickNumberRadius, dotSize } = onDevice(name);
     // 숫자 반높이 = 7 × 배율. 배율 = dotSize ÷ 2
     const dialTopEdge = dialCenterY - tickNumberRadius - 7 * (dotSize / 2);

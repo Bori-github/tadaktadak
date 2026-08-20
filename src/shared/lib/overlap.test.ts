@@ -2,6 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 
 import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
 
+import { DEVICES, type DeviceName } from './devices';
 import { resolveLayout } from './responsive';
 
 /** 최대 투영 (dot). `DESIGN.md` §4 */
@@ -92,16 +93,21 @@ describe('시계판 아래 끝과 버튼 위 끝은 배율과 무관하게 90 �
     return buttonTop - tickOuter;
   };
 
-  it('기준 화면 390에서 90이다', () => {
-    expect(gapOn(390, 47, 810)).toBe(90);
+  const gapOnDevice = (name: DeviceName) => {
+    const { shortSide, topEdge, bottomEdge } = DEVICES[name];
+    return gapOn(shortSide, topEdge, bottomEdge);
+  };
+
+  it('기준 화면 iPhone 17e에서 90이다', () => {
+    expect(gapOnDevice('iPhone17e')).toBe(90);
   });
 
-  it('시계판이 작은 iPhone SE 375에서도 90이다', () => {
-    expect(gapOn(375, 20, 667)).toBe(90);
+  it('시계판이 작은 iPhone SE에서도 90이다', () => {
+    expect(gapOnDevice('iPhoneSE')).toBe(90);
   });
 
-  it('시계판 위 반높이가 356으로 커지는 iPad mini 744에서도 90이다', () => {
-    expect(gapOn(744, 24, 1113)).toBe(90);
+  it('시계판 위 반높이가 356으로 커지는 iPad mini에서도 90이다', () => {
+    expect(gapOnDevice('iPadMini')).toBe(90);
   });
 
   it('배율 3인 짧은 변 1014에서도 90이다', () => {
