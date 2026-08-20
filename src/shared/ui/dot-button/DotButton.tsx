@@ -1,22 +1,19 @@
 import { Group, Rect } from '@shopify/react-native-skia';
 
-import { COLORS } from '@/shared/constants';
+import { BUTTON_SIZE_IN_DOTS, COLORS } from '@/shared/constants';
 import { topLeftOnGrid } from '@/shared/lib';
 
 import { DotSprite } from '@/shared/ui/dot-sprite';
 import { ICONS, type IconName } from './icons';
-
-/** 버튼 한 변 (dot). `DESIGN.md` §4 */
-const SIZE_IN_DOTS = 28;
 
 /** 리벳이 놓이는 모서리 안쪽 거리 (dot) */
 const RIVET_INSET = 3;
 
 const RIVETS: readonly (readonly [number, number])[] = [
   [RIVET_INSET, RIVET_INSET],
-  [SIZE_IN_DOTS - 1 - RIVET_INSET, RIVET_INSET],
-  [RIVET_INSET, SIZE_IN_DOTS - 1 - RIVET_INSET],
-  [SIZE_IN_DOTS - 1 - RIVET_INSET, SIZE_IN_DOTS - 1 - RIVET_INSET],
+  [BUTTON_SIZE_IN_DOTS - 1 - RIVET_INSET, RIVET_INSET],
+  [RIVET_INSET, BUTTON_SIZE_IN_DOTS - 1 - RIVET_INSET],
+  [BUTTON_SIZE_IN_DOTS - 1 - RIVET_INSET, BUTTON_SIZE_IN_DOTS - 1 - RIVET_INSET],
 ];
 
 type Cell = { key: string; x: number; y: number; width: number; height: number; color: string };
@@ -34,7 +31,7 @@ type DotButtonProps = {
 };
 
 export const DotButton = ({ centerX, centerY, dotSize, icon, enabled = true, pressed = false }: DotButtonProps) => {
-  const size = SIZE_IN_DOTS;
+  const size = BUTTON_SIZE_IN_DOTS;
   const corner = topLeftOnGrid({ centerX, centerY, widthInDots: size, heightInDots: size, dotSize });
   const left = corner.left;
   // 눌리면 한 도트 내려앉는다
