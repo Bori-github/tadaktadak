@@ -9,7 +9,7 @@ type DotSpriteProps = {
   /** 시계판 좌표계의 중심 (px) */
   centerX: number;
   centerY: number;
-  /** 배율 1에서 도트 한 변 (px) */
+  /** 도트 한 변 (px) */
   dotSize: number;
   colors?: Record<string, string | undefined>;
   opacity?: number;

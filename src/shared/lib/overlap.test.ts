@@ -13,7 +13,7 @@ const HEIGHT = { bonfire: 9, spark: 7, tickNumber: 7, button: BUTTON_SIZE_IN_DOT
 
 const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: 47, safeAreaBottomEdge: 810 });
 
-/** 배율 1로 되돌린 반지름. 도트 셈은 화면 좌표가 아니라 이 값으로 한다 */
+/** 화면 반지름에서 배율을 나눈 값 (px). 도트 수는 배율과 무관하므로 도트 단위 검산은 이 값으로 계산 */
 const baseItemRadius = (shortSide: number) => {
   const { itemRadius, scale } = layout(shortSide);
   return itemRadius / scale;

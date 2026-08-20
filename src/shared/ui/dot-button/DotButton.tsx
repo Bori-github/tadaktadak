@@ -28,7 +28,7 @@ type DotButtonProps = {
   /** 도트 한 변 (px) */
   dotSize: number;
   icon: IconName;
-  /** 잠긴 버튼은 면과 아이콘이 어두워지고 하이라이트가 없다 */
+  /** 잠긴 버튼은 면과 아이콘이 어두워지고 하이라이트 없음 */
   enabled?: boolean;
   pressed?: boolean;
 };
@@ -37,7 +37,7 @@ export const DotButton = ({ centerX, centerY, dotSize, icon, enabled = true, pre
   const size = BUTTON_SIZE_IN_DOTS;
   const corner = topLeftOnGrid({ centerX, centerY, widthInDots: size, heightInDots: size, dotSize });
   const left = corner.left;
-  // 눌리면 한 도트 내려앉는다
+  // 눌리면 한 도트 내려앉음
   const top = corner.top + (pressed ? 1 : 0);
 
   const { highlight } = COLORS.button;
@@ -60,7 +60,7 @@ export const DotButton = ({ centerX, centerY, dotSize, icon, enabled = true, pre
     );
   }
 
-  // 그림자를 하이라이트보다 나중에 그린다. 두 칸 (1, size-2)와 (size-2, 1)에서 겹치는데, 시안은 그림자 색이다
+  // 그림자는 하이라이트보다 나중에 그림. 겹치는 도트 두 칸 (1, size-2)·(size-2, 1)은 시안이 그림자 색
   cells.push(
     { key: 'shadow-bottom', x: 1, y: size - 2, width: size - 2, height: 1, color: shadow },
     { key: 'shadow-right', x: size - 2, y: 1, width: 1, height: size - 2, color: shadow },

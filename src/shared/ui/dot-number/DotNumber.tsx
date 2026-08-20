@@ -10,7 +10,7 @@ type DotNumberProps = {
   centerX: number;
   centerY: number;
   color: string;
-  /** 배율 1에서 도트 한 변 (px) */
+  /** 도트 한 변 (px) */
   dotSize: number;
   glyphScale?: number;
   opacity?: number;

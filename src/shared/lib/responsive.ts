@@ -42,13 +42,13 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }
 
   const dialTopHalfHeight = (tickNumberRadius + TICK_NUMBER_HALF_HEIGHT) * scale;
   const buttonHalfHeight = (BUTTON_SIZE_IN_DOTS / 2) * DOT_SIZE * scale;
-  // 배율이 올라도 이 여백이 지켜지도록 거리를 늘린다. 배율 1에서 182 + 90 + 28 = 300
+  // 배율이 달라져도 시계판-버튼 여백 90px 유지. 배율 1에서 182 + 90 + 28 = 300px
   const dialToButton = dialTopHalfHeight + DIAL_TO_BUTTON_GAP + buttonHalfHeight;
   // 시계판 위 끝부터 버튼 중심까지
   const stackHeight = dialTopHalfHeight + dialToButton;
 
   const safeAreaHeight = safeAreaBottomEdge - safeAreaTopEdge;
-  // 배율 2에서 버튼 반높이는 56이라 하한을 상수 44로 두면 버튼 아래 끝이 safe area 아래 끝보다 12 낮아진다
+  // 배율이 달라져도 버튼 아래 여백 16px 유지. 배율 1에서 28 + 16 = 44px
   const buttonOffsetMin = buttonHalfHeight + BUTTON_BOTTOM_MARGIN_MIN;
   const buttonOffset = Math.min(BUTTON_OFFSET_FROM_SAFE_AREA, Math.max(buttonOffsetMin, safeAreaHeight - stackHeight));
   const buttonCenterY = safeAreaBottomEdge - buttonOffset;

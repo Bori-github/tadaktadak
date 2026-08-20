@@ -14,7 +14,7 @@ const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge
 // iPad mini 744×1133. safe area 위 24·아래 20
 const ipadMini = () => resolveLayout({ shortSide: 744, safeAreaTopEdge: 24, safeAreaBottomEdge: 1113 });
 
-// 위 끝을 0으로 두면 safe area 높이가 그대로 아래 끝 좌표가 된다
+// 위 끝을 0으로 두면 safe area 높이가 그대로 아래 끝 좌표가 됨
 const buttonOffset = (safeAreaHeight: number) => safeAreaHeight - resolveLayout({ shortSide: 390, safeAreaTopEdge: 0, safeAreaBottomEdge: safeAreaHeight }).buttonCenterY;
 
 const dialTopEdge = (safeAreaHeight: number) => resolveLayout({ shortSide: 390, safeAreaTopEdge: 0, safeAreaBottomEdge: safeAreaHeight }).dialCenterY - 182;
@@ -181,7 +181,7 @@ describe('버튼 아래 끝이 safe area 아래 끝을 넘지 않는다', () => 
 describe('시계판 위 끝이 safe area 위 끝을 넘지 않는다', () => {
   it.each(Object.keys(DEVICES) as DeviceName[])('%s', (name) => {
     const { dialCenterY, tickNumberRadius, dotSize } = onDevice(name);
-    // 숫자 반높이 = 7 × 배율. 배율 = dotSize ÷ 2
+    // 숫자 반높이 = 7 × 배율 (px). 배율 = dotSize ÷ 2
     const dialTopEdge = dialCenterY - tickNumberRadius - 7 * (dotSize / 2);
     expect(dialTopEdge).toBeGreaterThanOrEqual(DEVICES[name].topEdge);
   });
