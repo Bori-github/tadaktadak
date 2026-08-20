@@ -117,13 +117,13 @@ describe('도트 크기', () => {
   });
 });
 
-describe('세로 위치에는 k를 곱하지 않는다', () => {
+describe('버튼 중심 y에는 k를 곱하지 않고 버튼에서 시계판까지는 k를 탄다', () => {
   it('iPad mini에서 버튼 중심 y는 아래 끝 1113에서 150을 뺀 963이다', () => {
     expect(ipadMini().buttonCenterY).toBe(963);
   });
 
-  it('iPad mini에서 시계판 중심 y는 버튼 963에서 300을 뺀 663이다', () => {
-    expect(ipadMini().dialCenterY).toBe(663);
+  it('iPad mini에서 시계판 중심 y는 버튼 963에서 배율 2의 거리 502를 뺀 461이다', () => {
+    expect(ipadMini().dialCenterY).toBe(461);
   });
 });
 
@@ -137,7 +137,7 @@ describe('세로 위치', () => {
   });
 });
 
-describe('safe area 높이와 버튼 띄움', () => {
+describe('safe area 높이와 버튼 거리', () => {
   it('632에서 기준값 150을 지킨다', () => {
     expect(buttonOffset(632)).toBe(150);
   });
@@ -201,8 +201,8 @@ describe('기기별 세로 위치', () => {
     expect(onDevice('iPadMini').buttonCenterY).toBe(963);
   });
 
-  it('안드로이드 360×640은 safe area 높이 568이라 띄움이 96으로 줄어 496이다', () => {
-    expect(onDevice('androidSmall').buttonCenterY).toBe(496);
+  it('안드로이드 360×640은 safe area 높이 568이라 버튼 거리가 106으로 줄어 486이다', () => {
+    expect(onDevice('androidSmall').buttonCenterY).toBe(486);
   });
 });
 

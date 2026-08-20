@@ -81,3 +81,32 @@ describe('기준 화면의 반지름 방향 간격', () => {
     expect(810 - (buttonCenterY + half(HEIGHT.button))).toBe(122);
   });
 });
+
+describe('시계판 아래 끝과 버튼 위 끝은 배율과 무관하게 90 떨어진다', () => {
+  const gapOn = (shortSide: number, top: number, bottom: number) => {
+    const l = resolveLayout({ shortSide, safeAreaTopEdge: top, safeAreaBottomEdge: bottom });
+    const tickOuter = l.dialCenterY + l.tickNumberRadius + HEIGHT.tickNumber * 0.5 * l.dotSize;
+    const buttonTop = l.buttonCenterY - (HEIGHT.button * l.dotSize) / 2;
+    return buttonTop - tickOuter;
+  };
+
+  it('기준 화면 390에서 90이다', () => {
+    expect(gapOn(390, 47, 810)).toBe(90);
+  });
+
+  it('시계판이 작은 iPhone SE 375에서도 90이다', () => {
+    expect(gapOn(375, 20, 667)).toBe(90);
+  });
+
+  it('시계판 위 반높이가 356으로 커지는 iPad mini 744에서도 90이다', () => {
+    expect(gapOn(744, 24, 1113)).toBe(90);
+  });
+
+  it('배율 3인 짧은 변 1014에서도 90이다', () => {
+    expect(gapOn(1014, 24, 1300)).toBe(90);
+  });
+
+  it('safe area 높이 500이라 버튼 거리가 하한 44로 클램프돼도 90이다', () => {
+    expect(gapOn(390, 0, 500)).toBe(90);
+  });
+});

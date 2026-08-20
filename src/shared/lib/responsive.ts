@@ -1,4 +1,4 @@
-import { BONFIRE_TALL_WIDTH, DOT_SIZE, MIN_WIDTH } from '@/shared/constants';
+import { BONFIRE_TALL_WIDTH, BUTTON_SIZE_IN_DOTS, DOT_SIZE, MIN_WIDTH } from '@/shared/constants';
 
 const EDGE_MARGIN = 8;
 const TICK_NUMBER_MARGIN = 20;
@@ -10,7 +10,7 @@ const ARC_GAP = 13;
 
 const BUTTON_OFFSET_FROM_SAFE_AREA = 150;
 const BUTTON_OFFSET_MIN = 44;
-const DIAL_OFFSET_FROM_BUTTON = 300;
+const DIAL_TO_BUTTON_GAP = 90;
 
 type LayoutInput = {
   shortSide: number;
@@ -41,8 +41,12 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }
   const tickNumberRadius = itemRadius + bonfireHalfHeight + TICK_NUMBER_GAP + TICK_NUMBER_HALF_HEIGHT;
 
   const dialTopHalfHeight = (tickNumberRadius + TICK_NUMBER_HALF_HEIGHT) * scale;
+  const buttonHalfHeight = (BUTTON_SIZE_IN_DOTS / 2) * DOT_SIZE * scale;
+  // 배율이 올라도 이 여백이 지켜지도록 거리를 늘린다. 배율 1에서 182 + 90 + 28 = 300
+  const dialOffset = dialTopHalfHeight + DIAL_TO_BUTTON_GAP + buttonHalfHeight;
+
   const safeAreaHeight = safeAreaBottomEdge - safeAreaTopEdge;
-  const roomAboveDial = safeAreaHeight - dialTopHalfHeight - DIAL_OFFSET_FROM_BUTTON;
+  const roomAboveDial = safeAreaHeight - dialTopHalfHeight - dialOffset;
   const buttonOffset = Math.min(BUTTON_OFFSET_FROM_SAFE_AREA, Math.max(BUTTON_OFFSET_MIN, roomAboveDial));
   const buttonCenterY = safeAreaBottomEdge - buttonOffset;
 
@@ -54,6 +58,6 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }
     arcRadius: arcRadius * scale,
     tickNumberRadius: tickNumberRadius * scale,
     buttonCenterY,
-    dialCenterY: buttonCenterY - DIAL_OFFSET_FROM_BUTTON,
+    dialCenterY: buttonCenterY - dialOffset,
   };
 };
