@@ -5,8 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Controls } from '@/widgets/controls';
 import { DialArc, DialHandle, DialItems, DialReadout, ReadoutButtons, TickNumbers } from '@/widgets/dial';
-import { TIMER_DEFAULT } from '@/entities/timer';
-import { type TimerMode } from '@/entities/timer';
+import { TIMER_DEFAULT, type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 import { resolveLayout } from '@/shared/lib';
 
