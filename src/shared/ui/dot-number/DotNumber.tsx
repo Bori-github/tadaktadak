@@ -2,7 +2,7 @@ import { Group, Rect } from '@shopify/react-native-skia';
 
 import { topLeftOnGrid } from '@/shared/lib';
 
-import { GLYPH, GLYPH_GAP, GLYPH_HEIGHT, GLYPH_WIDTH } from './glyph';
+import { GLYPH, GLYPH_GAP, GLYPH_WIDTH, dotNumberSize } from './glyph';
 
 type DotNumberProps = {
   text: string;
@@ -18,15 +18,9 @@ type DotNumberProps = {
 
 export const DotNumber = ({ text, centerX, centerY, color, dotSize, glyphScale = 1, opacity = 1 }: DotNumberProps) => {
   const advance = GLYPH_WIDTH + GLYPH_GAP;
-  const widthInDots = (text.length * advance - GLYPH_GAP) * glyphScale;
+  const { widthInDots, heightInDots } = dotNumberSize(text, glyphScale);
 
-  const { left, top } = topLeftOnGrid({
-    centerX,
-    centerY,
-    widthInDots,
-    heightInDots: GLYPH_HEIGHT * glyphScale,
-    dotSize,
-  });
+  const { left, top } = topLeftOnGrid({ centerX, centerY, widthInDots, heightInDots, dotSize });
   const size = dotSize * glyphScale;
 
   const dots = [];

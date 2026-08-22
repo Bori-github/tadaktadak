@@ -1,13 +1,6 @@
+import { FOCUS_GLYPH_SCALE, REST_OFFSET_IN_DOTS } from '../config/readout';
 import { COLORS } from '@/shared/constants';
 import { DotNumber } from '@/shared/ui/dot-number';
-
-/** 집중 숫자 배율. 5×7 자형이 21 도트가 된다. `DESIGN.md` §3 */
-const FOCUS_GLYPH_SCALE = 3;
-const FOCUS_HEIGHT_IN_DOTS = 21;
-const REST_HEIGHT_IN_DOTS = 7;
-
-/** 두 숫자 사이 (dot). `DESIGN.md` §5 */
-const READOUT_GAP_IN_DOTS = 10;
 
 const INACTIVE_OPACITY = 0.4;
 
@@ -24,8 +17,6 @@ type DialReadoutProps = {
 };
 
 export const DialReadout = ({ centerX, centerY, dotSize, focusMinutes, restMinutes, active }: DialReadoutProps) => {
-  const gapInDots = FOCUS_HEIGHT_IN_DOTS / 2 + READOUT_GAP_IN_DOTS + REST_HEIGHT_IN_DOTS / 2;
-
   return (
     <>
       <DotNumber
@@ -40,7 +31,7 @@ export const DialReadout = ({ centerX, centerY, dotSize, focusMinutes, restMinut
       <DotNumber
         text={toClock(restMinutes)}
         centerX={centerX}
-        centerY={centerY + gapInDots * dotSize}
+        centerY={centerY + REST_OFFSET_IN_DOTS * dotSize}
         color={COLORS.rest.text}
         dotSize={dotSize}
         opacity={active === 'rest' ? 1 : INACTIVE_OPACITY}
