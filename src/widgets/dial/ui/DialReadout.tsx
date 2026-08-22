@@ -1,4 +1,5 @@
 import { FOCUS_GLYPH_SCALE, REST_OFFSET_IN_DOTS } from '../config/readout';
+import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 import { DotNumber } from '@/shared/ui/dot-number';
 
@@ -13,7 +14,7 @@ type DialReadoutProps = {
   focusMinutes: number;
   restMinutes: number;
   /** 지금 세고 있거나 편집 대상인 쪽. `DESIGN.md` §3 */
-  active: 'focus' | 'rest';
+  active: TimerMode;
 };
 
 export const DialReadout = ({ centerX, centerY, dotSize, focusMinutes, restMinutes, active }: DialReadoutProps) => {

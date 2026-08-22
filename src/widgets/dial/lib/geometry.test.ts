@@ -2,7 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 
 import { minutesFromPoint, pointOnDial } from './geometry';
 
-import { TIMER_RANGE } from '@/shared/constants';
+import { TIMER_RANGE } from '@/entities/timer';
 
 const CENTER_X = 100;
 const CENTER_Y = 100;
