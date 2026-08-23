@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { minutesFromPoint, pointOnDial } from './geometry';
+import { isOnHandle, minutesFromPoint, pointOnDial } from './geometry';
 
 import { TIMER_RANGE } from '@/entities/timer';
 
@@ -78,5 +78,22 @@ describe('12시 경계', () => {
     [31, 60],
   ])('직전 값이 %i분이면 12시는 %i분이다', (previous, minutes) => {
     expect(minutesAt(100, 50, previous, REST)).toBe(minutes);
+  });
+});
+
+describe('터치한 곳이 손잡이를 잡는 범위 안에 있는지 여부', () => {
+  /** 도트 2픽셀에서 손잡이 중심 11 도트는 22픽셀. `DESIGN.md` §4 */
+  const grabbed = (x: number, y: number) => isOnHandle({ handleX: CENTER_X, handleY: CENTER_Y, x, y, dotSize: 2 });
+
+  it('옆으로 22픽셀은 손잡이를 잡는 범위 안에 있다', () => {
+    expect(grabbed(122, 100)).toBe(true);
+  });
+
+  it('옆으로 23픽셀은 손잡이를 잡는 범위 안에 없다', () => {
+    expect(grabbed(123, 100)).toBe(false);
+  });
+
+  it('대각선으로 16픽셀씩은 22.6픽셀이라 손잡이를 잡는 범위 안에 없다', () => {
+    expect(grabbed(116, 116)).toBe(false);
   });
 });
