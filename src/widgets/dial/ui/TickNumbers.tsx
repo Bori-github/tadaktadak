@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { pointOnDial } from '../lib/geometry';
 import { COLORS } from '@/shared/constants';
 import { DotNumber } from '@/shared/ui/dot-number';
@@ -11,7 +13,7 @@ type TickNumbersProps = {
   dotSize: number;
 };
 
-export const TickNumbers = ({ centerX, centerY, radius, dotSize }: TickNumbersProps) => {
+export const TickNumbers = memo(({ centerX, centerY, radius, dotSize }: TickNumbersProps) => {
   return (
     <>
       {TICK_VALUES.map((value) => {
@@ -20,4 +22,6 @@ export const TickNumbers = ({ centerX, centerY, radius, dotSize }: TickNumbersPr
       })}
     </>
   );
-};
+});
+
+TickNumbers.displayName = 'TickNumbers';
