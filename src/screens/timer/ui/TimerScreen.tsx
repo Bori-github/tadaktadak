@@ -18,7 +18,7 @@ export const TimerScreen = () => {
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
   const [minutes, setMinutes] = useState(TIMER_DEFAULT);
   const [pressed, setPressed] = useState<ControlButton | null>(null);
-  const { session, play, stop } = useTimerSession({ settingMinutes: minutes });
+  const { session, remainingSeconds, play, stop } = useTimerSession({ settingMinutes: minutes });
 
   const layout = resolveLayout({
     shortSide: Math.min(width, height),
@@ -49,7 +49,15 @@ export const TimerScreen = () => {
           <DialItems centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} bonfireDots={layout.bonfireDots} />
           <DialHandle centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={selected} mode={editTarget} />
           <TickNumbers centerX={centerX} centerY={centerY} radius={layout.tickNumberRadius} dotSize={layout.dotSize} />
-          <DialReadout centerX={centerX} centerY={centerY} dotSize={layout.dotSize} focusMinutes={minutes.focus} restMinutes={minutes.rest} active={editTarget} />
+          <DialReadout
+            centerX={centerX}
+            centerY={centerY}
+            dotSize={layout.dotSize}
+            focusMinutes={minutes.focus}
+            restMinutes={minutes.rest}
+            active={session.phase === 'idle' ? editTarget : session.mode}
+            remainingSeconds={remainingSeconds}
+          />
           <Controls centerX={centerX} centerY={layout.buttonCenterY} dotSize={layout.dotSize} phase={session.phase} pressed={pressed} />
         </Canvas>
         <ReadoutButtons centerX={centerX} centerY={centerY} dotSize={layout.dotSize} onSelect={setEditTarget} />
