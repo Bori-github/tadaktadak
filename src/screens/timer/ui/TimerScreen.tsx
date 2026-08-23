@@ -37,6 +37,7 @@ export const TimerScreen = () => {
     dotSize: layout.dotSize,
     minutes: selected,
     mode: editTarget,
+    enabled: session.phase === 'idle',
     onChange: (value) => setMinutes((previous) => ({ ...previous, [editTarget]: value })),
   });
 
