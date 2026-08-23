@@ -4,6 +4,18 @@ export const GLYPH_HEIGHT = 7;
 /** 글자 사이 간격 (dot) */
 export const GLYPH_GAP = 1;
 
+/**
+ * 글자 상자의 도트 단위 가로·세로.
+ *
+ * @param text - 가로는 글자 수로만 정해짐
+ * @param [glyphScale=1] - 도트 좌표에 곱하므로 정수. `DESIGN.md` §3
+ * @returns 도트 단위 가로·세로
+ */
+export const dotNumberSize = (text: string, glyphScale = 1) => ({
+  widthInDots: (text.length * (GLYPH_WIDTH + GLYPH_GAP) - GLYPH_GAP) * glyphScale,
+  heightInDots: GLYPH_HEIGHT * glyphScale,
+});
+
 /** 5×7 도트 자형. `#`이 찍는 자리, `.`은 비움 */
 export const GLYPH: Record<string, readonly string[] | undefined> = {
   '0': ['.###.', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.'],
