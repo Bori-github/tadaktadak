@@ -14,7 +14,7 @@ type IgnitionInput = {
  */
 export const ignitionProgress = ({ slot, remainingMinutes, settingMinutes }: IgnitionInput) => {
   'worklet';
-  // 설정 밖 칸은 불이 붙지 않은 상태. `DESIGN.md` §6
+  // 설정 밖 칸은 불이 붙지 않은 상태. `DESIGN.md` §5
   if (slot > settingMinutes) return 0;
 
   if (slot - 1 >= remainingMinutes) return 1;
