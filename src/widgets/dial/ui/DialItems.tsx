@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { pointOnDial } from '../lib/geometry';
 import { BONFIRE_COLD_7, BONFIRE_COLD_9, DotSprite, LOG_COLD, MARKER } from '@/shared/ui/dot-sprite';
 
@@ -13,7 +15,7 @@ type DialItemsProps = {
   bonfireDots: number;
 };
 
-export const DialItems = ({ centerX, centerY, radius, dotSize, bonfireDots }: DialItemsProps) => {
+export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireDots }: DialItemsProps) => {
   const bonfire = bonfireDots === 9 ? BONFIRE_COLD_9 : BONFIRE_COLD_7;
 
   return (
@@ -25,4 +27,6 @@ export const DialItems = ({ centerX, centerY, radius, dotSize, bonfireDots }: Di
       <DotSprite grid={MARKER} centerX={centerX} centerY={centerY - radius} dotSize={dotSize} />
     </>
   );
-};
+});
+
+DialItems.displayName = 'DialItems';

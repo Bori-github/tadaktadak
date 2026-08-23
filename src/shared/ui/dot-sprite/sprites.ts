@@ -23,5 +23,8 @@ export const BONFIRE_COLD_7 = ['.......', '.......', '.......', '.......', '..DD
 /** 스파크 손잡이. 정지 상태는 이 프레임에 고정한다 */
 export const SPARK_A = ['...h...', '...h...', '..hHh..', 'hHHHHHh', '..hHh..', '...h...', '...h...'];
 
+/** 휴식 타이머 설정 손잡이. `DESIGN.md` §4 */
+export const SPARK_REST = ['...k...', '...k...', '..kKk..', 'kKKKKKk', '..kKk..', '...k...', '...k...'];
+
 /** 12시에 놓이는 기준 마커 */
 export const MARKER = ['.m.', 'mmm', '.m.', '.m.', '.m.'];
