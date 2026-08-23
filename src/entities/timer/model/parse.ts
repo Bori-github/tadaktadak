@@ -1,9 +1,9 @@
-import { type TimerMode } from './mode';
-import { type TimerPhase, type TimerSession } from './session';
+import { TIMER_MODES, type TimerMode } from './mode';
+import { TIMER_PHASES, type TimerPhase, type TimerSession } from './session';
 import { TIMER_DEFAULT, TIMER_RANGE } from '../config/minutes';
 
-const PHASES: readonly string[] = ['idle', 'running', 'paused', 'done'];
-const MODES: readonly string[] = ['focus', 'rest'];
+const isPhase = (value: unknown): value is TimerPhase => TIMER_PHASES.includes(value as TimerPhase);
+const isMode = (value: unknown): value is TimerMode => TIMER_MODES.includes(value as TimerMode);
 
 /**
  * 저장 문자열에서 읽어 낸 타이머 세션 값. `SPEC.md` 기기에 저장하는 값
@@ -24,19 +24,14 @@ export const parseSession = (raw: string | null): TimerSession | null => {
   if (typeof value !== 'object' || value === null) return null;
 
   const { phase, mode, endsAt, pausedRemainingMs } = value as Record<string, unknown>;
-  if (typeof phase !== 'string' || !PHASES.includes(phase)) return null;
-  if (typeof mode !== 'string' || !MODES.includes(mode)) return null;
+  if (!isPhase(phase)) return null;
+  if (!isMode(mode)) return null;
 
   // 진행은 끝날 시각으로, 일시정지는 남은 밀리초로 남은 시간을 구함
-  if (phase === 'running' && typeof endsAt !== 'number') return null;
-  if (phase === 'paused' && typeof pausedRemainingMs !== 'number') return null;
+  if (phase === 'running') return typeof endsAt === 'number' ? { phase, mode, endsAt } : null;
+  if (phase === 'paused') return typeof pausedRemainingMs === 'number' ? { phase, mode, pausedRemainingMs } : null;
 
-  return {
-    phase: phase as TimerPhase,
-    mode: mode as TimerMode,
-    endsAt: typeof endsAt === 'number' ? endsAt : null,
-    pausedRemainingMs: typeof pausedRemainingMs === 'number' ? pausedRemainingMs : null,
-  };
+  return { phase, mode };
 };
 
 /**
@@ -46,11 +41,12 @@ export const parseSession = (raw: string | null): TimerSession | null => {
  * @returns `TIMER_RANGE` 안의 분. 읽을 수 없거나 범위 밖이면 `TIMER_DEFAULT`
  */
 export const parseMinutes = (raw: string | null, mode: TimerMode): number => {
-  if (raw === null) return TIMER_DEFAULT[mode];
+  // Number는 빈 문자열을 0으로, `0x10`을 16으로, 앞뒤 공백을 무시하고 읽음
+  if (raw === null || !/^\d+$/.test(raw)) return TIMER_DEFAULT[mode];
 
-  const minutes = Number(raw);
+  const minutes = Number.parseInt(raw, 10);
   const { min, max } = TIMER_RANGE[mode];
-  if (!Number.isInteger(minutes) || minutes < min || minutes > max) return TIMER_DEFAULT[mode];
+  if (minutes < min || minutes > max) return TIMER_DEFAULT[mode];
 
   return minutes;
 };

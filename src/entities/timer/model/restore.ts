@@ -22,5 +22,5 @@ export const restoreSession = ({ stored, now, stopped }: RestoreInput): TimerSes
   if (stored.phase !== 'running') return IDLE_SESSION;
 
   // 끝날 시각이 지금과 같으면 종료된 것.
-  return stored.endsAt !== null && stored.endsAt > now ? stored : completeTimer(stored);
+  return stored.endsAt > now ? stored : completeTimer(stored);
 };

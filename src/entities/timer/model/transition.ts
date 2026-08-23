@@ -1,4 +1,4 @@
-import { type TimerSession } from './session';
+import { type PausedSession, type RunningSession, type TimerSession } from './session';
 
 type StartInput = {
   session: TimerSession;
@@ -6,8 +6,13 @@ type StartInput = {
   settingMs: number;
 };
 
+type PauseInput = {
+  session: RunningSession;
+  now: number;
+};
+
 type ResumeInput = {
-  session: TimerSession;
+  session: PausedSession;
   now: number;
 };
 
@@ -19,11 +24,10 @@ type ResumeInput = {
  * @param input.settingMs - 설정한 타이머 시간 (밀리초)
  * @returns 지금 + 설정 시간에 끝나는 진행
  */
-export const startTimer = ({ session, now, settingMs }: StartInput): TimerSession => ({
-  ...session,
+export const startTimer = ({ session, now, settingMs }: StartInput): RunningSession => ({
   phase: 'running',
+  mode: session.mode,
   endsAt: now + settingMs,
-  pausedRemainingMs: null,
 });
 
 /**
@@ -31,13 +35,13 @@ export const startTimer = ({ session, now, settingMs }: StartInput): TimerSessio
  *
  * @param input.session - 진행 중인 타이머 세션 값
  * @param input.now - 지금 시각 (밀리초)
- * @returns 남은 밀리초를 담은 일시정지
+ * @returns 남은 밀리초를 담은 일시정지. 0이 하한
  */
-export const pauseTimer = ({ session, now }: ResumeInput): TimerSession => ({
-  ...session,
+export const pauseTimer = ({ session, now }: PauseInput): PausedSession => ({
   phase: 'paused',
-  endsAt: null,
-  pausedRemainingMs: (session.endsAt ?? now) - now,
+  mode: session.mode,
+  // 완료 전이는 프레임 콜백이 몰아서, 끝날 시각이 지난 뒤에 눌리는 틈
+  pausedRemainingMs: Math.max(0, session.endsAt - now),
 });
 
 /**
@@ -47,11 +51,10 @@ export const pauseTimer = ({ session, now }: ResumeInput): TimerSession => ({
  * @param input.now - 지금 시각 (밀리초)
  * @returns 지금 + 남은 밀리초에 끝나는 진행
  */
-export const resumeTimer = ({ session, now }: ResumeInput): TimerSession => ({
-  ...session,
+export const resumeTimer = ({ session, now }: ResumeInput): RunningSession => ({
   phase: 'running',
-  endsAt: now + (session.pausedRemainingMs ?? 0),
-  pausedRemainingMs: null,
+  mode: session.mode,
+  endsAt: now + session.pausedRemainingMs,
 });
 
 /**
@@ -61,8 +64,6 @@ export const resumeTimer = ({ session, now }: ResumeInput): TimerSession => ({
  * @returns 끝날 시각을 비운 완료
  */
 export const completeTimer = (session: TimerSession): TimerSession => ({
-  ...session,
   phase: 'done',
-  endsAt: null,
-  pausedRemainingMs: null,
+  mode: session.mode,
 });

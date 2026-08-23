@@ -1,10 +1,10 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { parseMinutes, parseSession } from './parse';
-import { type TimerSession } from './session';
+import { type RunningSession } from './session';
 import { TIMER_DEFAULT } from '../config/minutes';
 
-const running: TimerSession = { phase: 'running', mode: 'focus', endsAt: 1_700_000_000_000, pausedRemainingMs: null };
+const running: RunningSession = { phase: 'running', mode: 'focus', endsAt: 1_700_000_000_000 };
 
 describe('저장된 타이머 세션 값 읽기', () => {
   it('저장한 대로 돌아온다', () => {
@@ -32,12 +32,20 @@ describe('저장된 타이머 시간 읽기', () => {
     expect(parseMinutes('0', 'rest')).toBe(0);
   });
 
+  it('휴식 타이머도 빈 문자열이면 기본값을 쓴다', () => {
+    expect(parseMinutes('', 'rest')).toBe(TIMER_DEFAULT.rest);
+  });
+
   it.each([
     ['저장값이 없으면', null],
     ['숫자가 아니면', '스물다섯'],
     ['하한보다 작으면', '0'],
     ['상한보다 크면', '61'],
     ['정수가 아니면', '25.5'],
+    ['빈 문자열이면', ''],
+    ['앞뒤에 공백이 있으면', ' 25 '],
+    ['16진수 표기면', '0x10'],
+    ['지수 표기면', '1e1'],
   ])('집중 타이머는 %s 기본값을 쓴다', (_label, raw) => {
     expect(parseMinutes(raw, 'focus')).toBe(TIMER_DEFAULT.focus);
   });
