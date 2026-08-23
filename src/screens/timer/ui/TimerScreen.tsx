@@ -4,7 +4,9 @@ import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Controls } from '@/widgets/controls';
+import { useTimerSession } from '../model/session';
+
+import { ControlButtons, Controls, type ControlButton } from '@/widgets/controls';
 import { DialArc, DialHandle, DialItems, DialReadout, ReadoutButtons, TickNumbers, useDialDrag } from '@/widgets/dial';
 import { TIMER_DEFAULT, type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
@@ -15,6 +17,8 @@ export const TimerScreen = () => {
   const insets = useSafeAreaInsets();
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
   const [minutes, setMinutes] = useState(TIMER_DEFAULT);
+  const [pressed, setPressed] = useState<ControlButton | null>(null);
+  const { session, play, stop } = useTimerSession({ settingMinutes: minutes });
 
   const layout = resolveLayout({
     shortSide: Math.min(width, height),
@@ -46,9 +50,10 @@ export const TimerScreen = () => {
           <DialHandle centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={selected} mode={editTarget} />
           <TickNumbers centerX={centerX} centerY={centerY} radius={layout.tickNumberRadius} dotSize={layout.dotSize} />
           <DialReadout centerX={centerX} centerY={centerY} dotSize={layout.dotSize} focusMinutes={minutes.focus} restMinutes={minutes.rest} active={editTarget} />
-          <Controls centerX={centerX} centerY={layout.buttonCenterY} dotSize={layout.dotSize} />
+          <Controls centerX={centerX} centerY={layout.buttonCenterY} dotSize={layout.dotSize} phase={session.phase} pressed={pressed} />
         </Canvas>
         <ReadoutButtons centerX={centerX} centerY={centerY} dotSize={layout.dotSize} onSelect={setEditTarget} />
+        <ControlButtons centerX={centerX} centerY={layout.buttonCenterY} dotSize={layout.dotSize} phase={session.phase} onPlay={play} onStop={stop} onPressedChange={setPressed} />
       </View>
     </GestureDetector>
   );

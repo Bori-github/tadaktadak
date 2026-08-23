@@ -1,0 +1,55 @@
+import { Pressable } from 'react-native';
+
+import { buttonCentersX, type ControlButton } from '../lib/layout';
+
+import { type TimerPhase } from '@/entities/timer';
+import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
+
+const touchArea = (centerX: number, centerY: number, dotSize: number) => {
+  const size = BUTTON_SIZE_IN_DOTS * dotSize;
+
+  return {
+    position: 'absolute',
+    left: centerX - size / 2,
+    top: centerY - size / 2,
+    width: size,
+    height: size,
+  } as const;
+};
+
+type ControlButtonsProps = {
+  /** 버튼 줄의 중심 (px) */
+  centerX: number;
+  centerY: number;
+  /** 도트 한 변 (px) */
+  dotSize: number;
+  phase: TimerPhase;
+  onPlay: () => void;
+  onStop: () => void;
+  onPressedChange: (button: ControlButton | null) => void;
+};
+
+export const ControlButtons = ({ centerX, centerY, dotSize, phase, onPlay, onStop, onPressedChange }: ControlButtonsProps) => {
+  const centers = buttonCentersX(centerX, dotSize);
+
+  return (
+    <>
+      <Pressable
+        accessibilityRole="button"
+        style={touchArea(centers.play, centerY, dotSize)}
+        disabled={phase === 'done'}
+        onPressIn={() => onPressedChange('play')}
+        onPressOut={() => onPressedChange(null)}
+        onPress={onPlay}
+      />
+      <Pressable
+        accessibilityRole="button"
+        style={touchArea(centers.stop, centerY, dotSize)}
+        disabled={phase === 'idle'}
+        onPressIn={() => onPressedChange('stop')}
+        onPressOut={() => onPressedChange(null)}
+        onPress={onStop}
+      />
+    </>
+  );
+};
