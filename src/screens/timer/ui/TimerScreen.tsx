@@ -27,9 +27,9 @@ export const TimerScreen = () => {
     <View style={styles.root}>
       <Canvas style={StyleSheet.absoluteFill}>
         <Fill color={COLORS.canvas} />
-        <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={TIMER_DEFAULT.focus} />
+        <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={TIMER_DEFAULT[editTarget]} mode={editTarget} />
         <DialItems centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} bonfireDots={layout.bonfireDots} />
-        <DialHandle centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={TIMER_DEFAULT.focus} />
+        <DialHandle centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={TIMER_DEFAULT[editTarget]} mode={editTarget} />
         <TickNumbers centerX={centerX} centerY={centerY} radius={layout.tickNumberRadius} dotSize={layout.dotSize} />
         <DialReadout centerX={centerX} centerY={centerY} dotSize={layout.dotSize} focusMinutes={TIMER_DEFAULT.focus} restMinutes={TIMER_DEFAULT.rest} active={editTarget} />
         <Controls centerX={centerX} centerY={layout.buttonCenterY} dotSize={layout.dotSize} />
