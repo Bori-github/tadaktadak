@@ -4,12 +4,12 @@ import { AppState } from 'react-native';
 import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 
+import { millisecondsToSeconds } from '../lib/seconds';
+
 import { completeTimer, IDLE_SESSION, MINUTE_IN_MS, pauseTimer, remainingMs, resumeTimer, startTimer, type TimerMode, type TimerSession } from '@/entities/timer';
 
 /** 기기 가동 시간을 첫 프레임에서 채우기 전 값 */
 const NOT_STARTED = -1;
-
-const toSeconds = (ms: number) => Math.ceil(ms / 1000);
 
 type TimerSessionInput = {
   settingMinutes: Record<TimerMode, number>;
@@ -43,7 +43,7 @@ export const useTimerSession = ({ settingMinutes }: TimerSessionInput) => {
       nowUptime: frame.timestamp,
     });
 
-    const seconds = Math.ceil(remaining / 1000);
+    const seconds = millisecondsToSeconds(remaining);
     if (seconds !== shownSeconds.value) {
       shownSeconds.value = seconds;
       scheduleOnRN(setRemainingSeconds, seconds);
@@ -74,10 +74,10 @@ export const useTimerSession = ({ settingMinutes }: TimerSessionInput) => {
         'worklet';
         remainingAtStart.value = remainingAtStartMs;
         startedAtUptime.value = NOT_STARTED;
-        shownSeconds.value = Math.ceil(remainingAtStartMs / 1000);
+        shownSeconds.value = millisecondsToSeconds(remainingAtStartMs);
         running.value = true;
       });
-      setRemainingSeconds(toSeconds(remainingAtStartMs));
+      setRemainingSeconds(millisecondsToSeconds(remainingAtStartMs));
     },
     [remainingAtStart, startedAtUptime, shownSeconds, running],
   );
@@ -105,7 +105,7 @@ export const useTimerSession = ({ settingMinutes }: TimerSessionInput) => {
 
       const next = pauseTimer({ session, now });
       stopCounting();
-      setRemainingSeconds(toSeconds(next.pausedRemainingMs));
+      setRemainingSeconds(millisecondsToSeconds(next.pausedRemainingMs));
       setSession(next);
       return;
     }
