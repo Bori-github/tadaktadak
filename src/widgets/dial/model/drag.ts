@@ -35,19 +35,28 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
   const { min, max } = TIMER_RANGE[mode];
   const handle = pointOnDial(centerX, centerY, radius, minutes * 6);
 
-  return Gesture.Pan()
-    .enabled(enabled)
-    .onBegin((event) => {
-      grabbed.value = isOnHandle({ handleX: handle.x, handleY: handle.y, x: event.x, y: event.y, dotSize });
-      dragged.value = minutes;
-    })
-    .onUpdate((event) => {
-      if (!grabbed.value) return;
+  return (
+    Gesture.Pan()
+      .enabled(enabled)
+      // 제스처가 활성화되면 같은 자리의 버튼·숫자 누름이 취소됨
+      .manualActivation(true)
+      .onTouchesDown((event, manager) => {
+        const touch = event.allTouches[0];
+        if (!touch) return;
 
-      const next = minutesFromPoint({ centerX, centerY, x: event.x, y: event.y, previous: dragged.value, min, max });
-      if (next === dragged.value) return;
+        grabbed.value = isOnHandle({ handleX: handle.x, handleY: handle.y, x: touch.x, y: touch.y, dotSize });
+        dragged.value = minutes;
+        if (!grabbed.value) manager.fail();
+      })
+      .onTouchesMove((_event, manager) => {
+        if (grabbed.value) manager.activate();
+      })
+      .onUpdate((event) => {
+        const next = minutesFromPoint({ centerX, centerY, x: event.x, y: event.y, previous: dragged.value, min, max });
+        if (next === dragged.value) return;
 
-      dragged.value = next;
-      scheduleOnRN(onChange, next);
-    });
+        dragged.value = next;
+        scheduleOnRN(onChange, next);
+      })
+  );
 };
