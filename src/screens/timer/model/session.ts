@@ -13,15 +13,17 @@ const NOT_STARTED = -1;
 
 type TimerSessionInput = {
   settingMinutes: Record<TimerMode, number>;
+  toSeconds?: (ms: number) => number;
 };
 
 /**
  * 타이머 세션 값과 카운트다운. `SPEC.md` 시간 모델
  *
  * @param input.settingMinutes - 집중과 휴식의 설정 시간(분)
+ * @param [input.toSeconds] - 남은 밀리초를 화면에 보여 줄 초로 바꾸는 함수. 기본은 실제 시간
  * @returns 지금 타이머 세션 값, 카운트다운 중인 남은 시간(초, 대기에서는 `null`), 재생·정지 조작
  */
-export const useTimerSession = ({ settingMinutes }: TimerSessionInput) => {
+export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeconds }: TimerSessionInput) => {
   const [session, setSession] = useState<TimerSession>(IDLE_SESSION);
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
 
@@ -44,7 +46,7 @@ export const useTimerSession = ({ settingMinutes }: TimerSessionInput) => {
       nowUptime: frame.timestamp,
     });
 
-    const seconds = millisecondsToSeconds(remaining);
+    const seconds = toSeconds(remaining);
     if (seconds !== shownSeconds.value) {
       shownSeconds.value = seconds;
       scheduleOnRN(setRemainingSeconds, seconds);
@@ -71,16 +73,18 @@ export const useTimerSession = ({ settingMinutes }: TimerSessionInput) => {
 
   const startCounting = useCallback(
     (remainingAtStartMs: number) => {
+      const shown = toSeconds(remainingAtStartMs);
+
       scheduleOnUI(() => {
         'worklet';
         remainingAtStart.value = remainingAtStartMs;
         startedAtUptime.value = NOT_STARTED;
-        shownSeconds.value = millisecondsToSeconds(remainingAtStartMs);
+        shownSeconds.value = shown;
         running.value = true;
       });
-      setRemainingSeconds(millisecondsToSeconds(remainingAtStartMs));
+      setRemainingSeconds(shown);
     },
-    [remainingAtStart, startedAtUptime, shownSeconds, running],
+    [remainingAtStart, startedAtUptime, shownSeconds, running, toSeconds],
   );
 
   const stopCounting = useCallback(() => {
