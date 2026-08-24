@@ -1,4 +1,5 @@
 import { Group, Rect } from '@shopify/react-native-skia';
+import { memo } from 'react';
 
 import { topLeftOnGrid } from '@/shared/lib';
 
@@ -16,7 +17,7 @@ type DotNumberProps = {
   opacity?: number;
 };
 
-export const DotNumber = ({ text, centerX, centerY, color, dotSize, glyphScale = 1, opacity = 1 }: DotNumberProps) => {
+export const DotNumber = memo(({ text, centerX, centerY, color, dotSize, glyphScale = 1, opacity = 1 }: DotNumberProps) => {
   const advance = GLYPH_WIDTH + GLYPH_GAP;
   const { widthInDots, heightInDots } = dotNumberSize(text, glyphScale);
 
@@ -47,4 +48,6 @@ export const DotNumber = ({ text, centerX, centerY, color, dotSize, glyphScale =
       ))}
     </Group>
   );
-};
+});
+
+DotNumber.displayName = 'DotNumber';

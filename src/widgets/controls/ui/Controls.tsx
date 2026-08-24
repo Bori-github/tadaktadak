@@ -1,23 +1,28 @@
 import { memo } from 'react';
 
-import { DotButton } from '@/shared/ui/dot-button';
+import { buttonCentersX, type ControlButton } from '../lib/layout';
+import { controlsState } from '../lib/state';
 
-/** 두 버튼 중심 간격 (dot). `DESIGN.md` §5 기준 화면에서 88px */
-const GAP_IN_DOTS = 44;
+import { type TimerPhase } from '@/entities/timer';
+import { DotButton } from '@/shared/ui/dot-button';
 
 type ControlsProps = {
   centerX: number;
   centerY: number;
   dotSize: number;
+  phase: TimerPhase;
+  /** 지금 눌려 있는 버튼. 없으면 `null` */
+  pressed: ControlButton | null;
 };
 
-export const Controls = memo(({ centerX, centerY, dotSize }: ControlsProps) => {
-  const offset = (GAP_IN_DOTS / 2) * dotSize;
+export const Controls = memo(({ centerX, centerY, dotSize, phase, pressed }: ControlsProps) => {
+  const centers = buttonCentersX(centerX, dotSize);
+  const { playIcon, playEnabled, stopEnabled } = controlsState(phase);
 
   return (
     <>
-      <DotButton centerX={centerX - offset} centerY={centerY} dotSize={dotSize} icon="play" />
-      <DotButton centerX={centerX + offset} centerY={centerY} dotSize={dotSize} icon="stop" enabled={false} />
+      <DotButton centerX={centers.play} centerY={centerY} dotSize={dotSize} icon={playIcon} enabled={playEnabled} pressed={pressed === 'play'} />
+      <DotButton centerX={centers.stop} centerY={centerY} dotSize={dotSize} icon="stop" enabled={stopEnabled} pressed={pressed === 'stop'} />
     </>
   );
 });

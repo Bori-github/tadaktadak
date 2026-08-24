@@ -1,4 +1,5 @@
 import { Path, Skia } from '@shopify/react-native-skia';
+import { memo } from 'react';
 
 import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
@@ -16,7 +17,7 @@ type DialArcProps = {
   mode: TimerMode;
 };
 
-export const DialArc = ({ centerX, centerY, radius, dotSize, minutes, mode }: DialArcProps) => {
+export const DialArc = memo(({ centerX, centerY, radius, dotSize, minutes, mode }: DialArcProps) => {
   if (minutes <= 0) return null;
 
   // addArc에서 0도는 3시 방향을 가리키므로 보정한다
@@ -25,4 +26,6 @@ export const DialArc = ({ centerX, centerY, radius, dotSize, minutes, mode }: Di
     .build();
 
   return <Path path={path} color={COLORS[mode].arc} style="stroke" strokeWidth={ARC_WIDTH_IN_DOTS * dotSize} />;
-};
+});
+
+DialArc.displayName = 'DialArc';

@@ -17,6 +17,8 @@ type DialDragInput = {
   minutes: number;
   /** 끌어서 설정할 타이머 */
   mode: TimerMode;
+  /** 손잡이를 끌 수 있는지 여부. `DESIGN.md` §8 조작 */
+  enabled: boolean;
   onChange: (minutes: number) => void;
 };
 
@@ -26,25 +28,47 @@ type DialDragInput = {
  * @param input.onChange - 스냅된 타이머 시간이 바뀔 때 호출
  * @returns `GestureDetector`에 넘길 제스처
  */
-export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, onChange }: DialDragInput) => {
+export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, enabled, onChange }: DialDragInput) => {
   const dragged = useSharedValue(minutes);
   const grabbed = useSharedValue(false);
+  const pointerId = useSharedValue(-1);
 
   const { min, max } = TIMER_RANGE[mode];
   const handle = pointOnDial(centerX, centerY, radius, minutes * 6);
 
-  return Gesture.Pan()
-    .onBegin((event) => {
-      grabbed.value = isOnHandle({ handleX: handle.x, handleY: handle.y, x: event.x, y: event.y, dotSize });
-      dragged.value = minutes;
-    })
-    .onUpdate((event) => {
-      if (!grabbed.value) return;
+  return (
+    Gesture.Pan()
+      .enabled(enabled)
+      // 제스처가 활성화되면 같은 자리의 버튼·숫자 누름이 취소됨
+      .manualActivation(true)
+      .onTouchesDown((event, manager) => {
+        // 현재 드래그 중인 상태 외 추가되는 터치 이벤트를 막아 타이머 설정 시간이 튀는 것 방지
+        if (grabbed.value) return;
 
-      const next = minutesFromPoint({ centerX, centerY, x: event.x, y: event.y, previous: dragged.value, min, max });
-      if (next === dragged.value) return;
+        const touch = event.changedTouches[0];
+        if (!touch) return;
 
-      dragged.value = next;
-      scheduleOnRN(onChange, next);
-    });
+        grabbed.value = isOnHandle({ handleX: handle.x, handleY: handle.y, x: touch.x, y: touch.y, dotSize });
+        dragged.value = minutes;
+        pointerId.value = touch.id;
+        if (!grabbed.value) manager.fail();
+      })
+      .onTouchesMove((event, manager) => {
+        if (!grabbed.value) return;
+        manager.activate();
+
+        const touch = event.allTouches.find((moved) => moved.id === pointerId.value);
+        if (!touch) return;
+
+        const next = minutesFromPoint({ centerX, centerY, x: touch.x, y: touch.y, previous: dragged.value, min, max });
+        if (next === dragged.value) return;
+
+        dragged.value = next;
+        scheduleOnRN(onChange, next);
+      })
+      .onFinalize(() => {
+        grabbed.value = false;
+        pointerId.value = -1;
+      })
+  );
 };
