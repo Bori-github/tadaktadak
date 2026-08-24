@@ -28,16 +28,18 @@ export const TimerScreen = () => {
 
   const centerX = width / 2;
   const centerY = layout.dialCenterY;
-  const selected = minutes[editTarget];
+  const editing = session.phase === 'idle';
+  const shownMode = editing ? editTarget : session.mode;
+  const selected = minutes[shownMode];
 
   const drag = useDialDrag({
     centerX,
     centerY,
     radius: layout.arcRadius,
     dotSize: layout.dotSize,
-    minutes: selected,
+    minutes: minutes[editTarget],
     mode: editTarget,
-    enabled: session.phase === 'idle',
+    enabled: editing,
     onChange: (value) => setMinutes((previous) => ({ ...previous, [editTarget]: value })),
   });
 
@@ -46,9 +48,9 @@ export const TimerScreen = () => {
       <View style={styles.root}>
         <Canvas style={StyleSheet.absoluteFill}>
           <Fill color={COLORS.canvas} />
-          <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={selected} mode={editTarget} />
+          <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={selected} mode={shownMode} />
           <DialItems centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} bonfireDots={layout.bonfireDots} />
-          <DialHandle centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={selected} mode={editTarget} />
+          <DialHandle centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={selected} mode={shownMode} />
           <TickNumbers centerX={centerX} centerY={centerY} radius={layout.tickNumberRadius} dotSize={layout.dotSize} />
           <DialReadout
             centerX={centerX}
