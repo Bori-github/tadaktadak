@@ -1,12 +1,11 @@
 import { Pressable } from 'react-native';
 
-import { buttonCentersX, type ControlButton } from '../lib/layout';
+import { buttonCentersX, buttonTouchSize, type ControlButton } from '../lib/layout';
 
 import { type TimerPhase } from '@/entities/timer';
-import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
 
 const touchArea = (centerX: number, centerY: number, dotSize: number) => {
-  const size = BUTTON_SIZE_IN_DOTS * dotSize;
+  const size = buttonTouchSize(dotSize);
 
   return {
     position: 'absolute',
@@ -18,10 +17,8 @@ const touchArea = (centerX: number, centerY: number, dotSize: number) => {
 };
 
 type ControlButtonsProps = {
-  /** 버튼 줄의 중심 (px) */
   centerX: number;
   centerY: number;
-  /** 도트 한 변 (px) */
   dotSize: number;
   phase: TimerPhase;
   onPlay: () => void;

@@ -45,9 +45,15 @@ describe('버튼 자리', () => {
     const { play, stop } = await buttons('idle');
 
     expect({ play: rect(play), stop: rect(stop) }).toEqual({
-      play: { left: 123, top: 672, width: 56, height: 56 },
-      stop: { left: 211, top: 672, width: 56, height: 56 },
+      play: { left: 119, top: 668, width: 64, height: 64 },
+      stop: { left: 207, top: 668, width: 64, height: 64 },
     });
+  });
+
+  it('기준 화면에서 두 터치 영역 사이가 24 논리 픽셀이다', async () => {
+    const { play, stop } = await buttons('idle');
+
+    expect(rect(stop).left - (rect(play).left + rect(play).width)).toBe(24);
   });
 
   it.each([2, 4, 6])('도트 %i에서 두 버튼이 겹치지 않는다', async (dotSize) => {
