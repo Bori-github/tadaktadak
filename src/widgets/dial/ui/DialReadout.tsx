@@ -1,12 +1,11 @@
 import { FOCUS_GLYPH_SCALE, REST_OFFSET_IN_DOTS } from '../config/readout';
 import { formatSecondsToClock } from '../lib/clock';
+import { countdownSeconds } from '../lib/countdown';
 import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 import { DotNumber } from '@/shared/ui/dot-number';
 
 const INACTIVE_OPACITY = 0.4;
-
-const SECONDS_IN_MINUTE = 60;
 
 type DialReadoutProps = {
   centerX: number;
@@ -21,7 +20,7 @@ type DialReadoutProps = {
 };
 
 export const DialReadout = ({ centerX, centerY, dotSize, focusMinutes, restMinutes, active, remainingSeconds }: DialReadoutProps) => {
-  const seconds = (mode: TimerMode, minutes: number) => (active === mode && remainingSeconds !== null ? remainingSeconds : minutes * SECONDS_IN_MINUTE);
+  const seconds = (mode: TimerMode, minutes: number) => countdownSeconds({ mode, active, minutes, remainingSeconds });
 
   return (
     <>
