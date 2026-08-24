@@ -25,6 +25,24 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-audio", "expo-asset", "@bacons/apple-targets", "./plugins/withoutPushEntitlement"]
+    "plugins": ["expo-audio", "expo-asset", "@bacons/apple-targets", "./plugins/withoutPushEntitlement"],
+    "extra": {
+      "eas": {
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "bundleIdentifier": "com.boriguri.tadaktadak.widget",
+                  "targetName": "widget"
+                }
+              ]
+            }
+          }
+        },
+        "projectId": "ff7f54e7-e23a-4120-872c-9caf84f25bb7"
+      }
+    },
+    "owner": "boriguris-team"
   }
 }
