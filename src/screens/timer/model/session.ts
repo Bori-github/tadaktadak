@@ -6,7 +6,7 @@ import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 
 import { millisecondsToSeconds } from '../lib/seconds';
 
-import { completeTimer, IDLE_SESSION, MINUTE_IN_MS, pauseTimer, remainingMs, resumeTimer, startTimer, type TimerMode, type TimerSession } from '@/entities/timer';
+import { completeTimer, IDLE_SESSION, MINUTE_IN_MS, pauseTimer, remainingMs, restoreSession, resumeTimer, startTimer, type TimerMode, type TimerSession } from '@/entities/timer';
 
 /** 기기 가동 시간을 첫 프레임에서 채우기 전 값 */
 const NOT_STARTED = -1;
@@ -122,7 +122,11 @@ export const useTimerSession = ({ settingMinutes }: TimerSessionInput) => {
 
     // 백그라운드에서는 프레임이 돌지 않아 카운트다운이 멈춤. `SPEC.md` 남은 시간
     const subscription = AppState.addEventListener('change', (next) => {
-      if (next === 'active') startCounting(session.endsAt - Date.now());
+      if (next !== 'active') return;
+
+      const restored = restoreSession({ stored: session, now: Date.now(), stopped: false });
+      if (restored.phase === 'running') startCounting(restored.endsAt - Date.now());
+      setSession(restored);
     });
 
     return () => subscription.remove();

@@ -10,6 +10,8 @@ describe('밀리초를 초로 변환', () => {
     [1000, 1],
     [1001, 2],
     [1_500_000, 1500],
+    [-1, 0],
+    [-300_000, 0],
   ])('%i밀리초는 %i초다', (ms, expected) => {
     expect(millisecondsToSeconds(ms)).toBe(expected);
   });

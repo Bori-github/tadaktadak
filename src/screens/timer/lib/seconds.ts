@@ -1,4 +1,4 @@
 export const millisecondsToSeconds = (ms: number) => {
   'worklet';
-  return Math.ceil(ms / 1000);
+  return Math.max(0, Math.ceil(ms / 1000));
 };
