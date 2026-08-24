@@ -58,8 +58,8 @@ export const TimerScreen = () => {
             dotSize={layout.dotSize}
             focusMinutes={minutes.focus}
             restMinutes={minutes.rest}
-            active={session.phase === 'idle' ? editTarget : session.mode}
-            remainingSeconds={remainingSeconds}
+            active={shownMode}
+            remainingSeconds={editing ? null : remainingSeconds}
           />
           <Controls centerX={centerX} centerY={layout.buttonCenterY} dotSize={layout.dotSize} phase={session.phase} pressed={pressed} />
         </Canvas>
