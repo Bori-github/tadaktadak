@@ -1,5 +1,6 @@
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useCallback, useEffect, useState } from 'react';
+import { AppState } from 'react-native';
 import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 
@@ -108,6 +109,17 @@ export const useTimerSession = ({ settingMinutes }: TimerSessionInput) => {
       setSession(next);
     }
   }, [session, settingMinutes, startCounting, stopCounting]);
+
+  useEffect(() => {
+    if (session.phase !== 'running') return;
+
+    // 백그라운드에서는 프레임이 돌지 않아 카운트다운이 멈춤. `SPEC.md` 남은 시간
+    const subscription = AppState.addEventListener('change', (next) => {
+      if (next === 'active') startCounting(session.endsAt - Date.now());
+    });
+
+    return () => subscription.remove();
+  }, [session, startCounting]);
 
   const stop = useCallback(() => {
     stopCounting();
