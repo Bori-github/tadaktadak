@@ -101,8 +101,8 @@ export const useTimerSession = ({ settingMinutes }: TimerSessionInput) => {
     }
 
     if (session.phase === 'running') {
-      // 끝날 시각이 지났으면 완료 전이가 이미 예약된 것
-      if (session.endsAt <= now) return;
+      // 완료를 정하는 기기 가동 시간과 같은 값을 보아, 지금 시각이 뛸 때 일시정지가 막히는 것 방지
+      if (!running.value) return;
 
       const next = pauseTimer({ session, now });
       stopCounting();
@@ -115,7 +115,7 @@ export const useTimerSession = ({ settingMinutes }: TimerSessionInput) => {
       startCounting(next.endsAt - now);
       setSession(next);
     }
-  }, [session, settingMinutes, startCounting, stopCounting]);
+  }, [session, settingMinutes, startCounting, stopCounting, running]);
 
   useEffect(() => {
     if (session.phase !== 'running') return;
