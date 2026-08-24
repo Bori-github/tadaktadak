@@ -5,6 +5,9 @@ import { GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTimerSession } from '../model/session';
+import { useTimerSpeed } from '../model/speed';
+
+import { SpeedControl } from './SpeedControl';
 
 import { ControlButtons, Controls, type ControlButton } from '@/widgets/controls';
 import { DialArc, DialHandle, DialItems, DialReadout, ReadoutButtons, TickNumbers, useDialDrag } from '@/widgets/dial';
@@ -18,7 +21,8 @@ export const TimerScreen = () => {
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
   const [minutes, setMinutes] = useState(TIMER_DEFAULT);
   const [pressed, setPressed] = useState<ControlButton | null>(null);
-  const { session, remainingSeconds, play, stop } = useTimerSession({ settingMinutes: minutes });
+  const { speed, setSpeed, realSettingMinutes, toSeconds } = useTimerSpeed(minutes);
+  const { session, remainingSeconds, play, stop } = useTimerSession({ settingMinutes: realSettingMinutes, toSeconds });
 
   const layout = resolveLayout({
     shortSide: Math.min(width, height),
@@ -65,6 +69,7 @@ export const TimerScreen = () => {
         </Canvas>
         <ReadoutButtons centerX={centerX} centerY={centerY} dotSize={layout.dotSize} onSelect={setEditTarget} />
         <ControlButtons centerX={centerX} centerY={layout.buttonCenterY} dotSize={layout.dotSize} phase={session.phase} onPlay={play} onStop={stop} onPressedChange={setPressed} />
+        {__DEV__ ? <SpeedControl speed={speed} enabled={editing} onSelect={setSpeed} /> : null}
       </View>
     </GestureDetector>
   );
