@@ -31,6 +31,7 @@ type DialDragInput = {
 export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, enabled, onChange }: DialDragInput) => {
   const dragged = useSharedValue(minutes);
   const grabbed = useSharedValue(false);
+  const pointerId = useSharedValue(-1);
 
   const { min, max } = TIMER_RANGE[mode];
   const handle = pointOnDial(centerX, centerY, radius, minutes * 6);
@@ -41,22 +42,33 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
       // 제스처가 활성화되면 같은 자리의 버튼·숫자 누름이 취소됨
       .manualActivation(true)
       .onTouchesDown((event, manager) => {
-        const touch = event.allTouches[0];
+        // 현재 드래그 중인 상태 외 추가되는 터치 이벤트를 막아 타이머 설정 시간이 튀는 것 방지
+        if (grabbed.value) return;
+
+        const touch = event.changedTouches[0];
         if (!touch) return;
 
         grabbed.value = isOnHandle({ handleX: handle.x, handleY: handle.y, x: touch.x, y: touch.y, dotSize });
         dragged.value = minutes;
+        pointerId.value = touch.id;
         if (!grabbed.value) manager.fail();
       })
-      .onTouchesMove((_event, manager) => {
-        if (grabbed.value) manager.activate();
-      })
-      .onUpdate((event) => {
-        const next = minutesFromPoint({ centerX, centerY, x: event.x, y: event.y, previous: dragged.value, min, max });
+      .onTouchesMove((event, manager) => {
+        if (!grabbed.value) return;
+        manager.activate();
+
+        const touch = event.allTouches.find((moved) => moved.id === pointerId.value);
+        if (!touch) return;
+
+        const next = minutesFromPoint({ centerX, centerY, x: touch.x, y: touch.y, previous: dragged.value, min, max });
         if (next === dragged.value) return;
 
         dragged.value = next;
         scheduleOnRN(onChange, next);
+      })
+      .onFinalize(() => {
+        grabbed.value = false;
+        pointerId.value = -1;
       })
   );
 };
