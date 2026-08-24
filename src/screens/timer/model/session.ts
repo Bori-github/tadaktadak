@@ -100,6 +100,9 @@ export const useTimerSession = ({ settingMinutes }: TimerSessionInput) => {
     }
 
     if (session.phase === 'running') {
+      // 끝날 시각이 지났으면 완료 전이가 이미 예약된 것
+      if (session.endsAt <= now) return;
+
       const next = pauseTimer({ session, now });
       stopCounting();
       setRemainingSeconds(toSeconds(next.pausedRemainingMs));
