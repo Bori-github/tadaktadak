@@ -30,7 +30,8 @@ export const useTimerSession = ({ settingMinutes }: TimerSessionInput) => {
   const shownSeconds = useSharedValue(0);
   const running = useSharedValue(false);
 
-  const finish = useCallback(() => setSession(completeTimer), []);
+  // 예약과 도착 사이에 정지될 수 있어 단계 재확인
+  const finish = useCallback(() => setSession((current) => (current.phase === 'running' ? completeTimer(current) : current)), []);
 
   const counting = useFrameCallback((frame) => {
     'worklet';
