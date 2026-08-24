@@ -106,7 +106,6 @@ export const useTimerSession = ({ settingMinutes }: TimerSessionInput) => {
 
       const next = pauseTimer({ session, now });
       stopCounting();
-      setRemainingSeconds(millisecondsToSeconds(next.pausedRemainingMs));
       setSession(next);
       return;
     }
