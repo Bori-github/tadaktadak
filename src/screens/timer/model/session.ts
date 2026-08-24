@@ -32,7 +32,7 @@ export const useTimerSession = ({ settingMinutes }: TimerSessionInput) => {
 
   const finish = useCallback(() => setSession(completeTimer), []);
 
-  useFrameCallback((frame) => {
+  const counting = useFrameCallback((frame) => {
     'worklet';
     if (!running.value) return;
     if (startedAtUptime.value === NOT_STARTED) startedAtUptime.value = frame.timestamp;
@@ -53,7 +53,11 @@ export const useTimerSession = ({ settingMinutes }: TimerSessionInput) => {
       running.value = false;
       scheduleOnRN(finish);
     }
-  });
+  }, false);
+
+  useEffect(() => {
+    counting.setActive(session.phase === 'running');
+  }, [counting, session.phase]);
 
   useEffect(() => {
     if (session.phase !== 'running') return;
