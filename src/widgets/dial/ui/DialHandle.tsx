@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { pointOnDial } from '../lib/geometry';
 import { type TimerMode } from '@/entities/timer';
 import { DotSprite, SPARK_A, SPARK_REST } from '@/shared/ui/dot-sprite';
@@ -12,8 +14,10 @@ type DialHandleProps = {
   mode: TimerMode;
 };
 
-export const DialHandle = ({ centerX, centerY, radius, dotSize, minutes, mode }: DialHandleProps) => {
+export const DialHandle = memo(({ centerX, centerY, radius, dotSize, minutes, mode }: DialHandleProps) => {
   const point = pointOnDial(centerX, centerY, radius, minutes * 6);
 
   return <DotSprite grid={mode === 'rest' ? SPARK_REST : SPARK_A} centerX={point.x} centerY={point.y} dotSize={dotSize} />;
-};
+});
+
+DialHandle.displayName = 'DialHandle';
