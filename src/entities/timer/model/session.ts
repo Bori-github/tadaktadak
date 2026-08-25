@@ -1,4 +1,4 @@
-import type { TimerMode } from './mode';
+import { type TimerMode } from './mode';
 
 /** 타이머 단계. `DESIGN.md` §8 */
 export const TIMER_PHASES = ['idle', 'running', 'paused', 'done'] as const;

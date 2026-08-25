@@ -1,4 +1,4 @@
-import type { TimerMode } from '../model/mode';
+import { type TimerMode } from '../model/mode';
 
 export const MINUTE_IN_MS = 60_000;
 
