@@ -1,3 +1,5 @@
+import { type TimerSession } from '../model/session';
+
 type RemainingInput = {
   remainingAtStartMs: number;
   startedAtUptime: number;
@@ -15,4 +17,29 @@ type RemainingInput = {
 export const remainingMs = ({ remainingAtStartMs, startedAtUptime, nowUptime }: RemainingInput): number => {
   'worklet';
   return Math.max(0, remainingAtStartMs - (nowUptime - startedAtUptime));
+};
+
+type SessionRemainingInput = {
+  session: TimerSession;
+  now: number;
+};
+
+/**
+ * 복구한 단계의 남은 시간(밀리초). `SPEC.md` 앱 재실행
+ *
+ * @param input.session - 저장값으로 되돌린 타이머 세션 값
+ * @param input.now - 지금 시각 (밀리초)
+ * @returns 남은 밀리초. 끝날 시각이 지났으면 0, 대기는 `null`
+ */
+export const sessionRemainingMs = ({ session, now }: SessionRemainingInput): number | null => {
+  switch (session.phase) {
+    case 'idle':
+      return null;
+    case 'running':
+      return Math.max(0, session.endsAt - now);
+    case 'paused':
+      return session.pausedRemainingMs;
+    case 'done':
+      return 0;
+  }
 };

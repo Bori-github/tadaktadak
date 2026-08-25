@@ -1,12 +1,26 @@
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 
 import { millisecondsToSeconds } from '../lib/seconds';
 
-import { completeTimer, IDLE_SESSION, MINUTE_IN_MS, pauseTimer, remainingMs, restoreSession, resumeTimer, startTimer, type TimerMode, type TimerSession } from '@/entities/timer';
+import {
+  completeTimer,
+  IDLE_SESSION,
+  loadSession,
+  MINUTE_IN_MS,
+  pauseTimer,
+  remainingMs,
+  restoreSession,
+  resumeTimer,
+  saveSession,
+  sessionRemainingMs,
+  startTimer,
+  type TimerMode,
+  type TimerSession,
+} from '@/entities/timer';
 
 /** 기기 가동 시간을 첫 프레임에서 채우기 전 값 */
 const NOT_STARTED = -1;
@@ -34,6 +48,9 @@ interface TimerSessionState {
 export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeconds }: TimerSessionInput): TimerSessionState => {
   const [session, setSession] = useState<TimerSession>(IDLE_SESSION);
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+
+  // 저장값을 읽거나 사용자가 조작하면 true. 늦게 끝난 읽기가 그 사이의 조작을 덮는 것 방지
+  const settled = useRef(false);
 
   const remainingAtStart = useSharedValue(0);
   const startedAtUptime = useSharedValue(NOT_STARTED);
@@ -103,7 +120,51 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     });
   }, [running]);
 
+  const applySession = useCallback(
+    (next: TimerSession, now: number) => {
+      const remaining = sessionRemainingMs({ session: next, now });
+
+      if (remaining === null) setRemainingSeconds(null);
+      else if (next.phase === 'running') startCounting(remaining);
+      else setRemainingSeconds(toSeconds(remaining));
+
+      setSession(next);
+    },
+    [startCounting, toSeconds],
+  );
+
+  useEffect(() => {
+    if (settled.current) return;
+
+    let live = true;
+
+    // 실패하면 집중 타이머 대기로 시작함
+    loadSession()
+      .catch(() => null)
+      .then((stored) => {
+        if (!live || settled.current) return;
+
+        const now = Date.now();
+
+        settled.current = true;
+        applySession(restoreSession({ stored, now, stopped: false }), now);
+      });
+
+    return () => {
+      live = false;
+    };
+  }, [applySession]);
+
+  useEffect(() => {
+    if (!settled.current) return;
+
+    // 실패하면 앱을 다시 켤 때 이전 단계로 돌아감
+    saveSession(session).catch(() => {});
+  }, [session]);
+
   const play = useCallback(() => {
+    settled.current = true;
+
     const now = Date.now();
 
     if (session.phase === 'idle') {
@@ -137,15 +198,16 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     const subscription = AppState.addEventListener('change', (next) => {
       if (next !== 'active') return;
 
-      const restored = restoreSession({ stored: session, now: Date.now(), stopped: false });
-      if (restored.phase === 'running') startCounting(restored.endsAt - Date.now());
-      setSession(restored);
+      const now = Date.now();
+      applySession(restoreSession({ stored: session, now, stopped: false }), now);
     });
 
     return () => subscription.remove();
-  }, [session, startCounting]);
+  }, [session, applySession]);
 
   const stop = useCallback(() => {
+    settled.current = true;
+
     stopCounting();
     setRemainingSeconds(null);
     setSession(IDLE_SESSION);

@@ -4,6 +4,7 @@ import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useStoredMinutes } from '../model/minutes';
 import { useTimerSession } from '../model/session';
 import { useTimerSpeed } from '../model/speed';
 
@@ -11,7 +12,7 @@ import { SpeedControl } from './SpeedControl';
 
 import { ControlButtons, Controls, type ControlButton } from '@/widgets/controls';
 import { DialArc, DialHandle, DialItems, DialReadout, ReadoutButtons, TickNumbers, useDialDrag } from '@/widgets/dial';
-import { TIMER_DEFAULT, type TimerMode } from '@/entities/timer';
+import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 import { resolveLayout } from '@/shared/lib';
 
@@ -19,7 +20,7 @@ export const TimerScreen = (): JSX.Element => {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
-  const [minutes, setMinutes] = useState(TIMER_DEFAULT);
+  const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
   const [pressed, setPressed] = useState<ControlButton | null>(null);
   const { speed, setSpeed, realSettingMinutes, toSeconds } = useTimerSpeed(minutes);
   const { session, remainingSeconds, play, stop } = useTimerSession({ settingMinutes: realSettingMinutes, toSeconds });
@@ -44,7 +45,8 @@ export const TimerScreen = (): JSX.Element => {
     minutes: minutes[editTarget],
     mode: editTarget,
     enabled: editing,
-    onChange: (value) => setMinutes((previous) => ({ ...previous, [editTarget]: value })),
+    onChange: (value) => changeMinutes(editTarget, value),
+    onChangeEnd: (value) => storeMinutes(editTarget, value),
   });
 
   return (
