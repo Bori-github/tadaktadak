@@ -16,5 +16,5 @@ if (allowSkia === transformAllowList) {
 module.exports = {
   ...preset,
   transformIgnorePatterns: [allowSkia, ...transformRest],
-  setupFiles: [...preset.setupFiles, '<rootDir>/node_modules/@shopify/react-native-skia/jestSetup.js'],
+  setupFiles: [...preset.setupFiles, '<rootDir>/node_modules/@shopify/react-native-skia/jestSetup.js', '<rootDir>/jest.setup.js'],
 };
