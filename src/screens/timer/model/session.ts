@@ -16,6 +16,7 @@ import {
   restoreSession,
   resumeTimer,
   saveSession,
+  sessionRemainingMs,
   startTimer,
   type TimerMode,
   type TimerSession,
@@ -119,6 +120,19 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     });
   }, [running]);
 
+  const applySession = useCallback(
+    (next: TimerSession, now: number) => {
+      const remaining = sessionRemainingMs({ session: next, now });
+
+      if (remaining === null) setRemainingSeconds(null);
+      else if (next.phase === 'running') startCounting(remaining);
+      else setRemainingSeconds(toSeconds(remaining));
+
+      setSession(next);
+    },
+    [startCounting, toSeconds],
+  );
+
   useEffect(() => {
     if (loaded.current) return;
 
@@ -131,17 +145,15 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
         if (!live) return;
 
         const now = Date.now();
-        const next = restoreSession({ stored, now, stopped: false });
 
-        if (next.phase === 'running') startCounting(next.endsAt - now);
         loaded.current = true;
-        setSession(next);
+        applySession(restoreSession({ stored, now, stopped: false }), now);
       });
 
     return () => {
       live = false;
     };
-  }, [startCounting]);
+  }, [applySession]);
 
   useEffect(() => {
     if (!loaded.current) return;
@@ -184,13 +196,12 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     const subscription = AppState.addEventListener('change', (next) => {
       if (next !== 'active') return;
 
-      const restored = restoreSession({ stored: session, now: Date.now(), stopped: false });
-      if (restored.phase === 'running') startCounting(restored.endsAt - Date.now());
-      setSession(restored);
+      const now = Date.now();
+      applySession(restoreSession({ stored: session, now, stopped: false }), now);
     });
 
     return () => subscription.remove();
-  }, [session, startCounting]);
+  }, [session, applySession]);
 
   const stop = useCallback(() => {
     stopCounting();

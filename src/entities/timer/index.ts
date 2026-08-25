@@ -1,7 +1,7 @@
 export { loadMinutes, loadSession, saveMinutes, saveSession } from './api/storage';
 export { MINUTE_IN_MS, TIMER_DEFAULT, TIMER_RANGE } from './config/minutes';
 export { ignitionProgress } from './lib/ignition';
-export { remainingMs } from './lib/remaining';
+export { remainingMs, sessionRemainingMs } from './lib/remaining';
 export { type TimerMode } from './model/mode';
 export { restoreSession } from './model/restore';
 export { IDLE_SESSION, type TimerPhase, type TimerSession } from './model/session';
