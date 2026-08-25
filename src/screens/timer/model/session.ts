@@ -1,12 +1,25 @@
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 
 import { millisecondsToSeconds } from '../lib/seconds';
 
-import { completeTimer, IDLE_SESSION, MINUTE_IN_MS, pauseTimer, remainingMs, restoreSession, resumeTimer, startTimer, type TimerMode, type TimerSession } from '@/entities/timer';
+import {
+  completeTimer,
+  IDLE_SESSION,
+  loadSession,
+  MINUTE_IN_MS,
+  pauseTimer,
+  remainingMs,
+  restoreSession,
+  resumeTimer,
+  saveSession,
+  startTimer,
+  type TimerMode,
+  type TimerSession,
+} from '@/entities/timer';
 
 /** 기기 가동 시간을 첫 프레임에서 채우기 전 값 */
 const NOT_STARTED = -1;
@@ -34,6 +47,9 @@ interface TimerSessionState {
 export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeconds }: TimerSessionInput): TimerSessionState => {
   const [session, setSession] = useState<TimerSession>(IDLE_SESSION);
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+
+  // 저장값을 읽기 전의 첫 대기 값이 이어갈 값을 덮는 것 방지
+  const loaded = useRef(false);
 
   const remainingAtStart = useSharedValue(0);
   const startedAtUptime = useSharedValue(NOT_STARTED);
@@ -102,6 +118,37 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
       running.value = false;
     });
   }, [running]);
+
+  useEffect(() => {
+    if (loaded.current) return;
+
+    let live = true;
+
+    // 실패하면 집중 타이머 대기로 시작함
+    loadSession()
+      .catch(() => null)
+      .then((stored) => {
+        if (!live) return;
+
+        const now = Date.now();
+        const next = restoreSession({ stored, now, stopped: false });
+
+        if (next.phase === 'running') startCounting(next.endsAt - now);
+        loaded.current = true;
+        setSession(next);
+      });
+
+    return () => {
+      live = false;
+    };
+  }, [startCounting]);
+
+  useEffect(() => {
+    if (!loaded.current) return;
+
+    // 실패하면 앱을 다시 켤 때 이전 단계로 돌아감
+    saveSession(session).catch(() => {});
+  }, [session]);
 
   const play = useCallback(() => {
     const now = Date.now();
