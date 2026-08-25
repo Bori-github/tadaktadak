@@ -4,13 +4,13 @@ import { formatSecondsToClock } from './clock';
 
 describe('시계판 숫자', () => {
   it.each([
-    [0, '00:00'],
-    [59, '00:59'],
-    [60, '01:00'],
-    [61, '01:01'],
-    [1500, '25:00'],
-    [3600, '60:00'],
-  ])('%i초는 %s다', (totalSeconds, expected) => {
+    { totalSeconds: 0, expected: '00:00' },
+    { totalSeconds: 59, expected: '00:59' },
+    { totalSeconds: 60, expected: '01:00' },
+    { totalSeconds: 61, expected: '01:01' },
+    { totalSeconds: 1500, expected: '25:00' },
+    { totalSeconds: 3600, expected: '60:00' },
+  ])('$totalSeconds초는 $expected다', ({ totalSeconds, expected }) => {
     expect(formatSecondsToClock(totalSeconds)).toBe(expected);
   });
 });

@@ -3,7 +3,7 @@ import { act, renderHook } from '@testing-library/react-native';
 
 import { useTimerSession } from './session';
 
-import { type TimerMode } from '@/entities/timer';
+import { TIMER_DEFAULT } from '@/entities/timer';
 
 // 저장값 읽기가 끝나는 시점을 테스트가 쥐고 있어야 「읽는 도중」을 만들 수 있음
 let mockRead: Promise<string | null> = new Promise(() => {});
@@ -35,11 +35,10 @@ jest.mock('expo-keep-awake', () => ({
   deactivateKeepAwake: async () => {},
 }));
 
-const SETTING_MINUTES: Record<TimerMode, number> = { focus: 25, rest: 5 };
 const STORED_PAUSED = JSON.stringify({ phase: 'paused', mode: 'rest', pausedRemainingMs: 90_000 });
 
 /** 저장값을 아직 읽지 못한 상태의 화면 */
-const renderBeforeRead = () => renderHook(() => useTimerSession({ settingMinutes: SETTING_MINUTES }));
+const renderBeforeRead = () => renderHook(() => useTimerSession({ settingMinutes: TIMER_DEFAULT }));
 
 beforeEach(() => {
   mockWritten.length = 0;

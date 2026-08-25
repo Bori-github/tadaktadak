@@ -2,7 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 
 import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
 
-import { DEVICES, type DeviceName } from './devices';
+import { DEVICE_NAMES, DEVICES, type DeviceName } from './devices';
 import { resolveLayout } from './responsive';
 
 // 390×844 화면. safe area 위 47·아래 34이므로 위 끝은 47, 아래 끝은 810
@@ -166,7 +166,7 @@ describe('기준 화면 세로 위치', () => {
 });
 
 describe('버튼 아래 끝이 safe area 아래 끝을 넘지 않는다', () => {
-  it.each(Object.keys(DEVICES) as DeviceName[])('%s', (name) => {
+  it.each(DEVICE_NAMES)('%s', (name) => {
     const { buttonCenterY, dotSize } = onDevice(name);
     const buttonBottomEdge = buttonCenterY + (BUTTON_SIZE_IN_DOTS / 2) * dotSize;
     expect(buttonBottomEdge).toBeLessThanOrEqual(DEVICES[name].bottomEdge);
@@ -179,7 +179,7 @@ describe('버튼 아래 끝이 safe area 아래 끝을 넘지 않는다', () => 
 });
 
 describe('시계판 위 끝이 safe area 위 끝을 넘지 않는다', () => {
-  it.each(Object.keys(DEVICES) as DeviceName[])('%s', (name) => {
+  it.each(DEVICE_NAMES)('%s', (name) => {
     const { dialCenterY, tickNumberRadius, dotSize } = onDevice(name);
     // 숫자 반높이 = 7 × 배율 (px). 배율 = dotSize ÷ 2
     const dialTopEdge = dialCenterY - tickNumberRadius - 7 * (dotSize / 2);

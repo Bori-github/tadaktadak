@@ -3,8 +3,9 @@ import { describe, expect, it } from '@jest/globals';
 import { parseMinutes, parseSession } from './parse';
 import { type RunningSession } from './session';
 import { TIMER_DEFAULT } from '../config/minutes';
+import { NOW } from '../lib/fixtures';
 
-const running: RunningSession = { phase: 'running', mode: 'focus', endsAt: 1_700_000_000_000 };
+const running: RunningSession = { phase: 'running', mode: 'focus', endsAt: NOW };
 
 describe('저장된 타이머 세션 값 읽기', () => {
   it('저장한 대로 돌아온다', () => {

@@ -20,11 +20,11 @@ const minutesAtDegrees = (degrees: number, previous: number, range: (typeof TIME
 
 describe('시계판 위 한 점', () => {
   it.each([
-    [0, 100, 50],
-    [90, 150, 100],
-    [180, 100, 150],
-    [270, 50, 100],
-  ])('%i도는 (%i, %i)다', (degrees, x, y) => {
+    { degrees: 0, x: 100, y: 50 },
+    { degrees: 90, x: 150, y: 100 },
+    { degrees: 180, x: 100, y: 150 },
+    { degrees: 270, x: 50, y: 100 },
+  ])('$degrees도는 ($x, $y)다', ({ degrees, x, y }) => {
     const point = pointOnDial(CENTER_X, CENTER_Y, RADIUS, degrees);
     expect(point.x).toBeCloseTo(x);
     expect(point.y).toBeCloseTo(y);
@@ -33,22 +33,22 @@ describe('시계판 위 한 점', () => {
 
 describe('네 방향', () => {
   it.each([
-    [100, 50, 0],
-    [150, 100, 15],
-    [100, 150, 30],
-    [50, 100, 45],
-  ])('(%i, %i)는 %i분이다', (x, y, minutes) => {
+    { x: 100, y: 50, minutes: 0 },
+    { x: 150, y: 100, minutes: 15 },
+    { x: 100, y: 150, minutes: 30 },
+    { x: 50, y: 100, minutes: 45 },
+  ])('($x, $y)는 $minutes분이다', ({ x, y, minutes }) => {
     expect(minutesAt(x, y, minutes, REST)).toBe(minutes);
   });
 });
 
 describe('1분 스냅', () => {
   it.each([
-    [2.9, 0],
-    [3, 1],
-    [8.9, 1],
-    [9, 2],
-  ])('%s도는 %i분이다', (degrees, minutes) => {
+    { degrees: 2.9, minutes: 0 },
+    { degrees: 3, minutes: 1 },
+    { degrees: 8.9, minutes: 1 },
+    { degrees: 9, minutes: 2 },
+  ])('$degrees도는 $minutes분이다', ({ degrees, minutes }) => {
     expect(minutesAtDegrees(degrees, 1, REST)).toBe(minutes);
   });
 });
@@ -74,9 +74,9 @@ describe('12시 경계', () => {
   });
 
   it.each([
-    [30, 0],
-    [31, 60],
-  ])('직전 값이 %i분이면 12시는 %i분이다', (previous, minutes) => {
+    { previous: 30, minutes: 0 },
+    { previous: 31, minutes: 60 },
+  ])('직전 값이 $previous분이면 12시는 $minutes분이다', ({ previous, minutes }) => {
     expect(minutesAt(100, 50, previous, REST)).toBe(minutes);
   });
 });
