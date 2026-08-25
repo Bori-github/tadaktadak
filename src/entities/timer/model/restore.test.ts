@@ -25,8 +25,11 @@ describe('앱 재실행', () => {
     expect(restoreSession({ stored: runningUntil(endsAt), now: NOW, stopped: false })).toEqual({ phase: 'done', mode: 'focus' });
   });
 
-  it.each([['idle'], ['done']])('%s로 저장됐으면 집중 타이머 대기다', (phase) => {
-    expect(restoreSession({ stored: { phase: phase as 'idle' | 'done', mode: 'rest' }, now: NOW, stopped: false })).toEqual(IDLE_SESSION);
+  it.each<{ label: string; phase: 'idle' | 'done' }>([
+    { label: '대기 상태', phase: 'idle' },
+    { label: '완료 상태', phase: 'done' },
+  ])('$label로 저장됐으면 집중 타이머 대기다', ({ phase }) => {
+    expect(restoreSession({ stored: { phase, mode: 'rest' }, now: NOW, stopped: false })).toEqual(IDLE_SESSION);
   });
 
   it('저장값이 없으면 집중 타이머 대기다', () => {
