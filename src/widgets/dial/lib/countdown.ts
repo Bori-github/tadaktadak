@@ -18,5 +18,5 @@ type CountdownInput = {
  * @param input.remainingSeconds - 카운트다운 중인 남은 시간(초). 대기에서는 `null`
  * @returns 보여 줄 시간(초). 카운트다운 중인 줄은 남은 시간, 나머지는 설정 시간
  */
-export const countdownSeconds = ({ mode, active, minutes, remainingSeconds }: CountdownInput) =>
+export const countdownSeconds = ({ mode, active, minutes, remainingSeconds }: CountdownInput): number =>
   mode === active && remainingSeconds !== null ? remainingSeconds : minutes * SECONDS_IN_MINUTE;

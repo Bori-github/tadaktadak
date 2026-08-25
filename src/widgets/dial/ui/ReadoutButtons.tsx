@@ -1,3 +1,4 @@
+import { type JSX } from 'react';
 import { Pressable } from 'react-native';
 
 import { FOCUS_SIZE, REST_OFFSET_IN_DOTS, REST_SIZE, TOUCH_MARGIN } from '../config/readout';
@@ -33,7 +34,7 @@ type ReadoutButtonsProps = {
   onSelect: (target: TimerMode) => void;
 };
 
-export const ReadoutButtons = ({ centerX, centerY, dotSize, onSelect }: ReadoutButtonsProps) => (
+export const ReadoutButtons = ({ centerX, centerY, dotSize, onSelect }: ReadoutButtonsProps): JSX.Element => (
   <>
     <Pressable accessibilityRole="button" style={touchArea(centerX, centerY, FOCUS_SIZE, dotSize)} onPress={() => onSelect('focus')} />
     <Pressable accessibilityRole="button" style={touchArea(centerX, centerY + REST_OFFSET_IN_DOTS * dotSize, REST_SIZE, dotSize)} onPress={() => onSelect('rest')} />

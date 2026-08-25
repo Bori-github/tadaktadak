@@ -27,4 +27,4 @@ export const buttonCentersX = (centerX: number, dotSize: number): Record<Control
  * @param dotSize - 도트 한 변 (px)
  * @returns 기준 화면에서 64가 되는 한 변 (px)
  */
-export const buttonTouchSize = (dotSize: number) => BUTTON_SIZE_IN_DOTS * dotSize + TOUCH_PADDING;
+export const buttonTouchSize = (dotSize: number): number => BUTTON_SIZE_IN_DOTS * dotSize + TOUCH_PADDING;

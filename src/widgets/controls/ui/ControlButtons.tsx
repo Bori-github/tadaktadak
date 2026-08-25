@@ -1,3 +1,4 @@
+import { type JSX } from 'react';
 import { Pressable } from 'react-native';
 
 import { buttonCentersX, buttonTouchSize, type ControlButton } from '../lib/layout';
@@ -27,7 +28,7 @@ type ControlButtonsProps = {
   onPressedChange: (button: ControlButton | null) => void;
 };
 
-export const ControlButtons = ({ centerX, centerY, dotSize, phase, onPlay, onStop, onPressedChange }: ControlButtonsProps) => {
+export const ControlButtons = ({ centerX, centerY, dotSize, phase, onPlay, onStop, onPressedChange }: ControlButtonsProps): JSX.Element => {
   const centers = buttonCentersX(centerX, dotSize);
   const { playEnabled, stopEnabled } = controlsState(phase);
 

@@ -28,7 +28,7 @@ type DialDragInput = {
  * @param input.onChange - 스냅된 타이머 시간이 바뀔 때 호출
  * @returns `GestureDetector`에 넘길 제스처
  */
-export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, enabled, onChange }: DialDragInput) => {
+export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, enabled, onChange }: DialDragInput): ReturnType<typeof Gesture.Pan> => {
   const dragged = useSharedValue(minutes);
   const grabbed = useSharedValue(false);
   const pointerId = useSharedValue(-1);

@@ -1,3 +1,4 @@
+import { type JSX } from 'react';
 import { FOCUS_GLYPH_SCALE, REST_OFFSET_IN_DOTS } from '../config/readout';
 import { formatSecondsToClock } from '../lib/clock';
 import { countdownSeconds } from '../lib/countdown';
@@ -19,7 +20,7 @@ type DialReadoutProps = {
   remainingSeconds: number | null;
 };
 
-export const DialReadout = ({ centerX, centerY, dotSize, focusMinutes, restMinutes, active, remainingSeconds }: DialReadoutProps) => {
+export const DialReadout = ({ centerX, centerY, dotSize, focusMinutes, restMinutes, active, remainingSeconds }: DialReadoutProps): JSX.Element => {
   const seconds = (mode: TimerMode, minutes: number) => countdownSeconds({ mode, active, minutes, remainingSeconds });
 
   return (

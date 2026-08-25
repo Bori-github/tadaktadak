@@ -2,7 +2,7 @@
 const TOUCH_RADIUS_IN_DOTS = 11;
 
 /** 시계판 위 한 점. `degrees`는 12시가 0, 3시가 90, 6시가 180이다 */
-export const pointOnDial = (centerX: number, centerY: number, radius: number, degrees: number) => {
+export const pointOnDial = (centerX: number, centerY: number, radius: number, degrees: number): { x: number; y: number } => {
   // cos·sin에서 0도는 3시 방향을 가리키므로 보정한다
   const angle = ((degrees - 90) * Math.PI) / 180;
   return {
@@ -23,7 +23,7 @@ type MinutesInput = {
 };
 
 /** 시계판 위 한 점이 가리키는 분. `DESIGN.md` §8 */
-export const minutesFromPoint = ({ centerX, centerY, x, y, previous, min, max }: MinutesInput) => {
+export const minutesFromPoint = ({ centerX, centerY, x, y, previous, min, max }: MinutesInput): number => {
   'worklet';
   // atan2는 −180~180을 주므로 360을 더해 보정
   const degrees = ((((Math.atan2(y - centerY, x - centerX) * 180) / Math.PI + 90) % 360) + 360) % 360;
@@ -47,7 +47,7 @@ type HandleTouchInput = {
 };
 
 /** 터치한 곳이 손잡이를 잡는 범위 안에 있는지 여부. `DESIGN.md` §4 */
-export const isOnHandle = ({ handleX, handleY, x, y, dotSize }: HandleTouchInput) => {
+export const isOnHandle = ({ handleX, handleY, x, y, dotSize }: HandleTouchInput): boolean => {
   'worklet';
   const reach = TOUCH_RADIUS_IN_DOTS * dotSize;
 
