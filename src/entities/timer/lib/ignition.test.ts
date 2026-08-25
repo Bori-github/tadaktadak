@@ -18,10 +18,10 @@ describe('점화 판정', () => {
   });
 
   it.each([
-    [4, 1],
-    [4.5, 0.5],
-    [5, 0],
-  ])('남은 %s분일 때 5번 칸 진행률은 %s이다', (remainingMinutes, expected) => {
+    { remainingMinutes: 4, expected: 1 },
+    { remainingMinutes: 4.5, expected: 0.5 },
+    { remainingMinutes: 5, expected: 0 },
+  ])('남은 $remainingMinutes분일 때 5번 칸 진행률은 $expected이다', ({ remainingMinutes, expected }) => {
     expect(ignitionAt(5, remainingMinutes)).toBe(expected);
   });
 

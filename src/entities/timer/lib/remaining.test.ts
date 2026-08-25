@@ -17,10 +17,10 @@ describe('남은 시간', () => {
   });
 
   it.each([
-    [25 * MINUTE - 1, 1],
-    [25 * MINUTE, 0],
-    [25 * MINUTE + 1, 0],
-  ])('%i밀리초 흐르면 %i밀리초 남는다', (elapsedMs, expected) => {
+    { elapsedMs: 25 * MINUTE - 1, expected: 1 },
+    { elapsedMs: 25 * MINUTE, expected: 0 },
+    { elapsedMs: 25 * MINUTE + 1, expected: 0 },
+  ])('$elapsedMs밀리초 흐르면 $expected밀리초 남는다', ({ elapsedMs, expected }) => {
     expect(remainingAfter(elapsedMs)).toBe(expected);
   });
 
