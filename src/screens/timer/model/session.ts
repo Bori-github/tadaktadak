@@ -73,6 +73,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   useEffect(() => {
     if (session.phase !== 'running') return;
 
+    // 실패하면 화면이 그대로 꺼짐. 남은 시간은 활성 전환에서 endsAt으로 다시 맞춰짐
     activateKeepAwakeAsync().catch(() => {});
     return () => {
       deactivateKeepAwake().catch(() => {});
