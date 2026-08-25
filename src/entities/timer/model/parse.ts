@@ -2,8 +2,8 @@ import { TIMER_MODES, type TimerMode } from './mode';
 import { TIMER_PHASES, type TimerPhase, type TimerSession } from './session';
 import { TIMER_DEFAULT, TIMER_RANGE } from '../config/minutes';
 
-const isPhase = (value: unknown): value is TimerPhase => TIMER_PHASES.includes(value as TimerPhase);
-const isMode = (value: unknown): value is TimerMode => TIMER_MODES.includes(value as TimerMode);
+const isPhase = (value: unknown): value is TimerPhase => TIMER_PHASES.some((phase) => phase === value);
+const isMode = (value: unknown): value is TimerMode => TIMER_MODES.some((mode) => mode === value);
 
 /**
  * 저장 문자열에서 읽어 낸 타이머 세션 값. `SPEC.md` 기기에 저장하는 값
