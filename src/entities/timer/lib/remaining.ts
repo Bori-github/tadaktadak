@@ -12,7 +12,7 @@ type RemainingInput = {
  * @param input.nowUptime - 지금 기기 가동 시간 (밀리초)
  * @returns 0이 하한인 남은 밀리초
  */
-export const remainingMs = ({ remainingAtStartMs, startedAtUptime, nowUptime }: RemainingInput) => {
+export const remainingMs = ({ remainingAtStartMs, startedAtUptime, nowUptime }: RemainingInput): number => {
   'worklet';
   return Math.max(0, remainingAtStartMs - (nowUptime - startedAtUptime));
 };
