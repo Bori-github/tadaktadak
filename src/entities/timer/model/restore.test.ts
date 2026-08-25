@@ -19,9 +19,9 @@ describe('앱 재실행', () => {
   });
 
   it.each([
-    ['1분 전에 끝났으면', NOW - 60_000],
-    ['끝날 시각이 지금과 같으면', NOW],
-  ])('진행 중에 종료됐고 %s 완료로 돌아온다', (_label, endsAt) => {
+    { label: '1분 전에 끝났으면', endsAt: NOW - 60_000 },
+    { label: '끝날 시각이 지금과 같으면', endsAt: NOW },
+  ])('진행 중에 종료됐고 $label 완료로 돌아온다', ({ endsAt }) => {
     expect(restoreSession({ stored: runningUntil(endsAt), now: NOW, stopped: false })).toEqual({ phase: 'done', mode: 'focus' });
   });
 

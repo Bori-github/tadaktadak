@@ -1,3 +1,4 @@
+import { type JSX } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -13,7 +14,7 @@ type SpeedControlProps = {
 };
 
 /** 개발 빌드에서만 그리는 배속 조작 */
-export const SpeedControl = ({ speed, enabled, onSelect }: SpeedControlProps) => {
+export const SpeedControl = ({ speed, enabled, onSelect }: SpeedControlProps): JSX.Element => {
   const insets = useSafeAreaInsets();
 
   return (

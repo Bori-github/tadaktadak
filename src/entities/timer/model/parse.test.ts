@@ -12,13 +12,13 @@ describe('저장된 타이머 세션 값 읽기', () => {
   });
 
   it.each([
-    ['저장값이 없으면', null],
-    ['JSON이 아니면', '{'],
-    ['단계가 넷 중 하나가 아니면', '{"phase":"burning","mode":"focus","endsAt":1,"pausedRemainingMs":null}'],
-    ['모드가 둘 중 하나가 아니면', '{"phase":"running","mode":"sleep","endsAt":1,"pausedRemainingMs":null}'],
-    ['진행인데 끝날 시각이 없으면', '{"phase":"running","mode":"focus","endsAt":null,"pausedRemainingMs":null}'],
-    ['일시정지인데 남은 밀리초가 없으면', '{"phase":"paused","mode":"focus","endsAt":null,"pausedRemainingMs":null}'],
-  ])('%s 버린다', (_label, raw) => {
+    { label: '저장값이 없으면', raw: null },
+    { label: 'JSON이 아니면', raw: '{' },
+    { label: '단계가 넷 중 하나가 아니면', raw: '{"phase":"burning","mode":"focus","endsAt":1,"pausedRemainingMs":null}' },
+    { label: '모드가 둘 중 하나가 아니면', raw: '{"phase":"running","mode":"sleep","endsAt":1,"pausedRemainingMs":null}' },
+    { label: '진행인데 끝날 시각이 없으면', raw: '{"phase":"running","mode":"focus","endsAt":null,"pausedRemainingMs":null}' },
+    { label: '일시정지인데 남은 밀리초가 없으면', raw: '{"phase":"paused","mode":"focus","endsAt":null,"pausedRemainingMs":null}' },
+  ])('$label 버린다', ({ raw }) => {
     expect(parseSession(raw)).toBeNull();
   });
 });
@@ -37,16 +37,16 @@ describe('저장된 타이머 시간 읽기', () => {
   });
 
   it.each([
-    ['저장값이 없으면', null],
-    ['숫자가 아니면', '스물다섯'],
-    ['하한보다 작으면', '0'],
-    ['상한보다 크면', '61'],
-    ['정수가 아니면', '25.5'],
-    ['빈 문자열이면', ''],
-    ['앞뒤에 공백이 있으면', ' 25 '],
-    ['16진수 표기면', '0x10'],
-    ['지수 표기면', '1e1'],
-  ])('집중 타이머는 %s 기본값을 쓴다', (_label, raw) => {
+    { label: '저장값이 없으면', raw: null },
+    { label: '숫자가 아니면', raw: '스물다섯' },
+    { label: '하한보다 작으면', raw: '0' },
+    { label: '상한보다 크면', raw: '61' },
+    { label: '정수가 아니면', raw: '25.5' },
+    { label: '빈 문자열이면', raw: '' },
+    { label: '앞뒤에 공백이 있으면', raw: ' 25 ' },
+    { label: '16진수 표기면', raw: '0x10' },
+    { label: '지수 표기면', raw: '1e1' },
+  ])('집중 타이머는 $label 기본값을 쓴다', ({ raw }) => {
     expect(parseMinutes(raw, 'focus')).toBe(TIMER_DEFAULT.focus);
   });
 });

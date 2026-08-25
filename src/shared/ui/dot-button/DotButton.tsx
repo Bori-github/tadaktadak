@@ -1,3 +1,4 @@
+import { type JSX } from 'react';
 import { Group, Rect } from '@shopify/react-native-skia';
 
 import { BUTTON_SIZE_IN_DOTS, COLORS } from '@/shared/constants';
@@ -33,7 +34,7 @@ type DotButtonProps = {
   pressed?: boolean;
 };
 
-export const DotButton = ({ centerX, centerY, dotSize, icon, enabled = true, pressed = false }: DotButtonProps) => {
+export const DotButton = ({ centerX, centerY, dotSize, icon, enabled = true, pressed = false }: DotButtonProps): JSX.Element => {
   const size = BUTTON_SIZE_IN_DOTS;
   const corner = topLeftOnGrid({ centerX, centerY, widthInDots: size, heightInDots: size, dotSize });
   const left = corner.left;

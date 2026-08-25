@@ -11,7 +11,7 @@ export const GLYPH_GAP = 1;
  * @param [glyphScale=1] - 도트 좌표에 곱하므로 정수. `DESIGN.md` §3
  * @returns 도트 단위 가로·세로
  */
-export const dotNumberSize = (text: string, glyphScale = 1) => ({
+export const dotNumberSize = (text: string, glyphScale = 1): { widthInDots: number; heightInDots: number } => ({
   widthInDots: (text.length * (GLYPH_WIDTH + GLYPH_GAP) - GLYPH_GAP) * glyphScale,
   heightInDots: GLYPH_HEIGHT * glyphScale,
 });

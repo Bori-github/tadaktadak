@@ -1,3 +1,4 @@
+import { type JSX } from 'react';
 import { Group, Rect } from '@shopify/react-native-skia';
 
 import { topLeftOnGrid } from '@/shared/lib';
@@ -15,7 +16,7 @@ type DotSpriteProps = {
   opacity?: number;
 };
 
-export const DotSprite = ({ grid, centerX, centerY, dotSize, colors = SPRITE_COLORS, opacity = 1 }: DotSpriteProps) => {
+export const DotSprite = ({ grid, centerX, centerY, dotSize, colors = SPRITE_COLORS, opacity = 1 }: DotSpriteProps): JSX.Element => {
   const width = grid[0]?.length ?? 0;
 
   const { left, top } = topLeftOnGrid({ centerX, centerY, widthInDots: width, heightInDots: grid.length, dotSize });

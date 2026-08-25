@@ -12,7 +12,7 @@ type IgnitionInput = {
  * @param input.settingMinutes - 설정한 타이머 시간 (분)
  * @returns 0은 꺼진 상태, 1은 다 붙은 상태인 진행률
  */
-export const ignitionProgress = ({ slot, remainingMinutes, settingMinutes }: IgnitionInput) => {
+export const ignitionProgress = ({ slot, remainingMinutes, settingMinutes }: IgnitionInput): number => {
   'worklet';
   // 설정 밖 칸은 불이 붙지 않은 상태. `DESIGN.md` §5
   if (slot > settingMinutes) return 0;
