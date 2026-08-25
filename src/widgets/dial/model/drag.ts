@@ -20,18 +20,21 @@ type DialDragInput = {
   /** 손잡이를 끌 수 있는지 여부. `DESIGN.md` §8 조작 */
   enabled: boolean;
   onChange: (minutes: number) => void;
+  onChangeEnd: (minutes: number) => void;
 };
 
 /**
  * 손잡이를 끌어 타이머 시간을 바꾸는 제스처.
  *
  * @param input.onChange - 스냅된 타이머 시간이 바뀔 때 호출
+ * @param input.onChangeEnd - 손을 뗄 때 호출. 끌면서 시간이 한 번이라도 바뀐 경우만
  * @returns `GestureDetector`에 넘길 제스처
  */
-export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, enabled, onChange }: DialDragInput): ReturnType<typeof Gesture.Pan> => {
+export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, enabled, onChange, onChangeEnd }: DialDragInput): ReturnType<typeof Gesture.Pan> => {
   const dragged = useSharedValue(minutes);
   const grabbed = useSharedValue(false);
   const pointerId = useSharedValue(-1);
+  const changed = useSharedValue(false);
 
   const { min, max } = TIMER_RANGE[mode];
   const handle = pointOnDial(centerX, centerY, radius, minutes * 6);
@@ -50,6 +53,7 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
 
         grabbed.value = isOnHandle({ handleX: handle.x, handleY: handle.y, x: touch.x, y: touch.y, dotSize });
         dragged.value = minutes;
+        changed.value = false;
         pointerId.value = touch.id;
         if (!grabbed.value) manager.fail();
       })
@@ -64,10 +68,14 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
         if (next === dragged.value) return;
 
         dragged.value = next;
+        changed.value = true;
         scheduleOnRN(onChange, next);
       })
       .onFinalize(() => {
+        if (changed.value) scheduleOnRN(onChangeEnd, dragged.value);
+
         grabbed.value = false;
+        changed.value = false;
         pointerId.value = -1;
       })
   );

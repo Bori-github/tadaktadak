@@ -20,7 +20,7 @@ export const TimerScreen = (): JSX.Element => {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
-  const { minutes, changeMinutes } = useStoredMinutes();
+  const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
   const [pressed, setPressed] = useState<ControlButton | null>(null);
   const { speed, setSpeed, realSettingMinutes, toSeconds } = useTimerSpeed(minutes);
   const { session, remainingSeconds, play, stop } = useTimerSession({ settingMinutes: realSettingMinutes, toSeconds });
@@ -46,6 +46,7 @@ export const TimerScreen = (): JSX.Element => {
     mode: editTarget,
     enabled: editing,
     onChange: (value) => changeMinutes(editTarget, value),
+    onChangeEnd: (value) => storeMinutes(editTarget, value),
   });
 
   return (
