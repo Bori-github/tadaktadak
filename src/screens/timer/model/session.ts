@@ -49,8 +49,8 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   const [session, setSession] = useState<TimerSession>(IDLE_SESSION);
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
 
-  // 저장값을 읽기 전의 첫 대기 값이 이어갈 값을 덮는 것 방지
-  const loaded = useRef(false);
+  // 저장값을 읽거나 사용자가 조작하면 true. 늦게 끝난 읽기가 그 사이의 조작을 덮는 것 방지
+  const settled = useRef(false);
 
   const remainingAtStart = useSharedValue(0);
   const startedAtUptime = useSharedValue(NOT_STARTED);
@@ -134,7 +134,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   );
 
   useEffect(() => {
-    if (loaded.current) return;
+    if (settled.current) return;
 
     let live = true;
 
@@ -142,11 +142,11 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     loadSession()
       .catch(() => null)
       .then((stored) => {
-        if (!live) return;
+        if (!live || settled.current) return;
 
         const now = Date.now();
 
-        loaded.current = true;
+        settled.current = true;
         applySession(restoreSession({ stored, now, stopped: false }), now);
       });
 
@@ -156,13 +156,15 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   }, [applySession]);
 
   useEffect(() => {
-    if (!loaded.current) return;
+    if (!settled.current) return;
 
     // 실패하면 앱을 다시 켤 때 이전 단계로 돌아감
     saveSession(session).catch(() => {});
   }, [session]);
 
   const play = useCallback(() => {
+    settled.current = true;
+
     const now = Date.now();
 
     if (session.phase === 'idle') {
@@ -204,6 +206,8 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   }, [session, applySession]);
 
   const stop = useCallback(() => {
+    settled.current = true;
+
     stopCounting();
     setRemainingSeconds(null);
     setSession(IDLE_SESSION);
