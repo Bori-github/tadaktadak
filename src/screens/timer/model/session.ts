@@ -23,7 +23,15 @@ type TimerSessionInput = {
  * @param [input.toSeconds] - 남은 밀리초를 화면에 보여 줄 초로 바꾸는 함수. 기본은 실제 시간
  * @returns 지금 타이머 세션 값, 카운트다운 중인 남은 시간(초, 대기에서는 `null`), 재생·정지 조작
  */
-export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeconds }: TimerSessionInput) => {
+interface TimerSessionState {
+  session: TimerSession;
+  /** 카운트다운 중인 남은 시간(초). 대기에서는 `null` */
+  remainingSeconds: number | null;
+  play: () => void;
+  stop: () => void;
+}
+
+export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeconds }: TimerSessionInput): TimerSessionState => {
   const [session, setSession] = useState<TimerSession>(IDLE_SESSION);
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
 

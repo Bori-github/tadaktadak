@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { millisecondsToSeconds } from '../lib/seconds';
 
@@ -23,7 +23,7 @@ export const realMinutes = (settingMinutes: Record<TimerMode, number>, speed: nu
  * @param speed - 1이 실제 속도
  * @returns 화면에 보여 줄 시간(초)
  */
-export const toShownSeconds = (realMs: number, speed: number) => {
+export const toShownSeconds = (realMs: number, speed: number): number => {
   'worklet';
   return millisecondsToSeconds(realMs * speed);
 };
@@ -34,7 +34,15 @@ export const toShownSeconds = (realMs: number, speed: number) => {
  * @param settingMinutes - 화면이 보여 주는 설정 시간(분)
  * @returns 지금 배속, 배속 변경, 배속만큼 짧아진 설정 시간(분), 남은 밀리초를 보여 줄 초로 바꾸는 함수
  */
-export const useTimerSpeed = (settingMinutes: Record<TimerMode, number>) => {
+interface TimerSpeed {
+  speed: number;
+  setSpeed: Dispatch<SetStateAction<number>>;
+  /** 배속만큼 짧아진 설정 시간(분) */
+  realSettingMinutes: Record<TimerMode, number>;
+  toSeconds: (ms: number) => number;
+}
+
+export const useTimerSpeed = (settingMinutes: Record<TimerMode, number>): TimerSpeed => {
   const [speed, setSpeed] = useState(1);
 
   const realSettingMinutes = useMemo(() => realMinutes(settingMinutes, speed), [settingMinutes, speed]);
