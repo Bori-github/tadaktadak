@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { loadMinutes, saveMinutes, TIMER_DEFAULT, type TimerMode } from '@/entities/timer';
 
@@ -16,14 +16,23 @@ interface StoredMinutes {
 export const useStoredMinutes = (): StoredMinutes => {
   const [minutes, setMinutes] = useState(TIMER_DEFAULT);
 
+  // 저장값을 읽거나 사용자가 바꾸면 true. 늦게 끝난 읽기가 그 사이의 조작을 덮는 것 방지
+  const settled = useRef(false);
+
   useEffect(() => {
     // 실패하면 기본값으로 시작함
     loadMinutes()
-      .then((stored) => setMinutes(stored))
+      .then((stored) => {
+        if (settled.current) return;
+
+        settled.current = true;
+        setMinutes(stored);
+      })
       .catch(() => {});
   }, []);
 
   const changeMinutes = useCallback((mode: TimerMode, value: number) => {
+    settled.current = true;
     setMinutes((previous) => ({ ...previous, [mode]: value }));
   }, []);
 
