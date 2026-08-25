@@ -2,31 +2,30 @@ import { describe, expect, it } from '@jest/globals';
 
 import { NOW } from './fixtures';
 import { remainingMs, sessionRemainingMs } from './remaining';
+import { MINUTE_IN_MS } from '../config/minutes';
 import { IDLE_SESSION } from '../model/session';
 
-const MINUTE = 60_000;
-
-const remainingAfter = (elapsedMs: number, remainingAtStartMs = 25 * MINUTE) => remainingMs({ remainingAtStartMs, startedAtUptime: 1000, nowUptime: 1000 + elapsedMs });
+const remainingAfter = (elapsedMs: number, remainingAtStartMs = 25 * MINUTE_IN_MS) => remainingMs({ remainingAtStartMs, startedAtUptime: 1000, nowUptime: 1000 + elapsedMs });
 
 describe('남은 시간', () => {
   it('25분 타이머가 1분 흐르면 24분 남는다', () => {
-    expect(remainingAfter(MINUTE)).toBe(24 * MINUTE);
+    expect(remainingAfter(MINUTE_IN_MS)).toBe(24 * MINUTE_IN_MS);
   });
 
   it('3분 남기고 재개하면 1분 흐른 뒤 2분 남는다', () => {
-    expect(remainingAfter(MINUTE, 3 * MINUTE)).toBe(2 * MINUTE);
+    expect(remainingAfter(MINUTE_IN_MS, 3 * MINUTE_IN_MS)).toBe(2 * MINUTE_IN_MS);
   });
 
   it.each([
-    { elapsedMs: 25 * MINUTE - 1, expected: 1 },
-    { elapsedMs: 25 * MINUTE, expected: 0 },
-    { elapsedMs: 25 * MINUTE + 1, expected: 0 },
+    { elapsedMs: 25 * MINUTE_IN_MS - 1, expected: 1 },
+    { elapsedMs: 25 * MINUTE_IN_MS, expected: 0 },
+    { elapsedMs: 25 * MINUTE_IN_MS + 1, expected: 0 },
   ])('$elapsedMs밀리초 흐르면 $expected밀리초 남는다', ({ elapsedMs, expected }) => {
     expect(remainingAfter(elapsedMs)).toBe(expected);
   });
 
   it('25분 타이머가 60분 지나도 0이다', () => {
-    expect(remainingAfter(60 * MINUTE)).toBe(0);
+    expect(remainingAfter(60 * MINUTE_IN_MS)).toBe(0);
   });
 });
 
@@ -36,7 +35,7 @@ describe('복구한 단계의 남은 시간(밀리초)', () => {
   });
 
   it('진행 상태는 끝날 시각까지 남은 시간이다', () => {
-    expect(sessionRemainingMs({ session: { phase: 'running', mode: 'focus', endsAt: NOW + 3 * MINUTE }, now: NOW })).toBe(3 * MINUTE);
+    expect(sessionRemainingMs({ session: { phase: 'running', mode: 'focus', endsAt: NOW + 3 * MINUTE_IN_MS }, now: NOW })).toBe(3 * MINUTE_IN_MS);
   });
 
   it('끝날 시각이 지난 진행 상태는 0이다', () => {

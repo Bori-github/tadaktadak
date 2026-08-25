@@ -2,12 +2,13 @@ import { describe, expect, it } from '@jest/globals';
 
 import { IDLE_SESSION, type PausedSession, type RunningSession } from './session';
 import { completeTimer, pauseTimer, resumeTimer, startTimer } from './transition';
+import { MINUTE_IN_MS } from '../config/minutes';
 import { NOW } from '../lib/fixtures';
 
-const SETTING_MS = 25 * 60_000;
+const SETTING_MS = 25 * MINUTE_IN_MS;
 
-const running: RunningSession = { phase: 'running', mode: 'focus', endsAt: NOW + 3 * 60_000 };
-const paused: PausedSession = { phase: 'paused', mode: 'focus', pausedRemainingMs: 3 * 60_000 };
+const running: RunningSession = { phase: 'running', mode: 'focus', endsAt: NOW + 3 * MINUTE_IN_MS };
+const paused: PausedSession = { phase: 'paused', mode: 'focus', pausedRemainingMs: 3 * MINUTE_IN_MS };
 
 describe('단계 전이', () => {
   it('25분으로 시작하면 25분 뒤에 끝나는 진행이 된다', () => {
@@ -22,19 +23,19 @@ describe('단계 전이', () => {
     expect(pauseTimer({ session: running, now: NOW })).toEqual({
       phase: 'paused',
       mode: 'focus',
-      pausedRemainingMs: 3 * 60_000,
+      pausedRemainingMs: 3 * MINUTE_IN_MS,
     });
   });
 
   it('끝날 시각이 1분 지난 뒤 일시정지하면 0을 남긴다', () => {
-    expect(pauseTimer({ session: running, now: NOW + 4 * 60_000 }).pausedRemainingMs).toBe(0);
+    expect(pauseTimer({ session: running, now: NOW + 4 * MINUTE_IN_MS }).pausedRemainingMs).toBe(0);
   });
 
   it('3분 남긴 일시정지를 재개하면 3분 뒤에 끝나는 진행이 된다', () => {
     expect(resumeTimer({ session: paused, now: NOW })).toEqual({
       phase: 'running',
       mode: 'focus',
-      endsAt: NOW + 3 * 60_000,
+      endsAt: NOW + 3 * MINUTE_IN_MS,
     });
   });
 
