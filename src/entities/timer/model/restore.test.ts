@@ -2,8 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 
 import { restoreSession } from './restore';
 import { IDLE_SESSION, type PausedSession, type RunningSession } from './session';
-
-const NOW = 1_700_000_000_000;
+import { NOW } from '../lib/fixtures';
 
 const runningUntil = (endsAt: number): RunningSession => ({ phase: 'running', mode: 'focus', endsAt });
 const pausedRest: PausedSession = { phase: 'paused', mode: 'rest', pausedRemainingMs: 3 * 60_000 };

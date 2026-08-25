@@ -2,8 +2,8 @@ import { describe, expect, it } from '@jest/globals';
 
 import { IDLE_SESSION, type PausedSession, type RunningSession } from './session';
 import { completeTimer, pauseTimer, resumeTimer, startTimer } from './transition';
+import { NOW } from '../lib/fixtures';
 
-const NOW = 1_700_000_000_000;
 const SETTING_MS = 25 * 60_000;
 
 const running: RunningSession = { phase: 'running', mode: 'focus', endsAt: NOW + 3 * 60_000 };

@@ -1,5 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
+import { NOW } from './fixtures';
 import { remainingMs, sessionRemainingMs } from './remaining';
 import { IDLE_SESSION } from '../model/session';
 
@@ -30,25 +31,23 @@ describe('남은 시간', () => {
 });
 
 describe('복구한 단계의 남은 시간(밀리초)', () => {
-  const now = 1_700_000_000_000;
-
   it('대기 상태는 남은 시간이 없다', () => {
-    expect(sessionRemainingMs({ session: IDLE_SESSION, now })).toBeNull();
+    expect(sessionRemainingMs({ session: IDLE_SESSION, now: NOW })).toBeNull();
   });
 
   it('진행 상태는 끝날 시각까지 남은 시간이다', () => {
-    expect(sessionRemainingMs({ session: { phase: 'running', mode: 'focus', endsAt: now + 3 * MINUTE }, now })).toBe(3 * MINUTE);
+    expect(sessionRemainingMs({ session: { phase: 'running', mode: 'focus', endsAt: NOW + 3 * MINUTE }, now: NOW })).toBe(3 * MINUTE);
   });
 
   it('끝날 시각이 지난 진행 상태는 0이다', () => {
-    expect(sessionRemainingMs({ session: { phase: 'running', mode: 'focus', endsAt: now - 1 }, now })).toBe(0);
+    expect(sessionRemainingMs({ session: { phase: 'running', mode: 'focus', endsAt: NOW - 1 }, now: NOW })).toBe(0);
   });
 
   it('일시정지 상태는 멈춘 시점에 남아 있던 시간이다', () => {
-    expect(sessionRemainingMs({ session: { phase: 'paused', mode: 'focus', pausedRemainingMs: 90_000 }, now })).toBe(90_000);
+    expect(sessionRemainingMs({ session: { phase: 'paused', mode: 'focus', pausedRemainingMs: 90_000 }, now: NOW })).toBe(90_000);
   });
 
   it('완료 상태는 0이다', () => {
-    expect(sessionRemainingMs({ session: { phase: 'done', mode: 'rest' }, now })).toBe(0);
+    expect(sessionRemainingMs({ session: { phase: 'done', mode: 'rest' }, now: NOW })).toBe(0);
   });
 });
