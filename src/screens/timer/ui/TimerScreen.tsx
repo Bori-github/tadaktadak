@@ -1,5 +1,5 @@
 import { Canvas, Fill } from '@shopify/react-native-skia';
-import { useState, type JSX } from 'react';
+import { useCallback, useState, type JSX } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { useDerivedValue } from 'react-native-reanimated';
@@ -47,6 +47,9 @@ export const TimerScreen = (): JSX.Element => {
   // 대기에서 설정 시간을 넘기면 아무 칸도 붙지 않음
   const litMinutes = editing ? selected : (remainingSeconds ?? 0) / SECONDS_IN_MINUTE;
 
+  const handleChange = useCallback((value: number) => changeMinutes(editTarget, value), [changeMinutes, editTarget]);
+  const handleChangeEnd = useCallback((value: number) => storeMinutes(editTarget, value), [storeMinutes, editTarget]);
+
   const drag = useDialDrag({
     centerX,
     centerY,
@@ -55,8 +58,8 @@ export const TimerScreen = (): JSX.Element => {
     minutes: minutes[editTarget],
     mode: editTarget,
     enabled: editing,
-    onChange: (value) => changeMinutes(editTarget, value),
-    onChangeEnd: (value) => storeMinutes(editTarget, value),
+    onChange: handleChange,
+    onChangeEnd: handleChangeEnd,
   });
 
   return (

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Gesture } from 'react-native-gesture-handler';
 import { useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
@@ -36,47 +37,51 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
   const pointerId = useSharedValue(-1);
   const changed = useSharedValue(false);
 
-  const { min, max } = TIMER_RANGE[mode];
-  const handle = pointOnDial(centerX, centerY, radius, minutes * 6);
+  return useMemo(() => {
+    const { min, max } = TIMER_RANGE[mode];
+    const handle = pointOnDial(centerX, centerY, radius, minutes * 6);
 
-  return (
-    Gesture.Pan()
-      .enabled(enabled)
-      // 제스처가 활성화되면 같은 자리의 버튼·숫자 누름이 취소됨
-      .manualActivation(true)
-      .onTouchesDown((event, manager) => {
-        // 현재 드래그 중인 상태 외 추가되는 터치 이벤트를 막아 타이머 설정 시간이 튀는 것 방지
-        if (grabbed.value) return;
+    return (
+      Gesture.Pan()
+        .enabled(enabled)
+        // 제스처가 활성화되면 같은 자리의 버튼·숫자 누름이 취소됨
+        .manualActivation(true)
+        .onTouchesDown((event, manager) => {
+          // 현재 드래그 중인 상태 외 추가되는 터치 이벤트를 막아 타이머 설정 시간이 튀는 것 방지
+          if (grabbed.value) return;
 
-        const touch = event.changedTouches[0];
-        if (!touch) return;
+          const touch = event.changedTouches[0];
+          if (!touch) return;
 
-        grabbed.value = isOnHandle({ handleX: handle.x, handleY: handle.y, x: touch.x, y: touch.y, dotSize });
-        dragged.value = minutes;
-        changed.value = false;
-        pointerId.value = touch.id;
-        if (!grabbed.value) manager.fail();
-      })
-      .onTouchesMove((event, manager) => {
-        if (!grabbed.value) return;
-        manager.activate();
+          grabbed.value = isOnHandle({ handleX: handle.x, handleY: handle.y, x: touch.x, y: touch.y, dotSize });
+          dragged.value = minutes;
+          changed.value = false;
+          pointerId.value = touch.id;
+          if (!grabbed.value) manager.fail();
+        })
+        .onTouchesMove((event, manager) => {
+          if (!grabbed.value) return;
+          manager.activate();
 
-        const touch = event.allTouches.find((moved) => moved.id === pointerId.value);
-        if (!touch) return;
+          const touch = event.allTouches.find((moved) => moved.id === pointerId.value);
+          if (!touch) return;
 
-        const next = minutesFromPoint({ centerX, centerY, x: touch.x, y: touch.y, previous: dragged.value, min, max });
-        if (next === dragged.value) return;
+          const next = minutesFromPoint({ centerX, centerY, x: touch.x, y: touch.y, previous: dragged.value, min, max });
+          if (next === dragged.value) return;
 
-        dragged.value = next;
-        changed.value = true;
-        scheduleOnRN(onChange, next);
-      })
-      .onFinalize(() => {
-        if (changed.value) scheduleOnRN(onChangeEnd, dragged.value);
+          dragged.value = next;
+          changed.value = true;
+          scheduleOnRN(onChange, next);
+        })
+        .onFinalize(() => {
+          if (changed.value) scheduleOnRN(onChangeEnd, dragged.value);
 
-        grabbed.value = false;
-        changed.value = false;
-        pointerId.value = -1;
-      })
-  );
+          grabbed.value = false;
+          changed.value = false;
+          pointerId.value = -1;
+        })
+    );
+    // `useSharedValue`가 준 값은 고정 참조라 의존성 배열에서 제거. 넣으면 React Compiler 린트가 안에서 쓰는 것을 막음
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [centerX, centerY, radius, dotSize, minutes, mode, enabled, onChange, onChangeEnd]);
 };
