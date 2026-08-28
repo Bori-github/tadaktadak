@@ -1,5 +1,6 @@
 import { Path, Skia } from '@shopify/react-native-skia';
 import { memo } from 'react';
+import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
 
 import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
@@ -13,17 +14,18 @@ type DialArcProps = {
   radius: number;
   dotSize: number;
   /** 12시부터 minutes만큼 시계 방향으로 그린다 */
-  minutes: number;
+  minutes: SharedValue<number>;
   mode: TimerMode;
 };
 
 export const DialArc = memo(({ centerX, centerY, radius, dotSize, minutes, mode }: DialArcProps) => {
-  if (minutes <= 0) return null;
-
-  // addArc에서 0도는 3시 방향을 가리키므로 보정한다
-  const path = Skia.PathBuilder.Make()
-    .addArc(Skia.XYWHRect(centerX - radius, centerY - radius, radius * 2, radius * 2), -90, minutes * 6)
-    .build();
+  const path = useDerivedValue(() => {
+    'worklet';
+    // addArc에서 0도는 3시 방향이라 보정
+    return Skia.PathBuilder.Make()
+      .addArc(Skia.XYWHRect(centerX - radius, centerY - radius, radius * 2, radius * 2), -90, minutes.value * 6)
+      .build();
+  });
 
   return <Path path={path} color={COLORS[mode].arc} style="stroke" strokeWidth={ARC_WIDTH_IN_DOTS * dotSize} />;
 });
