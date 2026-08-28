@@ -17,6 +17,8 @@ import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 import { resolveLayout } from '@/shared/lib';
 
+const SECONDS_IN_MINUTE = 60;
+
 export const TimerScreen = (): JSX.Element => {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -41,6 +43,9 @@ export const TimerScreen = (): JSX.Element => {
   // 층별 동작은 `DESIGN.md` §8
   const dialMinutes = useDerivedValue(() => (editing ? selected : remainingMinutes.value));
 
+  // 대기에서 설정 시간을 넘기면 아무 칸도 붙지 않음
+  const litMinutes = editing ? selected : (remainingSeconds ?? 0) / SECONDS_IN_MINUTE;
+
   const drag = useDialDrag({
     centerX,
     centerY,
@@ -59,7 +64,16 @@ export const TimerScreen = (): JSX.Element => {
         <Canvas style={StyleSheet.absoluteFill}>
           <Fill color={COLORS.canvas} />
           <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={shownMode} />
-          <DialItems centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} bonfireDots={layout.bonfireDots} />
+          <DialItems
+            centerX={centerX}
+            centerY={centerY}
+            radius={layout.itemRadius}
+            dotSize={layout.dotSize}
+            bonfireDots={layout.bonfireDots}
+            remainingMinutes={litMinutes}
+            settingMinutes={selected}
+            isPaused={session.phase === 'paused'}
+          />
           <DialHandle centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={shownMode} />
           <TickNumbers centerX={centerX} centerY={centerY} radius={layout.tickNumberRadius} dotSize={layout.dotSize} />
           <DialReadout
