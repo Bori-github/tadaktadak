@@ -1,5 +1,6 @@
 import { Atlas, FilterMode, Group, MipmapMode, Skia, type SkImage, type SkRect, type SkRSXform } from '@shopify/react-native-skia';
-import { memo, useMemo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
+import { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { packSprites, type PackedSprites } from '../lib/atlas';
 import { pointOnDial } from '../lib/geometry';
@@ -53,6 +54,10 @@ type AtlasBatch = { sprites: SkRect[]; transforms: SkRSXform[] };
 
 const SAMPLING = { filter: FilterMode.Nearest, mipmap: MipmapMode.None };
 
+/** 일시정지에서 잦아드는 불 밝기와 걸리는 시간. `DESIGN.md` §8 §9 */
+const PAUSED_BRIGHTNESS = 0.35;
+const FADE_MS = 500;
+
 const toBatch = (items: Placement[]): AtlasBatch => ({
   sprites: items.map((item) => item.sprite),
   transforms: items.map((item) => item.transform),
@@ -60,13 +65,13 @@ const toBatch = (items: Placement[]): AtlasBatch => ({
 
 /** 도트 하나를 픽셀 하나로 그린 작은 이미지. 그릴 때 dotSize배로 키워 씀 */
 const drawAtlas = (grids: readonly (readonly string[])[], packed: PackedSprites): SkImage | null => {
-  const surface = Skia.Surface.MakeOffscreen(packed.image.widthInDots, packed.image.heightInDots);
+  const surface = Skia.Surface.Make(packed.image.widthInDots, packed.image.heightInDots);
   if (!surface) return null;
 
   const canvas = surface.getCanvas();
   const paint = Skia.Paint();
 
-  // 새로 만든 표면이 비워진 채로 오지 않아, 격자에서 비워 둔 칸에 이전 내용이 비침
+  // 새로 만든 표면이 비워진 채로 오지 않아, 격자에서 비워 둔 자리에 이전 내용이 비침
   canvas.clear(Skia.Color('transparent'));
 
   for (const [index, grid] of grids.entries()) {
@@ -86,8 +91,7 @@ const drawAtlas = (grids: readonly (readonly string[])[], packed: PackedSprites)
 
   surface.flush();
 
-  // 그래픽 메모리에 그대로 두면 화면을 그릴 때 읽지 못해, 일반 메모리로 옮김
-  return surface.makeImageSnapshot().makeNonTextureImage();
+  return surface.makeImageSnapshot();
 };
 
 export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireDots, remainingMinutes, settingMinutes, isPaused }: DialItemsProps) => {
@@ -124,11 +128,11 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireDots,
 
       cold.push({ sprite: spriteOf(isBonfire ? BONFIRE : LOG), transform });
 
-      // 홀짝으로 A와 B를 가름
+      // 홀짝으로 A와 B를 구분함
       return { slot, transform, hot: [spriteOf(isBonfire ? BONFIRE_A : LOG_A), spriteOf(isBonfire ? BONFIRE_B : LOG_B)] };
     });
 
-    // 불붙은 모닥불과 한 도트 겹치므로 나중에 그려 덮음. `DESIGN.md` §7 겹침 검산
+    // 불붙은 모닥불과 한 도트 겹치므로 나중에 그려 덮음. `DESIGN.md` §5 겹침 검산
     const marker = toBatch([{ sprite: spriteOf(START_MARKER), transform: transformOf(START_MARKER, centerX, centerY - radius) }]);
 
     return { cold: toBatch(cold), marker, perSlot };
@@ -137,6 +141,14 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireDots,
   const lit = useMemo(() => SLOT_NUMBERS.map((slot) => ignitionProgress({ slot, remainingMinutes, settingMinutes })), [remainingMinutes, settingMinutes]);
 
   const step = useFlickerStep(!isPaused && lit.some((progress) => progress > 0));
+
+  const brightness = useSharedValue(1);
+
+  useEffect(() => {
+    brightness.value = withTiming(isPaused ? PAUSED_BRIGHTNESS : 1, { duration: FADE_MS, easing: Easing.inOut(Easing.quad) });
+    // `useSharedValue`가 준 값은 고정 참조라 뺌. 넣으면 React Compiler 린트가 안에서 쓰는 것을 막음
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPaused]);
 
   const hot = useMemo(() => {
     const burning: Placement[] = [];
@@ -161,12 +173,14 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireDots,
   return (
     <>
       <Atlas image={image} sprites={prepared.cold.sprites} transforms={prepared.cold.transforms} sampling={SAMPLING} antiAlias={false} />
-      {hot.burning.sprites.length === 0 ? null : <Atlas image={image} sprites={hot.burning.sprites} transforms={hot.burning.transforms} sampling={SAMPLING} antiAlias={false} />}
-      {hot.filling.map((item) => (
-        <Group key={item.slot} opacity={item.progress}>
-          <Atlas image={image} sprites={[item.sprite]} transforms={[item.transform]} sampling={SAMPLING} antiAlias={false} />
-        </Group>
-      ))}
+      <Group opacity={brightness}>
+        {hot.burning.sprites.length === 0 ? null : <Atlas image={image} sprites={hot.burning.sprites} transforms={hot.burning.transforms} sampling={SAMPLING} antiAlias={false} />}
+        {hot.filling.map((item) => (
+          <Group key={item.slot} opacity={item.progress}>
+            <Atlas image={image} sprites={[item.sprite]} transforms={[item.transform]} sampling={SAMPLING} antiAlias={false} />
+          </Group>
+        ))}
+      </Group>
       <Atlas image={image} sprites={prepared.marker.sprites} transforms={prepared.marker.transforms} sampling={SAMPLING} antiAlias={false} />
     </>
   );
