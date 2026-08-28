@@ -2,6 +2,7 @@ import { Canvas, Fill } from '@shopify/react-native-skia';
 import { useState, type JSX } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
+import { useDerivedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useStoredMinutes } from '../model/minutes';
@@ -22,8 +23,8 @@ export const TimerScreen = (): JSX.Element => {
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
   const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
   const [pressed, setPressed] = useState<ControlButton | null>(null);
-  const { speed, setSpeed, realSettingMinutes, toSeconds } = useTimerSpeed(minutes);
-  const { session, remainingSeconds, play, stop } = useTimerSession({ settingMinutes: realSettingMinutes, toSeconds });
+  const { speed, setSpeed, realSettingMinutes, toSeconds, toMinutes } = useTimerSpeed(minutes);
+  const { session, remainingSeconds, remainingMinutes, play, stop } = useTimerSession({ settingMinutes: realSettingMinutes, toSeconds, toMinutes });
 
   const layout = resolveLayout({
     shortSide: Math.min(width, height),
@@ -36,6 +37,9 @@ export const TimerScreen = (): JSX.Element => {
   const editing = session.phase === 'idle';
   const shownMode = editing ? editTarget : session.mode;
   const selected = minutes[shownMode];
+
+  // 층별 동작은 `DESIGN.md` §8
+  const dialMinutes = useDerivedValue(() => (editing ? selected : remainingMinutes.value));
 
   const drag = useDialDrag({
     centerX,
@@ -54,9 +58,9 @@ export const TimerScreen = (): JSX.Element => {
       <View style={styles.root}>
         <Canvas style={StyleSheet.absoluteFill}>
           <Fill color={COLORS.canvas} />
-          <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={selected} mode={shownMode} />
+          <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={shownMode} />
           <DialItems centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} bonfireDots={layout.bonfireDots} />
-          <DialHandle centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={selected} mode={shownMode} />
+          <DialHandle centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={shownMode} />
           <TickNumbers centerX={centerX} centerY={centerY} radius={layout.tickNumberRadius} dotSize={layout.dotSize} />
           <DialReadout
             centerX={centerX}

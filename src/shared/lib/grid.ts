@@ -13,6 +13,7 @@ type GridPlacement = {
  * 중심을 반올림하면 원의 60등분이 어긋나므로 모서리에서만 격자에 맞춘다. `DESIGN.md` §5
  */
 export const topLeftOnGrid = ({ centerX, centerY, widthInDots, heightInDots, dotSize }: GridPlacement): { left: number; top: number } => {
+  'worklet';
   return {
     left: Math.round(centerX / dotSize - widthInDots / 2),
     top: Math.round(centerY / dotSize - heightInDots / 2),
