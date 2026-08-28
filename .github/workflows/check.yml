@@ -34,8 +34,12 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm test
 
+      # 버전 검사는 Expo가 패치를 낼 때마다 실패한다. SDK 고정 패키지는 dependabot.yml이 무시해서 갱신도 자동으로 오지 않는다.
+      # 나머지 20개 검사는 그대로 돈다. 버전은 `pnpm expo install --check`로 사람이 본다.
       - name: Expo 정합성
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        env:
+          EXPO_DOCTOR_SKIP_DEPENDENCY_VERSION_CHECK: '1'
         run: pnpm exec expo-doctor
 
       # squash 병합으로 PR 제목이 main의 커밋 메시지가 되므로, 개별 커밋 대신 제목을 검사한다.
