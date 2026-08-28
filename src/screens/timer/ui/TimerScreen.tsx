@@ -12,7 +12,7 @@ import { useTimerSpeed } from '../model/speed';
 import { SpeedControl } from './SpeedControl';
 
 import { ControlButtons, Controls, type ControlButton } from '@/widgets/controls';
-import { DialArc, DialHandle, DialItems, DialReadout, ReadoutButtons, TickNumbers, useDialDrag } from '@/widgets/dial';
+import { colorMode, DialArc, DialHandle, DialItems, DialReadout, ReadoutButtons, TickNumbers, useDialDrag } from '@/widgets/dial';
 import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 import { resolveLayout } from '@/shared/lib';
@@ -38,6 +38,7 @@ export const TimerScreen = (): JSX.Element => {
   const centerY = layout.dialCenterY;
   const editing = session.phase === 'idle';
   const shownMode = editing ? editTarget : session.mode;
+  const paintedMode = colorMode({ editing, editTarget });
   const selected = minutes[shownMode];
 
   // 층별 동작은 `DESIGN.md` §8
@@ -63,7 +64,7 @@ export const TimerScreen = (): JSX.Element => {
       <View style={styles.root}>
         <Canvas style={StyleSheet.absoluteFill}>
           <Fill color={COLORS.canvas} />
-          <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={shownMode} />
+          <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} />
           <DialItems
             centerX={centerX}
             centerY={centerY}
@@ -74,7 +75,7 @@ export const TimerScreen = (): JSX.Element => {
             settingMinutes={selected}
             isPaused={session.phase === 'paused'}
           />
-          <DialHandle centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={shownMode} />
+          <DialHandle centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} />
           <TickNumbers centerX={centerX} centerY={centerY} radius={layout.tickNumberRadius} dotSize={layout.dotSize} />
           <DialReadout
             centerX={centerX}
