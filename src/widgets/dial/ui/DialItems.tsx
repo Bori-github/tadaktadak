@@ -1,7 +1,7 @@
 import { Atlas, FilterMode, Group, MipmapMode, Skia, type SkImage, type SkRect, type SkRSXform } from '@shopify/react-native-skia';
-import { memo, useMemo, type JSX } from 'react';
+import { memo, useMemo } from 'react';
 
-import { packSprites } from '../lib/atlas';
+import { packSprites, type PackedSprites } from '../lib/atlas';
 import { pointOnDial } from '../lib/geometry';
 import { useFlickerStep } from '../model/flicker';
 import { ignitionProgress } from '@/entities/timer';
@@ -24,7 +24,7 @@ const SLOTS = 60;
 
 const SLOT_NUMBERS = Array.from({ length: SLOTS }, (_, index) => index + 1);
 
-/** 이미지에 담은 순서. 자를 자리와 놓을 자리가 이 번호로 짝을 찾음 */
+/** 이미지에 담은 순서 */
 const LOG = 0;
 const BONFIRE = 1;
 const START_MARKER = 2;
@@ -48,9 +48,18 @@ type DialItemsProps = {
 
 type Placement = { sprite: SkRect; transform: SkRSXform };
 
+/** `Atlas`의 `sprites`·`transforms`에 그대로 넘길 두 배열 */
+type AtlasBatch = { sprites: SkRect[]; transforms: SkRSXform[] };
+
+const SAMPLING = { filter: FilterMode.Nearest, mipmap: MipmapMode.None };
+
+const toBatch = (items: Placement[]): AtlasBatch => ({
+  sprites: items.map((item) => item.sprite),
+  transforms: items.map((item) => item.transform),
+});
+
 /** 도트 하나를 픽셀 하나로 그린 작은 이미지. 그릴 때 dotSize배로 키워 씀 */
-const drawAtlas = (grids: readonly (readonly string[])[]): SkImage | null => {
-  const packed = packSprites(grids);
+const drawAtlas = (grids: readonly (readonly string[])[], packed: PackedSprites): SkImage | null => {
   const surface = Skia.Surface.MakeOffscreen(packed.image.widthInDots, packed.image.heightInDots);
   if (!surface) return null;
 
@@ -89,75 +98,76 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireDots,
     [tall],
   );
 
-  const image = useMemo(() => drawAtlas(grids), [grids]);
   const packed = useMemo(() => packSprites(grids), [grids]);
+  const image = useMemo(() => drawAtlas(grids, packed), [grids, packed]);
 
-  const placementOf = useMemo(() => {
-    return (kind: number, x: number, y: number): Placement => {
+  // 스프라이트 사각형과 좌표는 시계판 크기로만 정해지므로 미리 만들어 두고 고르기만 함
+  const prepared = useMemo(() => {
+    const spriteOf = (kind: number): SkRect => {
       const box = packed.boxes[kind];
-      if (!box) return { sprite: Skia.XYWHRect(0, 0, 0, 0), transform: Skia.RSXform(dotSize, 0, 0, 0) };
+      return box ? Skia.XYWHRect(box.left, box.top, box.widthInDots, box.heightInDots) : Skia.XYWHRect(0, 0, 0, 0);
+    };
+
+    const transformOf = (kind: number, x: number, y: number): SkRSXform => {
+      const box = packed.boxes[kind];
+      if (!box) return Skia.RSXform(dotSize, 0, 0, 0);
 
       const { left, top } = topLeftOnGrid({ centerX: x, centerY: y, widthInDots: box.widthInDots, heightInDots: box.heightInDots, dotSize });
-
-      return {
-        sprite: Skia.XYWHRect(box.left, box.top, box.widthInDots, box.heightInDots),
-        transform: Skia.RSXform(dotSize, 0, left * dotSize, top * dotSize),
-      };
+      return Skia.RSXform(dotSize, 0, left * dotSize, top * dotSize);
     };
-  }, [packed, dotSize]);
 
-  const slots = useMemo(
-    () =>
-      SLOT_NUMBERS.map((slot) => {
-        const point = pointOnDial(centerX, centerY, radius, (slot - 0.5) * 6);
-        return { slot, isBonfire: slot % 5 === 0, x: point.x, y: point.y };
-      }),
-    [centerX, centerY, radius],
-  );
+    const cold: Placement[] = [];
+    const perSlot = SLOT_NUMBERS.map((slot) => {
+      const isBonfire = slot % 5 === 0;
+      const point = pointOnDial(centerX, centerY, radius, (slot - 0.5) * 6);
+      const transform = transformOf(isBonfire ? BONFIRE : LOG, point.x, point.y);
 
-  const lit = useMemo(() => slots.map(({ slot }) => ignitionProgress({ slot, remainingMinutes, settingMinutes })), [slots, remainingMinutes, settingMinutes]);
+      cold.push({ sprite: spriteOf(isBonfire ? BONFIRE : LOG), transform });
+
+      // 홀짝으로 A와 B를 가름
+      return { slot, transform, hot: [spriteOf(isBonfire ? BONFIRE_A : LOG_A), spriteOf(isBonfire ? BONFIRE_B : LOG_B)] };
+    });
+
+    // 불붙은 모닥불과 한 도트 겹치므로 나중에 그려 덮음. `DESIGN.md` §7 겹침 검산
+    const marker = toBatch([{ sprite: spriteOf(START_MARKER), transform: transformOf(START_MARKER, centerX, centerY - radius) }]);
+
+    return { cold: toBatch(cold), marker, perSlot };
+  }, [packed, dotSize, centerX, centerY, radius]);
+
+  const lit = useMemo(() => SLOT_NUMBERS.map((slot) => ignitionProgress({ slot, remainingMinutes, settingMinutes })), [remainingMinutes, settingMinutes]);
 
   const step = useFlickerStep(!isPaused && lit.some((progress) => progress > 0));
-
-  const cold = useMemo(() => {
-    const items = slots.map(({ isBonfire, x, y }) => placementOf(isBonfire ? BONFIRE : LOG, x, y));
-    return [...items, placementOf(START_MARKER, centerX, centerY - radius)];
-  }, [slots, placementOf, centerX, centerY, radius]);
 
   const hot = useMemo(() => {
     const burning: Placement[] = [];
     const filling: (Placement & { progress: number; slot: number })[] = [];
 
-    for (const [index, { slot, isBonfire, x, y }] of slots.entries()) {
+    for (const [index, item] of prepared.perSlot.entries()) {
       const progress = lit[index] ?? 0;
       if (progress === 0) continue;
 
-      // 칸 번호를 더해 이웃 칸과 A·B가 엇갈리게 함
-      const second = (slot + step) % 2 === 1;
-      const placement = placementOf(isBonfire ? (second ? BONFIRE_B : BONFIRE_A) : second ? LOG_B : LOG_A, x, y);
+      const sprite = item.hot[(item.slot + step) % 2] ?? item.hot[0];
+      if (!sprite) continue;
 
-      if (progress === 1) burning.push(placement);
-      else filling.push({ ...placement, progress, slot });
+      if (progress === 1) burning.push({ sprite, transform: item.transform });
+      else filling.push({ sprite, transform: item.transform, progress, slot: item.slot });
     }
 
-    return { burning, filling };
-  }, [slots, lit, step, placementOf]);
+    return { burning: toBatch(burning), filling };
+  }, [prepared, lit, step]);
 
   if (!image) return null;
 
-  const sampling = { filter: FilterMode.Nearest, mipmap: MipmapMode.None };
-  const drawAll = (items: Placement[]): JSX.Element | null =>
-    items.length === 0 ? null : <Atlas image={image} sprites={items.map((item) => item.sprite)} transforms={items.map((item) => item.transform)} sampling={sampling} />;
-
   return (
     <>
-      {drawAll(cold)}
-      {drawAll(hot.burning)}
+      <Atlas image={image} sprites={prepared.cold.sprites} transforms={prepared.cold.transforms} sampling={SAMPLING} antiAlias={false} />
+      {hot.burning.sprites.length === 0 ? null : <Atlas image={image} sprites={hot.burning.sprites} transforms={hot.burning.transforms} sampling={SAMPLING} antiAlias={false} />}
       {hot.filling.map((item) => (
         <Group key={item.slot} opacity={item.progress}>
-          <Atlas image={image} sprites={[item.sprite]} transforms={[item.transform]} sampling={sampling} />
+          <Atlas image={image} sprites={[item.sprite]} transforms={[item.transform]} sampling={SAMPLING} antiAlias={false} />
         </Group>
       ))}
+      <Atlas image={image} sprites={prepared.marker.sprites} transforms={prepared.marker.transforms} sampling={SAMPLING} antiAlias={false} />
     </>
   );
 });
