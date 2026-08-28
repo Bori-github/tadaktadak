@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { realMinutes, toShownSeconds } from './speed';
+import { realMinutes, toShownMinutes, toShownSeconds } from './speed';
 
 describe('배속을 걸었을 때 실제로 흐를 설정 시간', () => {
   it.each([
@@ -20,5 +20,15 @@ describe('배속에서 보여 줄 초', () => {
     { realMs: 30_000, speed: 50, expected: 1500 },
   ])('남은 $realMs밀리초는 $speed배속에서 $expected초로 보인다', ({ realMs, speed, expected }) => {
     expect(toShownSeconds(realMs, speed)).toBe(expected);
+  });
+});
+
+describe('배속에서 보여 줄 분', () => {
+  it.each([
+    { realMs: 30_000, speed: 1, expected: 0.5 },
+    { realMs: 30_000, speed: 10, expected: 5 },
+    { realMs: 30_000, speed: 50, expected: 25 },
+  ])('남은 $realMs밀리초는 $speed배속에서 $expected분으로 보인다', ({ realMs, speed, expected }) => {
+    expect(toShownMinutes(realMs, speed)).toBeCloseTo(expected, 10);
   });
 });

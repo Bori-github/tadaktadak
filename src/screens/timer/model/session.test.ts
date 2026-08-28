@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { act, renderHook } from '@testing-library/react-native';
+import { useRef as mockUseRef } from 'react';
 
 import { useTimerSession } from './session';
 
@@ -21,9 +22,9 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   },
 }));
 
-// Jest에는 UI 스레드가 없어 공유 값은 바뀌는 칸으로, 예약은 바로 부르는 것으로 대신함
+// Jest에는 UI 스레드가 없음
 jest.mock('react-native-reanimated', () => ({
-  useSharedValue: (initial: unknown) => ({ value: initial }),
+  useSharedValue: (initial: unknown) => mockUseRef({ value: initial }).current,
   useFrameCallback: () => ({ setActive: () => {} }),
 }));
 jest.mock('react-native-worklets', () => ({
@@ -72,5 +73,15 @@ describe('저장값을 읽는 사이의 조작', () => {
     await act(async () => mockRelease(STORED_PAUSED));
 
     expect(result.current.session).toEqual({ phase: 'paused', mode: 'rest', pausedRemainingMs: 90_000 });
+  });
+});
+
+describe('남은 분 공유 값', () => {
+  it('일시정지 저장값을 복구하면 남은 90초가 1.5분으로 담긴다', async () => {
+    const { result } = await renderBeforeRead();
+
+    await act(async () => mockRelease(STORED_PAUSED));
+
+    expect(result.current.remainingMinutes.value).toBeCloseTo(1.5, 10);
   });
 });

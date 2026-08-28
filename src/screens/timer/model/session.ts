@@ -1,9 +1,10 @@
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
-import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
+import { useFrameCallback, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 
+import { millisecondsToMinutes } from '../lib/minutes';
 import { millisecondsToSeconds } from '../lib/seconds';
 
 import {
@@ -28,6 +29,7 @@ const NOT_STARTED = -1;
 type TimerSessionInput = {
   settingMinutes: Record<TimerMode, number>;
   toSeconds?: (ms: number) => number;
+  toMinutes?: (ms: number) => number;
 };
 
 /**
@@ -35,17 +37,20 @@ type TimerSessionInput = {
  *
  * @param input.settingMinutes - 집중과 휴식의 설정 시간(분)
  * @param [input.toSeconds] - 남은 밀리초를 화면에 보여 줄 초로 바꾸는 함수. 기본은 실제 시간
- * @returns 지금 타이머 세션 값, 카운트다운 중인 남은 시간(초, 대기에서는 `null`), 재생·정지 조작
+ * @param [input.toMinutes] - 남은 밀리초를 화면에 보여 줄 분으로 바꾸는 함수. 기본은 실제 시간
+ * @returns 지금 타이머 세션 값, 카운트다운 중인 남은 시간(초, 대기에서는 `null`), 남은 시간(분), 재생·정지 조작
  */
 interface TimerSessionState {
   session: TimerSession;
   /** 카운트다운 중인 남은 시간(초). 대기에서는 `null` */
   remainingSeconds: number | null;
+  /** 남은 시간(분). 매 프레임 갱신되어 호와 손잡이 각도가 읽음 */
+  remainingMinutes: SharedValue<number>;
   play: () => void;
   stop: () => void;
 }
 
-export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeconds }: TimerSessionInput): TimerSessionState => {
+export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeconds, toMinutes = millisecondsToMinutes }: TimerSessionInput): TimerSessionState => {
   const [session, setSession] = useState<TimerSession>(IDLE_SESSION);
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
 
@@ -56,6 +61,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   const startedAtUptime = useSharedValue(NOT_STARTED);
   const shownSeconds = useSharedValue(0);
   const running = useSharedValue(false);
+  const remainingMinutes = useSharedValue(0);
 
   // 예약과 도착 사이에 정지될 수 있어 단계 재확인
   const finish = useCallback(() => setSession((current) => (current.phase === 'running' ? completeTimer(current) : current)), []);
@@ -70,6 +76,8 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
       startedAtUptime: startedAtUptime.value,
       nowUptime: frame.timestamp,
     });
+
+    remainingMinutes.value = toMinutes(remaining);
 
     const seconds = toSeconds(remaining);
     if (seconds !== shownSeconds.value) {
@@ -100,17 +108,19 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   const startCounting = useCallback(
     (remainingAtStartMs: number) => {
       const shown = toSeconds(remainingAtStartMs);
+      const shownMinutes = toMinutes(remainingAtStartMs);
 
       scheduleOnUI(() => {
         'worklet';
         remainingAtStart.value = remainingAtStartMs;
         startedAtUptime.value = NOT_STARTED;
         shownSeconds.value = shown;
+        remainingMinutes.value = shownMinutes;
         running.value = true;
       });
       setRemainingSeconds(shown);
     },
-    [remainingAtStart, startedAtUptime, shownSeconds, running, toSeconds],
+    [remainingAtStart, startedAtUptime, shownSeconds, remainingMinutes, running, toSeconds, toMinutes],
   );
 
   const stopCounting = useCallback(() => {
@@ -126,11 +136,19 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
       if (remaining === null) setRemainingSeconds(null);
       else if (next.phase === 'running') startCounting(remaining);
-      else setRemainingSeconds(toSeconds(remaining));
+      else {
+        const shownMinutes = toMinutes(remaining);
+
+        setRemainingSeconds(toSeconds(remaining));
+        scheduleOnUI(() => {
+          'worklet';
+          remainingMinutes.value = shownMinutes;
+        });
+      }
 
       setSession(next);
     },
-    [startCounting, toSeconds],
+    [startCounting, remainingMinutes, toSeconds, toMinutes],
   );
 
   useEffect(() => {
@@ -213,5 +231,5 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     setSession(IDLE_SESSION);
   }, [stopCounting]);
 
-  return { session, remainingSeconds, play, stop };
+  return { session, remainingSeconds, remainingMinutes, play, stop };
 };
