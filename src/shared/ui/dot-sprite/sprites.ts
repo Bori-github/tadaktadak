@@ -2,6 +2,8 @@ import { COLORS } from '@/shared/constants';
 
 /** 격자 글자와 색. 표에 없는 글자(`.`)는 그리지 않는다 */
 export const SPRITE_COLORS: Record<string, string | undefined> = {
+  f: COLORS.fire.igniteBright,
+  F: COLORS.fire.igniteMid,
   y: COLORS.fire.core,
   o: COLORS.fire.mid,
   r: COLORS.fire.base,
@@ -16,9 +18,23 @@ export const SPRITE_COLORS: Record<string, string | undefined> = {
 
 export const LOG_COLD = ['.W.', 'DWD', 'DWD', '.D.'];
 
+/** 불붙은 장작. A와 B를 번갈아 그림 */
+export const LOG_HOT_A = ['.f.', 'FWF', 'DWD', '.D.'];
+
+export const LOG_HOT_B = ['.F.', 'fWf', 'DWD', '.D.'];
+
 export const BONFIRE_COLD_9 = ['.......', '.......', '.......', '.......', '.......', '.......', '..DDD..', '.DWWWD.', 'DWWWWWD'];
 
 export const BONFIRE_COLD_7 = ['.......', '.......', '.......', '.......', '..DDD..', '.DWWWD.', 'DWWWWWD'];
+
+/** 타는 모닥불. A와 B를 번갈아 그림 */
+export const BONFIRE_HOT_A_9 = ['...y...', '..yoy..', '.yoooy.', '.roooor', '.rroorr', '..rrr..', '..DDD..', '.DWWWD.', 'DWWWWWD'];
+
+export const BONFIRE_HOT_B_9 = ['..y....', '.yoyo..', '.yoooy.', 'rooooor', '.rroorr', '..rrr..', '..DDD..', '.DWWWD.', 'DWWWWWD'];
+
+export const BONFIRE_HOT_A_7 = ['.yoooy.', '.roooor', '.rroorr', '..rrr..', '..DDD..', '.DWWWD.', 'DWWWWWD'];
+
+export const BONFIRE_HOT_B_7 = ['.yoooy.', 'rooooor', '.rroorr', '..rrr..', '..DDD..', '.DWWWD.', 'DWWWWWD'];
 
 /** 스파크 손잡이. 정지 상태는 이 프레임에 고정한다 */
 export const SPARK_A = ['...h...', '...h...', '..hHh..', 'hHHHHHh', '..hHh..', '...h...', '...h...'];
