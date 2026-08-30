@@ -70,7 +70,7 @@ const drag = async ({ grabAt, through }: DragInput) => {
 };
 
 describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
-  it('세 칸을 지나 끌면 세 번 바뀌고 저장은 마지막 값으로 한 번만 한다', async () => {
+  it('눈금 세 개를 지나 끌면 세 번 바뀌고 저장은 마지막 값으로 한 번만 한다', async () => {
     const { onChange, onChangeEnd } = await drag({ grabAt: getDialPoint(START_MINUTES), through: [26, 27, 28] });
 
     expect(onChange.mock.calls.map(([minutes]) => minutes)).toEqual([26, 27, 28]);

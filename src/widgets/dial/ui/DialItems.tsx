@@ -21,9 +21,9 @@ import {
   SPRITE_COLORS,
 } from '@/shared/ui/dot-sprite';
 
-const SLOTS = 60;
+const TICKS = 60;
 
-const SLOT_NUMBERS = Array.from({ length: SLOTS }, (_, index) => index + 1);
+const TICK_NUMBERS = Array.from({ length: TICKS }, (_, index) => index + 1);
 
 /** 이미지에 담은 순서 */
 const LOG = 0;
@@ -40,7 +40,7 @@ type DialItemsProps = {
   radius: number;
   dotSize: number;
   bonfireDots: number;
-  /** 남은 시간(분). 대기에서는 설정 시간이라 아무 칸도 붙지 않음 */
+  /** 남은 시간(분). 대기에서는 설정 시간이라 아무 눈금도 붙지 않음 */
   remainingMinutes: number;
   settingMinutes: number;
   /** 일시정지 여부. 일시정지에서 불꽃이 멈춤. `DESIGN.md` §8 */
@@ -121,24 +121,24 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireDots,
     };
 
     const cold: Placement[] = [];
-    const perSlot = SLOT_NUMBERS.map((slot) => {
-      const isBonfire = slot % 5 === 0;
-      const point = pointOnDial(centerX, centerY, radius, (slot - 0.5) * 6);
+    const perTick = TICK_NUMBERS.map((tick) => {
+      const isBonfire = tick % 5 === 0;
+      const point = pointOnDial(centerX, centerY, radius, (tick - 0.5) * 6);
       const transform = transformOf(isBonfire ? BONFIRE : LOG, point.x, point.y);
 
       cold.push({ sprite: spriteOf(isBonfire ? BONFIRE : LOG), transform });
 
       // 홀짝으로 A와 B를 구분함
-      return { slot, transform, hot: [spriteOf(isBonfire ? BONFIRE_A : LOG_A), spriteOf(isBonfire ? BONFIRE_B : LOG_B)] };
+      return { tick, transform, hot: [spriteOf(isBonfire ? BONFIRE_A : LOG_A), spriteOf(isBonfire ? BONFIRE_B : LOG_B)] };
     });
 
     // 불붙은 모닥불과 한 도트 겹치므로 나중에 그려 덮음. `DESIGN.md` §5 겹침 검산
     const marker = toBatch([{ sprite: spriteOf(START_MARKER), transform: transformOf(START_MARKER, centerX, centerY - radius) }]);
 
-    return { cold: toBatch(cold), marker, perSlot };
+    return { cold: toBatch(cold), marker, perTick };
   }, [packed, dotSize, centerX, centerY, radius]);
 
-  const lit = useMemo(() => SLOT_NUMBERS.map((slot) => ignitionProgress({ slot, remainingMinutes, settingMinutes })), [remainingMinutes, settingMinutes]);
+  const lit = useMemo(() => TICK_NUMBERS.map((tick) => ignitionProgress({ tick, remainingMinutes, settingMinutes })), [remainingMinutes, settingMinutes]);
 
   const step = useFlickerStep(!isPaused && lit.some((progress) => progress > 0));
 
@@ -152,17 +152,17 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireDots,
 
   const hot = useMemo(() => {
     const burning: Placement[] = [];
-    const filling: (Placement & { progress: number; slot: number })[] = [];
+    const filling: (Placement & { progress: number; tick: number })[] = [];
 
-    for (const [index, item] of prepared.perSlot.entries()) {
+    for (const [index, item] of prepared.perTick.entries()) {
       const progress = lit[index] ?? 0;
       if (progress === 0) continue;
 
-      const sprite = item.hot[(item.slot + step) % 2] ?? item.hot[0];
+      const sprite = item.hot[(item.tick + step) % 2] ?? item.hot[0];
       if (!sprite) continue;
 
       if (progress === 1) burning.push({ sprite, transform: item.transform });
-      else filling.push({ sprite, transform: item.transform, progress, slot: item.slot });
+      else filling.push({ sprite, transform: item.transform, progress, tick: item.tick });
     }
 
     return { burning: toBatch(burning), filling };
@@ -176,7 +176,7 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireDots,
       <Group opacity={brightness}>
         {hot.burning.sprites.length === 0 ? null : <Atlas image={image} sprites={hot.burning.sprites} transforms={hot.burning.transforms} sampling={SAMPLING} antiAlias={false} />}
         {hot.filling.map((item) => (
-          <Group key={item.slot} opacity={item.progress}>
+          <Group key={item.tick} opacity={item.progress}>
             <Atlas image={image} sprites={[item.sprite]} transforms={[item.transform]} sampling={SAMPLING} antiAlias={false} />
           </Group>
         ))}

@@ -44,7 +44,7 @@ export const TimerScreen = (): JSX.Element => {
   // 층별 동작은 `DESIGN.md` §8
   const dialMinutes = useDerivedValue(() => (editing ? selected : remainingMinutes.value));
 
-  // 대기에서 설정 시간을 넘기면 아무 칸도 붙지 않음
+  // 대기에서 설정 시간을 넘기면 아무 눈금도 붙지 않음
   const litMinutes = editing ? selected : (remainingSeconds ?? 0) / SECONDS_IN_MINUTE;
 
   const handleChange = useCallback((value: number) => changeMinutes(editTarget, value), [changeMinutes, editTarget]);

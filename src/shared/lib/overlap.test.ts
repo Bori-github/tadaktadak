@@ -55,11 +55,11 @@ describe('짧은 변 676의 원주 방향 겹침', () => {
     expect(round(gap - needed(PROJECTION.bonfire, PROJECTION.log))).toBe(0.41);
   });
 
-  it('모닥불끼리는 다섯 칸 34.56에서 필요 9.0을 빼 여유 25.56 도트다', () => {
+  it('모닥불끼리는 눈금 다섯 개 34.56에서 필요 9.0을 빼 여유 25.56 도트다', () => {
     expect(round(gap * 5 - needed(PROJECTION.bonfire, PROJECTION.bonfire))).toBe(25.56);
   });
 
-  it('12시 모닥불과 기준 표식은 반 칸 3.46에서 필요 7.0을 빼 3.54 도트 겹친다', () => {
+  it('12시 모닥불과 기준 표식은 반 눈금 3.46에서 필요 7.0을 빼 3.54 도트 겹친다', () => {
     expect(round(gap * 0.5 - needed(PROJECTION.bonfire, PROJECTION.marker))).toBe(-3.54);
   });
 });
