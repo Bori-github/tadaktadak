@@ -9,7 +9,7 @@ import { resolveLayout } from './responsive';
 const PROJECTION = { log: 4, bonfire: 9, marker: 5 };
 
 /** 개체 높이 (dot). `DESIGN.md` §4 */
-const HEIGHT = { bonfire: 9, spark: 7, numeral: 7, button: BUTTON_SIZE_IN_DOTS };
+const HEIGHT = { bonfire: 9, thumb: 7, numeral: 7, button: BUTTON_SIZE_IN_DOTS };
 
 const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: 47, safeAreaBottomEdge: 810 });
 
@@ -68,8 +68,8 @@ describe('기준 화면의 반지름 방향 간격', () => {
   const { arcRadius, itemRadius, numeralRadius, dialCenterY, buttonCenterY, dotSize } = layout(390);
   const half = (heightInDots: number) => (heightInDots * dotSize) / 2;
 
-  it('스파크 바깥 138과 개체 안쪽 144가 6 논리 픽셀 떨어진다', () => {
-    expect(itemRadius - half(HEIGHT.bonfire) - (arcRadius + half(HEIGHT.spark))).toBe(6);
+  it('손잡이 바깥 138과 개체 안쪽 144가 6 논리 픽셀 떨어진다', () => {
+    expect(itemRadius - half(HEIGHT.bonfire) - (arcRadius + half(HEIGHT.thumb))).toBe(6);
   });
 
   it('개체 바깥 162와 눈금 숫자 안쪽 168이 6 논리 픽셀 떨어진다', () => {

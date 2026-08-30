@@ -33,7 +33,7 @@ describe('개체 규격', () => {
     { name: '장작 타는 중 B', grid: LOG_HOT_B, width: 3, height: 4 },
     { name: '모닥불 9 도트', grid: BONFIRE_HOT_A_9, width: 7, height: 9 },
     { name: '모닥불 7 도트', grid: BONFIRE_HOT_A_7, width: 7, height: 7 },
-    { name: '스파크 손잡이', grid: SPARK_A, width: 7, height: 7 },
+    { name: '손잡이', grid: SPARK_A, width: 7, height: 7 },
     { name: '기준 표식', grid: MARKER, width: 3, height: 5 },
   ])('$name은 $width × $height이다', ({ grid, width, height }) => {
     expect({ width: Math.max(...grid.map((line) => line.length)), height: grid.length }).toEqual({ width, height });
