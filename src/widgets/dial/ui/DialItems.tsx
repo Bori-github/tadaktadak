@@ -122,14 +122,14 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireDots,
 
     const cold: Placement[] = [];
     const perTick = TICK_NUMBERS.map((tick) => {
-      const isBonfire = tick % 5 === 0;
+      const isMajorTick = tick % 5 === 0;
       const point = pointOnDial(centerX, centerY, radius, (tick - 0.5) * 6);
-      const transform = transformOf(isBonfire ? BONFIRE : LOG, point.x, point.y);
+      const transform = transformOf(isMajorTick ? BONFIRE : LOG, point.x, point.y);
 
-      cold.push({ sprite: spriteOf(isBonfire ? BONFIRE : LOG), transform });
+      cold.push({ sprite: spriteOf(isMajorTick ? BONFIRE : LOG), transform });
 
       // 홀짝으로 A와 B를 구분함
-      return { tick, transform, hot: [spriteOf(isBonfire ? BONFIRE_A : LOG_A), spriteOf(isBonfire ? BONFIRE_B : LOG_B)] };
+      return { tick, transform, hot: [spriteOf(isMajorTick ? BONFIRE_A : LOG_A), spriteOf(isMajorTick ? BONFIRE_B : LOG_B)] };
     });
 
     // 불붙은 모닥불과 한 도트 겹치므로 나중에 그려 덮음. `DESIGN.md` §5 겹침 검산
