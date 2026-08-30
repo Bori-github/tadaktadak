@@ -88,7 +88,7 @@ describe('잠긴 버튼은 눌리지 않는다', () => {
   });
 
   it('완료에서 재생', async () => {
-    const { play } = await buttons('done');
+    const { play } = await buttons('completed');
     await fireEvent.press(play);
 
     expect(pressed).toEqual([]);

@@ -759,7 +759,7 @@
           outT: 0,
           press: [0, 0, 0],
           restLen: 5,
-          doneT: 0,
+          completedT: 0,
           repeat: false,
           sparks: [],
           spawned: false,
@@ -792,7 +792,7 @@
         }
         // 완료한 뒤 다음에 무엇이 올지. 없으면 null
         function nextAfterDone() {
-          if (st.phase !== 'done') return null;
+          if (st.phase !== 'completed') return null;
           if (st.mode === 'focus') {
             if (setRest > 0 && autoRest) return 'rest';
             if (st.repeat) return 'focus';
@@ -931,13 +931,13 @@
         }
 
         function goFocusReady() {
-          if (st.mode === 'rest' && st.phase === 'done') st.fireLevel = 0;
+          if (st.mode === 'rest' && st.phase === 'completed') st.fireLevel = 0;
           st.mode = 'focus';
           st.phase = 'ready';
           st.remaining = setFocus;
           st.pauseT = 0;
           st.outT = st.fireLevel > 0 ? OUT_FADE : 0;
-          st.doneT = 0;
+          st.completedT = 0;
           st.spawned = false;
           editTarget = 'focus';
           syncSlider();
@@ -953,7 +953,7 @@
               st.outT = 0;
             } else if (p === 'running') st.phase = 'paused';
             else if (p === 'paused') st.phase = 'running';
-            else if (p === 'done') {
+            else if (p === 'completed') {
               if (setRest <= 0) {
                 goFocusReady();
               } else {
@@ -966,7 +966,7 @@
           } else {
             if (p === 'running') st.phase = 'paused';
             else if (p === 'paused') st.phase = 'running';
-            else if (p === 'done') goFocusReady();
+            else if (p === 'completed') goFocusReady();
           }
         }
         function stopEnabled() {
@@ -1099,7 +1099,7 @@
 
           function litOf(i) {
             if (isRest) return i - 1 >= virtualRem ? 1 : i > virtualRem ? i - virtualRem : 0;
-            if (st.phase === 'done' || st.outT > 0) return i <= setFocus ? 1 : 0;
+            if (st.phase === 'completed' || st.outT > 0) return i <= setFocus ? 1 : 0;
             if (ready) return 0;
             if (i - 1 >= st.remaining) return 1;
             if (i > st.remaining) return i - st.remaining;
@@ -1107,7 +1107,7 @@
           }
 
           // 완료 타오름
-          var flareK = st.phase === 'done' && st.mode === 'focus' ? Math.max(0, 1 - st.doneT / FLARE_DUR) : 0;
+          var flareK = st.phase === 'completed' && st.mode === 'focus' ? Math.max(0, 1 - st.completedT / FLARE_DUR) : 0;
           var radiusMul = 1 + (FLARE_MUL - 1) * flareK * flareK;
 
           // 손잡이·호가 가리키는 값
@@ -1210,7 +1210,7 @@
           blit(p, knob, cdx + rk * Math.cos(ka), cdy + rk * Math.sin(ka), 1);
 
           // 숫자: 위치 고정. 밝기로 지금 무엇이 도는지 알린다
-          var topVal = isRest || (ready && !isRest) || st.phase === 'done' ? (isRest ? setFocus : st.remaining) : st.remaining;
+          var topVal = isRest || (ready && !isRest) || st.phase === 'completed' ? (isRest ? setFocus : st.remaining) : st.remaining;
           if (ready && !isRest) topVal = setFocus;
           var restVal = isRest ? st.remaining : setRest;
           var topActive = !isRest && (!ready || editTarget === 'focus');
@@ -1223,7 +1223,7 @@
           // 자동 시작까지 남은 초. 시계 0분 눈금 바깥에 놓고, 색은 다음에 올 구간을 가리킨다
           var nxt = nextAfterDone();
           if (nxt) {
-            var left = Math.ceil((AUTO_DELAY - st.doneT) / 1000);
+            var left = Math.ceil((AUTO_DELAY - st.completedT) / 1000);
             if (left > 0) {
               var cf = faceFor(cdH);
               drawText(p, String(left), cdx, cdCenterY() / DOT, nxt === 'rest' ? PAL.numRest : PAL.num, cf.s, 1, cf.f);
@@ -1234,7 +1234,7 @@
           drawButton(p, bx[0] / DOT, btnY / DOT, st.phase === 'running' ? 'pause' : 'play', true, st.press[0] > 0, btnSize(0));
           drawButton(p, bx[1] / DOT, btnY / DOT, 'stop', stopEnabled(), st.press[1] > 0, btnSize(1));
 
-          var names = { ready: '대기', running: '진행', paused: '일시정지', done: '완료' };
+          var names = { ready: '대기', running: '진행', paused: '일시정지', completed: '완료' };
           var el = document.getElementById('state');
           el.className = 'state ' + (isRest ? 'rest' : 'focus');
           el.textContent =
@@ -1267,8 +1267,8 @@
             st.pauseT = Math.max(0, st.pauseT - dt);
             if (st.remaining <= 0) {
               st.remaining = 0;
-              st.phase = 'done';
-              st.doneT = 0;
+              st.phase = 'completed';
+              st.completedT = 0;
               if (st.mode === 'focus') {
                 st.spawned = false;
                 st.sparks = [];
@@ -1281,16 +1281,16 @@
           }
 
           // 완료 불티
-          if (st.phase === 'done' && st.mode === 'focus' && !st.spawned && st.doneT >= SPARK_DELAY) {
+          if (st.phase === 'completed' && st.mode === 'focus' && !st.spawned && st.completedT >= SPARK_DELAY) {
             spawnRise();
             st.spawned = true;
           }
 
           // 완료 뒤 자동 진행. 반복이 켜져 있으면 휴식이 끝나고 집중으로 돌아온다
-          if (st.phase === 'done') {
-            st.doneT += dt;
+          if (st.phase === 'completed') {
+            st.completedT += dt;
             var nx = nextAfterDone();
-            if (nx && st.doneT >= AUTO_DELAY) {
+            if (nx && st.completedT >= AUTO_DELAY) {
               if (nx === 'rest') {
                 st.mode = 'rest';
                 st.phase = 'running';
@@ -1303,7 +1303,7 @@
                 st.phase = 'running';
                 st.remaining = setFocus;
               }
-              st.doneT = 0;
+              st.completedT = 0;
             }
           }
           if (st.outT > 0) {

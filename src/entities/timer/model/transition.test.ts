@@ -40,7 +40,7 @@ describe('단계 전이', () => {
   });
 
   it('진행을 완료하면 모드만 남는다', () => {
-    expect(completeTimer(running)).toEqual({ phase: 'done', mode: 'focus' });
+    expect(completeTimer(running)).toEqual({ phase: 'completed', mode: 'focus' });
   });
 
   it('휴식 타이머를 시작해도 모드는 그대로다', () => {

@@ -39,7 +39,7 @@ export const sessionRemainingMs = ({ session, now }: SessionRemainingInput): num
       return Math.max(0, session.endsAt - now);
     case 'paused':
       return session.pausedRemainingMs;
-    case 'done':
+    case 'completed':
       return 0;
   }
 };
