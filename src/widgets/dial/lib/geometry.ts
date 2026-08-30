@@ -37,7 +37,7 @@ export const minutesFromPoint = ({ centerX, centerY, x, y, previous, min, max }:
   return Math.min(max, Math.max(min, minutes));
 };
 
-type ThumbTouchInput = {
+type WithinThumbParams = {
   /** 손잡이 중심 (px) */
   thumbX: number;
   thumbY: number;
@@ -48,7 +48,7 @@ type ThumbTouchInput = {
 };
 
 /** 터치한 곳이 손잡이를 잡는 범위 안에 있는지 여부. `DESIGN.md` §4 */
-export const isOnThumb = ({ thumbX, thumbY, x, y, dotSize }: ThumbTouchInput): boolean => {
+export const isWithinThumb = ({ thumbX, thumbY, x, y, dotSize }: WithinThumbParams): boolean => {
   'worklet';
   const reach = TOUCH_RADIUS_IN_DOTS * dotSize;
 

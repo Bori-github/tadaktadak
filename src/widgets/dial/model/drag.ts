@@ -3,7 +3,7 @@ import { Gesture } from 'react-native-gesture-handler';
 import { useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import { isOnThumb, minutesFromPoint, pointOnDial } from '../lib/geometry';
+import { isWithinThumb, minutesFromPoint, pointOnDial } from '../lib/geometry';
 
 import { TIMER_RANGE, type TimerMode } from '@/entities/timer';
 
@@ -53,7 +53,7 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
           const touch = event.changedTouches[0];
           if (!touch) return;
 
-          grabbed.value = isOnThumb({ thumbX: thumb.x, thumbY: thumb.y, x: touch.x, y: touch.y, dotSize });
+          grabbed.value = isWithinThumb({ thumbX: thumb.x, thumbY: thumb.y, x: touch.x, y: touch.y, dotSize });
           dragged.value = minutes;
           changed.value = false;
           pointerId.value = touch.id;
