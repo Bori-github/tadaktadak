@@ -9,7 +9,7 @@ import { millisecondsToSeconds } from '../lib/seconds';
 
 import {
   completeTimer,
-  IDLE_SESSION,
+  READY_SESSION,
   loadSession,
   MINUTE_IN_MS,
   pauseTimer,
@@ -51,7 +51,7 @@ interface TimerSessionState {
 }
 
 export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeconds, toMinutes = millisecondsToMinutes }: TimerSessionInput): TimerSessionState => {
-  const [session, setSession] = useState<TimerSession>(IDLE_SESSION);
+  const [session, setSession] = useState<TimerSession>(READY_SESSION);
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
 
   // 저장값을 읽거나 사용자가 조작하면 true. 늦게 끝난 읽기가 그 사이의 조작을 덮는 것 방지
@@ -185,7 +185,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
     const now = Date.now();
 
-    if (session.phase === 'idle') {
+    if (session.phase === 'ready') {
       const next = startTimer({ session, now, settingMs: settingMinutes[session.mode] * MINUTE_IN_MS });
       startCounting(next.endsAt - now);
       setSession(next);
@@ -228,7 +228,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
     stopCounting();
     setRemainingSeconds(null);
-    setSession(IDLE_SESSION);
+    setSession(READY_SESSION);
   }, [stopCounting]);
 
   return { session, remainingSeconds, remainingMinutes, play, stop };

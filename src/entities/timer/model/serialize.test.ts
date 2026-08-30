@@ -2,7 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 
 import { parseSession } from './parse';
 import { serializeSession } from './serialize';
-import { IDLE_SESSION, type TimerSession } from './session';
+import { READY_SESSION, type TimerSession } from './session';
 import { NOW } from '../lib/fixtures';
 
 const stored = (session: TimerSession): unknown => JSON.parse(serializeSession(session) ?? 'null');
@@ -29,7 +29,7 @@ describe('기기에 저장할 타이머 세션 값 문자열', () => {
   });
 
   it('대기 상태는 저장할 문자열이 없다', () => {
-    expect(serializeSession(IDLE_SESSION)).toBeNull();
+    expect(serializeSession(READY_SESSION)).toBeNull();
   });
 });
 

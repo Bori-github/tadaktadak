@@ -36,7 +36,7 @@ export const TimerScreen = (): JSX.Element => {
 
   const centerX = width / 2;
   const centerY = layout.dialCenterY;
-  const editing = session.phase === 'idle';
+  const editing = session.phase === 'ready';
   const shownMode = editing ? editTarget : session.mode;
   const paintedMode = colorMode({ editing, editTarget });
   const selected = minutes[shownMode];

@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { restoreSession } from './restore';
-import { IDLE_SESSION, type PausedSession, type RunningSession } from './session';
+import { READY_SESSION, type PausedSession, type RunningSession } from './session';
 import { MINUTE_IN_MS } from '../config/minutes';
 import { NOW } from '../lib/fixtures';
 
@@ -25,18 +25,18 @@ describe('앱 재실행', () => {
     expect(restoreSession({ stored: runningUntil(endsAt), now: NOW, stopped: false })).toEqual({ phase: 'done', mode: 'focus' });
   });
 
-  it.each<{ label: string; phase: 'idle' | 'done' }>([
-    { label: '대기 상태', phase: 'idle' },
+  it.each<{ label: string; phase: 'ready' | 'done' }>([
+    { label: '대기 상태', phase: 'ready' },
     { label: '완료 상태', phase: 'done' },
   ])('$label로 저장됐으면 집중 타이머 대기다', ({ phase }) => {
-    expect(restoreSession({ stored: { phase, mode: 'rest' }, now: NOW, stopped: false })).toEqual(IDLE_SESSION);
+    expect(restoreSession({ stored: { phase, mode: 'rest' }, now: NOW, stopped: false })).toEqual(READY_SESSION);
   });
 
   it('저장값이 없으면 집중 타이머 대기다', () => {
-    expect(restoreSession({ stored: null, now: NOW, stopped: false })).toEqual(IDLE_SESSION);
+    expect(restoreSession({ stored: null, now: NOW, stopped: false })).toEqual(READY_SESSION);
   });
 
   it('정지됨 플래그가 있으면 저장값을 버리고 집중 타이머 대기다', () => {
-    expect(restoreSession({ stored: runningUntil(NOW + MINUTE_IN_MS), now: NOW, stopped: true })).toEqual(IDLE_SESSION);
+    expect(restoreSession({ stored: runningUntil(NOW + MINUTE_IN_MS), now: NOW, stopped: true })).toEqual(READY_SESSION);
   });
 });

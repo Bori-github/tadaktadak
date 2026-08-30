@@ -42,7 +42,7 @@ const rect = ({ props }: { props: Record<string, unknown> }): Rect => {
 
 describe('버튼 자리', () => {
   it('기준 화면에서 두 버튼을 덮는다', async () => {
-    const { play, stop } = await buttons('idle');
+    const { play, stop } = await buttons('ready');
 
     expect({ play: rect(play), stop: rect(stop) }).toEqual({
       play: { left: 119, top: 668, width: 64, height: 64 },
@@ -51,13 +51,13 @@ describe('버튼 자리', () => {
   });
 
   it('기준 화면에서 두 터치 영역 사이가 24 논리 픽셀이다', async () => {
-    const { play, stop } = await buttons('idle');
+    const { play, stop } = await buttons('ready');
 
     expect(rect(stop).left - (rect(play).left + rect(play).width)).toBe(24);
   });
 
   it.each([2, 4, 6])('도트 %i에서 두 버튼이 겹치지 않는다', async (dotSize) => {
-    const { play, stop } = await buttons('idle', dotSize);
+    const { play, stop } = await buttons('ready', dotSize);
 
     expect(rect(play).left + rect(play).width).toBeLessThanOrEqual(rect(stop).left);
   });
@@ -65,7 +65,7 @@ describe('버튼 자리', () => {
 
 describe('누르면 그쪽 조작을 넘긴다', () => {
   it('재생 버튼', async () => {
-    const { play } = await buttons('idle');
+    const { play } = await buttons('ready');
     await fireEvent.press(play);
 
     expect(pressed).toEqual(['play']);
@@ -81,7 +81,7 @@ describe('누르면 그쪽 조작을 넘긴다', () => {
 
 describe('잠긴 버튼은 눌리지 않는다', () => {
   it('대기에서 정지', async () => {
-    const { stop } = await buttons('idle');
+    const { stop } = await buttons('ready');
     await fireEvent.press(stop);
 
     expect(pressed).toEqual([]);

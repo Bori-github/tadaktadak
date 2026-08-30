@@ -33,7 +33,7 @@ type SessionRemainingInput = {
  */
 export const sessionRemainingMs = ({ session, now }: SessionRemainingInput): number | null => {
   switch (session.phase) {
-    case 'idle':
+    case 'ready':
       return null;
     case 'running':
       return Math.max(0, session.endsAt - now);

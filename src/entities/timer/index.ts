@@ -4,5 +4,5 @@ export { ignitionProgress } from './lib/ignition';
 export { remainingMs, sessionRemainingMs } from './lib/remaining';
 export { type TimerMode } from './model/mode';
 export { restoreSession } from './model/restore';
-export { IDLE_SESSION, type TimerPhase, type TimerSession } from './model/session';
+export { READY_SESSION, type TimerPhase, type TimerSession } from './model/session';
 export { completeTimer, pauseTimer, resumeTimer, startTimer } from './model/transition';

@@ -3,7 +3,7 @@ import { describe, expect, it } from '@jest/globals';
 import { NOW } from './fixtures';
 import { remainingMs, sessionRemainingMs } from './remaining';
 import { MINUTE_IN_MS } from '../config/minutes';
-import { IDLE_SESSION } from '../model/session';
+import { READY_SESSION } from '../model/session';
 
 const remainingAfter = (elapsedMs: number, remainingAtStartMs = 25 * MINUTE_IN_MS) => remainingMs({ remainingAtStartMs, startedAtUptime: 1000, nowUptime: 1000 + elapsedMs });
 
@@ -31,7 +31,7 @@ describe('남은 시간', () => {
 
 describe('복구한 단계의 남은 시간(밀리초)', () => {
   it('대기 상태는 남은 시간이 없다', () => {
-    expect(sessionRemainingMs({ session: IDLE_SESSION, now: NOW })).toBeNull();
+    expect(sessionRemainingMs({ session: READY_SESSION, now: NOW })).toBeNull();
   });
 
   it('진행 상태는 끝날 시각까지 남은 시간이다', () => {

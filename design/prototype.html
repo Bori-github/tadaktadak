@@ -752,7 +752,7 @@
 
         var st = {
           mode: 'focus',
-          phase: 'idle',
+          phase: 'ready',
           remaining: 25,
           pauseT: 0,
           fireLevel: 0,
@@ -930,10 +930,10 @@
           return CY - (numeralOuter + CD_GAP + (cdH * DOT) / 2);
         }
 
-        function goFocusIdle() {
+        function goFocusReady() {
           if (st.mode === 'rest' && st.phase === 'done') st.fireLevel = 0;
           st.mode = 'focus';
-          st.phase = 'idle';
+          st.phase = 'ready';
           st.remaining = setFocus;
           st.pauseT = 0;
           st.outT = st.fireLevel > 0 ? OUT_FADE : 0;
@@ -946,7 +946,7 @@
           var m = st.mode,
             p = st.phase;
           if (m === 'focus') {
-            if (p === 'idle') {
+            if (p === 'ready') {
               st.phase = 'running';
               st.remaining = setFocus;
               st.fireLevel = 1;
@@ -955,7 +955,7 @@
             else if (p === 'paused') st.phase = 'running';
             else if (p === 'done') {
               if (setRest <= 0) {
-                goFocusIdle();
+                goFocusReady();
               } else {
                 st.mode = 'rest';
                 st.phase = 'running';
@@ -966,17 +966,17 @@
           } else {
             if (p === 'running') st.phase = 'paused';
             else if (p === 'paused') st.phase = 'running';
-            else if (p === 'done') goFocusIdle();
+            else if (p === 'done') goFocusReady();
           }
         }
         function stopEnabled() {
-          return !(st.mode === 'focus' && st.phase === 'idle');
+          return !(st.mode === 'focus' && st.phase === 'ready');
         }
 
         // 정지: 즉시 집중 대기로 돌아간다
         function pressStop() {
           st.fireLevel = 0;
-          goFocusIdle();
+          goFocusReady();
         }
 
         phone.addEventListener('click', function (e) {
@@ -996,7 +996,7 @@
             }
           }
           // 숫자 (대기 상태에서만)
-          if (st.phase !== 'idle' || st.mode !== 'focus') return;
+          if (st.phase !== 'ready' || st.mode !== 'focus') return;
           if (Math.abs(x - CX) <= 70 && Math.abs(y - mainCenterY()) <= (mainH * DOT) / 2 + 8) {
             editTarget = 'focus';
             syncSlider();
@@ -1039,7 +1039,7 @@
           var v = +dialEl.value;
           if (editTarget === 'focus') {
             setFocus = v;
-            if (st.mode === 'focus' && st.phase === 'idle') st.remaining = v;
+            if (st.mode === 'focus' && st.phase === 'ready') st.remaining = v;
           } else setRest = v;
           document.getElementById('dialvv').textContent = v + '분';
         });
@@ -1084,8 +1084,8 @@
           g.fillRect(0, 0, W, H);
 
           var isRest = st.mode === 'rest',
-            idle = st.phase === 'idle';
-          var editingRest = idle && !isRest && editTarget === 'rest';
+            ready = st.phase === 'ready';
+          var editingRest = ready && !isRest && editTarget === 'rest';
           var q = easeInOut(Math.min(1, st.pauseT / PAUSE_FADE));
           var dimMul = 1 - 0.65 * q,
             frozen = q > 0.5;
@@ -1100,7 +1100,7 @@
           function litOf(i) {
             if (isRest) return i - 1 >= virtualRem ? 1 : i > virtualRem ? i - virtualRem : 0;
             if (st.phase === 'done' || st.outT > 0) return i <= setFocus ? 1 : 0;
-            if (idle) return 0;
+            if (ready) return 0;
             if (i - 1 >= st.remaining) return 1;
             if (i > st.remaining) return i - st.remaining;
             return 0;
@@ -1112,7 +1112,7 @@
 
           // 손잡이·호가 가리키는 값
           var dialVal;
-          if (idle && !isRest) dialVal = editingRest ? setRest : setFocus;
+          if (ready && !isRest) dialVal = editingRest ? setRest : setFocus;
           else if (isRest) dialVal = virtualRem;
           else dialVal = st.remaining;
 
@@ -1210,11 +1210,11 @@
           blit(p, knob, cdx + rk * Math.cos(ka), cdy + rk * Math.sin(ka), 1);
 
           // 숫자: 위치 고정. 밝기로 지금 무엇이 도는지 알린다
-          var topVal = isRest || (idle && !isRest) || st.phase === 'done' ? (isRest ? setFocus : st.remaining) : st.remaining;
-          if (idle && !isRest) topVal = setFocus;
+          var topVal = isRest || (ready && !isRest) || st.phase === 'done' ? (isRest ? setFocus : st.remaining) : st.remaining;
+          if (ready && !isRest) topVal = setFocus;
           var restVal = isRest ? st.remaining : setRest;
-          var topActive = !isRest && (!idle || editTarget === 'focus');
-          var subActive = isRest || (idle && editTarget === 'rest');
+          var topActive = !isRest && (!ready || editTarget === 'focus');
+          var subActive = isRest || (ready && editTarget === 'rest');
 
           drawText(p, clock(topVal), cdx, mainCenterY() / DOT, PAL.num, mainH / 7, topActive ? 1 : 0.4);
           var sub = faceFor(subH);
@@ -1234,14 +1234,14 @@
           drawButton(p, bx[0] / DOT, btnY / DOT, st.phase === 'running' ? 'pause' : 'play', true, st.press[0] > 0, btnSize(0));
           drawButton(p, bx[1] / DOT, btnY / DOT, 'stop', stopEnabled(), st.press[1] > 0, btnSize(1));
 
-          var names = { idle: '대기', running: '진행', paused: '일시정지', done: '완료' };
+          var names = { ready: '대기', running: '진행', paused: '일시정지', done: '완료' };
           var el = document.getElementById('state');
           el.className = 'state ' + (isRest ? 'rest' : 'focus');
           el.textContent =
             (isRest ? '휴식' : '집중') +
             ' · ' +
             names[st.phase] +
-            (idle && !isRest ? (editTarget === 'rest' ? ' · 휴식 시간 고르는 중' : ' · 집중 시간 고르는 중') : '');
+            (ready && !isRest ? (editTarget === 'rest' ? ' · 휴식 시간 고르는 중' : ' · 집중 시간 고르는 중') : '');
         }
 
         function fit() {
