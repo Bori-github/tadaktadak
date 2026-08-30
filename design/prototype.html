@@ -485,7 +485,7 @@
           arcRest: '#3f9aa6',
           num: '#f4ead6',
           numRest: '#8fdbe4',
-          glow: '#ff9d2e',
+          bloom: '#ff9d2e',
           bEdge: '#3a2718',
           bFace: '#8a6238',
           bHi: '#b8895a',
@@ -1121,8 +1121,8 @@
           var cA = Math.min(litCount / SLOTS, 1) * fireMul;
           if (cA > 0) {
             var cg = g.createRadialGradient(CX, CY, 0, CX, CY, R_OBJ * 0.95);
-            cg.addColorStop(0, hexA(PAL.glow, 0.3 * cA + 0.04));
-            cg.addColorStop(1, hexA(PAL.glow, 0));
+            cg.addColorStop(0, hexA(PAL.bloom, 0.3 * cA + 0.04));
+            cg.addColorStop(1, hexA(PAL.bloom, 0));
             g.fillStyle = cg;
             g.fillRect(0, 0, W, H);
           }
@@ -1138,8 +1138,8 @@
               (isFire ? 32 : 16) * (0.55 + 0.45 * lit) * flick * (0.4 + 0.6 * fireMul) * (isFire ? radiusMul : 1 + (radiusMul - 1) * 0.5);
             if (rad < 0.5) continue;
             var rg = g.createRadialGradient(gx, gy, 0, gx, gy, rad);
-            rg.addColorStop(0, hexA(PAL.glow, (isFire ? 0.55 : 0.32) * lit * fireMul));
-            rg.addColorStop(1, hexA(PAL.glow, 0));
+            rg.addColorStop(0, hexA(PAL.bloom, (isFire ? 0.55 : 0.32) * lit * fireMul));
+            rg.addColorStop(1, hexA(PAL.bloom, 0));
             g.fillStyle = rg;
             g.fillRect(gx - rad, gy - rad, rad * 2, rad * 2);
           }
@@ -1191,7 +1191,7 @@
               if (q2.life <= 0) continue;
               g.beginPath();
               g.arc(q2.x * DOT, q2.y * DOT, 3.0, 0, Math.PI * 2);
-              g.fillStyle = hexA(PAL.glow, 0.15 * q2.life);
+              g.fillStyle = hexA(PAL.bloom, 0.15 * q2.life);
               g.fill();
               p.globalAlpha = Math.max(0, Math.min(1, q2.life * 1.2));
               p.fillStyle = q2.life > 0.66 ? PAL.y : q2.life > 0.33 ? PAL.o : PAL.r;
