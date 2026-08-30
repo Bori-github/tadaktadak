@@ -485,7 +485,7 @@
           arcRest: '#3f9aa6',
           num: '#f4ead6',
           numRest: '#8fdbe4',
-          glow: '#ff9d2e',
+          bloom: '#ff9d2e',
           bEdge: '#3a2718',
           bFace: '#8a6238',
           bHi: '#b8895a',
@@ -649,7 +649,7 @@
           SLOTS = 60;
         var R_OBJ = 153,
           R_ARC = 131,
-          R_LABEL = 175,
+          R_NUMERAL = 175,
           ARC_W = 6;
         var DX = W / DOT,
           DY = H / DOT,
@@ -752,14 +752,14 @@
 
         var st = {
           mode: 'focus',
-          phase: 'idle',
+          phase: 'ready',
           remaining: 25,
           pauseT: 0,
           fireLevel: 0,
           outT: 0,
           press: [0, 0, 0],
           restLen: 5,
-          doneT: 0,
+          completedT: 0,
           repeat: false,
           sparks: [],
           spawned: false,
@@ -792,7 +792,7 @@
         }
         // 완료한 뒤 다음에 무엇이 올지. 없으면 null
         function nextAfterDone() {
-          if (st.phase !== 'done') return null;
+          if (st.phase !== 'completed') return null;
           if (st.mode === 'focus') {
             if (setRest > 0 && autoRest) return 'rest';
             if (st.repeat) return 'focus';
@@ -926,18 +926,18 @@
         }
         // 카운트다운은 시계 문자판의 0분 눈금 바깥에 놓는다
         function cdCenterY() {
-          var labelOuter = R_LABEL + 7; // 눈금 숫자 높이 7도트의 절반이 논리픽셀 7
-          return CY - (labelOuter + CD_GAP + (cdH * DOT) / 2);
+          var numeralOuter = R_NUMERAL + 7; // 눈금 라벨 높이 7도트의 절반이 논리픽셀 7
+          return CY - (numeralOuter + CD_GAP + (cdH * DOT) / 2);
         }
 
-        function goFocusIdle() {
-          if (st.mode === 'rest' && st.phase === 'done') st.fireLevel = 0;
+        function goFocusReady() {
+          if (st.mode === 'rest' && st.phase === 'completed') st.fireLevel = 0;
           st.mode = 'focus';
-          st.phase = 'idle';
+          st.phase = 'ready';
           st.remaining = setFocus;
           st.pauseT = 0;
           st.outT = st.fireLevel > 0 ? OUT_FADE : 0;
-          st.doneT = 0;
+          st.completedT = 0;
           st.spawned = false;
           editTarget = 'focus';
           syncSlider();
@@ -946,16 +946,16 @@
           var m = st.mode,
             p = st.phase;
           if (m === 'focus') {
-            if (p === 'idle') {
+            if (p === 'ready') {
               st.phase = 'running';
               st.remaining = setFocus;
               st.fireLevel = 1;
               st.outT = 0;
             } else if (p === 'running') st.phase = 'paused';
             else if (p === 'paused') st.phase = 'running';
-            else if (p === 'done') {
+            else if (p === 'completed') {
               if (setRest <= 0) {
-                goFocusIdle();
+                goFocusReady();
               } else {
                 st.mode = 'rest';
                 st.phase = 'running';
@@ -966,17 +966,17 @@
           } else {
             if (p === 'running') st.phase = 'paused';
             else if (p === 'paused') st.phase = 'running';
-            else if (p === 'done') goFocusIdle();
+            else if (p === 'completed') goFocusReady();
           }
         }
         function stopEnabled() {
-          return !(st.mode === 'focus' && st.phase === 'idle');
+          return !(st.mode === 'focus' && st.phase === 'ready');
         }
 
         // 정지: 즉시 집중 대기로 돌아간다
         function pressStop() {
           st.fireLevel = 0;
-          goFocusIdle();
+          goFocusReady();
         }
 
         phone.addEventListener('click', function (e) {
@@ -996,7 +996,7 @@
             }
           }
           // 숫자 (대기 상태에서만)
-          if (st.phase !== 'idle' || st.mode !== 'focus') return;
+          if (st.phase !== 'ready' || st.mode !== 'focus') return;
           if (Math.abs(x - CX) <= 70 && Math.abs(y - mainCenterY()) <= (mainH * DOT) / 2 + 8) {
             editTarget = 'focus';
             syncSlider();
@@ -1039,7 +1039,7 @@
           var v = +dialEl.value;
           if (editTarget === 'focus') {
             setFocus = v;
-            if (st.mode === 'focus' && st.phase === 'idle') st.remaining = v;
+            if (st.mode === 'focus' && st.phase === 'ready') st.remaining = v;
           } else setRest = v;
           document.getElementById('dialvv').textContent = v + '분';
         });
@@ -1084,8 +1084,8 @@
           g.fillRect(0, 0, W, H);
 
           var isRest = st.mode === 'rest',
-            idle = st.phase === 'idle';
-          var editingRest = idle && !isRest && editTarget === 'rest';
+            ready = st.phase === 'ready';
+          var editingRest = ready && !isRest && editTarget === 'rest';
           var q = easeInOut(Math.min(1, st.pauseT / PAUSE_FADE));
           var dimMul = 1 - 0.65 * q,
             frozen = q > 0.5;
@@ -1099,20 +1099,20 @@
 
           function litOf(i) {
             if (isRest) return i - 1 >= virtualRem ? 1 : i > virtualRem ? i - virtualRem : 0;
-            if (st.phase === 'done' || st.outT > 0) return i <= setFocus ? 1 : 0;
-            if (idle) return 0;
+            if (st.phase === 'completed' || st.outT > 0) return i <= setFocus ? 1 : 0;
+            if (ready) return 0;
             if (i - 1 >= st.remaining) return 1;
             if (i > st.remaining) return i - st.remaining;
             return 0;
           }
 
           // 완료 타오름
-          var flareK = st.phase === 'done' && st.mode === 'focus' ? Math.max(0, 1 - st.doneT / FLARE_DUR) : 0;
+          var flareK = st.phase === 'completed' && st.mode === 'focus' ? Math.max(0, 1 - st.completedT / FLARE_DUR) : 0;
           var radiusMul = 1 + (FLARE_MUL - 1) * flareK * flareK;
 
           // 손잡이·호가 가리키는 값
           var dialVal;
-          if (idle && !isRest) dialVal = editingRest ? setRest : setFocus;
+          if (ready && !isRest) dialVal = editingRest ? setRest : setFocus;
           else if (isRest) dialVal = virtualRem;
           else dialVal = st.remaining;
 
@@ -1121,8 +1121,8 @@
           var cA = Math.min(litCount / SLOTS, 1) * fireMul;
           if (cA > 0) {
             var cg = g.createRadialGradient(CX, CY, 0, CX, CY, R_OBJ * 0.95);
-            cg.addColorStop(0, hexA(PAL.glow, 0.3 * cA + 0.04));
-            cg.addColorStop(1, hexA(PAL.glow, 0));
+            cg.addColorStop(0, hexA(PAL.bloom, 0.3 * cA + 0.04));
+            cg.addColorStop(1, hexA(PAL.bloom, 0));
             g.fillStyle = cg;
             g.fillRect(0, 0, W, H);
           }
@@ -1138,8 +1138,8 @@
               (isFire ? 32 : 16) * (0.55 + 0.45 * lit) * flick * (0.4 + 0.6 * fireMul) * (isFire ? radiusMul : 1 + (radiusMul - 1) * 0.5);
             if (rad < 0.5) continue;
             var rg = g.createRadialGradient(gx, gy, 0, gx, gy, rad);
-            rg.addColorStop(0, hexA(PAL.glow, (isFire ? 0.55 : 0.32) * lit * fireMul));
-            rg.addColorStop(1, hexA(PAL.glow, 0));
+            rg.addColorStop(0, hexA(PAL.bloom, (isFire ? 0.55 : 0.32) * lit * fireMul));
+            rg.addColorStop(1, hexA(PAL.bloom, 0));
             g.fillStyle = rg;
             g.fillRect(gx - rad, gy - rad, rad * 2, rad * 2);
           }
@@ -1155,7 +1155,7 @@
 
           for (var v = 0; v < 60; v += 5) {
             var a = angleOf(v * 6),
-              rl = R_LABEL / DOT;
+              rl = R_NUMERAL / DOT;
             drawText(p, String(v), cdx + rl * Math.cos(a), cdy + rl * Math.sin(a), PAL.L, 1);
           }
           for (var i = 1; i <= SLOTS; i++) {
@@ -1191,7 +1191,7 @@
               if (q2.life <= 0) continue;
               g.beginPath();
               g.arc(q2.x * DOT, q2.y * DOT, 3.0, 0, Math.PI * 2);
-              g.fillStyle = hexA(PAL.glow, 0.15 * q2.life);
+              g.fillStyle = hexA(PAL.bloom, 0.15 * q2.life);
               g.fill();
               p.globalAlpha = Math.max(0, Math.min(1, q2.life * 1.2));
               p.fillStyle = q2.life > 0.66 ? PAL.y : q2.life > 0.33 ? PAL.o : PAL.r;
@@ -1210,11 +1210,11 @@
           blit(p, knob, cdx + rk * Math.cos(ka), cdy + rk * Math.sin(ka), 1);
 
           // 숫자: 위치 고정. 밝기로 지금 무엇이 도는지 알린다
-          var topVal = isRest || (idle && !isRest) || st.phase === 'done' ? (isRest ? setFocus : st.remaining) : st.remaining;
-          if (idle && !isRest) topVal = setFocus;
+          var topVal = isRest || (ready && !isRest) || st.phase === 'completed' ? (isRest ? setFocus : st.remaining) : st.remaining;
+          if (ready && !isRest) topVal = setFocus;
           var restVal = isRest ? st.remaining : setRest;
-          var topActive = !isRest && (!idle || editTarget === 'focus');
-          var subActive = isRest || (idle && editTarget === 'rest');
+          var topActive = !isRest && (!ready || editTarget === 'focus');
+          var subActive = isRest || (ready && editTarget === 'rest');
 
           drawText(p, clock(topVal), cdx, mainCenterY() / DOT, PAL.num, mainH / 7, topActive ? 1 : 0.4);
           var sub = faceFor(subH);
@@ -1223,7 +1223,7 @@
           // 자동 시작까지 남은 초. 시계 0분 눈금 바깥에 놓고, 색은 다음에 올 구간을 가리킨다
           var nxt = nextAfterDone();
           if (nxt) {
-            var left = Math.ceil((AUTO_DELAY - st.doneT) / 1000);
+            var left = Math.ceil((AUTO_DELAY - st.completedT) / 1000);
             if (left > 0) {
               var cf = faceFor(cdH);
               drawText(p, String(left), cdx, cdCenterY() / DOT, nxt === 'rest' ? PAL.numRest : PAL.num, cf.s, 1, cf.f);
@@ -1234,14 +1234,14 @@
           drawButton(p, bx[0] / DOT, btnY / DOT, st.phase === 'running' ? 'pause' : 'play', true, st.press[0] > 0, btnSize(0));
           drawButton(p, bx[1] / DOT, btnY / DOT, 'stop', stopEnabled(), st.press[1] > 0, btnSize(1));
 
-          var names = { idle: '대기', running: '진행', paused: '일시정지', done: '완료' };
+          var names = { ready: '대기', running: '진행', paused: '일시정지', completed: '완료' };
           var el = document.getElementById('state');
           el.className = 'state ' + (isRest ? 'rest' : 'focus');
           el.textContent =
             (isRest ? '휴식' : '집중') +
             ' · ' +
             names[st.phase] +
-            (idle && !isRest ? (editTarget === 'rest' ? ' · 휴식 시간 고르는 중' : ' · 집중 시간 고르는 중') : '');
+            (ready && !isRest ? (editTarget === 'rest' ? ' · 휴식 시간 고르는 중' : ' · 집중 시간 고르는 중') : '');
         }
 
         function fit() {
@@ -1267,8 +1267,8 @@
             st.pauseT = Math.max(0, st.pauseT - dt);
             if (st.remaining <= 0) {
               st.remaining = 0;
-              st.phase = 'done';
-              st.doneT = 0;
+              st.phase = 'completed';
+              st.completedT = 0;
               if (st.mode === 'focus') {
                 st.spawned = false;
                 st.sparks = [];
@@ -1281,16 +1281,16 @@
           }
 
           // 완료 불티
-          if (st.phase === 'done' && st.mode === 'focus' && !st.spawned && st.doneT >= SPARK_DELAY) {
+          if (st.phase === 'completed' && st.mode === 'focus' && !st.spawned && st.completedT >= SPARK_DELAY) {
             spawnRise();
             st.spawned = true;
           }
 
           // 완료 뒤 자동 진행. 반복이 켜져 있으면 휴식이 끝나고 집중으로 돌아온다
-          if (st.phase === 'done') {
-            st.doneT += dt;
+          if (st.phase === 'completed') {
+            st.completedT += dt;
             var nx = nextAfterDone();
-            if (nx && st.doneT >= AUTO_DELAY) {
+            if (nx && st.completedT >= AUTO_DELAY) {
               if (nx === 'rest') {
                 st.mode = 'rest';
                 st.phase = 'running';
@@ -1303,7 +1303,7 @@
                 st.phase = 'running';
                 st.remaining = setFocus;
               }
-              st.doneT = 0;
+              st.completedT = 0;
             }
           }
           if (st.outT > 0) {

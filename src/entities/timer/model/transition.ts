@@ -64,6 +64,6 @@ export const resumeTimer = ({ session, now }: ResumeInput): RunningSession => ({
  * @returns 끝날 시각을 비운 완료
  */
 export const completeTimer = (session: TimerSession): TimerSession => ({
-  phase: 'done',
+  phase: 'completed',
   mode: session.mode,
 });

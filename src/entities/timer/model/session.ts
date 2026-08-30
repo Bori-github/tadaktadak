@@ -1,7 +1,7 @@
 import { type TimerMode } from './mode';
 
 /** 타이머 단계. `DESIGN.md` §8 */
-export const TIMER_PHASES = ['idle', 'running', 'paused', 'done'] as const;
+export const TIMER_PHASES = ['ready', 'running', 'paused', 'completed'] as const;
 
 export type TimerPhase = (typeof TIMER_PHASES)[number];
 
@@ -12,7 +12,7 @@ export type RunningSession = { phase: 'running'; mode: TimerMode; endsAt: number
 export type PausedSession = { phase: 'paused'; mode: TimerMode; pausedRemainingMs: number };
 
 /** 타이머 세션 값. `SPEC.md` 기기에 저장하는 값 */
-export type TimerSession = { phase: 'idle' | 'done'; mode: TimerMode } | RunningSession | PausedSession;
+export type TimerSession = { phase: 'ready' | 'completed'; mode: TimerMode } | RunningSession | PausedSession;
 
 /** 집중 타이머 대기. 첫 실행과 정지 뒤의 값 */
-export const IDLE_SESSION: TimerSession = Object.freeze({ phase: 'idle', mode: 'focus' });
+export const READY_SESSION: TimerSession = Object.freeze({ phase: 'ready', mode: 'focus' });

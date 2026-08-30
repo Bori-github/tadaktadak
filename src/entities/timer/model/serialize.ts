@@ -6,4 +6,4 @@ import { type TimerSession } from './session';
  * @param session - 지금 타이머 세션 값
  * @returns 저장할 문자열. 지울 자리면 `null`
  */
-export const serializeSession = (session: TimerSession): string | null => (session.phase === 'idle' ? null : JSON.stringify(session));
+export const serializeSession = (session: TimerSession): string | null => (session.phase === 'ready' ? null : JSON.stringify(session));

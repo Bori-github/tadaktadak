@@ -2,7 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 
 import { parseSession } from './parse';
 import { serializeSession } from './serialize';
-import { IDLE_SESSION, type TimerSession } from './session';
+import { READY_SESSION, type TimerSession } from './session';
 import { NOW } from '../lib/fixtures';
 
 const stored = (session: TimerSession): unknown => JSON.parse(serializeSession(session) ?? 'null');
@@ -25,11 +25,11 @@ describe('기기에 저장할 타이머 세션 값 문자열', () => {
   });
 
   it('완료 상태는 모드만 담는다', () => {
-    expect(stored({ phase: 'done', mode: 'rest' })).toEqual({ phase: 'done', mode: 'rest' });
+    expect(stored({ phase: 'completed', mode: 'rest' })).toEqual({ phase: 'completed', mode: 'rest' });
   });
 
   it('대기 상태는 저장할 문자열이 없다', () => {
-    expect(serializeSession(IDLE_SESSION)).toBeNull();
+    expect(serializeSession(READY_SESSION)).toBeNull();
   });
 });
 
@@ -37,7 +37,7 @@ describe('저장한 문자열을 다시 읽기', () => {
   it.each<{ label: string; session: TimerSession }>([
     { label: '진행 상태', session: { phase: 'running', mode: 'focus', endsAt: NOW } },
     { label: '일시정지 상태', session: { phase: 'paused', mode: 'rest', pausedRemainingMs: 90_000 } },
-    { label: '완료 상태', session: { phase: 'done', mode: 'focus' } },
+    { label: '완료 상태', session: { phase: 'completed', mode: 'focus' } },
   ])('$label는 저장한 값 그대로 돌아온다', ({ session }) => {
     expect(parseSession(serializeSession(session))).toEqual(session);
   });

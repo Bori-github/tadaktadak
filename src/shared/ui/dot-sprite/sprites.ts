@@ -9,10 +9,10 @@ export const SPRITE_COLORS: Record<string, string | undefined> = {
   r: COLORS.fire.base,
   W: COLORS.fire.log,
   D: COLORS.fire.logShade,
-  h: COLORS.focus.handleArm,
-  H: COLORS.focus.handleCore,
-  k: COLORS.rest.handleArm,
-  K: COLORS.rest.handleCore,
+  h: COLORS.focus.thumbArm,
+  H: COLORS.focus.thumbCore,
+  k: COLORS.rest.thumbArm,
+  K: COLORS.rest.thumbCore,
   m: COLORS.focus.marker,
 };
 
@@ -36,7 +36,7 @@ export const BONFIRE_HOT_A_7 = ['.yoooy.', '.roooor', '.rroorr', '..rrr..', '..D
 
 export const BONFIRE_HOT_B_7 = ['.yoooy.', 'rooooor', '.rroorr', '..rrr..', '..DDD..', '.DWWWD.', 'DWWWWWD'];
 
-/** 스파크 손잡이. 정지 상태는 이 프레임에 고정한다 */
+/** 손잡이(스파크 형태). 정지 상태는 이 프레임에 고정한다 */
 export const SPARK_A = ['...h...', '...h...', '..hHh..', 'hHHHHHh', '..hHh..', '...h...', '...h...'];
 
 /** 휴식 타이머 설정 손잡이. `DESIGN.md` §4 */

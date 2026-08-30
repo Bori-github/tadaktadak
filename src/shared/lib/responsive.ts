@@ -1,11 +1,13 @@
-import { BONFIRE_TALL_WIDTH, BUTTON_SIZE_IN_DOTS, DOT_SIZE, MIN_WIDTH } from '@/shared/constants';
+import { BUTTON_SIZE_IN_DOTS, DOT_SIZE, MEDIUM_MIN_SHORT_SIDE, MIN_SHORT_SIDE } from '@/shared/constants';
+
+const MAX_SCALE = 3;
 
 const EDGE_MARGIN = 8;
-const TICK_NUMBER_MARGIN = 20;
+const NUMERAL_MARGIN = 20;
 const MAX_ITEM_RADIUS = 153;
 
-const TICK_NUMBER_GAP = 6;
-const TICK_NUMBER_HALF_HEIGHT = 7;
+const NUMERAL_GAP = 6;
+const NUMERAL_HALF_HEIGHT = 7;
 const ARC_GAP = 13;
 
 const BUTTON_OFFSET_FROM_SAFE_AREA = 150;
@@ -21,26 +23,29 @@ type LayoutInput = {
 type Layout = {
   scale: number;
   dotSize: number;
-  bonfireDots: number;
+  /** compact 등급 여부. `DESIGN.md` §7 구간별 처리 */
+  isCompact: boolean;
   itemRadius: number;
   arcRadius: number;
-  tickNumberRadius: number;
+  numeralRadius: number;
   buttonCenterY: number;
   dialCenterY: number;
 };
 
+// TODO: isCompact 대신 등급 반환
 export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }: LayoutInput): Layout => {
-  const scale = Math.max(1, Math.floor(shortSide / MIN_WIDTH));
+  const scale = Math.min(MAX_SCALE, Math.max(1, Math.floor(shortSide / MIN_SHORT_SIDE)));
   const width = shortSide / scale;
 
-  const bonfireDots = shortSide < BONFIRE_TALL_WIDTH ? 7 : 9;
+  const isCompact = shortSide < MEDIUM_MIN_SHORT_SIDE;
+  const bonfireDots = isCompact ? 7 : 9;
   const bonfireHalfHeight = (bonfireDots * DOT_SIZE) / 2;
 
-  const itemRadius = Math.min(width / 2 - EDGE_MARGIN - TICK_NUMBER_MARGIN - bonfireHalfHeight, MAX_ITEM_RADIUS);
+  const itemRadius = Math.min(width / 2 - EDGE_MARGIN - NUMERAL_MARGIN - bonfireHalfHeight, MAX_ITEM_RADIUS);
   const arcRadius = itemRadius - bonfireHalfHeight - ARC_GAP;
-  const tickNumberRadius = itemRadius + bonfireHalfHeight + TICK_NUMBER_GAP + TICK_NUMBER_HALF_HEIGHT;
+  const numeralRadius = itemRadius + bonfireHalfHeight + NUMERAL_GAP + NUMERAL_HALF_HEIGHT;
 
-  const dialTopHalfHeight = (tickNumberRadius + TICK_NUMBER_HALF_HEIGHT) * scale;
+  const dialTopHalfHeight = (numeralRadius + NUMERAL_HALF_HEIGHT) * scale;
   const buttonHalfHeight = (BUTTON_SIZE_IN_DOTS / 2) * DOT_SIZE * scale;
   // 배율이 달라져도 시계판-버튼 여백 90px 유지. 배율 1에서 182 + 90 + 28 = 300px
   const dialToButton = dialTopHalfHeight + DIAL_TO_BUTTON_GAP + buttonHalfHeight;
@@ -56,10 +61,10 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }
   return {
     scale,
     dotSize: DOT_SIZE * scale,
-    bonfireDots,
+    isCompact,
     itemRadius: itemRadius * scale,
     arcRadius: arcRadius * scale,
-    tickNumberRadius: tickNumberRadius * scale,
+    numeralRadius: numeralRadius * scale,
     buttonCenterY,
     dialCenterY: buttonCenterY - dialToButton,
   };

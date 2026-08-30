@@ -9,7 +9,7 @@ import { resolveLayout } from './responsive';
 const PROJECTION = { log: 4, bonfire: 9, marker: 5 };
 
 /** 개체 높이 (dot). `DESIGN.md` §4 */
-const HEIGHT = { bonfire: 9, spark: 7, tickNumber: 7, button: BUTTON_SIZE_IN_DOTS };
+const HEIGHT = { bonfire: 9, thumb: 7, numeral: 7, button: BUTTON_SIZE_IN_DOTS };
 
 const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: 47, safeAreaBottomEdge: 810 });
 
@@ -55,29 +55,29 @@ describe('짧은 변 676의 원주 방향 겹침', () => {
     expect(round(gap - needed(PROJECTION.bonfire, PROJECTION.log))).toBe(0.41);
   });
 
-  it('모닥불끼리는 다섯 칸 34.56에서 필요 9.0을 빼 여유 25.56 도트다', () => {
+  it('모닥불끼리는 눈금 다섯 개 34.56에서 필요 9.0을 빼 여유 25.56 도트다', () => {
     expect(round(gap * 5 - needed(PROJECTION.bonfire, PROJECTION.bonfire))).toBe(25.56);
   });
 
-  it('12시 모닥불과 기준 표식은 반 칸 3.46에서 필요 7.0을 빼 3.54 도트 겹친다', () => {
+  it('12시 모닥불과 기준 표식은 반 눈금 3.46에서 필요 7.0을 빼 3.54 도트 겹친다', () => {
     expect(round(gap * 0.5 - needed(PROJECTION.bonfire, PROJECTION.marker))).toBe(-3.54);
   });
 });
 
 describe('기준 화면의 반지름 방향 간격', () => {
-  const { arcRadius, itemRadius, tickNumberRadius, dialCenterY, buttonCenterY, dotSize } = layout(390);
+  const { arcRadius, itemRadius, numeralRadius, dialCenterY, buttonCenterY, dotSize } = layout(390);
   const half = (heightInDots: number) => (heightInDots * dotSize) / 2;
 
-  it('스파크 바깥 138과 개체 안쪽 144가 6 논리 픽셀 떨어진다', () => {
-    expect(itemRadius - half(HEIGHT.bonfire) - (arcRadius + half(HEIGHT.spark))).toBe(6);
+  it('손잡이 바깥 138과 개체 안쪽 144가 6 논리 픽셀 떨어진다', () => {
+    expect(itemRadius - half(HEIGHT.bonfire) - (arcRadius + half(HEIGHT.thumb))).toBe(6);
   });
 
   it('개체 바깥 162와 눈금 숫자 안쪽 168이 6 논리 픽셀 떨어진다', () => {
-    expect(tickNumberRadius - half(HEIGHT.tickNumber) - (itemRadius + half(HEIGHT.bonfire))).toBe(6);
+    expect(numeralRadius - half(HEIGHT.numeral) - (itemRadius + half(HEIGHT.bonfire))).toBe(6);
   });
 
   it('눈금 숫자 바깥 542와 버튼 위 632가 90 논리 픽셀 떨어진다', () => {
-    expect(buttonCenterY - half(HEIGHT.button) - (dialCenterY + tickNumberRadius + half(HEIGHT.tickNumber))).toBe(90);
+    expect(buttonCenterY - half(HEIGHT.button) - (dialCenterY + numeralRadius + half(HEIGHT.numeral))).toBe(90);
   });
 
   it('버튼 아래 688과 safe area 아래 끝 810이 122 논리 픽셀 떨어진다', () => {
@@ -88,9 +88,9 @@ describe('기준 화면의 반지름 방향 간격', () => {
 describe('시계판 아래 끝과 버튼 위 끝은 배율과 무관하게 90 떨어진다', () => {
   const gapOn = (shortSide: number, top: number, bottom: number) => {
     const l = resolveLayout({ shortSide, safeAreaTopEdge: top, safeAreaBottomEdge: bottom });
-    const tickOuter = l.dialCenterY + l.tickNumberRadius + HEIGHT.tickNumber * 0.5 * l.dotSize;
+    const numeralOuter = l.dialCenterY + l.numeralRadius + HEIGHT.numeral * 0.5 * l.dotSize;
     const buttonTop = l.buttonCenterY - (HEIGHT.button * l.dotSize) / 2;
-    return buttonTop - tickOuter;
+    return buttonTop - numeralOuter;
   };
 
   const gapOnDevice = (name: DeviceName) => {

@@ -12,7 +12,7 @@ import { useTimerSpeed } from '../model/speed';
 import { SpeedControl } from './SpeedControl';
 
 import { ControlButtons, Controls, type ControlButton } from '@/widgets/controls';
-import { colorMode, DialArc, DialHandle, DialItems, DialReadout, ReadoutButtons, TickNumbers, useDialDrag } from '@/widgets/dial';
+import { colorMode, DialArc, Thumb, DialItems, DialReadout, ReadoutButtons, Numerals, useDialDrag } from '@/widgets/dial';
 import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 import { resolveLayout } from '@/shared/lib';
@@ -36,7 +36,7 @@ export const TimerScreen = (): JSX.Element => {
 
   const centerX = width / 2;
   const centerY = layout.dialCenterY;
-  const editing = session.phase === 'idle';
+  const editing = session.phase === 'ready';
   const shownMode = editing ? editTarget : session.mode;
   const paintedMode = colorMode({ editing, editTarget });
   const selected = minutes[shownMode];
@@ -44,7 +44,7 @@ export const TimerScreen = (): JSX.Element => {
   // 층별 동작은 `DESIGN.md` §8
   const dialMinutes = useDerivedValue(() => (editing ? selected : remainingMinutes.value));
 
-  // 대기에서 설정 시간을 넘기면 아무 칸도 붙지 않음
+  // 대기에서 설정 시간을 넘기면 아무 눈금도 붙지 않음
   const litMinutes = editing ? selected : (remainingSeconds ?? 0) / SECONDS_IN_MINUTE;
 
   const handleChange = useCallback((value: number) => changeMinutes(editTarget, value), [changeMinutes, editTarget]);
@@ -73,13 +73,13 @@ export const TimerScreen = (): JSX.Element => {
             centerY={centerY}
             radius={layout.itemRadius}
             dotSize={layout.dotSize}
-            bonfireDots={layout.bonfireDots}
+            isCompact={layout.isCompact}
             remainingMinutes={litMinutes}
             settingMinutes={selected}
             isPaused={session.phase === 'paused'}
           />
-          <DialHandle centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} />
-          <TickNumbers centerX={centerX} centerY={centerY} radius={layout.tickNumberRadius} dotSize={layout.dotSize} />
+          <Thumb centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} />
+          <Numerals centerX={centerX} centerY={centerY} radius={layout.numeralRadius} dotSize={layout.dotSize} />
           <DialReadout
             centerX={centerX}
             centerY={centerY}

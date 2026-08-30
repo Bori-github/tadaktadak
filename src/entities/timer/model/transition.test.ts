@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { IDLE_SESSION, type PausedSession, type RunningSession } from './session';
+import { READY_SESSION, type PausedSession, type RunningSession } from './session';
 import { completeTimer, pauseTimer, resumeTimer, startTimer } from './transition';
 import { MINUTE_IN_MS } from '../config/minutes';
 import { NOW } from '../lib/fixtures';
@@ -12,7 +12,7 @@ const paused: PausedSession = { phase: 'paused', mode: 'focus', pausedRemainingM
 
 describe('단계 전이', () => {
   it('25분으로 시작하면 25분 뒤에 끝나는 진행이 된다', () => {
-    expect(startTimer({ session: IDLE_SESSION, now: NOW, settingMs: SETTING_MS })).toEqual({
+    expect(startTimer({ session: READY_SESSION, now: NOW, settingMs: SETTING_MS })).toEqual({
       phase: 'running',
       mode: 'focus',
       endsAt: NOW + SETTING_MS,
@@ -40,10 +40,10 @@ describe('단계 전이', () => {
   });
 
   it('진행을 완료하면 모드만 남는다', () => {
-    expect(completeTimer(running)).toEqual({ phase: 'done', mode: 'focus' });
+    expect(completeTimer(running)).toEqual({ phase: 'completed', mode: 'focus' });
   });
 
   it('휴식 타이머를 시작해도 모드는 그대로다', () => {
-    expect(startTimer({ session: { phase: 'idle', mode: 'rest' }, now: NOW, settingMs: SETTING_MS }).mode).toBe('rest');
+    expect(startTimer({ session: { phase: 'ready', mode: 'rest' }, now: NOW, settingMs: SETTING_MS }).mode).toBe('rest');
   });
 });
