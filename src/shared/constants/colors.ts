@@ -17,7 +17,7 @@ export const COLORS = {
     text: '#f4ead6',
     handleArm: '#c9bb98',
     handleCore: '#fff8e0',
-    tick: '#7a6ea8',
+    numeral: '#7a6ea8',
     marker: '#5c5180',
   },
 

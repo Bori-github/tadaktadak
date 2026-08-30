@@ -9,7 +9,7 @@ import { resolveLayout } from './responsive';
 const PROJECTION = { log: 4, bonfire: 9, marker: 5 };
 
 /** 개체 높이 (dot). `DESIGN.md` §4 */
-const HEIGHT = { bonfire: 9, spark: 7, tickNumber: 7, button: BUTTON_SIZE_IN_DOTS };
+const HEIGHT = { bonfire: 9, spark: 7, numeral: 7, button: BUTTON_SIZE_IN_DOTS };
 
 const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: 47, safeAreaBottomEdge: 810 });
 
@@ -65,7 +65,7 @@ describe('짧은 변 676의 원주 방향 겹침', () => {
 });
 
 describe('기준 화면의 반지름 방향 간격', () => {
-  const { arcRadius, itemRadius, tickNumberRadius, dialCenterY, buttonCenterY, dotSize } = layout(390);
+  const { arcRadius, itemRadius, numeralRadius, dialCenterY, buttonCenterY, dotSize } = layout(390);
   const half = (heightInDots: number) => (heightInDots * dotSize) / 2;
 
   it('스파크 바깥 138과 개체 안쪽 144가 6 논리 픽셀 떨어진다', () => {
@@ -73,11 +73,11 @@ describe('기준 화면의 반지름 방향 간격', () => {
   });
 
   it('개체 바깥 162와 눈금 숫자 안쪽 168이 6 논리 픽셀 떨어진다', () => {
-    expect(tickNumberRadius - half(HEIGHT.tickNumber) - (itemRadius + half(HEIGHT.bonfire))).toBe(6);
+    expect(numeralRadius - half(HEIGHT.numeral) - (itemRadius + half(HEIGHT.bonfire))).toBe(6);
   });
 
   it('눈금 숫자 바깥 542와 버튼 위 632가 90 논리 픽셀 떨어진다', () => {
-    expect(buttonCenterY - half(HEIGHT.button) - (dialCenterY + tickNumberRadius + half(HEIGHT.tickNumber))).toBe(90);
+    expect(buttonCenterY - half(HEIGHT.button) - (dialCenterY + numeralRadius + half(HEIGHT.numeral))).toBe(90);
   });
 
   it('버튼 아래 688과 safe area 아래 끝 810이 122 논리 픽셀 떨어진다', () => {
@@ -88,9 +88,9 @@ describe('기준 화면의 반지름 방향 간격', () => {
 describe('시계판 아래 끝과 버튼 위 끝은 배율과 무관하게 90 떨어진다', () => {
   const gapOn = (shortSide: number, top: number, bottom: number) => {
     const l = resolveLayout({ shortSide, safeAreaTopEdge: top, safeAreaBottomEdge: bottom });
-    const tickOuter = l.dialCenterY + l.tickNumberRadius + HEIGHT.tickNumber * 0.5 * l.dotSize;
+    const numeralOuter = l.dialCenterY + l.numeralRadius + HEIGHT.numeral * 0.5 * l.dotSize;
     const buttonTop = l.buttonCenterY - (HEIGHT.button * l.dotSize) / 2;
-    return buttonTop - tickOuter;
+    return buttonTop - numeralOuter;
   };
 
   const gapOnDevice = (name: DeviceName) => {

@@ -649,7 +649,7 @@
           SLOTS = 60;
         var R_OBJ = 153,
           R_ARC = 131,
-          R_LABEL = 175,
+          R_NUMERAL = 175,
           ARC_W = 6;
         var DX = W / DOT,
           DY = H / DOT,
@@ -926,8 +926,8 @@
         }
         // 카운트다운은 시계 문자판의 0분 눈금 바깥에 놓는다
         function cdCenterY() {
-          var labelOuter = R_LABEL + 7; // 눈금 숫자 높이 7도트의 절반이 논리픽셀 7
-          return CY - (labelOuter + CD_GAP + (cdH * DOT) / 2);
+          var numeralOuter = R_NUMERAL + 7; // 눈금 라벨 높이 7도트의 절반이 논리픽셀 7
+          return CY - (numeralOuter + CD_GAP + (cdH * DOT) / 2);
         }
 
         function goFocusIdle() {
@@ -1155,7 +1155,7 @@
 
           for (var v = 0; v < 60; v += 5) {
             var a = angleOf(v * 6),
-              rl = R_LABEL / DOT;
+              rl = R_NUMERAL / DOT;
             drawText(p, String(v), cdx + rl * Math.cos(a), cdy + rl * Math.sin(a), PAL.L, 1);
           }
           for (var i = 1; i <= SLOTS; i++) {

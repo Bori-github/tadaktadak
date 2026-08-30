@@ -79,7 +79,7 @@ describe('기준 화면의 나머지 반지름', () => {
   });
 
   it('눈금 숫자 반지름은 175다', () => {
-    expect(layout(390).tickNumberRadius).toBe(175);
+    expect(layout(390).numeralRadius).toBe(175);
   });
 });
 
@@ -89,7 +89,7 @@ describe('배율 2에서 반지름 셋에 모두 k가 곱해진다', () => {
   });
 
   it('눈금 숫자 반지름은 342다', () => {
-    expect(layout(744).tickNumberRadius).toBe(342);
+    expect(layout(744).numeralRadius).toBe(342);
   });
 });
 
@@ -98,7 +98,7 @@ describe('지원 밖 화면', () => {
     const l = layout(320);
     expect(l.itemRadius).toBeGreaterThan(0);
     expect(l.arcRadius).toBeGreaterThan(0);
-    expect(l.tickNumberRadius).toBeGreaterThan(0);
+    expect(l.numeralRadius).toBeGreaterThan(0);
   });
 
   it('폭이 좁아지면 시계판도 작아진다', () => {
@@ -180,9 +180,9 @@ describe('버튼 아래 끝이 safe area 아래 끝을 넘지 않는다', () => 
 
 describe('시계판 위 끝이 safe area 위 끝을 넘지 않는다', () => {
   it.each(DEVICE_NAMES)('%s', (name) => {
-    const { dialCenterY, tickNumberRadius, dotSize } = onDevice(name);
+    const { dialCenterY, numeralRadius, dotSize } = onDevice(name);
     // 숫자 반높이 = 7 × 배율 (px). 배율 = dotSize ÷ 2
-    const dialTopEdge = dialCenterY - tickNumberRadius - 7 * (dotSize / 2);
+    const dialTopEdge = dialCenterY - numeralRadius - 7 * (dotSize / 2);
     expect(dialTopEdge).toBeGreaterThanOrEqual(DEVICES[name].topEdge);
   });
 });
