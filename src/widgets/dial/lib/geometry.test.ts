@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { isOnHandle, minutesFromPoint, pointOnDial } from './geometry';
+import { isOnThumb, minutesFromPoint, pointOnDial } from './geometry';
 
 import { TIMER_RANGE } from '@/entities/timer';
 
@@ -83,7 +83,7 @@ describe('12시 경계', () => {
 
 describe('터치한 곳이 손잡이를 잡는 범위 안에 있는지 여부', () => {
   /** 도트 2픽셀에서 손잡이 중심 11 도트는 22픽셀. `DESIGN.md` §4 */
-  const grabbed = (x: number, y: number) => isOnHandle({ handleX: CENTER_X, handleY: CENTER_Y, x, y, dotSize: 2 });
+  const grabbed = (x: number, y: number) => isOnThumb({ thumbX: CENTER_X, thumbY: CENTER_Y, x, y, dotSize: 2 });
 
   it('옆으로 22픽셀은 손잡이를 잡는 범위 안에 있다', () => {
     expect(grabbed(122, 100)).toBe(true);

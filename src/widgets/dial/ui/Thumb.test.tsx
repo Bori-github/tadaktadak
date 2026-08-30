@@ -3,7 +3,7 @@ import { Canvas } from '@shopify/react-native-skia';
 import { render, screen } from '@testing-library/react-native';
 import { type SharedValue } from 'react-native-reanimated';
 
-import { DialHandle } from './DialHandle';
+import { Thumb } from './Thumb';
 
 import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
@@ -17,11 +17,11 @@ jest.mock('react-native-reanimated', () => ({
 const dialMinutes = (minutes: number) => ({ value: minutes }) as unknown as SharedValue<number>;
 
 /** 타이머 모드에 따른 손잡이 색. */
-const handleColors = async (mode: TimerMode) => {
+const thumbColors = async (mode: TimerMode) => {
   // Canvas 밖에서는 Skia 노드가 만들어지지 않아 감쌈
   await render(
     <Canvas style={{ width: 200, height: 200 }}>
-      <DialHandle centerX={100} centerY={100} radius={60} dotSize={2} minutes={dialMinutes(25)} mode={mode} />
+      <Thumb centerX={100} centerY={100} radius={60} dotSize={2} minutes={dialMinutes(25)} mode={mode} />
     </Canvas>,
   );
 
@@ -31,12 +31,12 @@ const handleColors = async (mode: TimerMode) => {
 };
 
 const CASES: { label: string; mode: TimerMode; color: string; palette: string[] }[] = [
-  { label: '집중', mode: 'focus', color: '크림', palette: [COLORS.focus.handleArm, COLORS.focus.handleCore] },
-  { label: '휴식', mode: 'rest', color: '청록', palette: [COLORS.rest.handleArm, COLORS.rest.handleCore] },
+  { label: '집중', mode: 'focus', color: '크림', palette: [COLORS.focus.thumbArm, COLORS.focus.thumbCore] },
+  { label: '휴식', mode: 'rest', color: '청록', palette: [COLORS.rest.thumbArm, COLORS.rest.thumbCore] },
 ];
 
 describe('타이머 모드에 따른 손잡이 색', () => {
   it.each(CASES)('$label 손잡이는 $color색이다', async ({ mode, palette }) => {
-    expect(await handleColors(mode)).toEqual(palette);
+    expect(await thumbColors(mode)).toEqual(palette);
   });
 });

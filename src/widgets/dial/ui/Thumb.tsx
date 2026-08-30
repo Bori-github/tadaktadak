@@ -7,7 +7,7 @@ import { type TimerMode } from '@/entities/timer';
 import { topLeftOnGrid } from '@/shared/lib';
 import { DotSprite, SPARK_A, SPARK_REST } from '@/shared/ui/dot-sprite';
 
-type DialHandleProps = {
+type ThumbProps = {
   centerX: number;
   centerY: number;
   radius: number;
@@ -17,7 +17,7 @@ type DialHandleProps = {
   mode: TimerMode;
 };
 
-export const DialHandle = memo(({ centerX, centerY, radius, dotSize, minutes, mode }: DialHandleProps) => {
+export const Thumb = memo(({ centerX, centerY, radius, dotSize, minutes, mode }: ThumbProps) => {
   const grid = mode === 'rest' ? SPARK_REST : SPARK_A;
   const widthInDots = grid[0]?.length ?? 0;
   const heightInDots = grid.length;
@@ -40,4 +40,4 @@ export const DialHandle = memo(({ centerX, centerY, radius, dotSize, minutes, mo
   );
 });
 
-DialHandle.displayName = 'DialHandle';
+Thumb.displayName = 'Thumb';

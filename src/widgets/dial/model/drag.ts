@@ -3,7 +3,7 @@ import { Gesture } from 'react-native-gesture-handler';
 import { useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import { isOnHandle, minutesFromPoint, pointOnDial } from '../lib/geometry';
+import { isOnThumb, minutesFromPoint, pointOnDial } from '../lib/geometry';
 
 import { TIMER_RANGE, type TimerMode } from '@/entities/timer';
 
@@ -39,7 +39,7 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
 
   return useMemo(() => {
     const { min, max } = TIMER_RANGE[mode];
-    const handle = pointOnDial(centerX, centerY, radius, minutes * 6);
+    const thumb = pointOnDial(centerX, centerY, radius, minutes * 6);
 
     return (
       Gesture.Pan()
@@ -53,7 +53,7 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
           const touch = event.changedTouches[0];
           if (!touch) return;
 
-          grabbed.value = isOnHandle({ handleX: handle.x, handleY: handle.y, x: touch.x, y: touch.y, dotSize });
+          grabbed.value = isOnThumb({ thumbX: thumb.x, thumbY: thumb.y, x: touch.x, y: touch.y, dotSize });
           dragged.value = minutes;
           changed.value = false;
           pointerId.value = touch.id;

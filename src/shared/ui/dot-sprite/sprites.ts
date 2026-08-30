@@ -9,10 +9,10 @@ export const SPRITE_COLORS: Record<string, string | undefined> = {
   r: COLORS.fire.base,
   W: COLORS.fire.log,
   D: COLORS.fire.logShade,
-  h: COLORS.focus.handleArm,
-  H: COLORS.focus.handleCore,
-  k: COLORS.rest.handleArm,
-  K: COLORS.rest.handleCore,
+  h: COLORS.focus.thumbArm,
+  H: COLORS.focus.thumbCore,
+  k: COLORS.rest.thumbArm,
+  K: COLORS.rest.thumbCore,
   m: COLORS.focus.marker,
 };
 

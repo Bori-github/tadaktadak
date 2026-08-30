@@ -48,7 +48,7 @@ tokens:
   components:
     log:     { dots: "3×4",   use: "1분 칸" }
     bonfire: { dots: "7×9",   use: "5분 배수 칸. 좁은 화면에서 7×7" }
-    handle:  { dots: "7×7",   use: "스파크. 남은 시간 끝점" }
+    thumb:   { dots: "7×7",   use: "스파크. 남은 시간 끝점" }
     marker:  { dots: "3×5",   use: "12시 기준점" }
     ember:   { dots: "1×1",   use: "불티" }
     button:  { dots: "28×28", icon: "12×12", use: "조작 버튼 둘" }
