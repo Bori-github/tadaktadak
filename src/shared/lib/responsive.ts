@@ -1,4 +1,6 @@
-import { BONFIRE_TALL_WIDTH, BUTTON_SIZE_IN_DOTS, DOT_SIZE, MIN_WIDTH } from '@/shared/constants';
+import { BUTTON_SIZE_IN_DOTS, DOT_SIZE, MEDIUM_MIN_SHORT_SIDE, MIN_SHORT_SIDE } from '@/shared/constants';
+
+const MAX_SCALE = 3;
 
 const EDGE_MARGIN = 8;
 const NUMERAL_MARGIN = 20;
@@ -21,7 +23,8 @@ type LayoutInput = {
 type Layout = {
   scale: number;
   dotSize: number;
-  bonfireDots: number;
+  /** compact 등급 여부. `DESIGN.md` §7 구간별 처리 */
+  isCompact: boolean;
   itemRadius: number;
   arcRadius: number;
   numeralRadius: number;
@@ -29,11 +32,13 @@ type Layout = {
   dialCenterY: number;
 };
 
+// TODO: isCompact 대신 등급 반환
 export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }: LayoutInput): Layout => {
-  const scale = Math.max(1, Math.floor(shortSide / MIN_WIDTH));
+  const scale = Math.min(MAX_SCALE, Math.max(1, Math.floor(shortSide / MIN_SHORT_SIDE)));
   const width = shortSide / scale;
 
-  const bonfireDots = shortSide < BONFIRE_TALL_WIDTH ? 7 : 9;
+  const isCompact = shortSide < MEDIUM_MIN_SHORT_SIDE;
+  const bonfireDots = isCompact ? 7 : 9;
   const bonfireHalfHeight = (bonfireDots * DOT_SIZE) / 2;
 
   const itemRadius = Math.min(width / 2 - EDGE_MARGIN - NUMERAL_MARGIN - bonfireHalfHeight, MAX_ITEM_RADIUS);
@@ -56,7 +61,7 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }
   return {
     scale,
     dotSize: DOT_SIZE * scale,
-    bonfireDots,
+    isCompact,
     itemRadius: itemRadius * scale,
     arcRadius: arcRadius * scale,
     numeralRadius: numeralRadius * scale,

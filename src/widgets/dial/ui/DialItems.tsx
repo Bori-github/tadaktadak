@@ -39,7 +39,7 @@ type DialItemsProps = {
   centerY: number;
   radius: number;
   dotSize: number;
-  bonfireDots: number;
+  isCompact: boolean;
   /** 남은 시간(분). 대기에서는 설정 시간이라 아무 눈금도 붙지 않음 */
   remainingMinutes: number;
   settingMinutes: number;
@@ -94,12 +94,18 @@ const drawAtlas = (grids: readonly (readonly string[])[], packed: PackedSprites)
   return surface.makeImageSnapshot();
 };
 
-export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireDots, remainingMinutes, settingMinutes, isPaused }: DialItemsProps) => {
-  const tall = bonfireDots === 9;
-
+export const DialItems = memo(({ centerX, centerY, radius, dotSize, isCompact, remainingMinutes, settingMinutes, isPaused }: DialItemsProps) => {
   const grids = useMemo(
-    () => [LOG_COLD, tall ? BONFIRE_COLD_9 : BONFIRE_COLD_7, MARKER, LOG_HOT_A, LOG_HOT_B, tall ? BONFIRE_HOT_A_9 : BONFIRE_HOT_A_7, tall ? BONFIRE_HOT_B_9 : BONFIRE_HOT_B_7],
-    [tall],
+    () => [
+      LOG_COLD,
+      isCompact ? BONFIRE_COLD_7 : BONFIRE_COLD_9,
+      MARKER,
+      LOG_HOT_A,
+      LOG_HOT_B,
+      isCompact ? BONFIRE_HOT_A_7 : BONFIRE_HOT_A_9,
+      isCompact ? BONFIRE_HOT_B_7 : BONFIRE_HOT_B_9,
+    ],
+    [isCompact],
   );
 
   const packed = useMemo(() => packSprites(grids), [grids]);

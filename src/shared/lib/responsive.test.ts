@@ -20,43 +20,47 @@ const buttonOffset = (safeAreaHeight: number) => safeAreaHeight - resolveLayout(
 const dialTopEdge = (safeAreaHeight: number) => resolveLayout({ shortSide: 390, safeAreaTopEdge: 0, safeAreaBottomEdge: safeAreaHeight }).dialCenterY - 182;
 
 describe('배율', () => {
-  it('지원 최소 너비에서 1배다', () => {
+  it('지원 최소 짧은 변에서 1배다', () => {
     expect(layout(338).scale).toBe(1);
   });
 
-  it('지원 최소 너비의 두 배에 못 미치면 1배에 머문다', () => {
+  it('지원 최소 짧은 변의 두 배에 못 미치면 1배에 머문다', () => {
     expect(layout(675).scale).toBe(1);
   });
 
-  it('지원 최소 너비의 두 배에서 2배가 된다', () => {
+  it('지원 최소 짧은 변의 두 배에서 2배가 된다', () => {
     expect(layout(676).scale).toBe(2);
   });
 
-  it('지원 최소 너비의 세 배에서 3배가 된다', () => {
+  it('지원 최소 짧은 변의 세 배에서 3배가 된다', () => {
     expect(layout(1014).scale).toBe(3);
+  });
+
+  it('지원 최소 짧은 변의 네 배에서도 3배에 머문다', () => {
+    expect(layout(1352).scale).toBe(3);
   });
 });
 
-describe('모닥불 높이', () => {
-  it('지원 최소 너비에서 7 도트다', () => {
-    expect(layout(338).bonfireDots).toBe(7);
+describe('화면 등급', () => {
+  it('지원 최소 짧은 변에서 compact다', () => {
+    expect(layout(338).isCompact).toBe(true);
   });
 
-  it('전환 너비 바로 아래에서 7 도트다', () => {
-    expect(layout(359).bonfireDots).toBe(7);
+  it('medium 최소 바로 아래에서 compact다', () => {
+    expect(layout(359).isCompact).toBe(true);
   });
 
-  it('전환 너비에서 9 도트가 된다', () => {
-    expect(layout(360).bonfireDots).toBe(9);
+  it('medium 최소에서 compact를 벗어난다', () => {
+    expect(layout(360).isCompact).toBe(false);
   });
 
-  it('배율이 올라도 짧은 변이 넓으면 9 도트를 지킨다', () => {
-    expect(layout(676).bonfireDots).toBe(9);
+  it('배율이 올라도 짧은 변이 넓으면 compact가 아니다', () => {
+    expect(layout(676).isCompact).toBe(false);
   });
 });
 
 describe('개체 중심 반지름', () => {
-  it('지원 최소 너비에서 134다', () => {
+  it('지원 최소 짧은 변에서 134다', () => {
     expect(layout(338).itemRadius).toBe(134);
   });
 
