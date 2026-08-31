@@ -57,7 +57,7 @@ yarn-error.*
 *.swp
 
 # 로컬 설정
-.claude/settings.local.json
+*.local.*
 
 # 개발 중에만 보는 문서
 .claude/prd/
