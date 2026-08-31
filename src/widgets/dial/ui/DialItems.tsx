@@ -189,7 +189,9 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, isCompact, r
 
   return (
     <>
-      <Atlas image={image} sprites={baseInSetting.sprites} transforms={baseInSetting.transforms} sampling={SAMPLING} antiAlias={false} />
+      {baseInSetting.sprites.length === 0 ? null : (
+        <Atlas image={image} sprites={baseInSetting.sprites} transforms={baseInSetting.transforms} sampling={SAMPLING} antiAlias={false} />
+      )}
       {baseOutOfSetting.sprites.length === 0 ? null : (
         <Group opacity={OUT_OF_SETTING_ALPHA}>
           <Atlas image={image} sprites={baseOutOfSetting.sprites} transforms={baseOutOfSetting.transforms} sampling={SAMPLING} antiAlias={false} />
