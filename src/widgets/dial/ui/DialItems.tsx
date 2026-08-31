@@ -58,6 +58,9 @@ const SAMPLING = { filter: FilterMode.Nearest, mipmap: MipmapMode.None };
 const PAUSED_BRIGHTNESS = 0.35;
 const FADE_MS = 500;
 
+/** 설정 시간 밖 눈금 알파 */
+const OUT_OF_SETTING_ALPHA = 0.28;
+
 const toBatch = (items: Placement[]): AtlasBatch => ({
   sprites: items.map((item) => item.sprite),
   transforms: items.map((item) => item.transform),
@@ -126,13 +129,13 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, isCompact, r
       return Skia.RSXform(dotSize, 0, left * dotSize, top * dotSize);
     };
 
-    const cold: Placement[] = [];
+    const base: Placement[] = [];
     const perTick = TICK_NUMBERS.map((tick) => {
       const isMajorTick = tick % 5 === 0;
       const point = pointOnDial(centerX, centerY, radius, (tick - 0.5) * 6);
       const transform = transformOf(isMajorTick ? BONFIRE : LOG, point.x, point.y);
 
-      cold.push({ sprite: spriteOf(isMajorTick ? BONFIRE : LOG), transform });
+      base.push({ sprite: spriteOf(isMajorTick ? BONFIRE : LOG), transform });
 
       // 홀짝으로 A와 B를 구분함
       return { tick, transform, hot: [spriteOf(isMajorTick ? BONFIRE_A : LOG_A), spriteOf(isMajorTick ? BONFIRE_B : LOG_B)] };
@@ -141,8 +144,16 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, isCompact, r
     // 불붙은 모닥불과 한 도트 겹치므로 나중에 그려 덮음. `DESIGN.md` §5 겹침 검산
     const marker = toBatch([{ sprite: spriteOf(START_MARKER), transform: transformOf(START_MARKER, centerX, centerY - radius) }]);
 
-    return { cold: toBatch(cold), marker, perTick };
+    return { base: toBatch(base), marker, perTick };
   }, [packed, dotSize, centerX, centerY, radius]);
+
+  const { baseInSetting, baseOutOfSetting } = useMemo(
+    () => ({
+      baseInSetting: { sprites: prepared.base.sprites.slice(0, settingMinutes), transforms: prepared.base.transforms.slice(0, settingMinutes) },
+      baseOutOfSetting: { sprites: prepared.base.sprites.slice(settingMinutes), transforms: prepared.base.transforms.slice(settingMinutes) },
+    }),
+    [prepared, settingMinutes],
+  );
 
   const lit = useMemo(() => TICK_NUMBERS.map((tick) => ignitionProgress({ tick, remainingMinutes, settingMinutes })), [remainingMinutes, settingMinutes]);
 
@@ -178,7 +189,14 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, isCompact, r
 
   return (
     <>
-      <Atlas image={image} sprites={prepared.cold.sprites} transforms={prepared.cold.transforms} sampling={SAMPLING} antiAlias={false} />
+      {baseInSetting.sprites.length === 0 ? null : (
+        <Atlas image={image} sprites={baseInSetting.sprites} transforms={baseInSetting.transforms} sampling={SAMPLING} antiAlias={false} />
+      )}
+      {baseOutOfSetting.sprites.length === 0 ? null : (
+        <Group opacity={OUT_OF_SETTING_ALPHA}>
+          <Atlas image={image} sprites={baseOutOfSetting.sprites} transforms={baseOutOfSetting.transforms} sampling={SAMPLING} antiAlias={false} />
+        </Group>
+      )}
       <Group opacity={brightness}>
         {hot.burning.sprites.length === 0 ? null : <Atlas image={image} sprites={hot.burning.sprites} transforms={hot.burning.transforms} sampling={SAMPLING} antiAlias={false} />}
         {hot.filling.map((item) => (
