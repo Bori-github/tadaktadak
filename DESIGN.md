@@ -151,7 +151,7 @@ tokens:
 
 높이는 §7 계산 순서 3이 정한다.
 
-원본은 `design/prototype.html`의 `S.fireCold`, `S.fireA`, `S.fireB`다.
+원본은 피그마 컴포넌트 `bonfire-cold-9`, `bonfire-hot-a-9`, `bonfire-hot-b-9`다. 7 도트는 이름이 `-7`로 끝난다.
 
 ```
 9 도트 (기본)
@@ -190,7 +190,7 @@ DWWWWWD      DWWWWWD      DWWWWWD
 
 반짝임은 A와 B를 번갈아 그린다. 정지는 A에 고정한다. 중앙을 비우지 않는다. 비우면 호 끝이 그 사이로 비친다.
 
-원본은 `design/prototype.html`의 `S.sparkA`, `S.sparkB`, `S.sparkRest`다.
+원본은 피그마 컴포넌트 `spark-focus`, `spark-focus-b`, `spark-rest`다.
 
 ```
 반짝임 A    반짝임 B    휴식 설정 중
@@ -226,7 +226,7 @@ hHHHHHh     .hHHHh.     kKKKKKk
 | 리벳       | 네 모서리 안쪽 3 도트 자리에 1 도트씩                       |
 | 눌림       | 1 도트 내려앉고 하이라이트 제거, 90밀리초                   |
 
-원본은 `design/prototype.html`의 `ICONS[12]`다.
+원본은 피그마 컴포넌트 `icon-play`, `icon-pause`, `icon-stop`이다.
 
 ```
 재생            일시정지        정지
