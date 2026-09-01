@@ -18,12 +18,10 @@
 | `SPEC.md`                                | 화면에 보이지 않는 동작. 시간 모델, 알림, Live Activity                            |
 | `PLAN.md`                                | 만드는 과정. 작업 단계, 확인할 것, 개발 환경                                       |
 | `design/prototype.html`                  | 동작하는 시안. 시계판 드래그, 카운트다운, 불티를 보여준다                          |
-| [피그마 파일][figma]                     | 디자인 원본                                                                        |
+| 피그마 파일                              | 디자인 원본. 주소와 기준일은 `DESIGN.md` frontmatter                               |
 | `.claude/docs/live-activity.md`          | 앱 상태에 따라 Live Activity가 어디까지 동작하는지. 조사 사실과 근거               |
 | `.claude/docs/rendering-optimization.md` | 드래그 시 화면 반영 지연 문제와 원인, 해결, 측정 결과와 방법                       |
 | `.claude/docs/terms.md`                  | 용어 정리                                                                          |
-
-[figma]: https://www.figma.com/design/qmtzKbnYAsTAXvn0CBbfo2/tadaktadak
 
 - 보이는 값은 피그마를 원본으로 하고, 개발 과정에서 변경이 생기면 피그마와 `DESIGN.md`를 함께 고친다
 - 피그마에 없는 배율, 반응형 구간, 겹침 검산은 `DESIGN.md`를 참고한다
