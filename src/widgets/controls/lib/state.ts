@@ -9,6 +9,6 @@ import { type IconName } from '@/shared/ui/dot-button';
  */
 export const controlsState = (phase: TimerPhase): { playIcon: IconName; playEnabled: boolean; stopEnabled: boolean } => ({
   playIcon: phase === 'running' ? 'pause' : 'play',
-  playEnabled: phase !== 'completed',
+  playEnabled: true,
   stopEnabled: phase !== 'ready',
 });

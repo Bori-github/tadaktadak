@@ -8,6 +8,7 @@ import { millisecondsToMinutes } from '../lib/minutes';
 import { millisecondsToSeconds } from '../lib/seconds';
 
 import {
+  advanceTimer,
   completeTimer,
   READY_SESSION,
   loadSession,
@@ -25,6 +26,9 @@ import {
 
 /** 기기 가동 시간을 첫 프레임에서 채우기 전 값 */
 const NOT_STARTED = -1;
+
+/** 집중 타이머 완료 ➔ 휴식 타이머 시작 전 5초 카운트다운 (밀리초). `DESIGN.md` §8 휴식 타이머 */
+const AUTO_START_DELAY_MS = 5000;
 
 type TimerSessionInput = {
   settingMinutes: Record<TimerMode, number>;
@@ -180,6 +184,22 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     saveSession(session).catch(() => {});
   }, [session]);
 
+  const restMs = settingMinutes.rest * MINUTE_IN_MS;
+
+  const startsRestAutomatically = session.phase === 'completed' && session.mode === 'focus' && restMs > 0;
+
+  useEffect(() => {
+    if (!startsRestAutomatically) return;
+
+    const waiting = setTimeout(() => {
+      const now = Date.now();
+
+      applySession(advanceTimer({ session, now, restMs }), now);
+    }, AUTO_START_DELAY_MS);
+
+    return () => clearTimeout(waiting);
+  }, [startsRestAutomatically, session, restMs, applySession]);
+
   const play = useCallback(() => {
     settled.current = true;
 
@@ -206,8 +226,12 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
       const next = resumeTimer({ session, now });
       startCounting(next.endsAt - now);
       setSession(next);
+      return;
     }
-  }, [session, settingMinutes, startCounting, stopCounting, running]);
+
+    // 5초를 기다리지 않고 다음 단계로
+    if (session.phase === 'completed') applySession(advanceTimer({ session, now, restMs }), now);
+  }, [session, settingMinutes, restMs, startCounting, stopCounting, applySession, running]);
 
   useEffect(() => {
     if (session.phase !== 'running') return;

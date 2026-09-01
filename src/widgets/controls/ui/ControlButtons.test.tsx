@@ -77,19 +77,19 @@ describe('누르면 그쪽 조작을 넘긴다', () => {
 
     expect(pressed).toEqual(['stop']);
   });
+
+  it('완료에서 재생 버튼', async () => {
+    const { play } = await buttons('completed');
+    await fireEvent.press(play);
+
+    expect(pressed).toEqual(['play']);
+  });
 });
 
 describe('잠긴 버튼은 눌리지 않는다', () => {
   it('대기에서 정지', async () => {
     const { stop } = await buttons('ready');
     await fireEvent.press(stop);
-
-    expect(pressed).toEqual([]);
-  });
-
-  it('완료에서 재생', async () => {
-    const { play } = await buttons('completed');
-    await fireEvent.press(play);
 
     expect(pressed).toEqual([]);
   });
