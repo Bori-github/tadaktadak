@@ -6,3 +6,4 @@ export { DialItems } from './ui/DialItems';
 export { DialReadout } from './ui/DialReadout';
 export { ReadoutButtons } from './ui/ReadoutButtons';
 export { Numerals } from './ui/Numerals';
+export { RestStartCountdown } from './ui/RestStartCountdown';
