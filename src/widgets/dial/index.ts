@@ -1,4 +1,5 @@
 export { colorMode } from './lib/color';
+export { restDialMinutes } from './lib/rest';
 export { useDialDrag } from './model/drag';
 export { DialArc } from './ui/DialArc';
 export { Thumb } from './ui/Thumb';

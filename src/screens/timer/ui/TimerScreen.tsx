@@ -12,7 +12,7 @@ import { useTimerSpeed } from '../model/speed';
 import { SpeedControl } from './SpeedControl';
 
 import { ControlButtons, Controls, type ControlButton } from '@/widgets/controls';
-import { colorMode, RestStartCountdown, DialArc, Thumb, DialItems, DialReadout, ReadoutButtons, Numerals, useDialDrag } from '@/widgets/dial';
+import { colorMode, restDialMinutes, RestStartCountdown, DialArc, Thumb, DialItems, DialReadout, ReadoutButtons, Numerals, useDialDrag } from '@/widgets/dial';
 import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 import { resolveLayout } from '@/shared/lib';
@@ -26,7 +26,11 @@ export const TimerScreen = (): JSX.Element => {
   const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
   const [pressed, setPressed] = useState<ControlButton | null>(null);
   const { speed, setSpeed, realSettingMinutes, toSeconds, toMinutes } = useTimerSpeed(minutes);
-  const { session, remainingSeconds, remainingMinutes, restStartCountdownSeconds, play, stop } = useTimerSession({ settingMinutes: realSettingMinutes, toSeconds, toMinutes });
+  const { session, remainingSeconds, remainingMinutes, countingMode, restStartCountdownSeconds, play, stop } = useTimerSession({
+    settingMinutes: realSettingMinutes,
+    toSeconds,
+    toMinutes,
+  });
 
   const layout = resolveLayout({
     shortSide: Math.min(width, height),
@@ -41,11 +45,23 @@ export const TimerScreen = (): JSX.Element => {
   const paintedMode = colorMode({ editing, editTarget });
   const selected = minutes[shownMode];
 
+  const resting = !editing && session.mode === 'rest';
+
   // 층별 동작은 `DESIGN.md` §8
-  const dialMinutes = useDerivedValue(() => (editing ? selected : remainingMinutes.value));
+  const dialMinutes = useDerivedValue(() => {
+    if (editing) return selected;
+    if (countingMode.value === 'rest') return restDialMinutes({ focusMinutes: minutes.focus, restMinutes: minutes.rest, remainingMinutes: remainingMinutes.value });
+
+    return remainingMinutes.value;
+  });
+
+  const shownMinutes = (remainingSeconds ?? 0) / SECONDS_IN_MINUTE;
 
   // 대기에서 설정 시간을 넘기면 아무 눈금도 붙지 않음
-  const litMinutes = editing ? selected : (remainingSeconds ?? 0) / SECONDS_IN_MINUTE;
+  const litMinutes = editing ? selected : resting ? restDialMinutes({ focusMinutes: minutes.focus, restMinutes: minutes.rest, remainingMinutes: shownMinutes }) : shownMinutes;
+
+  // 휴식 타이머 시간을 넣으면 집중이 점화한 개체가 꺼짐
+  const itemMinutes = resting ? minutes.focus : selected;
 
   const handleChange = useCallback((value: number) => changeMinutes(editTarget, value), [changeMinutes, editTarget]);
   const handleChangeEnd = useCallback((value: number) => storeMinutes(editTarget, value), [storeMinutes, editTarget]);
@@ -75,7 +91,7 @@ export const TimerScreen = (): JSX.Element => {
             dotSize={layout.dotSize}
             isCompact={layout.isCompact}
             remainingMinutes={litMinutes}
-            settingMinutes={selected}
+            settingMinutes={itemMinutes}
             isPaused={session.phase === 'paused'}
           />
           <Thumb centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} />

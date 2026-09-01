@@ -38,26 +38,28 @@ type TimerSessionInput = {
   toMinutes?: (ms: number) => number;
 };
 
-/**
- * 타이머 세션 값과 카운트다운. `SPEC.md` 시간 모델
- *
- * @param input.settingMinutes - 집중과 휴식의 설정 시간(분)
- * @param [input.toSeconds] - 남은 밀리초를 화면에 보여 줄 초로 바꾸는 함수. 기본은 실제 시간
- * @param [input.toMinutes] - 남은 밀리초를 화면에 보여 줄 분으로 바꾸는 함수. 기본은 실제 시간
- * @returns 지금 타이머 세션 값, 카운트다운 중인 남은 시간(초, 대기에서는 `null`), 남은 시간(분), 휴식 시작 전 카운트다운(초), 재생·정지 조작
- */
 interface TimerSessionState {
   session: TimerSession;
   /** 카운트다운 중인 남은 시간(초). 대기에서는 `null` */
   remainingSeconds: number | null;
   /** 남은 시간(분). 매 프레임 갱신되어 호와 손잡이 각도가 읽음 */
   remainingMinutes: SharedValue<number>;
+  /** 카운트다운 중인 타이머. 남은 분과 같은 워클릿에서 바뀜 */
+  countingMode: SharedValue<TimerMode>;
   /** 휴식 시작 전 카운트다운(초). 집중 완료 뒤 5초가 아니면 `null` */
   restStartCountdownSeconds: number | null;
   play: () => void;
   stop: () => void;
 }
 
+/**
+ * 타이머 세션 값과 카운트다운. `SPEC.md` 시간 모델
+ *
+ * @param input.settingMinutes - 집중과 휴식의 설정 시간(분)
+ * @param [input.toSeconds] - 남은 밀리초를 화면에 보여 줄 초로 바꾸는 함수. 기본은 실제 시간
+ * @param [input.toMinutes] - 남은 밀리초를 화면에 보여 줄 분으로 바꾸는 함수. 기본은 실제 시간
+ * @returns 타이머 세션 상태와 재생·정지 조작
+ */
 export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeconds, toMinutes = millisecondsToMinutes }: TimerSessionInput): TimerSessionState => {
   const [session, setSession] = useState<TimerSession>(READY_SESSION);
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
@@ -71,6 +73,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   const shownSeconds = useSharedValue(0);
   const running = useSharedValue(false);
   const remainingMinutes = useSharedValue(0);
+  const countingMode = useSharedValue<TimerMode>('focus');
 
   // 예약과 도착 사이에 정지될 수 있어 단계 재확인
   const finish = useCallback(() => setSession((current) => (current.phase === 'running' ? completeTimer(current) : current)), []);
@@ -115,7 +118,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   }, [session.phase]);
 
   const startCounting = useCallback(
-    (remainingAtStartMs: number) => {
+    (remainingAtStartMs: number, mode: TimerMode) => {
       const shown = toSeconds(remainingAtStartMs);
       const shownMinutes = toMinutes(remainingAtStartMs);
 
@@ -125,11 +128,12 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
         startedAtUptime.value = NOT_STARTED;
         shownSeconds.value = shown;
         remainingMinutes.value = shownMinutes;
+        countingMode.value = mode;
         running.value = true;
       });
       setRemainingSeconds(shown);
     },
-    [remainingAtStart, startedAtUptime, shownSeconds, remainingMinutes, running, toSeconds, toMinutes],
+    [remainingAtStart, startedAtUptime, shownSeconds, remainingMinutes, countingMode, running, toSeconds, toMinutes],
   );
 
   const stopCounting = useCallback(() => {
@@ -144,7 +148,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
       const remaining = sessionRemainingMs({ session: next, now });
 
       if (remaining === null) setRemainingSeconds(null);
-      else if (next.phase === 'running') startCounting(remaining);
+      else if (next.phase === 'running') startCounting(remaining, next.mode);
       else {
         const shownMinutes = toMinutes(remaining);
 
@@ -152,12 +156,13 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
         scheduleOnUI(() => {
           'worklet';
           remainingMinutes.value = shownMinutes;
+          countingMode.value = next.mode;
         });
       }
 
       setSession(next);
     },
-    [startCounting, remainingMinutes, toSeconds, toMinutes],
+    [startCounting, remainingMinutes, countingMode, toSeconds, toMinutes],
   );
 
   useEffect(() => {
@@ -225,7 +230,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
     if (session.phase === 'ready') {
       const next = startTimer({ session, now, settingMs: settingMinutes[session.mode] * MINUTE_IN_MS });
-      startCounting(next.endsAt - now);
+      startCounting(next.endsAt - now, next.mode);
       setSession(next);
       return;
     }
@@ -242,7 +247,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
     if (session.phase === 'paused') {
       const next = resumeTimer({ session, now });
-      startCounting(next.endsAt - now);
+      startCounting(next.endsAt - now, next.mode);
       setSession(next);
       return;
     }
@@ -273,5 +278,5 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     setSession(READY_SESSION);
   }, [stopCounting]);
 
-  return { session, remainingSeconds, remainingMinutes, restStartCountdownSeconds, play, stop };
+  return { session, remainingSeconds, remainingMinutes, countingMode, restStartCountdownSeconds, play, stop };
 };

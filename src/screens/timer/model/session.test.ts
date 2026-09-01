@@ -176,6 +176,26 @@ describe('휴식 시작 전 카운트다운', () => {
   });
 });
 
+describe('카운트다운 중인 타이머', () => {
+  it('휴식이 시작되면 휴식으로 바뀐다', async () => {
+    const result = await renderCompleted('focus');
+
+    await act(async () => {
+      jest.advanceTimersByTime(5000);
+    });
+
+    expect(result.current.countingMode.value).toBe('rest');
+  });
+
+  it('휴식 일시정지를 복구하면 휴식으로 바뀐다', async () => {
+    const { result } = await renderBeforeRead();
+
+    await act(async () => mockRelease(STORED_PAUSED));
+
+    expect(result.current.countingMode.value).toBe('rest');
+  });
+});
+
 describe('완료에서 재생', () => {
   it('집중 타이머가 끝난 자리에서 재생하면 5초를 기다리지 않고 휴식 진행이 된다', async () => {
     const result = await renderCompleted('focus');
