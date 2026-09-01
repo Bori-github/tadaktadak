@@ -27,8 +27,10 @@ import {
 /** 기기 가동 시간을 첫 프레임에서 채우기 전 값 */
 const NOT_STARTED = -1;
 
-/** 집중 타이머 완료 ➔ 휴식 타이머 시작 전 5초 카운트다운 (밀리초). `DESIGN.md` §8 휴식 타이머 */
-const AUTO_START_DELAY_MS = 5000;
+/** 집중 타이머 완료 ➔ 휴식 타이머 시작 전 5초 카운트다운 (초). `DESIGN.md` §8 휴식 타이머 */
+const REST_START_COUNTDOWN_SECONDS = 5;
+
+const REST_START_COUNTDOWN_MS = REST_START_COUNTDOWN_SECONDS * 1000;
 
 type TimerSessionInput = {
   settingMinutes: Record<TimerMode, number>;
@@ -42,7 +44,7 @@ type TimerSessionInput = {
  * @param input.settingMinutes - 집중과 휴식의 설정 시간(분)
  * @param [input.toSeconds] - 남은 밀리초를 화면에 보여 줄 초로 바꾸는 함수. 기본은 실제 시간
  * @param [input.toMinutes] - 남은 밀리초를 화면에 보여 줄 분으로 바꾸는 함수. 기본은 실제 시간
- * @returns 지금 타이머 세션 값, 카운트다운 중인 남은 시간(초, 대기에서는 `null`), 남은 시간(분), 재생·정지 조작
+ * @returns 지금 타이머 세션 값, 카운트다운 중인 남은 시간(초, 대기에서는 `null`), 남은 시간(분), 휴식 시작 전 카운트다운(초), 재생·정지 조작
  */
 interface TimerSessionState {
   session: TimerSession;
@@ -50,6 +52,8 @@ interface TimerSessionState {
   remainingSeconds: number | null;
   /** 남은 시간(분). 매 프레임 갱신되어 호와 손잡이 각도가 읽음 */
   remainingMinutes: SharedValue<number>;
+  /** 휴식 시작 전 카운트다운(초). 집중 완료 뒤 5초가 아니면 `null` */
+  restStartCountdownSeconds: number | null;
   play: () => void;
   stop: () => void;
 }
@@ -57,6 +61,7 @@ interface TimerSessionState {
 export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeconds, toMinutes = millisecondsToMinutes }: TimerSessionInput): TimerSessionState => {
   const [session, setSession] = useState<TimerSession>(READY_SESSION);
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+  const [waitingSeconds, setWaitingSeconds] = useState<number | null>(null);
 
   // 저장값을 읽거나 사용자가 조작하면 true. 늦게 끝난 읽기가 그 사이의 조작을 덮는 것 방지
   const settled = useRef(false);
@@ -188,16 +193,29 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
   const startsRestAutomatically = session.phase === 'completed' && session.mode === 'focus' && restMs > 0;
 
+  const restStartCountdownSeconds = startsRestAutomatically ? (waitingSeconds ?? REST_START_COUNTDOWN_SECONDS) : null;
+
   useEffect(() => {
     if (!startsRestAutomatically) return;
 
-    const waiting = setTimeout(() => {
+    const startsAt = Date.now() + REST_START_COUNTDOWN_MS;
+
+    const ticking = setInterval(() => {
       const now = Date.now();
+      const waiting = startsAt - now;
+
+      if (waiting > 0) {
+        setWaitingSeconds(millisecondsToSeconds(waiting));
+        return;
+      }
 
       applySession(advanceTimer({ session, now, restMs }), now);
-    }, AUTO_START_DELAY_MS);
+    }, 1000);
 
-    return () => clearTimeout(waiting);
+    return () => {
+      clearInterval(ticking);
+      setWaitingSeconds(null);
+    };
   }, [startsRestAutomatically, session, restMs, applySession]);
 
   const play = useCallback(() => {
@@ -255,5 +273,5 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     setSession(READY_SESSION);
   }, [stopCounting]);
 
-  return { session, remainingSeconds, remainingMinutes, play, stop };
+  return { session, remainingSeconds, remainingMinutes, restStartCountdownSeconds, play, stop };
 };
