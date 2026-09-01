@@ -61,7 +61,9 @@ check pass "$(run_write "" "/x/a$E")"                         "기록 없으면 
 echo "Bash: 막아야 하는 것"
 for c in "cat > src/a$E <<EOF" "cat > src/T$X <<EOF" "printf x > src/a$E" \
          "echo x >> src/a$E" "tee src/a$E" "tee -a src/a$E" \
-         "sed -i '' s/a/b/ src/a$E" "perl -i -pe s/a/b/ src/a$E"; do
+         "sed -i '' s/a/b/ src/a$E" "perl -i -pe s/a/b/ src/a$E" \
+         "cp /tmp/probe$E src/a$E" "mv /tmp/probe$E src/a$E" \
+         "cp scratch/T$X src/T$X" "mkdir -p src && cp /tmp/probe$E src/a$E"; do
   check deny "$(run_bash "$work/not-called.jsonl" "$c")" "$c"
 done
 
@@ -69,7 +71,9 @@ echo "Bash: 통과해야 하는 것"
 for c in "cat src/a$E" "grep -n foo src/a$E" "pnpm tsc --noEmit" \
          "wc -l src/a$E > /tmp/counts.txt" "cat > /tmp/probe$E <<EOF" \
          "cat > node_modules/x/a$E <<EOF" "cat > docs/note.md <<EOF" \
-         "git diff -- src/a$E" "grep -rn 'cat > src/a$E' docs"; do
+         "git diff -- src/a$E" "grep -rn 'cat > src/a$E' docs" \
+         "cp src/a$E /tmp/backup$E" "cp src/a$E node_modules/x/a$E" \
+         "cp -r src/widgets /tmp/backup"; do
   check pass "$(run_bash "$work/not-called.jsonl" "$c")" "$c"
 done
 
