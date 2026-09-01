@@ -1,11 +1,14 @@
-import { Atlas, FilterMode, Group, MipmapMode, Skia, type SkImage, type SkRect, type SkRSXform } from '@shopify/react-native-skia';
+import { Atlas, Circle, FilterMode, Group, MipmapMode, RadialGradient, Skia, TileMode, vec, type SkImage, type SkRect, type SkRSXform } from '@shopify/react-native-skia';
 import { memo, useEffect, useMemo } from 'react';
 import { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { packSprites, type PackedSprites } from '../lib/atlas';
+import { TICK_NUMBERS } from '../config/ticks';
+import { BLOOM_ALPHA, BLOOM_RADIUS, CENTER_BLOOM_RATIO, bloomRadius, centerBloomAlpha } from '../lib/bloom';
 import { pointOnDial } from '../lib/geometry';
 import { useFlickerStep } from '../model/flicker';
 import { ignitionProgress } from '@/entities/timer';
+import { COLORS } from '@/shared/constants';
 import { topLeftOnGrid } from '@/shared/lib';
 import {
   BONFIRE_COLD_7,
@@ -20,10 +23,6 @@ import {
   MARKER,
   SPRITE_COLORS,
 } from '@/shared/ui/dot-sprite';
-
-const TICKS = 60;
-
-const TICK_NUMBERS = Array.from({ length: TICKS }, (_, index) => index + 1);
 
 /** 이미지에 담은 순서 */
 const LOG = 0;
@@ -53,6 +52,19 @@ type Placement = { sprite: SkRect; transform: SkRSXform };
 type AtlasBatch = { sprites: SkRect[]; transforms: SkRSXform[] };
 
 const SAMPLING = { filter: FilterMode.Nearest, mipmap: MipmapMode.None };
+const BLOOM_SAMPLING = { filter: FilterMode.Linear, mipmap: MipmapMode.None };
+
+const BLOOM_CORE = Skia.Color(COLORS.fire.bloom);
+const BLOOM_FADE = (() => {
+  const color = BLOOM_CORE.slice();
+  color[3] = 0;
+  return color;
+})();
+
+const BLOOM_SPRITES = {
+  bonfire: Skia.XYWHRect(0, 0, BLOOM_RADIUS.bonfire * 2, BLOOM_RADIUS.bonfire * 2),
+  log: Skia.XYWHRect(BLOOM_RADIUS.bonfire * 2, 0, BLOOM_RADIUS.log * 2, BLOOM_RADIUS.log * 2),
+};
 
 /** 일시정지에서 잦아드는 불 밝기와 걸리는 시간. `DESIGN.md` §8 §9 */
 const PAUSED_BRIGHTNESS = 0.35;
@@ -97,6 +109,32 @@ const drawAtlas = (grids: readonly (readonly string[])[], packed: PackedSprites)
   return surface.makeImageSnapshot();
 };
 
+/** 반지름별 텍스처 두 장을 만든다. 매 프레임 부르지 않고, 그릴 때 알파와 스케일만 변경 `DESIGN.md` §6 */
+const drawBloom = (): SkImage | null => {
+  const { bonfire, log } = BLOOM_RADIUS;
+  const surface = Skia.Surface.Make((bonfire + log) * 2, bonfire * 2);
+  if (!surface) return null;
+
+  const canvas = surface.getCanvas();
+
+  canvas.clear(Skia.Color('transparent'));
+
+  for (const [rect, radius] of [
+    [BLOOM_SPRITES.bonfire, bonfire],
+    [BLOOM_SPRITES.log, log],
+  ] as const) {
+    const paint = Skia.Paint();
+    const center = { x: rect.x + radius, y: rect.y + radius };
+
+    paint.setShader(Skia.Shader.MakeRadialGradient(center, radius, [BLOOM_CORE, BLOOM_FADE], [0, 1], TileMode.Clamp));
+    canvas.drawRect(rect, paint);
+  }
+
+  surface.flush();
+
+  return surface.makeImageSnapshot();
+};
+
 export const DialItems = memo(({ centerX, centerY, radius, dotSize, isCompact, remainingMinutes, settingMinutes, isPaused }: DialItemsProps) => {
   const grids = useMemo(
     () => [
@@ -113,6 +151,7 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, isCompact, r
 
   const packed = useMemo(() => packSprites(grids), [grids]);
   const image = useMemo(() => drawAtlas(grids, packed), [grids, packed]);
+  const bloomImage = useMemo(() => drawBloom(), []);
 
   // 스프라이트 사각형과 좌표는 시계판 크기로만 정해지므로 미리 만들어 두고 고르기만 함
   const prepared = useMemo(() => {
@@ -138,7 +177,7 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, isCompact, r
       base.push({ sprite: spriteOf(isMajorTick ? BONFIRE : LOG), transform });
 
       // 홀짝으로 A와 B를 구분함
-      return { tick, transform, hot: [spriteOf(isMajorTick ? BONFIRE_A : LOG_A), spriteOf(isMajorTick ? BONFIRE_B : LOG_B)] };
+      return { tick, point, transform, hot: [spriteOf(isMajorTick ? BONFIRE_A : LOG_A), spriteOf(isMajorTick ? BONFIRE_B : LOG_B)] };
     });
 
     // 불붙은 모닥불과 한 도트 겹치므로 나중에 그려 덮음. `DESIGN.md` §5 겹침 검산
@@ -185,10 +224,60 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, isCompact, r
     return { burning: toBatch(burning), filling };
   }, [prepared, lit, step]);
 
+  const centerAlpha = useMemo(() => centerBloomAlpha(lit.filter((progress) => progress === 1).length), [lit]);
+
+  const bloom = useMemo(() => {
+    const bonfires: Placement[] = [];
+    const logs: Placement[] = [];
+    const filling: (Placement & { alpha: number; tick: number })[] = [];
+
+    for (const [index, item] of prepared.perTick.entries()) {
+      const progress = lit[index] ?? 0;
+      if (progress === 0) continue;
+
+      const isMajorTick = item.tick % 5 === 0;
+      const spread = bloomRadius({ tick: item.tick, isMajorTick, progress, step, dotSize });
+      const sprite = isMajorTick ? BLOOM_SPRITES.bonfire : BLOOM_SPRITES.log;
+      const source = isMajorTick ? BLOOM_RADIUS.bonfire : BLOOM_RADIUS.log;
+      const placement = { sprite, transform: Skia.RSXform(spread / source, 0, item.point.x - spread, item.point.y - spread) };
+      const alpha = isMajorTick ? BLOOM_ALPHA.bonfire : BLOOM_ALPHA.log;
+
+      if (progress < 1) filling.push({ ...placement, alpha: alpha * progress, tick: item.tick });
+      else if (isMajorTick) bonfires.push(placement);
+      else logs.push(placement);
+    }
+
+    return { bonfires: toBatch(bonfires), logs: toBatch(logs), filling };
+  }, [prepared, lit, step, dotSize]);
+
   if (!image) return null;
 
   return (
     <>
+      {bloomImage === null ? null : (
+        <Group opacity={brightness}>
+          <Group opacity={centerAlpha}>
+            <Circle cx={centerX} cy={centerY} r={radius * CENTER_BLOOM_RATIO}>
+              <RadialGradient c={vec(centerX, centerY)} r={radius * CENTER_BLOOM_RATIO} colors={[BLOOM_CORE, BLOOM_FADE]} />
+            </Circle>
+          </Group>
+          {bloom.bonfires.sprites.length === 0 ? null : (
+            <Group opacity={BLOOM_ALPHA.bonfire}>
+              <Atlas image={bloomImage} sprites={bloom.bonfires.sprites} transforms={bloom.bonfires.transforms} sampling={BLOOM_SAMPLING} />
+            </Group>
+          )}
+          {bloom.logs.sprites.length === 0 ? null : (
+            <Group opacity={BLOOM_ALPHA.log}>
+              <Atlas image={bloomImage} sprites={bloom.logs.sprites} transforms={bloom.logs.transforms} sampling={BLOOM_SAMPLING} />
+            </Group>
+          )}
+          {bloom.filling.map((item) => (
+            <Group key={item.tick} opacity={item.alpha}>
+              <Atlas image={bloomImage} sprites={[item.sprite]} transforms={[item.transform]} sampling={BLOOM_SAMPLING} />
+            </Group>
+          ))}
+        </Group>
+      )}
       {baseInSetting.sprites.length === 0 ? null : (
         <Atlas image={image} sprites={baseInSetting.sprites} transforms={baseInSetting.transforms} sampling={SAMPLING} antiAlias={false} />
       )}
