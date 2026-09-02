@@ -1,8 +1,22 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { thumbGrid } from './twinkle';
+import { isThumbTwinkling, thumbGrid } from './twinkle';
 
+import { type TimerMode, type TimerPhase } from '@/entities/timer';
 import { SPARK_A, SPARK_B, SPARK_REST } from '@/shared/ui/dot-sprite';
+
+describe('손잡이가 반짝이는 단계', () => {
+  it.each([
+    { label: '집중 타이머 대기', mode: 'focus', isResting: false, phase: 'ready', expected: true },
+    { label: '집중 타이머 진행', mode: 'focus', isResting: false, phase: 'running', expected: true },
+    { label: '집중 타이머 완료', mode: 'focus', isResting: false, phase: 'completed', expected: true },
+    { label: '휴식 타이머를 설정하는 중', mode: 'rest', isResting: false, phase: 'ready', expected: false },
+    { label: '휴식 타이머 진행', mode: 'focus', isResting: true, phase: 'running', expected: false },
+    { label: '일시정지', mode: 'focus', isResting: false, phase: 'paused', expected: false },
+  ] as { label: string; mode: TimerMode; isResting: boolean; phase: TimerPhase; expected: boolean }[])('$label에서 $expected다', ({ mode, isResting, phase, expected }) => {
+    expect(isThumbTwinkling({ mode, isResting, phase })).toBe(expected);
+  });
+});
 
 describe('손잡이 반짝임 프레임', () => {
   it.each([
