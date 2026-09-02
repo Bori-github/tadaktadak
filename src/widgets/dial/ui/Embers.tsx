@@ -1,9 +1,11 @@
-import { Atlas, FilterMode, MipmapMode, Skia, TileMode, useColorBuffer, useRSXformBuffer, useRectBuffer, type SkImage } from '@shopify/react-native-skia';
+import { Atlas, Skia, TileMode, useColorBuffer, useRSXformBuffer, useRectBuffer, type SkImage } from '@shopify/react-native-skia';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useDerivedValue, useFrameCallback, useSharedValue } from 'react-native-reanimated';
 
+import { DOT_SAMPLING, SOFT_SAMPLING } from '../lib/atlas';
+import { BLOOM_GRADIENT } from '../lib/bloom';
 import { EMBER_COLORS, EMBER_COUNT, EMBER_DELAY_MS, EMBER_GLOW_ALPHA, EMBER_GLOW_RADIUS, EMBER_MAX_LIFE_MS, emberAt, emberColorIndex, spawnEmbers, type Ember } from '../lib/ember';
-import { COLORS, DOT_SIZE } from '@/shared/constants';
+import { DOT_SIZE } from '@/shared/constants';
 
 type EmbersProps = {
   centerX: number;
@@ -19,16 +21,6 @@ type EmbersProps = {
 const GLOW_TEXTURE_RADIUS = 8;
 
 const GLOW_SPRITE = Skia.XYWHRect(EMBER_COLORS.length, 0, GLOW_TEXTURE_RADIUS * 2, GLOW_TEXTURE_RADIUS * 2);
-
-const GLOW_CORE = Skia.Color(COLORS.fire.bloom);
-const GLOW_FADE = (() => {
-  const color = GLOW_CORE.slice();
-  color[3] = 0;
-  return color;
-})();
-
-const DOT_SAMPLING = { filter: FilterMode.Nearest, mipmap: MipmapMode.None };
-const GLOW_SAMPLING = { filter: FilterMode.Linear, mipmap: MipmapMode.None };
 
 /** 시작 시각이 비었다는 표식. 첫 프레임에서 기기 가동 시간으로 채우고, 완료마다 되돌림 */
 const NOT_STARTED = -1;
@@ -51,7 +43,7 @@ const drawEmbers = (): SkImage | null => {
   const glow = Skia.Paint();
   const center = { x: GLOW_SPRITE.x + GLOW_TEXTURE_RADIUS, y: GLOW_TEXTURE_RADIUS };
 
-  glow.setShader(Skia.Shader.MakeRadialGradient(center, GLOW_TEXTURE_RADIUS, [GLOW_CORE, GLOW_FADE], [0, 1], TileMode.Clamp));
+  glow.setShader(Skia.Shader.MakeRadialGradient(center, GLOW_TEXTURE_RADIUS, BLOOM_GRADIENT, [0, 1], TileMode.Clamp));
   canvas.drawRect(GLOW_SPRITE, glow);
 
   surface.flush();
@@ -141,7 +133,7 @@ export const Embers = memo(({ centerX, centerY, radius, dotSize, isCompleted }: 
 
   return (
     <>
-      <Atlas image={image} sprites={glowSprites} transforms={glowTransforms} colors={glowColors} colorBlendMode="modulate" sampling={GLOW_SAMPLING} />
+      <Atlas image={image} sprites={glowSprites} transforms={glowTransforms} colors={glowColors} colorBlendMode="modulate" sampling={SOFT_SAMPLING} />
       <Atlas image={image} sprites={dotSprites} transforms={dotTransforms} sampling={DOT_SAMPLING} antiAlias={false} />
     </>
   );

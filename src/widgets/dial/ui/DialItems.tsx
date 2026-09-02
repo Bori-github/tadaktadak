@@ -1,14 +1,13 @@
-import { Atlas, Circle, FilterMode, Group, MipmapMode, RadialGradient, Skia, TileMode, vec, type SkImage, type SkRect, type SkRSXform } from '@shopify/react-native-skia';
+import { Atlas, Circle, Group, RadialGradient, Skia, TileMode, vec, type SkImage, type SkRect, type SkRSXform } from '@shopify/react-native-skia';
 import { memo, useEffect, useMemo } from 'react';
 import { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 
-import { packSprites, type PackedSprites } from '../lib/atlas';
+import { DOT_SAMPLING, SOFT_SAMPLING, packSprites, type PackedSprites } from '../lib/atlas';
 import { TICK_NUMBERS } from '../config/ticks';
-import { BLOOM_ALPHA, BLOOM_RADIUS, CENTER_BLOOM_RATIO, bloomRadius, centerBloomAlpha } from '../lib/bloom';
+import { BLOOM_ALPHA, BLOOM_GRADIENT, BLOOM_RADIUS, CENTER_BLOOM_RATIO, bloomRadius, centerBloomAlpha } from '../lib/bloom';
 import { pointOnDial } from '../lib/geometry';
 import { useFlickerStep } from '../model/flicker';
 import { ignitionProgress } from '@/entities/timer';
-import { COLORS } from '@/shared/constants';
 import { topLeftOnGrid } from '@/shared/lib';
 import {
   BONFIRE_COLD_7,
@@ -50,16 +49,6 @@ type Placement = { sprite: SkRect; transform: SkRSXform };
 
 /** `Atlas`의 `sprites`·`transforms`에 그대로 넘길 두 배열 */
 type AtlasBatch = { sprites: SkRect[]; transforms: SkRSXform[] };
-
-const SAMPLING = { filter: FilterMode.Nearest, mipmap: MipmapMode.None };
-const BLOOM_SAMPLING = { filter: FilterMode.Linear, mipmap: MipmapMode.None };
-
-const BLOOM_CORE = Skia.Color(COLORS.fire.bloom);
-const BLOOM_FADE = (() => {
-  const color = BLOOM_CORE.slice();
-  color[3] = 0;
-  return color;
-})();
 
 const BLOOM_SPRITES = {
   bonfire: Skia.XYWHRect(0, 0, BLOOM_RADIUS.bonfire * 2, BLOOM_RADIUS.bonfire * 2),
@@ -126,7 +115,7 @@ const drawBloom = (): SkImage | null => {
     const paint = Skia.Paint();
     const center = { x: rect.x + radius, y: rect.y + radius };
 
-    paint.setShader(Skia.Shader.MakeRadialGradient(center, radius, [BLOOM_CORE, BLOOM_FADE], [0, 1], TileMode.Clamp));
+    paint.setShader(Skia.Shader.MakeRadialGradient(center, radius, BLOOM_GRADIENT, [0, 1], TileMode.Clamp));
     canvas.drawRect(rect, paint);
   }
 
@@ -258,43 +247,45 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, isCompact, r
         <Group opacity={brightness}>
           <Group opacity={centerAlpha}>
             <Circle cx={centerX} cy={centerY} r={radius * CENTER_BLOOM_RATIO}>
-              <RadialGradient c={vec(centerX, centerY)} r={radius * CENTER_BLOOM_RATIO} colors={[BLOOM_CORE, BLOOM_FADE]} />
+              <RadialGradient c={vec(centerX, centerY)} r={radius * CENTER_BLOOM_RATIO} colors={BLOOM_GRADIENT} />
             </Circle>
           </Group>
           {bloom.bonfires.sprites.length === 0 ? null : (
             <Group opacity={BLOOM_ALPHA.bonfire}>
-              <Atlas image={bloomImage} sprites={bloom.bonfires.sprites} transforms={bloom.bonfires.transforms} sampling={BLOOM_SAMPLING} />
+              <Atlas image={bloomImage} sprites={bloom.bonfires.sprites} transforms={bloom.bonfires.transforms} sampling={SOFT_SAMPLING} />
             </Group>
           )}
           {bloom.logs.sprites.length === 0 ? null : (
             <Group opacity={BLOOM_ALPHA.log}>
-              <Atlas image={bloomImage} sprites={bloom.logs.sprites} transforms={bloom.logs.transforms} sampling={BLOOM_SAMPLING} />
+              <Atlas image={bloomImage} sprites={bloom.logs.sprites} transforms={bloom.logs.transforms} sampling={SOFT_SAMPLING} />
             </Group>
           )}
           {bloom.filling.map((item) => (
             <Group key={item.tick} opacity={item.alpha}>
-              <Atlas image={bloomImage} sprites={[item.sprite]} transforms={[item.transform]} sampling={BLOOM_SAMPLING} />
+              <Atlas image={bloomImage} sprites={[item.sprite]} transforms={[item.transform]} sampling={SOFT_SAMPLING} />
             </Group>
           ))}
         </Group>
       )}
       {baseInSetting.sprites.length === 0 ? null : (
-        <Atlas image={image} sprites={baseInSetting.sprites} transforms={baseInSetting.transforms} sampling={SAMPLING} antiAlias={false} />
+        <Atlas image={image} sprites={baseInSetting.sprites} transforms={baseInSetting.transforms} sampling={DOT_SAMPLING} antiAlias={false} />
       )}
       {baseOutOfSetting.sprites.length === 0 ? null : (
         <Group opacity={OUT_OF_SETTING_ALPHA}>
-          <Atlas image={image} sprites={baseOutOfSetting.sprites} transforms={baseOutOfSetting.transforms} sampling={SAMPLING} antiAlias={false} />
+          <Atlas image={image} sprites={baseOutOfSetting.sprites} transforms={baseOutOfSetting.transforms} sampling={DOT_SAMPLING} antiAlias={false} />
         </Group>
       )}
       <Group opacity={brightness}>
-        {hot.burning.sprites.length === 0 ? null : <Atlas image={image} sprites={hot.burning.sprites} transforms={hot.burning.transforms} sampling={SAMPLING} antiAlias={false} />}
+        {hot.burning.sprites.length === 0 ? null : (
+          <Atlas image={image} sprites={hot.burning.sprites} transforms={hot.burning.transforms} sampling={DOT_SAMPLING} antiAlias={false} />
+        )}
         {hot.filling.map((item) => (
           <Group key={item.tick} opacity={item.progress}>
-            <Atlas image={image} sprites={[item.sprite]} transforms={[item.transform]} sampling={SAMPLING} antiAlias={false} />
+            <Atlas image={image} sprites={[item.sprite]} transforms={[item.transform]} sampling={DOT_SAMPLING} antiAlias={false} />
           </Group>
         ))}
       </Group>
-      <Atlas image={image} sprites={prepared.marker.sprites} transforms={prepared.marker.transforms} sampling={SAMPLING} antiAlias={false} />
+      <Atlas image={image} sprites={prepared.marker.sprites} transforms={prepared.marker.transforms} sampling={DOT_SAMPLING} antiAlias={false} />
     </>
   );
 });

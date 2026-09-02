@@ -1,5 +1,16 @@
+import { Skia, type SkColor } from '@shopify/react-native-skia';
+
 import { TICKS } from '../config/ticks';
-import { DOT_SIZE } from '@/shared/constants';
+import { COLORS, DOT_SIZE } from '@/shared/constants';
+
+/** 빛 번짐 그러데이션 */
+export const BLOOM_GRADIENT: SkColor[] = (() => {
+  const core = Skia.Color(COLORS.fire.bloom);
+  const fade = core.slice();
+  fade[3] = 0;
+
+  return [core, fade];
+})();
 
 /** 중앙 빛 번짐 반지름. 개체 반지름에 곱함. `DESIGN.md` §6 */
 export const CENTER_BLOOM_RATIO = 0.95;
