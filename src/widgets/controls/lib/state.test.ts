@@ -5,12 +5,12 @@ import { controlsState } from './state';
 import { type TimerPhase } from '@/entities/timer';
 
 describe('단계에 따른 조작 버튼', () => {
-  it.each<{ phase: TimerPhase; playIcon: string; playEnabled: boolean; stopEnabled: boolean }>([
-    { phase: 'ready', playIcon: 'play', playEnabled: true, stopEnabled: false },
-    { phase: 'running', playIcon: 'pause', playEnabled: true, stopEnabled: true },
-    { phase: 'paused', playIcon: 'play', playEnabled: true, stopEnabled: true },
-    { phase: 'completed', playIcon: 'play', playEnabled: true, stopEnabled: true },
-  ])('$phase에서 아이콘 $playIcon, 재생 $playEnabled, 정지 $stopEnabled', ({ phase, playIcon, playEnabled, stopEnabled }) => {
-    expect(controlsState(phase)).toEqual({ playIcon, playEnabled, stopEnabled });
+  it.each<{ phase: TimerPhase; playIcon: string; stopEnabled: boolean }>([
+    { phase: 'ready', playIcon: 'play', stopEnabled: false },
+    { phase: 'running', playIcon: 'pause', stopEnabled: true },
+    { phase: 'paused', playIcon: 'play', stopEnabled: true },
+    { phase: 'completed', playIcon: 'play', stopEnabled: true },
+  ])('$phase에서 아이콘 $playIcon, 정지 $stopEnabled', ({ phase, playIcon, stopEnabled }) => {
+    expect(controlsState(phase)).toEqual({ playIcon, stopEnabled });
   });
 });
