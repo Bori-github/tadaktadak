@@ -3,9 +3,11 @@ import { memo } from 'react';
 import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
 
 import { pointOnDial } from '../lib/geometry';
+import { thumbGrid } from '../lib/twinkle';
+import { useFlickerStep } from '../model/flicker';
 import { type TimerMode } from '@/entities/timer';
 import { topLeftOnGrid } from '@/shared/lib';
-import { DotSprite, SPARK_A, SPARK_REST } from '@/shared/ui/dot-sprite';
+import { DotSprite } from '@/shared/ui/dot-sprite';
 
 type ThumbProps = {
   centerX: number;
@@ -15,10 +17,13 @@ type ThumbProps = {
   /** 손잡이가 가리키는 분 */
   minutes: SharedValue<number>;
   mode: TimerMode;
+  /** 반짝임 여부. `DESIGN.md` §8 손잡이 색과 움직임 */
+  isTwinkling: boolean;
 };
 
-export const Thumb = memo(({ centerX, centerY, radius, dotSize, minutes, mode }: ThumbProps) => {
-  const grid = mode === 'rest' ? SPARK_REST : SPARK_A;
+export const Thumb = memo(({ centerX, centerY, radius, dotSize, minutes, mode, isTwinkling }: ThumbProps) => {
+  const step = useFlickerStep(isTwinkling);
+  const grid = thumbGrid({ mode, isTwinkling, step });
   const widthInDots = grid[0]?.length ?? 0;
   const heightInDots = grid.length;
 

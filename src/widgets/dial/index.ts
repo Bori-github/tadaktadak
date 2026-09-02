@@ -1,7 +1,9 @@
 export { colorMode } from './lib/color';
+export { isThumbTwinkling } from './lib/twinkle';
 export { restDialMinutes } from './lib/rest';
 export { useDialDrag } from './model/drag';
 export { DialArc } from './ui/DialArc';
+export { Embers } from './ui/Embers';
 export { Thumb } from './ui/Thumb';
 export { DialItems } from './ui/DialItems';
 export { DialReadout } from './ui/DialReadout';

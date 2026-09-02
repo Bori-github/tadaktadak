@@ -11,6 +11,7 @@ export {
   LOG_HOT_B,
   MARKER,
   SPARK_A,
+  SPARK_B,
   SPARK_REST,
   SPRITE_COLORS,
 } from './sprites';
