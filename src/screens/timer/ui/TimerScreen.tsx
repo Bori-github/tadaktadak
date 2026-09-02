@@ -60,7 +60,7 @@ export const TimerScreen = (): JSX.Element => {
 
   const resting = !editing && session.mode === 'rest';
 
-  const twinkling = isThumbTwinkling({ mode: paintedMode, isResting: resting, phase: session.phase });
+  const twinkling = isThumbTwinkling({ isResting: resting, phase: session.phase });
 
   // 불이 남아 있는 집중 완료에서만 뿜음. 시안 `design/prototype.html`
   const focusCompleted = session.phase === 'completed' && session.mode === 'focus';

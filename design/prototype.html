@@ -1206,7 +1206,8 @@
             rk = R_ARC / DOT;
           // 모양은 언제나 같다. 휴식 시간을 설정하는 동안만 청록이고,
           // 휴식이 도는 동안에는 색을 그대로 두고 반짝임만 멈춘다 (2026-08-14 결정)
-          var knob = editingRest ? S.sparkRest : isRest || frozen ? S.sparkA : frame % 2 ? S.sparkB : S.sparkA;
+          var twinkling = st.phase === 'running' && !isRest;
+          var knob = editingRest ? S.sparkRest : twinkling && frame % 2 ? S.sparkB : S.sparkA;
           blit(p, knob, cdx + rk * Math.cos(ka), cdy + rk * Math.sin(ka), 1);
 
           // 숫자: 위치 고정. 밝기로 지금 무엇이 도는지 알린다
