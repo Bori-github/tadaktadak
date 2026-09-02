@@ -30,14 +30,13 @@ type ControlButtonsProps = {
 
 export const ControlButtons = ({ centerX, centerY, dotSize, phase, onPlay, onStop, onPressedChange }: ControlButtonsProps): JSX.Element => {
   const centers = buttonCentersX(centerX, dotSize);
-  const { playEnabled, stopEnabled } = controlsState(phase);
+  const { stopEnabled } = controlsState(phase);
 
   return (
     <>
       <Pressable
         accessibilityRole="button"
         style={touchArea(centers.play, centerY, dotSize)}
-        disabled={!playEnabled}
         onPressIn={() => onPressedChange('play')}
         onPressOut={() => onPressedChange(null)}
         onPress={onPlay}

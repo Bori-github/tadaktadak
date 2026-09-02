@@ -17,11 +17,11 @@ type ControlsProps = {
 
 export const Controls = memo(({ centerX, centerY, dotSize, phase, pressed }: ControlsProps) => {
   const centers = buttonCentersX(centerX, dotSize);
-  const { playIcon, playEnabled, stopEnabled } = controlsState(phase);
+  const { playIcon, stopEnabled } = controlsState(phase);
 
   return (
     <>
-      <DotButton centerX={centers.play} centerY={centerY} dotSize={dotSize} icon={playIcon} enabled={playEnabled} pressed={pressed === 'play'} />
+      <DotButton centerX={centers.play} centerY={centerY} dotSize={dotSize} icon={playIcon} pressed={pressed === 'play'} />
       <DotButton centerX={centers.stop} centerY={centerY} dotSize={dotSize} icon="stop" enabled={stopEnabled} pressed={pressed === 'stop'} />
     </>
   );

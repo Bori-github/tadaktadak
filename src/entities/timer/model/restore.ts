@@ -18,7 +18,7 @@ type RestoreInput = {
 export const restoreSession = ({ stored, now, stopped }: RestoreInput): TimerSession => {
   if (stopped || stored === null) return READY_SESSION;
 
-  if (stored.phase === 'paused') return stored;
+  if (stored.phase === 'paused' || stored.phase === 'completed') return stored;
   if (stored.phase !== 'running') return READY_SESSION;
 
   // 끝날 시각이 지금과 같으면 종료된 것.

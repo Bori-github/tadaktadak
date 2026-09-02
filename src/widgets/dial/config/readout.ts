@@ -9,6 +9,12 @@ const GAP_IN_DOTS = 10;
 /** 글자 상자 바깥 터치 여백 (논리 픽셀). `DESIGN.md` §4 조작 버튼과 같은 값 */
 export const TOUCH_MARGIN = 8;
 
+/** 눈금 라벨과 휴식 시작 전 카운트다운 사이 (논리 픽셀). `DESIGN.md` §5 */
+export const REST_START_COUNTDOWN_GAP = 12;
+
+/** 배율 1 숫자 한 자. 눈금 라벨과 휴식 시작 전 카운트다운이 같은 크기 */
+export const SMALL_GLYPH_SIZE = dotNumberSize('0');
+
 const CLOCK_SAMPLE = '00:00';
 
 export const FOCUS_SIZE = dotNumberSize(CLOCK_SAMPLE, FOCUS_GLYPH_SCALE);

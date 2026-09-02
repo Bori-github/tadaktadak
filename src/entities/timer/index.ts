@@ -5,4 +5,4 @@ export { remainingMs, sessionRemainingMs } from './lib/remaining';
 export { type TimerMode } from './model/mode';
 export { restoreSession } from './model/restore';
 export { READY_SESSION, type TimerPhase, type TimerSession } from './model/session';
-export { completeTimer, pauseTimer, resumeTimer, startTimer } from './model/transition';
+export { advanceTimer, completeTimer, pauseTimer, resumeTimer, startTimer } from './model/transition';

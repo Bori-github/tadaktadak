@@ -1,4 +1,4 @@
-import { type PausedSession, type RunningSession, type TimerSession } from './session';
+import { READY_SESSION, type CompletedSession, type PausedSession, type RunningSession, type TimerSession } from './session';
 
 type StartInput = {
   session: TimerSession;
@@ -14,6 +14,12 @@ type PauseInput = {
 type ResumeInput = {
   session: PausedSession;
   now: number;
+};
+
+type AdvanceInput = {
+  session: CompletedSession;
+  now: number;
+  restMs: number;
 };
 
 /**
@@ -63,7 +69,18 @@ export const resumeTimer = ({ session, now }: ResumeInput): RunningSession => ({
  * @param session - 진행 중이던 타이머 세션 값
  * @returns 끝날 시각을 비운 완료
  */
-export const completeTimer = (session: TimerSession): TimerSession => ({
+export const completeTimer = (session: TimerSession): CompletedSession => ({
   phase: 'completed',
   mode: session.mode,
 });
+
+/**
+ * 완료에서 다음 단계로. `DESIGN.md` §8 휴식 타이머
+ *
+ * @param input.session - 완료한 타이머 세션 값
+ * @param input.now - 지금 시각 (밀리초)
+ * @param input.restMs - 설정한 휴식 타이머 시간 (밀리초)
+ * @returns 집중 타이머 완료 후 휴식 타이머가 설정되어 있으면 자동으로 휴식 진행
+ */
+export const advanceTimer = ({ session, now, restMs }: AdvanceInput): TimerSession =>
+  session.mode === 'focus' && restMs > 0 ? { phase: 'running', mode: 'rest', endsAt: now + restMs } : READY_SESSION;

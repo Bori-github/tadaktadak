@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { act, renderHook } from '@testing-library/react-native';
 import { useRef as mockUseRef } from 'react';
 
 import { useTimerSession } from './session';
 
-import { TIMER_DEFAULT } from '@/entities/timer';
+import { MINUTE_IN_MS, READY_SESSION, TIMER_DEFAULT, type TimerMode } from '@/entities/timer';
 
 // 저장값 읽기가 끝나는 시점을 테스트가 쥐고 있어야 「읽는 도중」을 만들 수 있음
 let mockRead: Promise<string | null> = new Promise(() => {});
@@ -41,11 +41,29 @@ const STORED_PAUSED = JSON.stringify({ phase: 'paused', mode: 'rest', pausedRema
 /** 저장값을 아직 읽지 못한 상태의 화면 */
 const renderBeforeRead = () => renderHook(() => useTimerSession({ settingMinutes: TIMER_DEFAULT }));
 
+/** 완료를 만드는 저장값. 끝날 시각이 지난 진행은 읽을 때 완료가 됨 */
+const storedCompleted = (mode: TimerMode) => JSON.stringify({ phase: 'running', mode, endsAt: Date.now() - 1000 });
+
+const renderCompleted = async (mode: TimerMode, settingMinutes: Record<TimerMode, number> = TIMER_DEFAULT) => {
+  const { result } = await renderHook(() => useTimerSession({ settingMinutes }));
+
+  await act(async () => mockRelease(storedCompleted(mode)));
+
+  return result;
+};
+
 beforeEach(() => {
+  // 지금 시각이 멈춰야 끝날 시각을 한 값으로 비교할 수 있음
+  jest.useFakeTimers();
+
   mockWritten.length = 0;
   mockRead = new Promise((resolve) => {
     mockRelease = resolve;
   });
+});
+
+afterEach(() => {
+  jest.useRealTimers();
 });
 
 describe('저장값을 읽는 사이의 조작', () => {
@@ -73,6 +91,126 @@ describe('저장값을 읽는 사이의 조작', () => {
     await act(async () => mockRelease(STORED_PAUSED));
 
     expect(result.current.session).toEqual({ phase: 'paused', mode: 'rest', pausedRemainingMs: 90_000 });
+  });
+});
+
+describe('완료 뒤 자동 시작', () => {
+  it('집중 타이머가 끝나고 5초가 지나면 휴식 진행이 된다', async () => {
+    const result = await renderCompleted('focus');
+
+    await act(async () => {
+      jest.advanceTimersByTime(5000);
+    });
+
+    expect(result.current.session).toEqual({ phase: 'running', mode: 'rest', endsAt: Date.now() + TIMER_DEFAULT.rest * MINUTE_IN_MS });
+  });
+
+  it('집중 타이머가 끝나고 4999밀리초까지는 완료 그대로다', async () => {
+    const result = await renderCompleted('focus');
+
+    await act(async () => {
+      jest.advanceTimersByTime(4999);
+    });
+
+    expect(result.current.session).toEqual({ phase: 'completed', mode: 'focus' });
+  });
+
+  it('휴식 타이머가 0분이면 5초가 지나도 완료 그대로다', async () => {
+    const result = await renderCompleted('focus', { focus: 25, rest: 0 });
+
+    await act(async () => {
+      jest.advanceTimersByTime(5000);
+    });
+
+    expect(result.current.session).toEqual({ phase: 'completed', mode: 'focus' });
+  });
+
+  it('휴식 타이머가 끝나면 5초가 지나도 완료 그대로다', async () => {
+    const result = await renderCompleted('rest');
+
+    await act(async () => {
+      jest.advanceTimersByTime(5000);
+    });
+
+    expect(result.current.session).toEqual({ phase: 'completed', mode: 'rest' });
+  });
+});
+
+describe('휴식 시작 전 카운트다운', () => {
+  it('집중 타이머가 끝난 자리에서는 5초부터 센다', async () => {
+    const result = await renderCompleted('focus');
+
+    expect(result.current.restStartCountdownSeconds).toBe(5);
+  });
+
+  it('1초가 지나면 4초가 남는다', async () => {
+    const result = await renderCompleted('focus');
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(result.current.restStartCountdownSeconds).toBe(4);
+  });
+
+  it('휴식이 시작되면 세지 않는다', async () => {
+    const result = await renderCompleted('focus');
+
+    await act(async () => {
+      jest.advanceTimersByTime(5000);
+    });
+
+    expect(result.current.restStartCountdownSeconds).toBeNull();
+  });
+
+  it('휴식 타이머가 0분이면 세지 않는다', async () => {
+    const result = await renderCompleted('focus', { focus: 25, rest: 0 });
+
+    expect(result.current.restStartCountdownSeconds).toBeNull();
+  });
+
+  it('휴식 타이머가 끝난 자리에서는 세지 않는다', async () => {
+    const result = await renderCompleted('rest');
+
+    expect(result.current.restStartCountdownSeconds).toBeNull();
+  });
+});
+
+describe('카운트다운 중인 타이머', () => {
+  it('휴식이 시작되면 휴식으로 바뀐다', async () => {
+    const result = await renderCompleted('focus');
+
+    await act(async () => {
+      jest.advanceTimersByTime(5000);
+    });
+
+    expect(result.current.countingMode.value).toBe('rest');
+  });
+
+  it('휴식 일시정지를 복구하면 휴식으로 바뀐다', async () => {
+    const { result } = await renderBeforeRead();
+
+    await act(async () => mockRelease(STORED_PAUSED));
+
+    expect(result.current.countingMode.value).toBe('rest');
+  });
+});
+
+describe('완료에서 재생', () => {
+  it('집중 타이머가 끝난 자리에서 재생하면 5초를 기다리지 않고 휴식 진행이 된다', async () => {
+    const result = await renderCompleted('focus');
+
+    await act(async () => result.current.play());
+
+    expect(result.current.session).toEqual({ phase: 'running', mode: 'rest', endsAt: Date.now() + TIMER_DEFAULT.rest * MINUTE_IN_MS });
+  });
+
+  it('휴식 타이머가 끝난 자리에서 재생하면 집중 타이머 대기가 된다', async () => {
+    const result = await renderCompleted('rest');
+
+    await act(async () => result.current.play());
+
+    expect(result.current.session).toEqual(READY_SESSION);
   });
 });
 
