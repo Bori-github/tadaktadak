@@ -58,10 +58,6 @@ describe('불티 수명', () => {
   ])('노출 후 %i밀리초에 남은 수명은 %s다', (elapsedMs, expected) => {
     expect(emberAt(rising, elapsedMs).life).toBeCloseTo(expected, 10);
   });
-
-  it('노출 전에는 남은 수명이 없다', () => {
-    expect(emberAt(rising, -1).life).toBe(0);
-  });
 });
 
 describe('불티 색', () => {

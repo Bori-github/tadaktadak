@@ -4,7 +4,7 @@ import { useDerivedValue, useFrameCallback, useSharedValue } from 'react-native-
 
 import { DOT_SAMPLING, SOFT_SAMPLING } from '../lib/atlas';
 import { BLOOM_GRADIENT } from '../lib/bloom';
-import { EMBER_COLORS, EMBER_COUNT, EMBER_DELAY_MS, EMBER_GLOW_ALPHA, EMBER_GLOW_RADIUS, EMBER_MAX_LIFE_MS, emberAt, emberColorIndex, spawnEmbers, type Ember } from '../lib/ember';
+import { EMBER_COLORS, EMBER_COUNT, EMBER_GLOW_ALPHA, EMBER_GLOW_RADIUS, EMBER_MAX_LIFE_MS, emberAt, emberColorIndex, spawnEmbers, type Ember } from '../lib/ember';
 import { DOT_SIZE } from '@/shared/constants';
 
 type EmbersProps = {
@@ -56,14 +56,14 @@ export const Embers = memo(({ centerX, centerY, radius, dotSize, isCompleted }: 
   const glowSprites = useMemo(() => Array.from({ length: EMBER_COUNT }, () => GLOW_SPRITE), []);
   const [embers, setEmbers] = useState<Ember[]>([]);
 
-  const elapsed = useSharedValue(-EMBER_DELAY_MS);
+  const elapsed = useSharedValue(0);
   const startedAt = useSharedValue(NOT_STARTED);
 
   const rising = useFrameCallback((frame) => {
     'worklet';
     if (startedAt.value === NOT_STARTED) startedAt.value = frame.timestamp;
 
-    elapsed.value = frame.timestamp - startedAt.value - EMBER_DELAY_MS;
+    elapsed.value = frame.timestamp - startedAt.value;
   }, false);
 
   useEffect(() => {
@@ -73,10 +73,10 @@ export const Embers = memo(({ centerX, centerY, radius, dotSize, isCompleted }: 
     }
 
     startedAt.value = NOT_STARTED;
-    elapsed.value = -EMBER_DELAY_MS;
+    elapsed.value = 0;
     setEmbers(spawnEmbers({ centerX: centerX / dotSize, centerY: centerY / dotSize, radius: radius / dotSize }));
 
-    const burnedOut = setTimeout(() => setEmbers([]), EMBER_DELAY_MS + EMBER_MAX_LIFE_MS);
+    const burnedOut = setTimeout(() => setEmbers([]), EMBER_MAX_LIFE_MS);
 
     return () => clearTimeout(burnedOut);
     // `useSharedValue`가 준 값은 고정 참조라 뺌. 넣으면 React Compiler 린트가 안에서 쓰는 것을 막음

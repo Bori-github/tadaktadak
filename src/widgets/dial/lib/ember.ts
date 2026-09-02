@@ -33,9 +33,6 @@ type SpawnInput = {
 /** 불티 개수. `DESIGN.md` §9 */
 export const EMBER_COUNT = 80;
 
-/** 불티 노출 지연 (밀리초). `DESIGN.md` §9 */
-export const EMBER_DELAY_MS = 200;
-
 /** 잔광 반지름 (논리 픽셀, 배율 1)과 알파. 알파에 남은 수명을 곱함. `DESIGN.md` §9 */
 export const EMBER_GLOW_RADIUS = 3;
 export const EMBER_GLOW_ALPHA = 0.15;
@@ -98,12 +95,10 @@ export const spawnEmbers = ({ centerX, centerY, radius, random = Math.random }: 
 /**
  * 노출 후 `elapsedMs`가 지난 불티. `DESIGN.md` §9 완료
  *
- * @returns 노출 전과 꺼진 뒤에는 남은 수명 0
+ * @returns 꺼진 뒤에는 남은 수명 0
  */
 export const emberAt = (ember: Ember, elapsedMs: number): EmberState => {
   'worklet';
-  if (elapsedMs < 0) return { x: ember.x, y: ember.y, life: 0 };
-
   const frames = elapsedMs / FRAME_MS;
 
   return {

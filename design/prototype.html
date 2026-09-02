@@ -765,11 +765,10 @@
           spawned: false,
         };
 
-        // 완료 연출: 타오름 1200밀리초, 불티 80개가 200밀리초 뒤부터 2.8초
+        // 완료 연출: 타오름 1200밀리초, 불티 80개가 2.8초
         var FLARE_MUL = 2.5,
           FLARE_DUR = 1200,
           SPARK_N = 80,
-          SPARK_DELAY = 200,
           SPARK_LIFE = 2.8;
 
         function spawnRise() {
@@ -1282,7 +1281,7 @@
           }
 
           // 완료 불티
-          if (st.phase === 'completed' && st.mode === 'focus' && !st.spawned && st.completedT >= SPARK_DELAY) {
+          if (st.phase === 'completed' && st.mode === 'focus' && !st.spawned) {
             spawnRise();
             st.spawned = true;
           }
