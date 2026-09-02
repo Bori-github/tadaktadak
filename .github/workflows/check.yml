@@ -45,7 +45,7 @@ jobs:
       # squash 병합으로 PR 제목이 main의 커밋 메시지가 되므로, 개별 커밋 대신 제목을 검사한다.
       # Dependabot은 영문 소문자 제목을 내므로 subject-case에 걸린다. Dependabot 봇 PR은 검사하지 않는다.
       - name: PR 제목
-        if: ${{ !cancelled() && steps.install.outcome == 'success' && github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && github.event_name == 'pull_request' && github.event.pull_request.user.login != 'dependabot[bot]' }}
         env:
           TITLE: ${{ github.event.pull_request.title }}
         run: echo "$TITLE" | pnpm exec commitlint
