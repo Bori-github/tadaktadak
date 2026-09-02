@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { restoreSession } from './restore';
-import { READY_SESSION, type PausedSession, type RunningSession } from './session';
+import { READY_SESSION, type PausedSession, type RunningSession, type TimerSession } from './session';
 import { MINUTE_IN_MS } from '../config/minutes';
 import { NOW } from '../lib/fixtures';
 
@@ -25,11 +25,14 @@ describe('앱 재실행', () => {
     expect(restoreSession({ stored: runningUntil(endsAt), now: NOW, stopped: false })).toEqual({ phase: 'completed', mode: 'focus' });
   });
 
-  it.each<{ label: string; phase: 'ready' | 'completed' }>([
-    { label: '대기 상태', phase: 'ready' },
-    { label: '완료 상태', phase: 'completed' },
-  ])('$label로 저장됐으면 집중 타이머 대기다', ({ phase }) => {
-    expect(restoreSession({ stored: { phase, mode: 'rest' }, now: NOW, stopped: false })).toEqual(READY_SESSION);
+  it('대기 상태로 저장됐으면 집중 타이머 대기다', () => {
+    expect(restoreSession({ stored: { phase: 'ready', mode: 'rest' }, now: NOW, stopped: false })).toEqual(READY_SESSION);
+  });
+
+  it('완료 상태로 저장됐으면 완료로 돌아온다', () => {
+    const stored: TimerSession = { phase: 'completed', mode: 'focus' };
+
+    expect(restoreSession({ stored, now: NOW, stopped: false })).toEqual(stored);
   });
 
   it('저장값이 없으면 집중 타이머 대기다', () => {
