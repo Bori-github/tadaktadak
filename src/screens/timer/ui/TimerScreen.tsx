@@ -12,7 +12,7 @@ import { useTimerSpeed } from '../model/speed';
 import { SpeedControl } from './SpeedControl';
 
 import { ControlButtons, Controls, type ControlButton } from '@/widgets/controls';
-import { colorMode, restDialMinutes, RestStartCountdown, DialArc, Thumb, DialItems, DialReadout, ReadoutButtons, Numerals, useDialDrag } from '@/widgets/dial';
+import { colorMode, restDialMinutes, RestStartCountdown, DialArc, Embers, Thumb, DialItems, DialReadout, ReadoutButtons, Numerals, useDialDrag } from '@/widgets/dial';
 import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 import { resolveLayout } from '@/shared/lib';
@@ -49,6 +49,9 @@ export const TimerScreen = (): JSX.Element => {
 
   // 휴식 진행과 일시정지에서 멈춤. `DESIGN.md` §8
   const twinkling = paintedMode === 'focus' && !resting && session.phase !== 'paused';
+
+  // 불이 남아 있는 집중 완료에서만 뿜음. 시안 `design/prototype.html`
+  const completed = session.phase === 'completed' && session.mode === 'focus';
 
   // 층별 동작은 `DESIGN.md` §8
   const dialMinutes = useDerivedValue(() => {
@@ -97,6 +100,7 @@ export const TimerScreen = (): JSX.Element => {
             settingMinutes={itemMinutes}
             isPaused={session.phase === 'paused'}
           />
+          <Embers centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} isCompleted={completed} />
           <Thumb centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} isTwinkling={twinkling} />
           <Numerals centerX={centerX} centerY={centerY} radius={layout.numeralRadius} dotSize={layout.dotSize} />
           <RestStartCountdown centerX={centerX} centerY={centerY} numeralRadius={layout.numeralRadius} dotSize={layout.dotSize} seconds={restStartCountdownSeconds} />

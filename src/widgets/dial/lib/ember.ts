@@ -33,11 +33,21 @@ type SpawnInput = {
 /** 불티 개수. `DESIGN.md` §9 */
 export const EMBER_COUNT = 80;
 
+/** 불티 노출 지연 (밀리초). `DESIGN.md` §9 */
+export const EMBER_DELAY_MS = 200;
+
+/** 잔광 반지름 (논리 픽셀, 배율 1)과 알파. 알파에 남은 수명을 곱함. `DESIGN.md` §9 */
+export const EMBER_GLOW_RADIUS = 3;
+export const EMBER_GLOW_ALPHA = 0.15;
+
 /** 수명이 높은 쪽부터 늘어놓은 불티 색. `DESIGN.md` §9 */
 export const EMBER_COLORS = [COLORS.fire.core, COLORS.fire.mid, COLORS.fire.base];
 
 const LIFE_MS = 2800;
 const LIFE_SPREAD: Spread = { min: 0.75, max: 1.25 };
+
+/** 마지막 불티의 수명 (밀리초). `DESIGN.md` §9 연출 길이 */
+export const EMBER_MAX_LIFE_MS = LIFE_MS * LIFE_SPREAD.max;
 
 const RISE = 0.6;
 const RISE_SPREAD: Spread = { min: 0.55, max: 1.45 };
