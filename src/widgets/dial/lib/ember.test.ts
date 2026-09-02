@@ -28,10 +28,18 @@ describe('불티 생성', () => {
     expect(embers(() => value)[0]?.velocityY).toBeCloseTo(expected, 10);
   });
 
-  it('좌우 속도는 바깥 방향 0.10에 퍼짐 0.22를 더한 0.32를 넘지 않는다', () => {
-    const fastest = Math.max(...embers().map((ember) => Math.abs(ember.velocityX)));
+  it.each([
+    { label: '왼쪽 끝', value: 0, expected: -0.12 },
+    { label: '오른쪽 끝', value: 1, expected: 0.32 },
+  ])('3시 방향 불티의 $label 가로 속도는 $expected 도트/프레임이다', ({ value, expected }) => {
+    expect(embers(() => value)[0]?.velocityX).toBeCloseTo(expected, 10);
+  });
 
-    expect(fastest).toBeLessThanOrEqual(0.32);
+  it.each([
+    { label: '가장 안쪽', value: 0, expected: 165.79 },
+    { label: '가장 바깥', value: 1, expected: 179.56 },
+  ])('$label 불티는 개체 반지름 76.5인 시계판에서 x $expected에 나온다', ({ value, expected }) => {
+    expect(embers(() => value)[0]?.x).toBeCloseTo(expected, 10);
   });
 });
 
