@@ -27,11 +27,6 @@ import {
 /** 기기 가동 시간을 첫 프레임에서 채우기 전 값 */
 const NOT_STARTED = -1;
 
-/** 집중 타이머 완료 ➔ 휴식 타이머 시작 전 5초 카운트다운 (초). `DESIGN.md` §8 휴식 타이머 */
-const REST_START_COUNTDOWN_SECONDS = 5;
-
-const REST_START_COUNTDOWN_MS = REST_START_COUNTDOWN_SECONDS * 1000;
-
 type TimerSessionInput = {
   settingMinutes: Record<TimerMode, number>;
   toSeconds?: (ms: number) => number;
@@ -46,8 +41,6 @@ interface TimerSessionState {
   remainingMinutes: SharedValue<number>;
   /** 카운트다운 중인 타이머. 남은 분과 같은 워클릿에서 바뀜 */
   countingMode: SharedValue<TimerMode>;
-  /** 휴식 시작 전 카운트다운(초). 집중 완료 뒤 5초가 아니면 `null` */
-  restStartCountdownSeconds: number | null;
   play: () => void;
   stop: () => void;
 }
@@ -63,7 +56,6 @@ interface TimerSessionState {
 export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeconds, toMinutes = millisecondsToMinutes }: TimerSessionInput): TimerSessionState => {
   const [session, setSession] = useState<TimerSession>(READY_SESSION);
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
-  const [waitingSeconds, setWaitingSeconds] = useState<number | null>(null);
 
   // 저장값을 읽거나 사용자가 조작하면 true. 늦게 끝난 읽기가 그 사이의 조작을 덮는 것 방지
   const settled = useRef(false);
@@ -198,29 +190,14 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
   const startsRestAutomatically = session.phase === 'completed' && session.mode === 'focus' && restMs > 0;
 
-  const restStartCountdownSeconds = startsRestAutomatically ? (waitingSeconds ?? REST_START_COUNTDOWN_SECONDS) : null;
-
   useEffect(() => {
     if (!startsRestAutomatically) return;
 
-    const startsAt = Date.now() + REST_START_COUNTDOWN_MS;
+    const now = Date.now();
 
-    const ticking = setInterval(() => {
-      const now = Date.now();
-      const waiting = startsAt - now;
-
-      if (waiting > 0) {
-        setWaitingSeconds(millisecondsToSeconds(waiting));
-        return;
-      }
-
-      applySession(advanceTimer({ session, now, restMs }), now);
-    }, 1000);
-
-    return () => {
-      clearInterval(ticking);
-      setWaitingSeconds(null);
-    };
+    // 집중 타이머 완료에서 휴식 타이머 진행으로 바뀌며 리렌더링이 1회 늘어남
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    applySession(advanceTimer({ session, now, restMs }), now);
   }, [startsRestAutomatically, session, restMs, applySession]);
 
   const play = useCallback(() => {
@@ -252,7 +229,6 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
       return;
     }
 
-    // 5초를 기다리지 않고 다음 단계로
     if (session.phase === 'completed') applySession(advanceTimer({ session, now, restMs }), now);
   }, [session, settingMinutes, restMs, startCounting, stopCounting, applySession, running]);
 
@@ -278,5 +254,5 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     setSession(READY_SESSION);
   }, [stopCounting]);
 
-  return { session, remainingSeconds, remainingMinutes, countingMode, restStartCountdownSeconds, play, stop };
+  return { session, remainingSeconds, remainingMinutes, countingMode, play, stop };
 };

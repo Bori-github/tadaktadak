@@ -12,20 +12,7 @@ import { useTimerSpeed } from '../model/speed';
 import { SpeedControl } from './SpeedControl';
 
 import { ControlButtons, Controls, type ControlButton } from '@/widgets/controls';
-import {
-  colorMode,
-  isThumbTwinkling,
-  restDialMinutes,
-  RestStartCountdown,
-  DialArc,
-  Embers,
-  Thumb,
-  DialItems,
-  DialReadout,
-  ReadoutButtons,
-  Numerals,
-  useDialDrag,
-} from '@/widgets/dial';
+import { colorMode, isThumbTwinkling, restDialMinutes, DialArc, Embers, Thumb, DialItems, DialReadout, ReadoutButtons, Numerals, useDialDrag } from '@/widgets/dial';
 import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 import { resolveLayout } from '@/shared/lib';
@@ -39,7 +26,7 @@ export const TimerScreen = (): JSX.Element => {
   const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
   const [pressed, setPressed] = useState<ControlButton | null>(null);
   const { speed, setSpeed, realSettingMinutes, toSeconds, toMinutes } = useTimerSpeed(minutes);
-  const { session, remainingSeconds, remainingMinutes, countingMode, restStartCountdownSeconds, play, stop } = useTimerSession({
+  const { session, remainingSeconds, remainingMinutes, countingMode, play, stop } = useTimerSession({
     settingMinutes: realSettingMinutes,
     toSeconds,
     toMinutes,
@@ -115,7 +102,6 @@ export const TimerScreen = (): JSX.Element => {
           <Embers centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} isCompleted={focusCompleted} />
           <Thumb centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} isTwinkling={twinkling} />
           <Numerals centerX={centerX} centerY={centerY} radius={layout.numeralRadius} dotSize={layout.dotSize} />
-          <RestStartCountdown centerX={centerX} centerY={centerY} numeralRadius={layout.numeralRadius} dotSize={layout.dotSize} seconds={restStartCountdownSeconds} />
           <DialReadout
             centerX={centerX}
             centerY={centerY}
