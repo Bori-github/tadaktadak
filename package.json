@@ -33,7 +33,7 @@
     "eslint-plugin-unicorn": "^74.0.0",
     "expo-doctor": "^1.20.2",
     "jest": "~29.7.0",
-    "jest-expo": "~57.0.4",
+    "jest-expo": "~57.0.5",
     "lefthook": "^2.1.12",
     "npm-run-all2": "^9.0.3",
     "prettier": "^3.9.6",
