@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { READY_SESSION, type PausedSession, type RunningSession, type TimerSession } from './session';
+import { READY_SESSION, type CompletedSession, type PausedSession, type RunningSession } from './session';
 import { advanceTimer, completeTimer, pauseTimer, resumeTimer, startTimer } from './transition';
 import { MINUTE_IN_MS } from '../config/minutes';
 import { NOW } from '../lib/fixtures';
@@ -10,8 +10,8 @@ const REST_MS = 5 * MINUTE_IN_MS;
 
 const running: RunningSession = { phase: 'running', mode: 'focus', endsAt: NOW + 3 * MINUTE_IN_MS };
 const paused: PausedSession = { phase: 'paused', mode: 'focus', pausedRemainingMs: 3 * MINUTE_IN_MS };
-const focusCompleted: TimerSession = { phase: 'completed', mode: 'focus' };
-const restCompleted: TimerSession = { phase: 'completed', mode: 'rest' };
+const focusCompleted: CompletedSession = { phase: 'completed', mode: 'focus' };
+const restCompleted: CompletedSession = { phase: 'completed', mode: 'rest' };
 
 describe('단계 전이', () => {
   it('25분으로 시작하면 25분 뒤에 끝나는 진행이 된다', () => {

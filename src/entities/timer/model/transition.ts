@@ -1,4 +1,4 @@
-import { READY_SESSION, type PausedSession, type RunningSession, type TimerSession } from './session';
+import { READY_SESSION, type CompletedSession, type PausedSession, type RunningSession, type TimerSession } from './session';
 
 type StartInput = {
   session: TimerSession;
@@ -17,7 +17,7 @@ type ResumeInput = {
 };
 
 type AdvanceInput = {
-  session: TimerSession;
+  session: CompletedSession;
   now: number;
   restMs: number;
 };
@@ -69,7 +69,7 @@ export const resumeTimer = ({ session, now }: ResumeInput): RunningSession => ({
  * @param session - 진행 중이던 타이머 세션 값
  * @returns 끝날 시각을 비운 완료
  */
-export const completeTimer = (session: TimerSession): TimerSession => ({
+export const completeTimer = (session: TimerSession): CompletedSession => ({
   phase: 'completed',
   mode: session.mode,
 });
