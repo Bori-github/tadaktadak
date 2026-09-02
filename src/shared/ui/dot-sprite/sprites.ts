@@ -36,8 +36,10 @@ export const BONFIRE_HOT_A_7 = ['.yoooy.', '.roooor', '.rroorr', '..rrr..', '..D
 
 export const BONFIRE_HOT_B_7 = ['.yoooy.', 'rooooor', '.rroorr', '..rrr..', '..DDD..', '.DWWWD.', 'DWWWWWD'];
 
-/** 손잡이(스파크 형태). 정지 상태는 이 프레임에 고정한다 */
+/** 손잡이. A와 B를 번갈아 그림. 반짝이지 않는 동안은 A. `DESIGN.md` §4 */
 export const SPARK_A = ['...h...', '...h...', '..hHh..', 'hHHHHHh', '..hHh..', '...h...', '...h...'];
+
+export const SPARK_B = ['.......', '...h...', '..hHh..', '.hHHHh.', '..hHh..', '...h...', '.......'];
 
 /** 휴식 타이머 설정 손잡이. `DESIGN.md` §4 */
 export const SPARK_REST = ['...k...', '...k...', '..kKk..', 'kKKKKKk', '..kKk..', '...k...', '...k...'];

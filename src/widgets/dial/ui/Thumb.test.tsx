@@ -21,7 +21,7 @@ const thumbColors = async (mode: TimerMode) => {
   // Canvas 밖에서는 Skia 노드가 만들어지지 않아 감쌈
   await render(
     <Canvas style={{ width: 200, height: 200 }}>
-      <Thumb centerX={100} centerY={100} radius={60} dotSize={2} minutes={dialMinutes(25)} mode={mode} />
+      <Thumb centerX={100} centerY={100} radius={60} dotSize={2} minutes={dialMinutes(25)} mode={mode} isTwinkling={false} />
     </Canvas>,
   );
 

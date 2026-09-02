@@ -47,6 +47,9 @@ export const TimerScreen = (): JSX.Element => {
 
   const resting = !editing && session.mode === 'rest';
 
+  // 휴식 진행과 일시정지에서 멈춤. `DESIGN.md` §8
+  const twinkling = paintedMode === 'focus' && !resting && session.phase !== 'paused';
+
   // 층별 동작은 `DESIGN.md` §8
   const dialMinutes = useDerivedValue(() => {
     if (editing) return selected;
@@ -94,7 +97,7 @@ export const TimerScreen = (): JSX.Element => {
             settingMinutes={itemMinutes}
             isPaused={session.phase === 'paused'}
           />
-          <Thumb centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} />
+          <Thumb centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} isTwinkling={twinkling} />
           <Numerals centerX={centerX} centerY={centerY} radius={layout.numeralRadius} dotSize={layout.dotSize} />
           <RestStartCountdown centerX={centerX} centerY={centerY} numeralRadius={layout.numeralRadius} dotSize={layout.dotSize} seconds={restStartCountdownSeconds} />
           <DialReadout
