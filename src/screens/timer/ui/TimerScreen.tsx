@@ -1,5 +1,5 @@
 import { Canvas, Fill } from '@shopify/react-native-skia';
-import { useCallback, useState, type JSX } from 'react';
+import { useCallback, useEffect, useState, type JSX } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { useDerivedValue } from 'react-native-reanimated';
@@ -12,8 +12,22 @@ import { useTimerSpeed } from '../model/speed';
 import { SpeedControl } from './SpeedControl';
 
 import { ControlButtons, Controls, type ControlButton } from '@/widgets/controls';
-import { colorMode, isThumbTwinkling, restDialMinutes, DialArc, Embers, Thumb, DialItems, DialReadout, ReadoutButtons, Numerals, useDialDrag } from '@/widgets/dial';
-import { type TimerMode } from '@/entities/timer';
+import {
+  colorMode,
+  emberRemainingMs,
+  isEmberShown,
+  isThumbTwinkling,
+  restDialMinutes,
+  DialArc,
+  Embers,
+  Thumb,
+  DialItems,
+  DialReadout,
+  ReadoutButtons,
+  Numerals,
+  useDialDrag,
+} from '@/widgets/dial';
+import { MINUTE_IN_MS, type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 import { resolveLayout } from '@/shared/lib';
 
@@ -25,6 +39,7 @@ export const TimerScreen = (): JSX.Element => {
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
   const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
   const [pressed, setPressed] = useState<ControlButton | null>(null);
+  const [checkedAt, setCheckedAt] = useState(() => Date.now());
   const { speed, setSpeed, realSettingMinutes, toSeconds, toMinutes } = useTimerSpeed(minutes);
   const { session, remainingSeconds, remainingMinutes, countingMode, play, stop } = useTimerSession({
     settingMinutes: realSettingMinutes,
@@ -49,8 +64,18 @@ export const TimerScreen = (): JSX.Element => {
 
   const twinkling = isThumbTwinkling({ isResting: resting, phase: session.phase });
 
-  // 불이 남아 있는 집중 완료에서만 뿜음. 시안 `design/prototype.html`
-  const focusCompleted = session.phase === 'completed' && session.mode === 'focus';
+  const restMs = realSettingMinutes.rest * MINUTE_IN_MS;
+
+  useEffect(() => {
+    const remaining = emberRemainingMs({ session, restMs, now: Date.now() });
+    if (remaining === null) return;
+
+    const hiding = setTimeout(() => setCheckedAt(Date.now()), remaining);
+
+    return () => clearTimeout(hiding);
+  }, [session, restMs]);
+
+  const emberShown = isEmberShown({ session, restMs, now: checkedAt });
 
   // 층별 동작은 `DESIGN.md` §8
   const dialMinutes = useDerivedValue(() => {
@@ -62,8 +87,10 @@ export const TimerScreen = (): JSX.Element => {
 
   const shownMinutes = (remainingSeconds ?? 0) / SECONDS_IN_MINUTE;
 
+  const countedMinutes = resting ? restDialMinutes({ focusMinutes: minutes.focus, restMinutes: minutes.rest, remainingMinutes: shownMinutes }) : shownMinutes;
+
   // 대기에서 설정 시간을 넘기면 아무 눈금도 붙지 않음
-  const litMinutes = editing ? selected : resting ? restDialMinutes({ focusMinutes: minutes.focus, restMinutes: minutes.rest, remainingMinutes: shownMinutes }) : shownMinutes;
+  const litMinutes = editing ? selected : emberShown ? 0 : countedMinutes;
 
   // 휴식 타이머 시간을 넣으면 집중이 점화한 개체가 꺼짐
   const itemMinutes = resting ? minutes.focus : selected;
@@ -99,7 +126,7 @@ export const TimerScreen = (): JSX.Element => {
             settingMinutes={itemMinutes}
             isPaused={session.phase === 'paused'}
           />
-          <Embers centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} isCompleted={focusCompleted} />
+          <Embers centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} isShown={emberShown} />
           <Thumb centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} isTwinkling={twinkling} />
           <Numerals centerX={centerX} centerY={centerY} radius={layout.numeralRadius} dotSize={layout.dotSize} />
           <DialReadout

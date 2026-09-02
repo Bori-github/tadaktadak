@@ -1,4 +1,5 @@
 export { colorMode } from './lib/color';
+export { emberRemainingMs, isEmberShown } from './lib/ember';
 export { isThumbTwinkling } from './lib/twinkle';
 export { restDialMinutes } from './lib/rest';
 export { useDialDrag } from './model/drag';
