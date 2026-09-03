@@ -1,5 +1,5 @@
 import { Canvas, Fill } from '@shopify/react-native-skia';
-import { useCallback, useEffect, useState, type JSX } from 'react';
+import { useCallback, useState, type JSX } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { useDerivedValue } from 'react-native-reanimated';
@@ -12,21 +12,7 @@ import { useTimerSpeed } from '../model/speed';
 import { SpeedControl } from './SpeedControl';
 
 import { ControlButtons, Controls, type ControlButton } from '@/widgets/controls';
-import {
-  colorMode,
-  emberRemainingMs,
-  isEmberShown,
-  isThumbTwinkling,
-  restDialMinutes,
-  DialArc,
-  Embers,
-  Thumb,
-  DialItems,
-  DialReadout,
-  ReadoutButtons,
-  Numerals,
-  useDialDrag,
-} from '@/widgets/dial';
+import { colorMode, useEmberShown, isThumbTwinkling, restDialMinutes, DialArc, Embers, Thumb, DialItems, DialReadout, ReadoutButtons, Numerals, useDialDrag } from '@/widgets/dial';
 import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 import { resolveLayout } from '@/shared/lib';
@@ -39,7 +25,6 @@ export const TimerScreen = (): JSX.Element => {
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
   const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
   const [pressed, setPressed] = useState<ControlButton | null>(null);
-  const [checkedAt, setCheckedAt] = useState(() => Date.now());
   const { speed, setSpeed, realSettingMinutes, toSeconds, toMinutes } = useTimerSpeed(minutes);
   const { session, remainingSeconds, remainingMinutes, countingMode, play, stop } = useTimerSession({
     settingMinutes: realSettingMinutes,
@@ -64,16 +49,7 @@ export const TimerScreen = (): JSX.Element => {
 
   const twinkling = isThumbTwinkling({ isResting: resting, phase: session.phase });
 
-  useEffect(() => {
-    const remaining = emberRemainingMs({ session, now: Date.now() });
-    if (remaining === null) return;
-
-    const hiding = setTimeout(() => setCheckedAt(Date.now()), remaining);
-
-    return () => clearTimeout(hiding);
-  }, [session]);
-
-  const emberShown = isEmberShown({ session, now: checkedAt });
+  const emberShown = useEmberShown(session);
 
   // 층별 동작은 `DESIGN.md` §8
   const dialMinutes = useDerivedValue(() => {
