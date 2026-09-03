@@ -4,7 +4,7 @@ import { useRef as mockUseRef } from 'react';
 
 import { useTimerSession } from './session';
 
-import { MINUTE_IN_MS, READY_SESSION, TIMER_DEFAULT, type TimerMode } from '@/entities/timer';
+import { MINUTE_IN_MS, NOW, READY_SESSION, TIMER_DEFAULT, type TimerMode } from '@/entities/timer';
 
 // 저장값 읽기가 끝나는 시점을 테스트가 쥐고 있어야 「읽는 도중」을 만들 수 있음
 let mockRead: Promise<string | null> = new Promise(() => {});
@@ -36,13 +36,17 @@ jest.mock('expo-keep-awake', () => ({
   deactivateKeepAwake: async () => {},
 }));
 
-const STORED_PAUSED = JSON.stringify({ phase: 'paused', mode: 'rest', pausedRemainingMs: 90_000 });
+const STORED_PAUSED = JSON.stringify({ phase: 'paused', mode: 'rest', startedAt: NOW, pausedRemainingMs: 90_000 });
 
 /** 저장값을 아직 읽지 못한 상태의 화면 */
 const renderBeforeRead = () => renderHook(() => useTimerSession({ settingMinutes: TIMER_DEFAULT }));
 
 /** 완료를 만드는 저장값. 끝날 시각이 지난 진행은 읽을 때 완료가 됨 */
-const storedCompleted = (mode: TimerMode) => JSON.stringify({ phase: 'running', mode, endsAt: Date.now() - 1000 });
+const storedCompleted = (mode: TimerMode) => {
+  const endsAt = Date.now() - 1000;
+
+  return JSON.stringify({ phase: 'running', mode, startedAt: endsAt - 25 * MINUTE_IN_MS, endsAt });
+};
 
 const renderCompleted = async (mode: TimerMode, settingMinutes: Record<TimerMode, number> = TIMER_DEFAULT) => {
   const { result } = await renderHook(() => useTimerSession({ settingMinutes }));
@@ -90,7 +94,7 @@ describe('저장값을 읽는 사이의 조작', () => {
 
     await act(async () => mockRelease(STORED_PAUSED));
 
-    expect(result.current.session).toEqual({ phase: 'paused', mode: 'rest', pausedRemainingMs: 90_000 });
+    expect(result.current.session).toEqual({ phase: 'paused', mode: 'rest', startedAt: NOW, pausedRemainingMs: 90_000 });
   });
 });
 
@@ -98,7 +102,7 @@ describe('완료 뒤 자동 시작', () => {
   it('집중 타이머가 끝나면 그 자리에서 휴식 진행이 된다', async () => {
     const result = await renderCompleted('focus');
 
-    expect(result.current.session).toEqual({ phase: 'running', mode: 'rest', endsAt: Date.now() + TIMER_DEFAULT.rest * MINUTE_IN_MS });
+    expect(result.current.session).toEqual({ phase: 'running', mode: 'rest', startedAt: Date.now(), endsAt: Date.now() + TIMER_DEFAULT.rest * MINUTE_IN_MS });
   });
 
   it('휴식 타이머가 0분이면 완료 그대로다', async () => {

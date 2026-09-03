@@ -23,13 +23,18 @@ export const parseSession = (raw: string | null): TimerSession | null => {
 
   if (typeof value !== 'object' || value === null) return null;
 
-  const { phase, mode, endsAt, pausedRemainingMs } = value as Record<string, unknown>;
+  const { phase, mode, startedAt, endsAt, pausedRemainingMs } = value as Record<string, unknown>;
   if (!isPhase(phase)) return null;
   if (!isMode(mode)) return null;
 
-  // 진행은 끝날 시각으로, 일시정지는 남은 밀리초로 남은 시간을 구함
-  if (phase === 'running') return typeof endsAt === 'number' ? { phase, mode, endsAt } : null;
-  if (phase === 'paused') return typeof pausedRemainingMs === 'number' ? { phase, mode, pausedRemainingMs } : null;
+  if (phase === 'running' || phase === 'paused') {
+    if (typeof startedAt !== 'number') return null;
+
+    // 진행은 끝날 시각으로, 일시정지는 남은 밀리초로 남은 시간을 구함
+    if (phase === 'running') return typeof endsAt === 'number' ? { phase, mode, startedAt, endsAt } : null;
+
+    return typeof pausedRemainingMs === 'number' ? { phase, mode, startedAt, pausedRemainingMs } : null;
+  }
 
   return { phase, mode };
 };

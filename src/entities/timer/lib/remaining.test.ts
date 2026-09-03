@@ -35,15 +35,17 @@ describe('복구한 단계의 남은 시간(밀리초)', () => {
   });
 
   it('진행 상태는 끝날 시각까지 남은 시간이다', () => {
-    expect(sessionRemainingMs({ session: { phase: 'running', mode: 'focus', endsAt: NOW + 3 * MINUTE_IN_MS }, now: NOW })).toBe(3 * MINUTE_IN_MS);
+    expect(sessionRemainingMs({ session: { phase: 'running', mode: 'focus', startedAt: NOW - 22 * MINUTE_IN_MS, endsAt: NOW + 3 * MINUTE_IN_MS }, now: NOW })).toBe(
+      3 * MINUTE_IN_MS,
+    );
   });
 
   it('끝날 시각이 지난 진행 상태는 0이다', () => {
-    expect(sessionRemainingMs({ session: { phase: 'running', mode: 'focus', endsAt: NOW - 1 }, now: NOW })).toBe(0);
+    expect(sessionRemainingMs({ session: { phase: 'running', mode: 'focus', startedAt: NOW - 25 * MINUTE_IN_MS, endsAt: NOW - 1 }, now: NOW })).toBe(0);
   });
 
   it('일시정지 상태는 멈춘 시점에 남아 있던 시간이다', () => {
-    expect(sessionRemainingMs({ session: { phase: 'paused', mode: 'focus', pausedRemainingMs: 90_000 }, now: NOW })).toBe(90_000);
+    expect(sessionRemainingMs({ session: { phase: 'paused', mode: 'focus', startedAt: NOW - 23.5 * MINUTE_IN_MS, pausedRemainingMs: 90_000 }, now: NOW })).toBe(90_000);
   });
 
   it('완료 상태는 0이다', () => {

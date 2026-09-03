@@ -2,10 +2,10 @@ import { describe, expect, it } from '@jest/globals';
 
 import { parseMinutes, parseSession } from './parse';
 import { type RunningSession } from './session';
-import { TIMER_DEFAULT } from '../config/minutes';
+import { MINUTE_IN_MS, TIMER_DEFAULT } from '../config/minutes';
 import { NOW } from '../lib/fixtures';
 
-const running: RunningSession = { phase: 'running', mode: 'focus', endsAt: NOW };
+const running: RunningSession = { phase: 'running', mode: 'focus', startedAt: NOW - 22 * MINUTE_IN_MS, endsAt: NOW + 3 * MINUTE_IN_MS };
 
 describe('저장된 타이머 세션 값 읽기', () => {
   it('저장한 대로 돌아온다', () => {
@@ -15,10 +15,12 @@ describe('저장된 타이머 세션 값 읽기', () => {
   it.each([
     { label: '저장값이 없으면', raw: null },
     { label: 'JSON이 아니면', raw: '{' },
-    { label: '단계가 넷 중 하나가 아니면', raw: '{"phase":"burning","mode":"focus","endsAt":1,"pausedRemainingMs":null}' },
-    { label: '모드가 둘 중 하나가 아니면', raw: '{"phase":"running","mode":"sleep","endsAt":1,"pausedRemainingMs":null}' },
-    { label: '진행인데 끝날 시각이 없으면', raw: '{"phase":"running","mode":"focus","endsAt":null,"pausedRemainingMs":null}' },
-    { label: '일시정지인데 남은 밀리초가 없으면', raw: '{"phase":"paused","mode":"focus","endsAt":null,"pausedRemainingMs":null}' },
+    { label: '단계가 넷 중 하나가 아니면', raw: `{"phase":"burning","mode":"focus","endsAt":${NOW},"pausedRemainingMs":null}` },
+    { label: '모드가 둘 중 하나가 아니면', raw: `{"phase":"running","mode":"sleep","endsAt":${NOW},"pausedRemainingMs":null}` },
+    { label: '진행인데 끝날 시각이 없으면', raw: `{"phase":"running","mode":"focus","startedAt":${NOW},"endsAt":null,"pausedRemainingMs":null}` },
+    { label: '일시정지인데 남은 밀리초가 없으면', raw: `{"phase":"paused","mode":"focus","startedAt":${NOW},"endsAt":null,"pausedRemainingMs":null}` },
+    { label: '진행인데 시작한 시각이 없으면', raw: `{"phase":"running","mode":"focus","startedAt":null,"endsAt":${NOW},"pausedRemainingMs":null}` },
+    { label: '일시정지인데 시작한 시각이 없으면', raw: '{"phase":"paused","mode":"focus","startedAt":null,"endsAt":null,"pausedRemainingMs":90000}' },
   ])('$label 버린다', ({ raw }) => {
     expect(parseSession(raw)).toBeNull();
   });
