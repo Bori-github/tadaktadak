@@ -726,7 +726,9 @@
         var PAUSE_FADE = 500,
           OUT_FADE = 500,
           PRESS = 90;
-        var OUT_ALPHA = 0.28; // 설정 밖 개체 알파
+        var OUT_ALPHA = 0.55; // 설정 밖 개체 알파
+        var CENTER_ALPHA = 0.24, // 가운데 빛 번짐 알파
+          CENTER_FADE_IN = 300; // 가운데 빛 번짐이 나타나는 시간
 
         var SPEED = 60,
           setFocus = 25,
@@ -745,6 +747,7 @@
           pauseT: 0,
           fireLevel: 0,
           outT: 0,
+          centerT: 0,
           press: [0, 0, 0],
           restLen: 5,
           effectT: EFFECT_DUR,
@@ -1102,12 +1105,9 @@
           else if (isRest) dialVal = virtualRem;
           else dialVal = st.remaining;
 
-          var litCount = 0;
-          for (var i = 1; i <= setFocus; i++) if (litOf(i) >= 1) litCount++;
-          var cA = Math.min(litCount / SLOTS, 1) * fireMul;
-          if (cA > 0) {
+          if (!ready) {
             var cg = g.createRadialGradient(CX, CY, 0, CX, CY, R_OBJ * 0.95);
-            cg.addColorStop(0, hexA(PAL.bloom, 0.3 * cA + 0.04));
+            cg.addColorStop(0, hexA(PAL.bloom, CENTER_ALPHA * fireMul * easeInOut(st.centerT / CENTER_FADE_IN)));
             cg.addColorStop(1, hexA(PAL.bloom, 0));
             g.fillStyle = cg;
             g.fillRect(0, 0, W, H);
@@ -1256,6 +1256,7 @@
           } else {
             st.pauseT = Math.max(0, st.pauseT - dt);
           }
+          st.centerT = st.phase === 'ready' ? 0 : Math.min(CENTER_FADE_IN, st.centerT + dt);
 
           // 완료 불티
           if (st.phase === 'completed' && st.mode === 'focus' && !st.spawned) {

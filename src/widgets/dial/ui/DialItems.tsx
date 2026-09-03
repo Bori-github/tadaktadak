@@ -4,7 +4,7 @@ import { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { DOT_SAMPLING, SOFT_SAMPLING, packSprites, type PackedSprites } from '../lib/atlas';
 import { TICK_NUMBERS } from '../config/ticks';
-import { BLOOM_ALPHA, BLOOM_GRADIENT, BLOOM_RADIUS, CENTER_BLOOM_RATIO, bloomRadius, centerBloomAlpha } from '../lib/bloom';
+import { BLOOM_ALPHA, BLOOM_GRADIENT, BLOOM_RADIUS, CENTER_BLOOM_ALPHA, CENTER_BLOOM_RATIO, bloomRadius } from '../lib/bloom';
 import { pointOnDial } from '../lib/geometry';
 import { useFlickerStep } from '../model/flicker';
 import { ignitionProgress } from '@/entities/timer';
@@ -43,6 +43,8 @@ type DialItemsProps = {
   settingMinutes: number;
   /** 일시정지 여부. 일시정지에서 불꽃이 멈춤. `DESIGN.md` §8 */
   isPaused: boolean;
+  /** 대기 여부. 대기와 휴식 설정에서 가운데 빛 번짐이 없음. `DESIGN.md` §6 */
+  isReady: boolean;
 };
 
 type Placement = { sprite: SkRect; transform: SkRSXform };
@@ -60,7 +62,10 @@ const PAUSED_BRIGHTNESS = 0.35;
 const FADE_MS = 500;
 
 /** 설정 시간 밖 눈금 알파 */
-const OUT_OF_SETTING_ALPHA = 0.28;
+const OUT_OF_SETTING_ALPHA = 0.55;
+
+/** 가운데 빛 번짐이 나타나는 시간. `DESIGN.md` §9 */
+const CENTER_BLOOM_FADE_IN_MS = 300;
 
 const toBatch = (items: Placement[]): AtlasBatch => ({
   sprites: items.map((item) => item.sprite),
@@ -124,7 +129,7 @@ const drawBloom = (): SkImage | null => {
   return surface.makeImageSnapshot();
 };
 
-export const DialItems = memo(({ centerX, centerY, radius, dotSize, isCompact, remainingMinutes, settingMinutes, isPaused }: DialItemsProps) => {
+export const DialItems = memo(({ centerX, centerY, radius, dotSize, isCompact, remainingMinutes, settingMinutes, isPaused, isReady }: DialItemsProps) => {
   const grids = useMemo(
     () => [
       LOG_COLD,
@@ -195,6 +200,14 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, isCompact, r
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPaused]);
 
+  const centerBloom = useSharedValue(0);
+
+  useEffect(() => {
+    centerBloom.value = isReady ? 0 : withTiming(CENTER_BLOOM_ALPHA, { duration: CENTER_BLOOM_FADE_IN_MS, easing: Easing.inOut(Easing.quad) });
+    // `useSharedValue`가 준 값은 고정 참조라 뺌. 넣으면 React Compiler 린트가 안에서 쓰는 것을 막음
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReady]);
+
   const hot = useMemo(() => {
     const burning: Placement[] = [];
     const filling: (Placement & { progress: number; tick: number })[] = [];
@@ -212,8 +225,6 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, isCompact, r
 
     return { burning: toBatch(burning), filling };
   }, [prepared, lit, step]);
-
-  const centerAlpha = useMemo(() => centerBloomAlpha(lit.filter((progress) => progress === 1).length), [lit]);
 
   const bloom = useMemo(() => {
     const bonfires: Placement[] = [];
@@ -245,11 +256,13 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, isCompact, r
     <>
       {bloomImage === null ? null : (
         <Group opacity={brightness}>
-          <Group opacity={centerAlpha}>
-            <Circle cx={centerX} cy={centerY} r={radius * CENTER_BLOOM_RATIO}>
-              <RadialGradient c={vec(centerX, centerY)} r={radius * CENTER_BLOOM_RATIO} colors={BLOOM_GRADIENT} />
-            </Circle>
-          </Group>
+          {isReady ? null : (
+            <Group opacity={centerBloom}>
+              <Circle cx={centerX} cy={centerY} r={radius * CENTER_BLOOM_RATIO}>
+                <RadialGradient c={vec(centerX, centerY)} r={radius * CENTER_BLOOM_RATIO} colors={BLOOM_GRADIENT} />
+              </Circle>
+            </Group>
+          )}
           {bloom.bonfires.sprites.length === 0 ? null : (
             <Group opacity={BLOOM_ALPHA.bonfire}>
               <Atlas image={bloomImage} sprites={bloom.bonfires.sprites} transforms={bloom.bonfires.transforms} sampling={SOFT_SAMPLING} />

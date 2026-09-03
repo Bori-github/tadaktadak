@@ -99,6 +99,7 @@ export const TimerScreen = (): JSX.Element => {
             remainingMinutes={litMinutes}
             settingMinutes={itemMinutes}
             isPaused={session.phase === 'paused'}
+            isReady={session.phase === 'ready'}
           />
           <Embers centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} isShown={emberShown} />
           <Thumb centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} isTwinkling={twinkling} />

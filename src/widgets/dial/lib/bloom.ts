@@ -1,6 +1,5 @@
 import { Skia, type SkColor } from '@shopify/react-native-skia';
 
-import { TICKS } from '../config/ticks';
 import { COLORS, DOT_SIZE } from '@/shared/constants';
 
 /** 빛 번짐 그러데이션 */
@@ -12,8 +11,11 @@ export const BLOOM_GRADIENT: SkColor[] = (() => {
   return [core, fade];
 })();
 
-/** 중앙 빛 번짐 반지름. 개체 반지름에 곱함. `DESIGN.md` §6 */
+/** 가운데 빛 번짐 반지름. 개체 반지름에 곱함. `DESIGN.md` §6 */
 export const CENTER_BLOOM_RATIO = 0.95;
+
+/** 가운데 빛 번짐 알파. `DESIGN.md` §6 */
+export const CENTER_BLOOM_ALPHA = 0.24;
 
 /** 빛 번짐 반지름 (논리 픽셀, 배율 1). `DESIGN.md` §6 */
 export const BLOOM_RADIUS = { bonfire: 32, log: 16 };
@@ -45,11 +47,3 @@ export const bloomRadius = ({ tick, isMajorTick, progress, step, dotSize }: Bloo
 
   return base * (0.55 + 0.45 * progress) * flicker * (dotSize / DOT_SIZE);
 };
-
-/**
- * 시계판 가운데 빛 번짐의 알파. `DESIGN.md` §6
- *
- * @param litCount - 다 붙은 눈금 수
- * @returns 60칸을 다 채웠을 때 0.34, 하나도 붙지 않았을 때 0.04
- */
-export const centerBloomAlpha = (litCount: number): number => 0.3 * Math.min(litCount / TICKS, 1) + 0.04;
