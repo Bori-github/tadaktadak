@@ -49,7 +49,6 @@ export const EMBER_MAX_LIFE_MS = LIFE_MS * LIFE_SPREAD.max;
 
 type EmberShownInput = {
   session: TimerSession;
-  restMs: number;
   now: number;
 };
 
@@ -57,14 +56,13 @@ type EmberShownInput = {
  * 불티가 노출되는지 여부. `DESIGN.md` §9 완료
  *
  * @param input.session - 지금 타이머 세션
- * @param input.restMs - 설정한 휴식 타이머 시간 (밀리초)
  * @param input.now - 지금 시각 (밀리초)
- * @returns 집중 완료 단계이거나, 집중이 끝나고 `EMBER_MAX_LIFE_MS` 안이면 `true`
+ * @returns 집중 타이머가 끝나고 불티 수명이 다하기 전이면 `true`
  */
-export const isEmberShown = ({ session, restMs, now }: EmberShownInput): boolean => {
+export const isEmberShown = ({ session, now }: EmberShownInput): boolean => {
   if (session.phase === 'completed') return session.mode === 'focus';
 
-  const remaining = emberRemainingMs({ session, restMs, now });
+  const remaining = emberRemainingMs({ session, now });
 
   return remaining !== null && remaining > 0;
 };
@@ -73,14 +71,13 @@ export const isEmberShown = ({ session, restMs, now }: EmberShownInput): boolean
  * 불티가 없어질 때까지 남은 시간 (밀리초). `DESIGN.md` §9 완료
  *
  * @param input.session - 지금 타이머 세션
- * @param input.restMs - 설정한 휴식 타이머 시간 (밀리초)
  * @param input.now - 지금 시각 (밀리초)
- * @returns 휴식 진행에서 남은 시간. 집중이 끝난 시각을 구할 수 없는 그 밖의 단계에서는 `null`
+ * @returns 휴식 진행에서 남은 시간. 그 밖의 단계에서는 `null`
  */
-export const emberRemainingMs = ({ session, restMs, now }: EmberShownInput): number | null => {
+export const emberRemainingMs = ({ session, now }: EmberShownInput): number | null => {
   if (session.phase !== 'running' || session.mode !== 'rest') return null;
 
-  return Math.max(0, session.endsAt - restMs + EMBER_MAX_LIFE_MS - now);
+  return Math.max(0, session.startedAt + EMBER_MAX_LIFE_MS - now);
 };
 
 const RISE = 0.6;

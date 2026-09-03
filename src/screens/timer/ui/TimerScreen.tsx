@@ -27,7 +27,7 @@ import {
   Numerals,
   useDialDrag,
 } from '@/widgets/dial';
-import { MINUTE_IN_MS, type TimerMode } from '@/entities/timer';
+import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 import { resolveLayout } from '@/shared/lib';
 
@@ -64,18 +64,16 @@ export const TimerScreen = (): JSX.Element => {
 
   const twinkling = isThumbTwinkling({ isResting: resting, phase: session.phase });
 
-  const restMs = realSettingMinutes.rest * MINUTE_IN_MS;
-
   useEffect(() => {
-    const remaining = emberRemainingMs({ session, restMs, now: Date.now() });
+    const remaining = emberRemainingMs({ session, now: Date.now() });
     if (remaining === null) return;
 
     const hiding = setTimeout(() => setCheckedAt(Date.now()), remaining);
 
     return () => clearTimeout(hiding);
-  }, [session, restMs]);
+  }, [session]);
 
-  const emberShown = isEmberShown({ session, restMs, now: checkedAt });
+  const emberShown = isEmberShown({ session, now: checkedAt });
 
   // 층별 동작은 `DESIGN.md` §8
   const dialMinutes = useDerivedValue(() => {

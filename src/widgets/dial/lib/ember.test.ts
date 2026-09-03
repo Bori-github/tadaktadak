@@ -2,7 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 
 import { EMBER_COLORS, EMBER_COUNT, emberAt, emberRemainingMs, emberColorIndex, isEmberShown, spawnEmbers, type Ember } from './ember';
 
-import { MINUTE_IN_MS, NOW, READY_SESSION, type TimerSession } from '@/entities/timer';
+import { MINUTE_IN_MS, NOW, pauseTimer, READY_SESSION, resumeTimer, type RunningSession, type TimerSession } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 
 const embers = (random?: () => number) => spawnEmbers({ centerX: 100, centerY: 100, radius: 76.5, random });
@@ -12,7 +12,7 @@ const rising: Ember = { x: 0, y: 0, velocityX: 0, velocityY: -1, lifeMs: 2800 };
 
 const REST_MS = 5 * MINUTE_IN_MS;
 
-const resting: TimerSession = { phase: 'running', mode: 'rest', startedAt: NOW, endsAt: NOW + REST_MS };
+const resting: RunningSession = { phase: 'running', mode: 'rest', startedAt: NOW, endsAt: NOW + REST_MS };
 const focusCompleted: TimerSession = { phase: 'completed', mode: 'focus' };
 
 describe('불티 생성', () => {
@@ -75,7 +75,7 @@ describe('불티 수명', () => {
 });
 
 describe('불티가 노출되는 동안', () => {
-  const shown = (session: TimerSession, now: number) => isEmberShown({ session, restMs: REST_MS, now });
+  const shown = (session: TimerSession, now: number) => isEmberShown({ session, now });
 
   it.each([
     { label: '노출된다', elapsedMs: 3499, expected: true },
@@ -86,6 +86,13 @@ describe('불티가 노출되는 동안', () => {
 
   it('집중 완료 단계에서는 노출된다', () => {
     expect(shown(focusCompleted, NOW)).toBe(true);
+  });
+
+  it('휴식 시작 1초 뒤에 멈췄다 한 시간 뒤에 재개해도 노출되지 않는다', () => {
+    const stopped = pauseTimer({ session: resting, now: NOW + 1000 });
+    const resumedAt = NOW + 60 * MINUTE_IN_MS;
+
+    expect(shown(resumeTimer({ session: stopped, now: resumedAt }), resumedAt)).toBe(false);
   });
 
   it.each([
@@ -99,7 +106,7 @@ describe('불티가 노출되는 동안', () => {
 });
 
 describe('불티가 없어질 때까지', () => {
-  const remaining = (now: number) => emberRemainingMs({ session: resting, restMs: REST_MS, now });
+  const remaining = (now: number) => emberRemainingMs({ session: resting, now });
 
   it.each([
     [0, 3500],
@@ -111,7 +118,7 @@ describe('불티가 없어질 때까지', () => {
   });
 
   it('집중 완료 단계에서는 잴 수 없다', () => {
-    expect(emberRemainingMs({ session: focusCompleted, restMs: REST_MS, now: NOW })).toBeNull();
+    expect(emberRemainingMs({ session: focusCompleted, now: NOW })).toBeNull();
   });
 });
 
