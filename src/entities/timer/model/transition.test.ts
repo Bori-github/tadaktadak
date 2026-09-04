@@ -14,7 +14,6 @@ const STARTED_AT = NOW - 22 * MINUTE_IN_MS;
 const running: RunningSession = { phase: 'running', mode: 'focus', startedAt: STARTED_AT, endsAt: NOW + 3 * MINUTE_IN_MS };
 const paused: PausedSession = { phase: 'paused', mode: 'focus', startedAt: STARTED_AT, pausedRemainingMs: 3 * MINUTE_IN_MS };
 const focusCompleted: CompletedSession = { phase: 'completed', mode: 'focus' };
-const restCompleted: CompletedSession = { phase: 'completed', mode: 'rest' };
 
 describe('단계 전이', () => {
   it('25분으로 시작하면 25분 뒤에 끝나는 진행이 된다', () => {
@@ -54,8 +53,12 @@ describe('단계 전이', () => {
     expect(resumeTimer({ session: stopped, now: NOW + MINUTE_IN_MS }).startedAt).toBe(running.startedAt);
   });
 
-  it('진행을 완료하면 모드만 남는다', () => {
+  it('집중 타이머가 완료된 경우 끝날 시각 없이 단계와 모드 값을 가진다', () => {
     expect(completeTimer(running)).toEqual({ phase: 'completed', mode: 'focus' });
+  });
+
+  it('휴식 타이머가 완료된 경우 집중 타이머 대기 값을 가진다', () => {
+    expect(completeTimer({ phase: 'running', mode: 'rest', startedAt: STARTED_AT, endsAt: NOW })).toEqual(READY_SESSION);
   });
 
   it('휴식 타이머를 시작해도 모드는 그대로다', () => {
@@ -65,7 +68,7 @@ describe('단계 전이', () => {
 
 describe('완료에서 다음으로', () => {
   it('집중 타이머가 끝나고 휴식 타이머가 5분이면 5분 뒤에 끝나는 휴식 진행이 된다', () => {
-    expect(advanceTimer({ session: focusCompleted, now: NOW, restMs: REST_MS })).toEqual({
+    expect(advanceTimer({ session: focusCompleted, now: NOW, restMs: REST_MS, focusMs: SETTING_MS })).toEqual({
       phase: 'running',
       mode: 'rest',
       startedAt: NOW,
@@ -73,11 +76,12 @@ describe('완료에서 다음으로', () => {
     });
   });
 
-  it('집중 타이머가 끝나고 휴식 타이머가 0분이면 집중 타이머 대기가 된다', () => {
-    expect(advanceTimer({ session: focusCompleted, now: NOW, restMs: 0 })).toEqual(READY_SESSION);
-  });
-
-  it('휴식 타이머가 끝나면 집중 타이머 대기가 된다', () => {
-    expect(advanceTimer({ session: restCompleted, now: NOW, restMs: REST_MS })).toEqual(READY_SESSION);
+  it('집중 타이머가 끝나고 휴식 타이머가 0분이면 집중 진행이 다시 시작된다', () => {
+    expect(advanceTimer({ session: focusCompleted, now: NOW, restMs: 0, focusMs: SETTING_MS })).toEqual({
+      phase: 'running',
+      mode: 'focus',
+      startedAt: NOW,
+      endsAt: NOW + SETTING_MS,
+    });
   });
 });

@@ -27,6 +27,9 @@ import {
 /** 기기 가동 시간을 첫 프레임에서 채우기 전 값 */
 const NOT_STARTED = -1;
 
+/** 완료 연출 길이 (밀리초) `DESIGN.md` §9 완료 */
+const COMPLETED_EFFECT_MS = 3500;
+
 type TimerSessionInput = {
   settingMinutes: Record<TimerMode, number>;
   toSeconds?: (ms: number) => number;
@@ -187,6 +190,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   }, [session]);
 
   const restMs = settingMinutes.rest * MINUTE_IN_MS;
+  const focusMs = settingMinutes.focus * MINUTE_IN_MS;
 
   const startsRestAutomatically = session.phase === 'completed' && session.mode === 'focus' && restMs > 0;
 
@@ -197,8 +201,18 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
     // 집중 타이머 완료에서 휴식 타이머 진행으로 바뀌며 리렌더링이 1회 늘어남
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    applySession(advanceTimer({ session, now, restMs }), now);
-  }, [startsRestAutomatically, session, restMs, applySession]);
+    applySession(advanceTimer({ session, now, restMs, focusMs }), now);
+  }, [startsRestAutomatically, session, restMs, focusMs, applySession]);
+
+  const returnsToReady = session.phase === 'completed' && restMs === 0;
+
+  useEffect(() => {
+    if (!returnsToReady) return;
+
+    const waiting = setTimeout(() => applySession(READY_SESSION, Date.now()), COMPLETED_EFFECT_MS);
+
+    return () => clearTimeout(waiting);
+  }, [returnsToReady, applySession]);
 
   const play = useCallback(() => {
     settled.current = true;
@@ -229,8 +243,8 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
       return;
     }
 
-    if (session.phase === 'completed') applySession(advanceTimer({ session, now, restMs }), now);
-  }, [session, settingMinutes, restMs, startCounting, stopCounting, applySession, running]);
+    if (session.phase === 'completed') applySession(advanceTimer({ session, now, restMs, focusMs }), now);
+  }, [session, settingMinutes, restMs, focusMs, startCounting, stopCounting, applySession, running]);
 
   useEffect(() => {
     if (session.phase !== 'running') return;
