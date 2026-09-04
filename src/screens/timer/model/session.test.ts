@@ -10,6 +10,7 @@ import { MINUTE_IN_MS, NOW, READY_SESSION, TIMER_DEFAULT, type TimerMode } from 
 let mockRead: Promise<string | null> = new Promise(() => {});
 let mockRelease: (raw: string | null) => void = () => {};
 const mockWritten: string[] = [];
+let mockRemovedCount = 0;
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
   __esModule: true,
@@ -18,7 +19,9 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
     setItem: async (_key: string, value: string) => {
       mockWritten.push(value);
     },
-    removeItem: async () => {},
+    removeItem: async () => {
+      mockRemovedCount += 1;
+    },
   },
 }));
 
@@ -61,6 +64,7 @@ beforeEach(() => {
   jest.useFakeTimers();
 
   mockWritten.length = 0;
+  mockRemovedCount = 0;
   mockRead = new Promise((resolve) => {
     mockRelease = resolve;
   });
@@ -95,6 +99,17 @@ describe('저장값을 읽는 사이의 조작', () => {
     await act(async () => mockRelease(STORED_PAUSED));
 
     expect(result.current.session).toEqual({ phase: 'paused', mode: 'rest', startedAt: NOW, pausedRemainingMs: 90_000 });
+  });
+});
+
+describe('저장값 읽은 뒤 맞추기', () => {
+  it('읽어 온 값이 이미 끝난 휴식 타이머면 저장값을 지운다', async () => {
+    const { result } = await renderBeforeRead();
+
+    await act(async () => mockRelease(storedCompleted('rest')));
+
+    expect(result.current.session).toEqual(READY_SESSION);
+    expect(mockRemovedCount).toBe(1);
   });
 });
 

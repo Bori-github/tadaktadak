@@ -174,7 +174,12 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
         const now = Date.now();
 
         settled.current = true;
-        applySession(restoreSession({ stored, now, stopped: false }), now);
+
+        const next = restoreSession({ stored, now, stopped: false });
+
+        applySession(next, now);
+        // 초기값 READY_SESSION과 같은 객체면 리렌더가 없어 [session] 이펙트가 돌지 않으므로 여기서 한 번 저장
+        saveSession(next).catch(() => {});
       });
 
     return () => {
