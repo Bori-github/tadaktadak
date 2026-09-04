@@ -1290,8 +1290,8 @@
               st.mode = 'focus';
               st.phase = 'running';
               st.remaining = setFocus;
-            } else if (st.effectT >= EFFECT_DUR) {
-              // 이어질 것이 없으면 연출이 끝날 때 집중 타이머 대기 상태로
+            } else if (setRest <= 0 && st.effectT >= EFFECT_DUR) {
+              // 휴식 타이머가 없어 이어질 것이 없으므로 연출이 끝날 때 집중 타이머 대기 상태로
               goFocusReady();
             }
           }
