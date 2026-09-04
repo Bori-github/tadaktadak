@@ -1,4 +1,4 @@
-import { type TimerSession } from '../model/session';
+import { type NotRunningSession, type TimerSession } from '../model/session';
 
 type RemainingInput = {
   remainingAtStartMs: number;
@@ -19,6 +19,23 @@ export const remainingMs = ({ remainingAtStartMs, startedAtUptime, nowUptime }: 
   return Math.max(0, remainingAtStartMs - (nowUptime - startedAtUptime));
 };
 
+/**
+ * 진행이 아닌 단계의 남은 시간(밀리초). 지금 시각이 필요 없어 렌더 중에도 부를 수 있다
+ *
+ * @param session - 진행이 아닌 타이머 세션 값
+ * @returns 대기 상태는 `null`, 완료는 0, 일시정지는 멈춘 시점에 남아 있던 밀리초
+ */
+export const notRunningRemainingMs = (session: NotRunningSession): number | null => {
+  switch (session.phase) {
+    case 'ready':
+      return null;
+    case 'completed':
+      return 0;
+    case 'paused':
+      return session.pausedRemainingMs;
+  }
+};
+
 type SessionRemainingInput = {
   session: TimerSession;
   now: number;
@@ -31,15 +48,5 @@ type SessionRemainingInput = {
  * @param input.now - 지금 시각 (밀리초)
  * @returns 남은 밀리초. 끝날 시각이 지났으면 0, 대기는 `null`
  */
-export const sessionRemainingMs = ({ session, now }: SessionRemainingInput): number | null => {
-  switch (session.phase) {
-    case 'ready':
-      return null;
-    case 'running':
-      return Math.max(0, session.endsAt - now);
-    case 'paused':
-      return session.pausedRemainingMs;
-    case 'completed':
-      return 0;
-  }
-};
+export const sessionRemainingMs = ({ session, now }: SessionRemainingInput): number | null =>
+  session.phase === 'running' ? Math.max(0, session.endsAt - now) : notRunningRemainingMs(session);

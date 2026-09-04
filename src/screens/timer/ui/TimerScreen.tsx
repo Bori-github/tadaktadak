@@ -117,7 +117,7 @@ export const TimerScreen = (): JSX.Element => {
             focusMinutes={minutes.focus}
             restMinutes={minutes.rest}
             active={shownMode}
-            remainingSeconds={editing ? null : remainingSeconds}
+            remainingSeconds={remainingSeconds}
           />
           <Controls centerX={centerX} centerY={layout.buttonCenterY} dotSize={layout.dotSize} phase={session.phase} pressed={pressed} />
         </Canvas>
