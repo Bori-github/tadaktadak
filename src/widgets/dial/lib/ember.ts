@@ -1,3 +1,4 @@
+import { type TimerSession } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 
 /** 불티 하나가 노출될 때의 위치·속도·수명. `DESIGN.md` §9 완료 */
@@ -45,6 +46,39 @@ const LIFE_SPREAD: Spread = { min: 0.75, max: 1.25 };
 
 /** 마지막 불티의 수명 (밀리초). `DESIGN.md` §9 연출 길이 */
 export const EMBER_MAX_LIFE_MS = LIFE_MS * LIFE_SPREAD.max;
+
+type EmberShownInput = {
+  session: TimerSession;
+  now: number;
+};
+
+/**
+ * 불티가 노출되는지 여부. `DESIGN.md` §9 완료
+ *
+ * @param input.session - 지금 타이머 세션
+ * @param input.now - 지금 시각 (밀리초)
+ * @returns 집중 타이머가 끝나고 불티 수명이 다하기 전이면 `true`
+ */
+export const isEmberShown = ({ session, now }: EmberShownInput): boolean => {
+  if (session.phase === 'completed') return session.mode === 'focus';
+
+  const remaining = emberRemainingMs({ session, now });
+
+  return remaining !== null && remaining > 0;
+};
+
+/**
+ * 불티가 없어질 때까지 남은 시간 (밀리초). `DESIGN.md` §9 완료
+ *
+ * @param input.session - 지금 타이머 세션
+ * @param input.now - 지금 시각 (밀리초)
+ * @returns 휴식 진행에서 남은 시간. 그 밖의 단계에서는 `null`
+ */
+export const emberRemainingMs = ({ session, now }: EmberShownInput): number | null => {
+  if (session.phase !== 'running' || session.mode !== 'rest') return null;
+
+  return Math.max(0, session.startedAt + EMBER_MAX_LIFE_MS - now);
+};
 
 const RISE = 0.6;
 const RISE_SPREAD: Spread = { min: 0.55, max: 1.45 };

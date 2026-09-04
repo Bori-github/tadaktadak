@@ -6,10 +6,10 @@ export const TIMER_PHASES = ['ready', 'running', 'paused', 'completed'] as const
 export type TimerPhase = (typeof TIMER_PHASES)[number];
 
 /** 진행 중. 남은 시간의 기준은 끝날 시각 */
-export type RunningSession = { phase: 'running'; mode: TimerMode; endsAt: number };
+export type RunningSession = { phase: 'running'; mode: TimerMode; startedAt: number; endsAt: number };
 
 /** 일시정지 중. 남은 시간의 기준은 멈춘 시점의 남은 밀리초 */
-export type PausedSession = { phase: 'paused'; mode: TimerMode; pausedRemainingMs: number };
+export type PausedSession = { phase: 'paused'; mode: TimerMode; startedAt: number; pausedRemainingMs: number };
 
 export type ReadySession = { phase: 'ready'; mode: TimerMode };
 

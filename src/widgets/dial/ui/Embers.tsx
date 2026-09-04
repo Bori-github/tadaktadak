@@ -13,8 +13,7 @@ type EmbersProps = {
   /** 개체 중심 반지름 (px) */
   radius: number;
   dotSize: number;
-  /** 불티를 노출시키는 단계인지 여부 */
-  isCompleted: boolean;
+  isShown: boolean;
 };
 
 /** 잔광 텍스처 반지름 (px) */
@@ -51,7 +50,7 @@ const drawEmbers = (): SkImage | null => {
   return surface.makeImageSnapshot();
 };
 
-export const Embers = memo(({ centerX, centerY, radius, dotSize, isCompleted }: EmbersProps) => {
+export const Embers = memo(({ centerX, centerY, radius, dotSize, isShown }: EmbersProps) => {
   const image = useMemo(() => drawEmbers(), []);
   const glowSprites = useMemo(() => Array.from({ length: EMBER_COUNT }, () => GLOW_SPRITE), []);
   const [embers, setEmbers] = useState<Ember[]>([]);
@@ -67,7 +66,7 @@ export const Embers = memo(({ centerX, centerY, radius, dotSize, isCompleted }: 
   }, false);
 
   useEffect(() => {
-    if (!isCompleted) {
+    if (!isShown) {
       setEmbers([]);
       return;
     }
@@ -81,7 +80,7 @@ export const Embers = memo(({ centerX, centerY, radius, dotSize, isCompleted }: 
     return () => clearTimeout(burnedOut);
     // `useSharedValue`가 준 값은 고정 참조라 뺌. 넣으면 React Compiler 린트가 안에서 쓰는 것을 막음
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCompleted, centerX, centerY, radius, dotSize]);
+  }, [isShown, centerX, centerY, radius, dotSize]);
 
   useEffect(() => {
     rising.setActive(embers.length > 0);

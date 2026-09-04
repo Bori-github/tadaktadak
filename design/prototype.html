@@ -329,8 +329,8 @@
               <button type="button" data-v="0">끔</button>
             </div>
             <p class="hint">
-              완료하면 가운데 숫자 위에 <b>5, 4, 3, 2, 1</b>이 청록으로 세어집니다. 다 세면 휴식이 시작됩니다. 휴식이 0분이면 자동 시작도
-              카운트다운도 없습니다.
+              집중이 끝나면 그 자리에서 휴식이 시작됩니다. 완료 연출은 그 뒤로 <b>3.5초</b> 이어져, 휴식이 도는 동안에도 불티가 남고 개체 불이
+              꺼지지 않습니다. 휴식이 0분이면 자동 시작이 없습니다.
             </p>
           </div>
           <div class="group">
@@ -384,16 +384,6 @@
                     <td>아래 숫자</td>
                     <td class="n">7</td>
                     <td>도트 (5×7 배율 1)</td>
-                  </tr>
-                  <tr>
-                    <td>카운트다운 숫자</td>
-                    <td class="n">7</td>
-                    <td>도트 (5×7 배율 1)</td>
-                  </tr>
-                  <tr>
-                    <td>카운트다운과 0 눈금 사이</td>
-                    <td class="n">12</td>
-                    <td>논리 픽셀</td>
                   </tr>
                   <tr>
                     <td>타이머와 아래 숫자 사이</td>
@@ -744,11 +734,9 @@
           editTarget = 'focus';
         var mainH = 21; // 타이머 숫자 높이, 도트
         var subH = 7; // 아래 숫자 높이, 도트
-        var cdH = 7; // 카운트다운 숫자 높이, 도트
         var subGap = 10; // 타이머와 아래 숫자 사이, 도트
-        var CD_GAP = 12; // 카운트다운과 0분 눈금 사이, 논리 픽셀
         var autoRest = true;
-        var AUTO_DELAY = 5000;
+        var EFFECT_DUR = 3500; // 완료 연출 길이, 밀리초
 
         var st = {
           mode: 'focus',
@@ -759,7 +747,7 @@
           outT: 0,
           press: [0, 0, 0],
           restLen: 5,
-          completedT: 0,
+          effectT: EFFECT_DUR,
           repeat: false,
           sparks: [],
           spawned: false,
@@ -923,11 +911,6 @@
         function subCenterY() {
           return CY + (mainH * DOT) / 2 + subGap * DOT + (subH * DOT) / 2;
         }
-        // 카운트다운은 시계 문자판의 0분 눈금 바깥에 놓는다
-        function cdCenterY() {
-          var numeralOuter = R_NUMERAL + 7; // 눈금 라벨 높이 7도트의 절반이 논리픽셀 7
-          return CY - (numeralOuter + CD_GAP + (cdH * DOT) / 2);
-        }
 
         function goFocusReady() {
           if (st.mode === 'rest' && st.phase === 'completed') st.fireLevel = 0;
@@ -936,7 +919,7 @@
           st.remaining = setFocus;
           st.pauseT = 0;
           st.outT = st.fireLevel > 0 ? OUT_FADE : 0;
-          st.completedT = 0;
+          st.effectT = EFFECT_DUR;
           st.spawned = false;
           editTarget = 'focus';
           syncSlider();
@@ -1096,7 +1079,11 @@
           var restProg = isRest && st.restLen > 0 ? Math.min(1, Math.max(0, 1 - st.remaining / st.restLen)) : 0;
           var virtualRem = setFocus * restProg;
 
+          // 연출이 도는 동안은 휴식이 시작돼도 집중이 끝난 자리에 머문다
+          var showingEffect = st.effectT < EFFECT_DUR;
+
           function litOf(i) {
+            if (showingEffect) return i <= setFocus ? 1 : 0;
             if (isRest) return i - 1 >= virtualRem ? 1 : i > virtualRem ? i - virtualRem : 0;
             if (st.phase === 'completed' || st.outT > 0) return i <= setFocus ? 1 : 0;
             if (ready) return 0;
@@ -1106,7 +1093,7 @@
           }
 
           // 완료 타오름
-          var flareK = st.phase === 'completed' && st.mode === 'focus' ? Math.max(0, 1 - st.completedT / FLARE_DUR) : 0;
+          var flareK = showingEffect ? Math.max(0, 1 - st.effectT / FLARE_DUR) : 0;
           var radiusMul = 1 + (FLARE_MUL - 1) * flareK * flareK;
 
           // 손잡이·호가 가리키는 값
@@ -1220,16 +1207,6 @@
           var sub = faceFor(subH);
           drawText(p, clock(restVal), cdx, subCenterY() / DOT, PAL.numRest, sub.s, subActive ? 1 : 0.4, sub.f);
 
-          // 자동 시작까지 남은 초. 시계 0분 눈금 바깥에 놓고, 색은 다음에 올 구간을 가리킨다
-          var nxt = nextAfterDone();
-          if (nxt) {
-            var left = Math.ceil((AUTO_DELAY - st.completedT) / 1000);
-            if (left > 0) {
-              var cf = faceFor(cdH);
-              drawText(p, String(left), cdx, cdCenterY() / DOT, nxt === 'rest' ? PAL.numRest : PAL.num, cf.s, 1, cf.f);
-            }
-          }
-
           var bx = btnX();
           drawButton(p, bx[0] / DOT, btnY / DOT, st.phase === 'running' ? 'pause' : 'play', true, st.press[0] > 0, btnSize(0));
           drawButton(p, bx[1] / DOT, btnY / DOT, 'stop', stopEnabled(), st.press[1] > 0, btnSize(1));
@@ -1268,8 +1245,8 @@
             if (st.remaining <= 0) {
               st.remaining = 0;
               st.phase = 'completed';
-              st.completedT = 0;
               if (st.mode === 'focus') {
+                st.effectT = 0;
                 st.spawned = false;
                 st.sparks = [];
               }
@@ -1286,24 +1263,22 @@
             st.spawned = true;
           }
 
-          // 완료 뒤 자동 진행. 반복이 켜져 있으면 휴식이 끝나고 집중으로 돌아온다
+          if (st.effectT < EFFECT_DUR) st.effectT += dt;
+
+          // 완료와 동시에 다음 단계로. 반복이 켜져 있으면 휴식이 끝나고 집중으로 돌아온다
           if (st.phase === 'completed') {
-            st.completedT += dt;
             var nx = nextAfterDone();
-            if (nx && st.completedT >= AUTO_DELAY) {
-              if (nx === 'rest') {
-                st.mode = 'rest';
-                st.phase = 'running';
-                st.restLen = setRest;
-                st.remaining = setRest;
-              } else {
-                st.fireLevel = 1;
-                st.outT = 0;
-                st.mode = 'focus';
-                st.phase = 'running';
-                st.remaining = setFocus;
-              }
-              st.completedT = 0;
+            if (nx === 'rest') {
+              st.mode = 'rest';
+              st.phase = 'running';
+              st.restLen = setRest;
+              st.remaining = setRest;
+            } else if (nx === 'focus') {
+              st.fireLevel = 1;
+              st.outT = 0;
+              st.mode = 'focus';
+              st.phase = 'running';
+              st.remaining = setFocus;
             }
           }
           if (st.outT > 0) {

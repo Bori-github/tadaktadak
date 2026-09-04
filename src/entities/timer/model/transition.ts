@@ -33,6 +33,7 @@ type AdvanceInput = {
 export const startTimer = ({ session, now, settingMs }: StartInput): RunningSession => ({
   phase: 'running',
   mode: session.mode,
+  startedAt: now,
   endsAt: now + settingMs,
 });
 
@@ -46,6 +47,7 @@ export const startTimer = ({ session, now, settingMs }: StartInput): RunningSess
 export const pauseTimer = ({ session, now }: PauseInput): PausedSession => ({
   phase: 'paused',
   mode: session.mode,
+  startedAt: session.startedAt,
   // 완료 전이는 프레임 콜백이 몰아서, 끝날 시각이 지난 뒤에 눌리는 틈
   pausedRemainingMs: Math.max(0, session.endsAt - now),
 });
@@ -60,6 +62,7 @@ export const pauseTimer = ({ session, now }: PauseInput): PausedSession => ({
 export const resumeTimer = ({ session, now }: ResumeInput): RunningSession => ({
   phase: 'running',
   mode: session.mode,
+  startedAt: session.startedAt,
   endsAt: now + session.pausedRemainingMs,
 });
 
@@ -83,4 +86,4 @@ export const completeTimer = (session: TimerSession): CompletedSession => ({
  * @returns 집중 타이머 완료 후 휴식 타이머가 설정되어 있으면 자동으로 휴식 진행
  */
 export const advanceTimer = ({ session, now, restMs }: AdvanceInput): TimerSession =>
-  session.mode === 'focus' && restMs > 0 ? { phase: 'running', mode: 'rest', endsAt: now + restMs } : READY_SESSION;
+  session.mode === 'focus' && restMs > 0 ? { phase: 'running', mode: 'rest', startedAt: now, endsAt: now + restMs } : READY_SESSION;
