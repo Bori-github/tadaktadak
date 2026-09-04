@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { bloomRadius } from './bloom';
+import { bloomRadius, CENTER_BLOOM_ALPHA } from './bloom';
 
 /** 기준 화면 배율 1의 도트 한 변 */
 const DOT = 2;
@@ -26,5 +26,11 @@ describe('빛 번짐 반지름', () => {
 
   it('배율 3에서 모닥불은 96이다', () => {
     expect(radius(1, true, 1, 6)).toBe(96);
+  });
+});
+
+describe('가운데 빛 번짐 알파', () => {
+  it('0.24다', () => {
+    expect(CENTER_BLOOM_ALPHA).toBe(0.24);
   });
 });

@@ -27,8 +27,8 @@ describe('기기에 저장할 타이머 세션 값 문자열', () => {
     });
   });
 
-  it('완료 상태는 모드만 담는다', () => {
-    expect(stored({ phase: 'completed', mode: 'rest' })).toEqual({ phase: 'completed', mode: 'rest' });
+  it('집중 타이머가 완료된 경우 단계와 모드만 담는다', () => {
+    expect(stored({ phase: 'completed', mode: 'focus' })).toEqual({ phase: 'completed', mode: 'focus' });
   });
 
   it('대기 상태는 저장할 문자열이 없다', () => {
