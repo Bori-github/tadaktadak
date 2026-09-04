@@ -43,7 +43,7 @@ type DialItemsProps = {
   settingMinutes: number;
   /** 일시정지 여부. 일시정지에서 불꽃이 멈춤. `DESIGN.md` §8 */
   isPaused: boolean;
-  /** 대기 여부. 대기와 휴식 설정에서 가운데 빛 번짐이 없음. `DESIGN.md` §6 */
+  /** 대기 상태 여부. 대기 상태에서 가운데 빛 번짐이 없음. `DESIGN.md` §6 */
   isReady: boolean;
 };
 

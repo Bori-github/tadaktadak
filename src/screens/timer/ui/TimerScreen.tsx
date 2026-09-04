@@ -69,6 +69,12 @@ export const TimerScreen = (): JSX.Element => {
   // 휴식 타이머 시간을 넣으면 집중이 점화한 개체가 꺼짐
   const itemMinutes = resting ? minutes.focus : selected;
 
+  // 대기 상태를 벗어나면 편집 대상이 집중 타이머로 돌아감
+  const handlePlay = useCallback(() => {
+    setEditTarget('focus');
+    play();
+  }, [play]);
+
   const handleChange = useCallback((value: number) => changeMinutes(editTarget, value), [changeMinutes, editTarget]);
   const handleChangeEnd = useCallback((value: number) => storeMinutes(editTarget, value), [storeMinutes, editTarget]);
 
@@ -115,8 +121,16 @@ export const TimerScreen = (): JSX.Element => {
           />
           <Controls centerX={centerX} centerY={layout.buttonCenterY} dotSize={layout.dotSize} phase={session.phase} pressed={pressed} />
         </Canvas>
-        <ReadoutButtons centerX={centerX} centerY={centerY} dotSize={layout.dotSize} onSelect={setEditTarget} />
-        <ControlButtons centerX={centerX} centerY={layout.buttonCenterY} dotSize={layout.dotSize} phase={session.phase} onPlay={play} onStop={stop} onPressedChange={setPressed} />
+        {editing ? <ReadoutButtons centerX={centerX} centerY={centerY} dotSize={layout.dotSize} onSelect={setEditTarget} /> : null}
+        <ControlButtons
+          centerX={centerX}
+          centerY={layout.buttonCenterY}
+          dotSize={layout.dotSize}
+          phase={session.phase}
+          onPlay={handlePlay}
+          onStop={stop}
+          onPressedChange={setPressed}
+        />
         {__DEV__ ? <SpeedControl speed={speed} enabled={editing} onSelect={setSpeed} /> : null}
       </View>
     </GestureDetector>

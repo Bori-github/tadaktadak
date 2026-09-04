@@ -940,7 +940,7 @@
             else if (p === 'paused') st.phase = 'running';
             else if (p === 'completed') {
               if (setRest <= 0) {
-                // 휴식이 없으면 재생 한 번에 집중을 다시 시작함
+                // 휴식 타이머가 없으면 재생 한 번에 집중 타이머를 다시 시작함
                 st.phase = 'running';
                 st.remaining = setFocus;
                 st.fireLevel = 1;
@@ -1249,7 +1249,7 @@
             st.pauseT = Math.max(0, st.pauseT - dt);
             if (st.remaining <= 0) {
               st.remaining = 0;
-              // 휴식 완료에는 연출이 없어 집중 대기로 바로 감. 반복은 완료를 거쳐 다시 시작함
+              // 휴식 타이머 완료에는 연출이 없어 집중 타이머 대기 상태로 바로 감. 반복은 완료를 거쳐 다시 시작함
               if (st.mode === 'rest' && !st.repeat) {
                 goFocusReady();
               } else {
@@ -1291,7 +1291,7 @@
               st.phase = 'running';
               st.remaining = setFocus;
             } else if (st.effectT >= EFFECT_DUR) {
-              // 이어질 것이 없으면 연출이 끝날 때 집중 대기로
+              // 이어질 것이 없으면 연출이 끝날 때 집중 타이머 대기 상태로
               goFocusReady();
             }
           }
