@@ -2,7 +2,7 @@
 id: tadaktadak
 name: "타닥타닥"
 figma: "https://www.figma.com/design/qmtzKbnYAsTAXvn0CBbfo2/tadaktadak"
-updated: 2026-09-04
+updated: 2026-09-05
 category: personal-tool
 bundle_id: "com.boriguri.tadaktadak"
 primary_color: "#ffb43c"
@@ -315,7 +315,7 @@ hHHHHHh     .hHHHh.     kKKKKKk
 
 | 쌍                                                | 간격 (논리 픽셀) |
 | ------------------------------------------------- | ---------------- |
-| 호(131) ↔ 빛 번짐 최대(145, 눈금 25개 점등)       | 14               |
+| 호(131) ↔ 가운데 빛 번짐(145)                     | 14               |
 | 손잡이 바깥(138) ↔ 개체 안쪽(144)                 | 6                |
 | 개체 바깥(162) ↔ 눈금 라벨 안쪽(168)              | 6                |
 | 눈금 라벨 바깥(중심 y + 182 = 542) ↔ 버튼 위(632) | 90               |
