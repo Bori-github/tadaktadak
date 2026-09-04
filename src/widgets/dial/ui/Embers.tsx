@@ -4,7 +4,8 @@ import { useDerivedValue, useFrameCallback, useSharedValue } from 'react-native-
 
 import { DOT_SAMPLING, SOFT_SAMPLING } from '../lib/atlas';
 import { BLOOM_GRADIENT } from '../lib/bloom';
-import { EMBER_COLORS, EMBER_COUNT, EMBER_GLOW_ALPHA, EMBER_GLOW_RADIUS, EMBER_MAX_LIFE_MS, emberAt, emberColorIndex, spawnEmbers, type Ember } from '../lib/ember';
+import { EMBER_COLORS, EMBER_COUNT, EMBER_GLOW_ALPHA, EMBER_GLOW_RADIUS, emberAt, emberColorIndex, spawnEmbers, type Ember } from '../lib/ember';
+import { COMPLETED_EFFECT_MS } from '@/entities/timer';
 import { DOT_SIZE } from '@/shared/constants';
 
 type EmbersProps = {
@@ -75,7 +76,7 @@ export const Embers = memo(({ centerX, centerY, radius, dotSize, isShown }: Embe
     elapsed.value = 0;
     setEmbers(spawnEmbers({ centerX: centerX / dotSize, centerY: centerY / dotSize, radius: radius / dotSize }));
 
-    const burnedOut = setTimeout(() => setEmbers([]), EMBER_MAX_LIFE_MS);
+    const burnedOut = setTimeout(() => setEmbers([]), COMPLETED_EFFECT_MS);
 
     return () => clearTimeout(burnedOut);
     // `useSharedValue`가 준 값은 고정 참조라 뺌. 넣으면 React Compiler 린트가 안에서 쓰는 것을 막음

@@ -10,6 +10,7 @@ import { millisecondsToSeconds } from '../lib/seconds';
 import {
   advanceTimer,
   completeTimer,
+  COMPLETED_EFFECT_MS,
   READY_SESSION,
   loadSession,
   notRunningRemainingMs,
@@ -27,9 +28,6 @@ import {
 
 /** 기기 가동 시간을 첫 프레임에서 채우기 전 값 */
 const NOT_STARTED = -1;
-
-/** 완료 연출 길이 (밀리초) `DESIGN.md` §9 완료 */
-const COMPLETED_EFFECT_MS = 3500;
 
 type TimerSessionInput = {
   settingMinutes: Record<TimerMode, number>;
