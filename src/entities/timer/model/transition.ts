@@ -20,6 +20,7 @@ type AdvanceInput = {
   session: CompletedSession;
   now: number;
   restMs: number;
+  focusMs: number;
 };
 
 /**
@@ -67,15 +68,12 @@ export const resumeTimer = ({ session, now }: ResumeInput): RunningSession => ({
 });
 
 /**
- * 시간이 다 됨. 사용자 조작이 아닌 전이
+ * 타이머 시간 완료. `DESIGN.md` §8 휴식 타이머
  *
- * @param session - 진행 중이던 타이머 세션 값
- * @returns 끝날 시각을 비운 완료
+ * @param session - 동작하던 타이머 세션 값
+ * @returns 집중은 끝날 시각 없는 완료, 휴식은 연출이 없어 집중 타이머 대기
  */
-export const completeTimer = (session: TimerSession): CompletedSession => ({
-  phase: 'completed',
-  mode: session.mode,
-});
+export const completeTimer = (session: TimerSession): TimerSession => (session.mode === 'rest' ? READY_SESSION : { phase: 'completed', mode: session.mode });
 
 /**
  * 완료에서 다음 단계로. `DESIGN.md` §8 휴식 타이머
@@ -83,7 +81,11 @@ export const completeTimer = (session: TimerSession): CompletedSession => ({
  * @param input.session - 완료한 타이머 세션 값
  * @param input.now - 지금 시각 (밀리초)
  * @param input.restMs - 설정한 휴식 타이머 시간 (밀리초)
- * @returns 집중 타이머 완료 후 휴식 타이머가 설정되어 있으면 자동으로 휴식 진행
+ * @param input.focusMs - 설정한 집중 타이머 시간 (밀리초)
+ * @returns 집중 완료는 휴식이 있으면 휴식 진행, 없으면 집중 진행. 그 밖은 집중 타이머 대기
  */
-export const advanceTimer = ({ session, now, restMs }: AdvanceInput): TimerSession =>
-  session.mode === 'focus' && restMs > 0 ? { phase: 'running', mode: 'rest', startedAt: now, endsAt: now + restMs } : READY_SESSION;
+export const advanceTimer = ({ session, now, restMs, focusMs }: AdvanceInput): TimerSession => {
+  if (session.mode !== 'focus') return READY_SESSION;
+
+  return restMs > 0 ? { phase: 'running', mode: 'rest', startedAt: now, endsAt: now + restMs } : { phase: 'running', mode: 'focus', startedAt: now, endsAt: now + focusMs };
+};

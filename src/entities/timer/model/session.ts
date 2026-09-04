@@ -18,5 +18,8 @@ export type CompletedSession = { phase: 'completed'; mode: TimerMode };
 /** 타이머 세션 값. `SPEC.md` 기기에 저장하는 값 */
 export type TimerSession = ReadySession | CompletedSession | RunningSession | PausedSession;
 
+/** 진행이 아닌 타이머 세션 값. 대기 상태·일시정지·완료 */
+export type NotRunningSession = Exclude<TimerSession, RunningSession>;
+
 /** 집중 타이머 대기. 첫 실행과 정지 뒤의 값 */
 export const READY_SESSION: TimerSession = Object.freeze({ phase: 'ready', mode: 'focus' });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { bloomRadius, centerBloomAlpha } from './bloom';
+import { bloomRadius, CENTER_BLOOM_ALPHA } from './bloom';
 
 /** 기준 화면 배율 1의 도트 한 변 */
 const DOT = 2;
@@ -29,12 +29,8 @@ describe('빛 번짐 반지름', () => {
   });
 });
 
-describe('중앙 빛 번짐 알파', () => {
-  it.each([
-    [0, 0.04],
-    [25, 0.165],
-    [60, 0.34],
-  ])('다 붙은 눈금 %i칸에서 %s다', (litCount, expected) => {
-    expect(centerBloomAlpha(litCount)).toBeCloseTo(expected, 10);
+describe('가운데 빛 번짐 알파', () => {
+  it('0.24다', () => {
+    expect(CENTER_BLOOM_ALPHA).toBe(0.24);
   });
 });

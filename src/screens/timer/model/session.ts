@@ -1,5 +1,5 @@
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { useFrameCallback, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
@@ -10,8 +10,10 @@ import { millisecondsToSeconds } from '../lib/seconds';
 import {
   advanceTimer,
   completeTimer,
+  COMPLETED_EFFECT_MS,
   READY_SESSION,
   loadSession,
+  notRunningRemainingMs,
   MINUTE_IN_MS,
   pauseTimer,
   remainingMs,
@@ -55,7 +57,8 @@ interface TimerSessionState {
  */
 export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeconds, toMinutes = millisecondsToMinutes }: TimerSessionInput): TimerSessionState => {
   const [session, setSession] = useState<TimerSession>(READY_SESSION);
-  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+  // 진행 단계에서만 사용하는 값
+  const [countedSeconds, setCountedSeconds] = useState(0);
 
   // 저장값을 읽거나 사용자가 조작하면 true. 늦게 끝난 읽기가 그 사이의 조작을 덮는 것 방지
   const settled = useRef(false);
@@ -86,7 +89,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     const seconds = toSeconds(remaining);
     if (seconds !== shownSeconds.value) {
       shownSeconds.value = seconds;
-      scheduleOnRN(setRemainingSeconds, seconds);
+      scheduleOnRN(setCountedSeconds, seconds);
     }
 
     if (remaining === 0) {
@@ -123,7 +126,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
         countingMode.value = mode;
         running.value = true;
       });
-      setRemainingSeconds(shown);
+      setCountedSeconds(shown);
     },
     [remainingAtStart, startedAtUptime, shownSeconds, remainingMinutes, countingMode, running, toSeconds, toMinutes],
   );
@@ -137,14 +140,12 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
   const applySession = useCallback(
     (next: TimerSession, now: number) => {
-      const remaining = sessionRemainingMs({ session: next, now });
+      const remaining = sessionRemainingMs({ session: next, now }) ?? 0;
 
-      if (remaining === null) setRemainingSeconds(null);
-      else if (next.phase === 'running') startCounting(remaining, next.mode);
+      if (next.phase === 'running') startCounting(remaining, next.mode);
       else {
         const shownMinutes = toMinutes(remaining);
 
-        setRemainingSeconds(toSeconds(remaining));
         scheduleOnUI(() => {
           'worklet';
           remainingMinutes.value = shownMinutes;
@@ -154,7 +155,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
       setSession(next);
     },
-    [startCounting, remainingMinutes, countingMode, toSeconds, toMinutes],
+    [startCounting, remainingMinutes, countingMode, toMinutes],
   );
 
   useEffect(() => {
@@ -171,7 +172,12 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
         const now = Date.now();
 
         settled.current = true;
-        applySession(restoreSession({ stored, now, stopped: false }), now);
+
+        const next = restoreSession({ stored, now, stopped: false });
+
+        applySession(next, now);
+        // 초기값 READY_SESSION과 같은 객체면 리렌더가 없어 [session] 이펙트가 돌지 않으므로 여기서 한 번 저장
+        saveSession(next).catch(() => {});
       });
 
     return () => {
@@ -187,6 +193,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   }, [session]);
 
   const restMs = settingMinutes.rest * MINUTE_IN_MS;
+  const focusMs = settingMinutes.focus * MINUTE_IN_MS;
 
   const startsRestAutomatically = session.phase === 'completed' && session.mode === 'focus' && restMs > 0;
 
@@ -197,8 +204,18 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
     // 집중 타이머 완료에서 휴식 타이머 진행으로 바뀌며 리렌더링이 1회 늘어남
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    applySession(advanceTimer({ session, now, restMs }), now);
-  }, [startsRestAutomatically, session, restMs, applySession]);
+    applySession(advanceTimer({ session, now, restMs, focusMs }), now);
+  }, [startsRestAutomatically, session, restMs, focusMs, applySession]);
+
+  const returnsToReady = session.phase === 'completed' && restMs === 0;
+
+  useEffect(() => {
+    if (!returnsToReady) return;
+
+    const waiting = setTimeout(() => applySession(READY_SESSION, Date.now()), COMPLETED_EFFECT_MS);
+
+    return () => clearTimeout(waiting);
+  }, [returnsToReady, applySession]);
 
   const play = useCallback(() => {
     settled.current = true;
@@ -229,8 +246,8 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
       return;
     }
 
-    if (session.phase === 'completed') applySession(advanceTimer({ session, now, restMs }), now);
-  }, [session, settingMinutes, restMs, startCounting, stopCounting, applySession, running]);
+    if (session.phase === 'completed') applySession(advanceTimer({ session, now, restMs, focusMs }), now);
+  }, [session, settingMinutes, restMs, focusMs, startCounting, stopCounting, applySession, running]);
 
   useEffect(() => {
     if (session.phase !== 'running') return;
@@ -250,9 +267,16 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     settled.current = true;
 
     stopCounting();
-    setRemainingSeconds(null);
     setSession(READY_SESSION);
   }, [stopCounting]);
+
+  const remainingSeconds = useMemo(() => {
+    if (session.phase === 'running') return countedSeconds;
+
+    const remaining = notRunningRemainingMs(session);
+
+    return remaining === null ? null : toSeconds(remaining);
+  }, [session, countedSeconds, toSeconds]);
 
   return { session, remainingSeconds, remainingMinutes, countingMode, play, stop };
 };

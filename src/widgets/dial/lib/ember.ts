@@ -1,4 +1,4 @@
-import { type TimerSession } from '@/entities/timer';
+import { COMPLETED_EFFECT_MS, type TimerSession } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 
 /** 불티 하나가 노출될 때의 위치·속도·수명. `DESIGN.md` §9 완료 */
@@ -44,9 +44,6 @@ export const EMBER_COLORS = [COLORS.fire.core, COLORS.fire.mid, COLORS.fire.base
 const LIFE_MS = 2800;
 const LIFE_SPREAD: Spread = { min: 0.75, max: 1.25 };
 
-/** 마지막 불티의 수명 (밀리초). `DESIGN.md` §9 연출 길이 */
-export const EMBER_MAX_LIFE_MS = LIFE_MS * LIFE_SPREAD.max;
-
 type EmberShownInput = {
   session: TimerSession;
   now: number;
@@ -77,7 +74,7 @@ export const isEmberShown = ({ session, now }: EmberShownInput): boolean => {
 export const emberRemainingMs = ({ session, now }: EmberShownInput): number | null => {
   if (session.phase !== 'running' || session.mode !== 'rest') return null;
 
-  return Math.max(0, session.startedAt + EMBER_MAX_LIFE_MS - now);
+  return Math.max(0, session.startedAt + COMPLETED_EFFECT_MS - now);
 };
 
 const RISE = 0.6;
