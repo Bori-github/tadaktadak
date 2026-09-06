@@ -8,6 +8,9 @@ const cells = circleCells(DIAMETER);
 
 const byRow = Array.from({ length: DIAMETER }, (_, row) => cells.filter((cell) => cell.row === row).sort((first, second) => first.column - second.column));
 
+const roleAt = (column: number, row: number): DotRole | undefined =>
+  cells.find((cell) => cell.row === row && cell.column <= column && column < cell.column + cell.widthInDots)?.role;
+
 // 구간은 가로로 묶여 있어 한 열을 보려면 그 열을 지나는 구간을 모음
 const byColumn = Array.from({ length: DIAMETER }, (_, column) =>
   cells.filter((cell) => cell.column <= column && column < cell.column + cell.widthInDots).sort((first, second) => first.row - second.row),
@@ -39,6 +42,26 @@ describe('도트 원', () => {
       right: Math.max(...cells.map((cell) => cell.column + cell.widthInDots)),
       bottom: Math.max(...cells.map((cell) => cell.row)) + 1,
     }).toEqual({ left: 0, top: 0, right: DIAMETER, bottom: DIAMETER });
+  });
+
+  it('12행이 테두리·하이라이트·면·그림자·테두리 순이다', () => {
+    expect([0, 1, 2, 21, 22, 23].map((column) => roleAt(column, 12))).toEqual(['edge', 'highlight', 'face', 'face', 'shadow', 'edge']);
+  });
+
+  // 하이라이트와 그림자 조건이 함께 참인 칸
+  it.each([
+    { column: 17, row: 2 },
+    { column: 18, row: 3 },
+    { column: 19, row: 4 },
+    { column: 20, row: 5 },
+    { column: 21, row: 6 },
+    { column: 2, row: 17 },
+    { column: 3, row: 18 },
+    { column: 4, row: 19 },
+    { column: 5, row: 20 },
+    { column: 6, row: 21 },
+  ])('($column, $row)는 그림자다', ({ column, row }) => {
+    expect(roleAt(column, row)).toBe('shadow');
   });
 
   it('같은 역할이 이어지면 한 칸으로 묶인다', () => {

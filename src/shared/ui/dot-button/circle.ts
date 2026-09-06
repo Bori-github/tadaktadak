@@ -30,8 +30,9 @@ export const circleCells = (diameterInDots: number): CircleCell[] => {
 
     // 두 칸 건너가 원 밖이면 테두리 바로 안쪽 줄
     // 조작 버튼이 하이라이트와 그림자를 두는 「안쪽 1 도트」와 같은 자리
-    if (!isFilled(column - 2, row) || !isFilled(column, row - 2)) return 'highlight';
+    // 조작 버튼은 그림자를 하이라이트보다 나중에 그려 겹치는 자리가 그림자 색이 되므로, 그림자를 먼저 판단
     if (!isFilled(column + 2, row) || !isFilled(column, row + 2)) return 'shadow';
+    if (!isFilled(column - 2, row) || !isFilled(column, row - 2)) return 'highlight';
 
     return 'face';
   };
