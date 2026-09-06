@@ -1,5 +1,6 @@
-import { describe, expect, it } from '@jest/globals';
-import { render, screen } from '@testing-library/react-native';
+import { describe, expect, it, jest } from '@jest/globals';
+import { fireEvent, render, screen } from '@testing-library/react-native';
+import { Linking } from 'react-native';
 
 import { NotificationSettingsButton } from './NotificationSettingsButton';
 
@@ -9,8 +10,11 @@ const CENTER_Y = 79;
 
 type Rect = { left: number; top: number; width: number; height: number };
 
+const pressedChanges: boolean[] = [];
+
 const button = async (dotSize = 2) => {
-  await render(<NotificationSettingsButton centerX={CENTER_X} centerY={CENTER_Y} dotSize={dotSize} onPressedChange={() => {}} />);
+  pressedChanges.length = 0;
+  await render(<NotificationSettingsButton centerX={CENTER_X} centerY={CENTER_Y} dotSize={dotSize} onPressedChange={(pressed) => pressedChanges.push(pressed)} />);
 
   return screen.getByRole('button');
 };
@@ -28,5 +32,24 @@ describe('터치 영역', () => {
   it('도트 4에서 한 변이 104다', async () => {
     // 지름 24 도트 × 4 + 여백 8. `DESIGN.md` §4
     expect(rect(await button(4)).width).toBe(104);
+  });
+});
+
+describe('누름', () => {
+  it('누르면 시스템 설정을 연다', async () => {
+    const openSettings = jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined);
+    const target = await button();
+    await fireEvent.press(target);
+
+    expect(openSettings).toHaveBeenCalledTimes(1);
+    openSettings.mockRestore();
+  });
+
+  it('누르고 뗄 때 눌림을 알린다', async () => {
+    const target = await button();
+    fireEvent(target, 'pressIn');
+    fireEvent(target, 'pressOut');
+
+    expect(pressedChanges).toEqual([true, false]);
   });
 });
