@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
+import { BUTTON_SIZE_IN_DOTS, ROUND_BUTTON_DIAMETER_IN_DOTS } from '@/shared/constants';
 
 import { DEVICE_NAMES, DEVICES, type DeviceName } from './devices';
 import { resolveLayout } from './responsive';
@@ -188,5 +188,20 @@ describe('시계판 위 끝이 safe area 위 끝을 넘지 않는다', () => {
     // 숫자 반높이 = 7 × 배율 (px). 배율 = dotSize ÷ 2
     const dialTopEdge = dialCenterY - numeralRadius - 7 * (dotSize / 2);
     expect(dialTopEdge).toBeGreaterThanOrEqual(DEVICES[name].topEdge);
+  });
+});
+
+describe('알림 설정 버튼 자리', () => {
+  it('기준 화면에서 중심이 358, 79다', () => {
+    const { noticeCenterX, noticeCenterY } = layout(390);
+
+    expect({ noticeCenterX, noticeCenterY }).toEqual({ noticeCenterX: 358, noticeCenterY: 79 });
+  });
+
+  it.each(DEVICE_NAMES)('%s에서 오른쪽 여백이 배율만큼 커진다', (name) => {
+    const { noticeCenterX, dotSize, scale } = onDevice(name);
+    const rightEdge = noticeCenterX + (ROUND_BUTTON_DIAMETER_IN_DOTS / 2) * dotSize;
+
+    expect(DEVICES[name].shortSide - rightEdge).toBe(8 * scale);
   });
 });

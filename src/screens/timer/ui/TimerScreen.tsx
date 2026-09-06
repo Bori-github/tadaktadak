@@ -1,4 +1,5 @@
 import { Canvas, Fill } from '@shopify/react-native-skia';
+import { PermissionStatus } from 'expo';
 import { useCallback, useState, type JSX } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
@@ -11,12 +12,15 @@ import { useNotificationPermission } from '../model/permission';
 import { useTimerSession } from '../model/session';
 import { useTimerSpeed } from '../model/speed';
 
+import { NotificationSettingsButton } from './NotificationSettingsButton';
 import { SpeedControl } from './SpeedControl';
 
 import { ControlButtons, Controls, type ControlButton } from '@/widgets/controls';
 import { colorMode, useEmberShown, isThumbTwinkling, restDialMinutes, DialArc, Embers, Thumb, DialItems, DialReadout, ReadoutButtons, Numerals, useDialDrag } from '@/widgets/dial';
 import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
+import { RoundDotButton } from '@/shared/ui/dot-button';
+import { NOTIFICATION_OFF_ICON } from '@/shared/ui/dot-icon';
 import { resolveLayout } from '@/shared/lib';
 
 const SECONDS_IN_MINUTE = 60;
@@ -27,6 +31,7 @@ export const TimerScreen = (): JSX.Element => {
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
   const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
   const [pressed, setPressed] = useState<ControlButton | null>(null);
+  const [noticePressed, setNoticePressed] = useState(false);
   const { speed, setSpeed, realSettingMinutes, toSeconds, toMinutes } = useTimerSpeed(minutes);
   const { session, isSettled, remainingSeconds, remainingMinutes, countingMode, play, stop } = useTimerSession({
     settingMinutes: realSettingMinutes,
@@ -37,6 +42,9 @@ export const TimerScreen = (): JSX.Element => {
   const permission = useNotificationPermission();
 
   useNotificationSchedule({ session, status: permission, isSettled });
+
+  // 권한을 읽기 전에는 띄우지 않음
+  const noticeShown = permission !== null && permission !== PermissionStatus.GRANTED;
 
   const layout = resolveLayout({
     shortSide: Math.min(width, height),
@@ -126,6 +134,9 @@ export const TimerScreen = (): JSX.Element => {
             remainingSeconds={remainingSeconds}
           />
           <Controls centerX={centerX} centerY={layout.buttonCenterY} dotSize={layout.dotSize} phase={session.phase} pressed={pressed} />
+          {noticeShown ? (
+            <RoundDotButton centerX={layout.noticeCenterX} centerY={layout.noticeCenterY} dotSize={layout.dotSize} icon={NOTIFICATION_OFF_ICON} pressed={noticePressed} />
+          ) : null}
         </Canvas>
         {editing ? <ReadoutButtons centerX={centerX} centerY={centerY} dotSize={layout.dotSize} onSelect={setEditTarget} /> : null}
         <ControlButtons
@@ -137,6 +148,9 @@ export const TimerScreen = (): JSX.Element => {
           onStop={stop}
           onPressedChange={setPressed}
         />
+        {noticeShown ? (
+          <NotificationSettingsButton centerX={layout.noticeCenterX} centerY={layout.noticeCenterY} dotSize={layout.dotSize} onPressedChange={setNoticePressed} />
+        ) : null}
         {__DEV__ ? <SpeedControl speed={speed} enabled={editing} onSelect={setSpeed} /> : null}
       </View>
     </GestureDetector>
