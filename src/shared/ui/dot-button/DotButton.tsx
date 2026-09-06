@@ -4,8 +4,8 @@ import { Group, Rect } from '@shopify/react-native-skia';
 import { BUTTON_SIZE_IN_DOTS, COLORS } from '@/shared/constants';
 import { topLeftOnGrid } from '@/shared/lib';
 
+import { type GridIcon } from '@/shared/ui/dot-icon';
 import { DotSprite } from '@/shared/ui/dot-sprite';
-import { type GridIcon } from './icons';
 
 /** 리벳이 놓이는 모서리 안쪽 거리 (dot) */
 const RIVET_INSET = 3;

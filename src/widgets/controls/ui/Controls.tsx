@@ -4,7 +4,8 @@ import { buttonCentersX, type ControlButton } from '../lib/layout';
 import { controlsState } from '../lib/state';
 
 import { type TimerPhase } from '@/entities/timer';
-import { DotButton, STOP_ICON } from '@/shared/ui/dot-button';
+import { DotButton } from '@/shared/ui/dot-button';
+import { STOP_ICON } from '@/shared/ui/dot-icon';
 
 type ControlsProps = {
   centerX: number;

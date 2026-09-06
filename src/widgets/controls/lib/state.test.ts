@@ -3,7 +3,7 @@ import { describe, expect, it } from '@jest/globals';
 import { controlsState } from './state';
 
 import { type TimerPhase } from '@/entities/timer';
-import { PAUSE_ICON, PLAY_ICON, type GridIcon } from '@/shared/ui/dot-button';
+import { PAUSE_ICON, PLAY_ICON, type GridIcon } from '@/shared/ui/dot-icon';
 
 describe('단계에 따른 조작 버튼', () => {
   it.each<{ phase: TimerPhase; icon: string; playIcon: GridIcon; stopEnabled: boolean }>([
