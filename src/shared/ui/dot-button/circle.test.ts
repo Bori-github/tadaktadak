@@ -8,6 +8,11 @@ const cells = circleCells(DIAMETER);
 
 const byRow = Array.from({ length: DIAMETER }, (_, row) => cells.filter((cell) => cell.row === row).sort((first, second) => first.column - second.column));
 
+// 구간은 가로로 묶여 있어 한 열을 보려면 그 열을 지나는 구간을 모음
+const byColumn = Array.from({ length: DIAMETER }, (_, column) =>
+  cells.filter((cell) => cell.column <= column && column < cell.column + cell.widthInDots).sort((first, second) => first.row - second.row),
+);
+
 describe('도트 원', () => {
   it('가장 넓은 줄이 지름만큼 찬다', () => {
     const widths = byRow.map((row) => row.reduce((sum, cell) => sum + cell.widthInDots, 0));
@@ -21,16 +26,19 @@ describe('도트 원', () => {
     expect(ends.every(([first, last]) => first === 'edge' && last === 'edge')).toBe(true);
   });
 
-  it('한 줄 안에 빈틈이 없다', () => {
-    const gaps = byRow.flatMap((row) =>
-      row.filter((cell, index) => {
-        const previous = row[index - 1];
+  it('열마다 양 끝은 테두리다', () => {
+    const notEdge = byColumn.filter((column) => column.at(0)?.role !== 'edge' || column.at(-1)?.role !== 'edge');
 
-        return previous !== undefined && previous.column + previous.widthInDots !== cell.column;
-      }),
-    );
+    expect(notEdge).toEqual([]);
+  });
 
-    expect(gaps).toEqual([]);
+  it('0행 0열에서 시작해 지름을 다 쓴다', () => {
+    expect({
+      left: Math.min(...cells.map((cell) => cell.column)),
+      top: Math.min(...cells.map((cell) => cell.row)),
+      right: Math.max(...cells.map((cell) => cell.column + cell.widthInDots)),
+      bottom: Math.max(...cells.map((cell) => cell.row)) + 1,
+    }).toEqual({ left: 0, top: 0, right: DIAMETER, bottom: DIAMETER });
   });
 
   it('같은 역할이 이어지면 한 칸으로 묶인다', () => {
