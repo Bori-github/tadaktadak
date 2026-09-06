@@ -1,6 +1,8 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { PAUSE_ICON, PLAY_ICON, STOP_ICON } from './icons';
+import { PAUSE_ICON } from './pause';
+import { PLAY_ICON } from './play';
+import { STOP_ICON } from './stop';
 
 const GRIDS = [
   { name: '재생', grid: PLAY_ICON },
