@@ -1,10 +1,11 @@
 import { Canvas, Fill } from '@shopify/react-native-skia';
-import { PermissionStatus } from 'expo';
 import { useCallback, useState, type JSX } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { useDerivedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { isNotificationBlocked } from '../lib/notification';
 
 import { useStoredMinutes } from '../model/minutes';
 import { useNotificationSchedule } from '../model/notification';
@@ -43,8 +44,7 @@ export const TimerScreen = (): JSX.Element => {
 
   useNotificationSchedule({ session, status: permission, isSettled });
 
-  // 권한을 읽기 전에는 띄우지 않음
-  const noticeShown = permission !== null && permission !== PermissionStatus.GRANTED;
+  const noticeShown = isNotificationBlocked(permission);
 
   const layout = resolveLayout({
     shortSide: Math.min(width, height),

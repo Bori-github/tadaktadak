@@ -24,6 +24,16 @@ export const notificationTitle = (mode: TimerMode): string => {
 };
 
 /**
+ * 알림이 오지 못하는 상태. `SPEC.md` 권한
+ *
+ * @param status - 알림 권한 상태. 확인 전에는 `null`
+ * @returns 권한을 확인했고 허용이 아니면 true
+ */
+export const isNotificationBlocked = (status: PermissionStatus | null): boolean => {
+  return status !== null && status !== PermissionStatus.GRANTED;
+};
+
+/**
  * 알림을 예약할 시각. 예약하지 않는 조건을 여기서 판정. `SPEC.md` 상태 전이 시 처리
  *
  * @param input.session - 타이머 세션 값
