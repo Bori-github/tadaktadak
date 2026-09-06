@@ -2,7 +2,7 @@ import { type JSX } from 'react';
 import { Pressable } from 'react-native';
 
 import { buttonCentersX, buttonTouchSize, type ControlButton } from '../lib/layout';
-import { controlsState } from '../lib/state';
+import { isStopEnabled } from '../lib/state';
 
 import { type TimerPhase } from '@/entities/timer';
 
@@ -30,7 +30,6 @@ type ControlButtonsProps = {
 
 export const ControlButtons = ({ centerX, centerY, dotSize, phase, onPlay, onStop, onPressedChange }: ControlButtonsProps): JSX.Element => {
   const centers = buttonCentersX(centerX, dotSize);
-  const { stopEnabled } = controlsState(phase);
 
   return (
     <>
@@ -44,7 +43,7 @@ export const ControlButtons = ({ centerX, centerY, dotSize, phase, onPlay, onSto
       <Pressable
         accessibilityRole="button"
         style={touchArea(centers.stop, centerY, dotSize)}
-        disabled={!stopEnabled}
+        disabled={!isStopEnabled(phase)}
         onPressIn={() => onPressedChange('stop')}
         onPressOut={() => onPressedChange(null)}
         onPress={onStop}
