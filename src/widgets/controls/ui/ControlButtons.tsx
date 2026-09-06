@@ -5,18 +5,7 @@ import { buttonCentersX, buttonTouchSize, type ControlButton } from '../lib/layo
 import { isStopEnabled } from '../lib/state';
 
 import { type TimerPhase } from '@/entities/timer';
-
-const touchArea = (centerX: number, centerY: number, dotSize: number) => {
-  const size = buttonTouchSize(dotSize);
-
-  return {
-    position: 'absolute',
-    left: centerX - size / 2,
-    top: centerY - size / 2,
-    width: size,
-    height: size,
-  } as const;
-};
+import { touchArea } from '@/shared/lib';
 
 type ControlButtonsProps = {
   centerX: number;
@@ -30,19 +19,20 @@ type ControlButtonsProps = {
 
 export const ControlButtons = ({ centerX, centerY, dotSize, phase, onPlay, onStop, onPressedChange }: ControlButtonsProps): JSX.Element => {
   const centers = buttonCentersX(centerX, dotSize);
+  const size = buttonTouchSize(dotSize);
 
   return (
     <>
       <Pressable
         accessibilityRole="button"
-        style={touchArea(centers.play, centerY, dotSize)}
+        style={touchArea({ centerX: centers.play, centerY, size })}
         onPressIn={() => onPressedChange('play')}
         onPressOut={() => onPressedChange(null)}
         onPress={onPlay}
       />
       <Pressable
         accessibilityRole="button"
-        style={touchArea(centers.stop, centerY, dotSize)}
+        style={touchArea({ centerX: centers.stop, centerY, size })}
         disabled={!isStopEnabled(phase)}
         onPressIn={() => onPressedChange('stop')}
         onPressOut={() => onPressedChange(null)}
