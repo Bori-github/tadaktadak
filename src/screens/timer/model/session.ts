@@ -37,6 +37,8 @@ type TimerSessionInput = {
 
 interface TimerSessionState {
   session: TimerSession;
+  /** 저장값 읽기가 끝났거나 사용자가 조작했으면 true. `false`인 동안 `session`은 `READY_SESSION`이고 저장값이 아직 반영되지 않음 */
+  isSettled: boolean;
   /** 카운트다운 중인 남은 시간(초). 대기에서는 `null` */
   remainingSeconds: number | null;
   /** 남은 시간(분). 매 프레임 갱신되어 호와 손잡이 각도가 읽음 */
@@ -62,6 +64,8 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
   // 저장값을 읽거나 사용자가 조작하면 true. 늦게 끝난 읽기가 그 사이의 조작을 덮는 것 방지
   const settled = useRef(false);
+  // `settled`는 참조라 바뀌어도 리렌더가 없음. 밖에서 이 값을 이펙트 의존성으로 쓰려면 상태가 따로 필요
+  const [isSettled, setIsSettled] = useState(false);
 
   const remainingAtStart = useSharedValue(0);
   const startedAtUptime = useSharedValue(NOT_STARTED);
@@ -172,6 +176,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
         const now = Date.now();
 
         settled.current = true;
+        setIsSettled(true);
 
         const next = restoreSession({ stored, now, stopped: false });
 
@@ -219,6 +224,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
   const play = useCallback(() => {
     settled.current = true;
+    setIsSettled(true);
 
     const now = Date.now();
 
@@ -265,6 +271,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
   const stop = useCallback(() => {
     settled.current = true;
+    setIsSettled(true);
 
     stopCounting();
     setSession(READY_SESSION);
@@ -278,5 +285,5 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     return remaining === null ? null : toSeconds(remaining);
   }, [session, countedSeconds, toSeconds]);
 
-  return { session, remainingSeconds, remainingMinutes, countingMode, play, stop };
+  return { session, isSettled, remainingSeconds, remainingMinutes, countingMode, play, stop };
 };
