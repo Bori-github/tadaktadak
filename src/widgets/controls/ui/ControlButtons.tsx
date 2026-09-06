@@ -1,4 +1,4 @@
-import { type JSX } from 'react';
+import { memo } from 'react';
 import { Pressable } from 'react-native';
 
 import { buttonCentersX, buttonTouchSize, type ControlButton } from '../lib/layout';
@@ -17,7 +17,7 @@ type ControlButtonsProps = {
   onPressedChange: (button: ControlButton | null) => void;
 };
 
-export const ControlButtons = ({ centerX, centerY, dotSize, phase, onPlay, onStop, onPressedChange }: ControlButtonsProps): JSX.Element => {
+export const ControlButtons = memo(({ centerX, centerY, dotSize, phase, onPlay, onStop, onPressedChange }: ControlButtonsProps) => {
   const centers = buttonCentersX(centerX, dotSize);
   const size = buttonTouchSize(dotSize);
 
@@ -40,4 +40,6 @@ export const ControlButtons = ({ centerX, centerY, dotSize, phase, onPlay, onSto
       />
     </>
   );
-};
+});
+
+ControlButtons.displayName = 'ControlButtons';

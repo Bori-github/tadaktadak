@@ -1,4 +1,4 @@
-import { type JSX } from 'react';
+import { memo } from 'react';
 import { Linking, Pressable } from 'react-native';
 
 import { BUTTON_TOUCH_PADDING, ROUND_BUTTON_DIAMETER_IN_DOTS } from '@/shared/constants';
@@ -14,15 +14,19 @@ type NotificationSettingsButtonProps = {
   onPressedChange: (pressed: boolean) => void;
 };
 
-export const NotificationSettingsButton = ({ centerX, centerY, dotSize, onPressedChange }: NotificationSettingsButtonProps): JSX.Element => {
+export const NotificationSettingsButton = memo(({ centerX, centerY, dotSize, onPressedChange }: NotificationSettingsButtonProps) => {
+  const size = ROUND_BUTTON_DIAMETER_IN_DOTS * dotSize + BUTTON_TOUCH_PADDING;
+
   return (
     <Pressable
       accessibilityRole="button"
-      style={touchArea({ centerX, centerY, size: ROUND_BUTTON_DIAMETER_IN_DOTS * dotSize + BUTTON_TOUCH_PADDING })}
+      style={touchArea({ centerX, centerY, size })}
       onPressIn={() => onPressedChange(true)}
       onPressOut={() => onPressedChange(false)}
       // 설정 앱 열기 실패 시 화면 변화 없음
       onPress={() => Linking.openSettings().catch(() => {})}
     />
   );
-};
+});
+
+NotificationSettingsButton.displayName = 'NotificationSettingsButton';
