@@ -32,7 +32,7 @@ export const TimerScreen = (): JSX.Element => {
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
   const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
   const [pressed, setPressed] = useState<ControlButton | null>(null);
-  const [noticePressed, setNoticePressed] = useState(false);
+  const [notificationSettingsPressed, setNotificationSettingsPressed] = useState(false);
   const { speed, setSpeed, realSettingMinutes, toSeconds, toMinutes } = useTimerSpeed(minutes);
   const { session, isSettled, remainingSeconds, remainingMinutes, countingMode, play, stop } = useTimerSession({
     settingMinutes: realSettingMinutes,
@@ -44,7 +44,7 @@ export const TimerScreen = (): JSX.Element => {
 
   useNotificationSchedule({ session, status: permission, isSettled });
 
-  const noticeShown = isNotificationBlocked(permission);
+  const notificationSettingsShown = isNotificationBlocked(permission);
 
   const layout = resolveLayout({
     shortSide: Math.min(width, height),
@@ -134,8 +134,14 @@ export const TimerScreen = (): JSX.Element => {
             remainingSeconds={remainingSeconds}
           />
           <Controls centerX={centerX} centerY={layout.buttonCenterY} dotSize={layout.dotSize} phase={session.phase} pressed={pressed} />
-          {noticeShown ? (
-            <RoundDotButton centerX={layout.noticeCenterX} centerY={layout.noticeCenterY} dotSize={layout.dotSize} icon={NOTIFICATION_OFF_ICON} pressed={noticePressed} />
+          {notificationSettingsShown ? (
+            <RoundDotButton
+              centerX={layout.notificationSettingsCenterX}
+              centerY={layout.notificationSettingsCenterY}
+              dotSize={layout.dotSize}
+              icon={NOTIFICATION_OFF_ICON}
+              pressed={notificationSettingsPressed}
+            />
           ) : null}
         </Canvas>
         {editing ? <ReadoutButtons centerX={centerX} centerY={centerY} dotSize={layout.dotSize} onSelect={setEditTarget} /> : null}
@@ -148,8 +154,13 @@ export const TimerScreen = (): JSX.Element => {
           onStop={stop}
           onPressedChange={setPressed}
         />
-        {noticeShown ? (
-          <NotificationSettingsButton centerX={layout.noticeCenterX} centerY={layout.noticeCenterY} dotSize={layout.dotSize} onPressedChange={setNoticePressed} />
+        {notificationSettingsShown ? (
+          <NotificationSettingsButton
+            centerX={layout.notificationSettingsCenterX}
+            centerY={layout.notificationSettingsCenterY}
+            dotSize={layout.dotSize}
+            onPressedChange={setNotificationSettingsPressed}
+          />
         ) : null}
         {__DEV__ ? <SpeedControl speed={speed} enabled={editing} onSelect={setSpeed} /> : null}
       </View>
