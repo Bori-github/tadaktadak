@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { BUTTON_SIZE_IN_DOTS, ROUND_BUTTON_DIAMETER_IN_DOTS } from '@/shared/constants';
+import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
 
 import { DEVICE_NAMES, DEVICES, type DeviceName } from './devices';
 import { resolveLayout } from './responsive';
@@ -198,10 +198,13 @@ describe('알림 설정 버튼 자리', () => {
     expect({ noticeCenterX, noticeCenterY }).toEqual({ noticeCenterX: 358, noticeCenterY: 79 });
   });
 
-  it.each(DEVICE_NAMES)('%s에서 오른쪽 여백이 배율만큼 커진다', (name) => {
-    const { noticeCenterX, dotSize, scale } = onDevice(name);
-    const rightEdge = noticeCenterX + (ROUND_BUTTON_DIAMETER_IN_DOTS / 2) * dotSize;
+  // 32는 가장자리 여백 8 + 반지름 24. `DESIGN.md` §4
+  it.each(DEVICE_NAMES)('%s에서 두 가장자리로부터 거리가 배율만큼 커진다', (name) => {
+    const { noticeCenterX, noticeCenterY, scale } = onDevice(name);
 
-    expect(DEVICES[name].shortSide - rightEdge).toBe(8 * scale);
+    expect({
+      fromRight: DEVICES[name].shortSide - noticeCenterX,
+      fromTop: noticeCenterY - DEVICES[name].topEdge,
+    }).toEqual({ fromRight: 32 * scale, fromTop: 32 * scale });
   });
 });
