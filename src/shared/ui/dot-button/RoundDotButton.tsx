@@ -50,8 +50,8 @@ export const RoundDotButton = memo(({ centerX, centerY, dotSize, icon, enabled =
 
   // 아이콘 좌표가 배율 1 기준. 지금 도트 크기가 배율 1의 몇 배인지가 곱할 값
   const scale = dotSize / DOT_SIZE;
-  const iconLeft = (left * DOT_SIZE + (size * DOT_SIZE - icon.boxSize) / 2) * scale;
-  const iconTop = (top * DOT_SIZE + (size * DOT_SIZE - icon.boxSize) / 2) * scale;
+  const iconLeft = left * dotSize + (size * dotSize - icon.boxSize * scale) / 2;
+  const iconTop = top * dotSize + (size * dotSize - icon.boxSize * scale) / 2;
 
   return (
     <Group antiAlias={false}>
