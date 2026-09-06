@@ -5,7 +5,7 @@ import { BUTTON_SIZE_IN_DOTS, COLORS } from '@/shared/constants';
 import { topLeftOnGrid } from '@/shared/lib';
 
 import { DotSprite } from '@/shared/ui/dot-sprite';
-import { ICONS, type IconName } from './icons';
+import { type GridIcon } from './icons';
 
 /** 리벳이 놓이는 모서리 안쪽 거리 (dot) */
 const RIVET_INSET = 3;
@@ -28,7 +28,7 @@ type DotButtonProps = {
   centerY: number;
   /** 도트 한 변 (px) */
   dotSize: number;
-  icon: IconName;
+  icon: GridIcon;
   /** 잠긴 버튼은 면과 아이콘이 어두워지고 하이라이트 없음 */
   enabled?: boolean;
   pressed?: boolean;
@@ -76,13 +76,7 @@ export const DotButton = ({ centerX, centerY, dotSize, icon, enabled = true, pre
       {cells.map((cell) => (
         <Rect key={cell.key} x={(left + cell.x) * dotSize} y={(top + cell.y) * dotSize} width={cell.width * dotSize} height={cell.height * dotSize} color={cell.color} />
       ))}
-      <DotSprite
-        grid={ICONS[icon]}
-        centerX={(left + size / 2) * dotSize}
-        centerY={(top + size / 2) * dotSize}
-        dotSize={dotSize}
-        colors={enabled ? ICON_COLORS : LOCKED_ICON_COLORS}
-      />
+      <DotSprite grid={icon} centerX={(left + size / 2) * dotSize} centerY={(top + size / 2) * dotSize} dotSize={dotSize} colors={enabled ? ICON_COLORS : LOCKED_ICON_COLORS} />
     </Group>
   );
 };

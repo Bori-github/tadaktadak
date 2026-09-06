@@ -4,7 +4,7 @@ import { buttonCentersX, type ControlButton } from '../lib/layout';
 import { controlsState } from '../lib/state';
 
 import { type TimerPhase } from '@/entities/timer';
-import { DotButton } from '@/shared/ui/dot-button';
+import { DotButton, STOP_ICON } from '@/shared/ui/dot-button';
 
 type ControlsProps = {
   centerX: number;
@@ -22,7 +22,7 @@ export const Controls = memo(({ centerX, centerY, dotSize, phase, pressed }: Con
   return (
     <>
       <DotButton centerX={centers.play} centerY={centerY} dotSize={dotSize} icon={playIcon} pressed={pressed === 'play'} />
-      <DotButton centerX={centers.stop} centerY={centerY} dotSize={dotSize} icon="stop" enabled={stopEnabled} pressed={pressed === 'stop'} />
+      <DotButton centerX={centers.stop} centerY={centerY} dotSize={dotSize} icon={STOP_ICON} enabled={stopEnabled} pressed={pressed === 'stop'} />
     </>
   );
 });

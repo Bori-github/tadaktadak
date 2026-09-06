@@ -1,47 +1,47 @@
-export type IconName = 'play' | 'pause' | 'stop';
+/** 12 × 12 도트 격자. `I`가 찍는 자리, `.`은 비움 */
+export type GridIcon = readonly string[];
 
-/** 조작 버튼 아이콘 12×12. `I`가 찍는 자리, `.`은 비움 */
-export const ICONS: Record<IconName, readonly string[]> = {
-  play: [
-    '...I........',
-    '...II.......',
-    '...III......',
-    '...IIII.....',
-    '...IIIII....',
-    '...IIIIII...',
-    '...IIIIII...',
-    '...IIIII....',
-    '...IIII.....',
-    '...III......',
-    '...II.......',
-    '...I........',
-  ],
-  pause: [
-    '..III..III..',
-    '..III..III..',
-    '..III..III..',
-    '..III..III..',
-    '..III..III..',
-    '..III..III..',
-    '..III..III..',
-    '..III..III..',
-    '..III..III..',
-    '..III..III..',
-    '..III..III..',
-    '..III..III..',
-  ],
-  stop: [
-    '............',
-    '............',
-    '..IIIIIIII..',
-    '..IIIIIIII..',
-    '..IIIIIIII..',
-    '..IIIIIIII..',
-    '..IIIIIIII..',
-    '..IIIIIIII..',
-    '..IIIIIIII..',
-    '..IIIIIIII..',
-    '............',
-    '............',
-  ],
-};
+export const PLAY_ICON: GridIcon = [
+  '...I........',
+  '...II.......',
+  '...III......',
+  '...IIII.....',
+  '...IIIII....',
+  '...IIIIII...',
+  '...IIIIII...',
+  '...IIIII....',
+  '...IIII.....',
+  '...III......',
+  '...II.......',
+  '...I........',
+];
+
+export const PAUSE_ICON: GridIcon = [
+  '..III..III..',
+  '..III..III..',
+  '..III..III..',
+  '..III..III..',
+  '..III..III..',
+  '..III..III..',
+  '..III..III..',
+  '..III..III..',
+  '..III..III..',
+  '..III..III..',
+  '..III..III..',
+  '..III..III..',
+];
+
+export const STOP_ICON: GridIcon = [
+  '............',
+  '............',
+  '..IIIIIIII..',
+  '..IIIIIIII..',
+  '..IIIIIIII..',
+  '..IIIIIIII..',
+  '..IIIIIIII..',
+  '..IIIIIIII..',
+  '..IIIIIIII..',
+  '..IIIIIIII..',
+  '............',
+  '............',
+];
