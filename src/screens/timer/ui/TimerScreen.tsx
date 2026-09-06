@@ -6,6 +6,8 @@ import { useDerivedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useStoredMinutes } from '../model/minutes';
+import { useNotificationSchedule } from '../model/notification';
+import { useNotificationPermission } from '../model/permission';
 import { useTimerSession } from '../model/session';
 import { useTimerSpeed } from '../model/speed';
 
@@ -26,11 +28,15 @@ export const TimerScreen = (): JSX.Element => {
   const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
   const [pressed, setPressed] = useState<ControlButton | null>(null);
   const { speed, setSpeed, realSettingMinutes, toSeconds, toMinutes } = useTimerSpeed(minutes);
-  const { session, remainingSeconds, remainingMinutes, countingMode, play, stop } = useTimerSession({
+  const { session, isSettled, remainingSeconds, remainingMinutes, countingMode, play, stop } = useTimerSession({
     settingMinutes: realSettingMinutes,
     toSeconds,
     toMinutes,
   });
+
+  const permission = useNotificationPermission();
+
+  useNotificationSchedule({ session, status: permission, isSettled });
 
   const layout = resolveLayout({
     shortSide: Math.min(width, height),
