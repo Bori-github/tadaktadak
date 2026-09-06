@@ -43,11 +43,7 @@ export const circleCells = (diameterInDots: number): CircleCell[] => {
     let run: CircleCell | null = null;
 
     for (let column = 0; column < diameterInDots; column += 1) {
-      // 앞 구간을 남긴 채 빈칸을 지나치면 건너편 같은 역할이 그 폭에 더해져 빈칸까지 칠해지므로, 여기서 구간을 비움
-      if (!isFilled(column, row)) {
-        run = null;
-        continue;
-      }
+      if (!isFilled(column, row)) continue;
 
       const role = roleAt(column, row);
 
