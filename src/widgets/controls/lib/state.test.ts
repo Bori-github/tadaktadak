@@ -1,17 +1,28 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { controlsState } from './state';
+import { isStopEnabled, playIcon } from './state';
 
 import { type TimerPhase } from '@/entities/timer';
 import { PAUSE_ICON, PLAY_ICON, type GridIcon } from '@/shared/ui/dot-icon';
 
-describe('단계에 따른 조작 버튼', () => {
-  it.each<{ phase: TimerPhase; icon: string; playIcon: GridIcon; stopEnabled: boolean }>([
-    { phase: 'ready', icon: '재생', playIcon: PLAY_ICON, stopEnabled: false },
-    { phase: 'running', icon: '일시정지', playIcon: PAUSE_ICON, stopEnabled: true },
-    { phase: 'paused', icon: '재생', playIcon: PLAY_ICON, stopEnabled: true },
-    { phase: 'completed', icon: '재생', playIcon: PLAY_ICON, stopEnabled: true },
-  ])('$phase에서 아이콘 $icon, 정지 $stopEnabled', ({ phase, playIcon, stopEnabled }) => {
-    expect(controlsState(phase)).toEqual({ playIcon, stopEnabled });
+describe('재생 버튼 아이콘', () => {
+  it.each<{ phase: TimerPhase; name: string; icon: GridIcon }>([
+    { phase: 'ready', name: '재생', icon: PLAY_ICON },
+    { phase: 'running', name: '일시정지', icon: PAUSE_ICON },
+    { phase: 'paused', name: '재생', icon: PLAY_ICON },
+    { phase: 'completed', name: '재생', icon: PLAY_ICON },
+  ])('$phase에서 $name', ({ phase, icon }) => {
+    expect(playIcon(phase)).toBe(icon);
+  });
+});
+
+describe('정지 버튼 잠금', () => {
+  it.each<{ phase: TimerPhase; enabled: boolean }>([
+    { phase: 'ready', enabled: false },
+    { phase: 'running', enabled: true },
+    { phase: 'paused', enabled: true },
+    { phase: 'completed', enabled: true },
+  ])('$phase에서 $enabled', ({ phase, enabled }) => {
+    expect(isStopEnabled(phase)).toBe(enabled);
   });
 });
