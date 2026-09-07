@@ -17,6 +17,9 @@ const mockPatterns: HapticEvent[][] = [];
 // 프레임 콜백을 테스트가 직접 호출해야 포그라운드 완료가 됨
 let mockOnFrame: ((frame: { timestamp: number }) => void) | null = null;
 
+// 예약과 도착 사이에 정지하는 틈을 만들려면 예약을 붙들 수 있어야 함. `null`이면 곧바로 실행
+let mockPending: (() => void)[] | null = null;
+
 jest.mock('@react-native-async-storage/async-storage', () => ({
   __esModule: true,
   default: {
@@ -40,7 +43,10 @@ jest.mock('react-native-reanimated', () => ({
   },
 }));
 jest.mock('react-native-worklets', () => ({
-  scheduleOnRN: (callback: (...args: unknown[]) => void, ...args: unknown[]) => callback(...args),
+  scheduleOnRN: (callback: (...args: unknown[]) => void, ...args: unknown[]) => {
+    if (mockPending === null) callback(...args);
+    else mockPending.push(() => callback(...args));
+  },
   scheduleOnUI: (callback: () => void) => callback(),
 }));
 jest.mock('expo-keep-awake', () => ({
@@ -121,6 +127,7 @@ beforeEach(() => {
   mockWritten.length = 0;
   mockRemovedCount = 0;
   mockPatterns.length = 0;
+  mockPending = null;
   // 남겨 두면 이번 화면이 등록에 실패했을 때 지난 화면의 콜백을 부름
   mockOnFrame = null;
   mockRead = new Promise((resolve) => {
@@ -220,6 +227,54 @@ describe('완료 진동', () => {
 
   it('앱 밖에서 끝난 것을 저장값으로 읽었을 때는 울리지 않는다', async () => {
     await renderCompleted('focus');
+
+    expect(mockPatterns).toEqual([]);
+  });
+
+  it('완료와 정지가 같은 배치에 들어와도 울리지 않는다', async () => {
+    const { result } = await renderHook(() => useTimerSession({ settingMinutes: { focus: 1, rest: 0 } }));
+
+    await act(async () => mockRelease(null));
+    await act(async () => result.current.play());
+
+    const onFrame = mockOnFrame;
+
+    if (onFrame === null) throw new Error('프레임 콜백이 등록되지 않음');
+
+    await act(async () => {
+      onFrame({ timestamp: 0 });
+      onFrame({ timestamp: MINUTE_IN_MS });
+      result.current.stop();
+    });
+
+    expect(mockPatterns).toEqual([]);
+  });
+
+  it('완료 예약이 도착하기 전에 정지하면 울리지 않는다', async () => {
+    const { result } = await renderHook(() => useTimerSession({ settingMinutes: { focus: 1, rest: 0 } }));
+
+    await act(async () => mockRelease(null));
+    await act(async () => result.current.play());
+
+    const onFrame = mockOnFrame;
+
+    if (onFrame === null) throw new Error('프레임 콜백이 등록되지 않음');
+
+    mockPending = [];
+
+    await act(async () => {
+      onFrame({ timestamp: 0 });
+      onFrame({ timestamp: MINUTE_IN_MS });
+    });
+    await act(async () => result.current.stop());
+
+    const pending = mockPending;
+
+    mockPending = null;
+
+    await act(async () => {
+      for (const run of pending) run();
+    });
 
     expect(mockPatterns).toEqual([]);
   });
