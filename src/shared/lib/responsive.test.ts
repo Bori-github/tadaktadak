@@ -190,3 +190,21 @@ describe('시계판 위 끝이 safe area 위 끝을 넘지 않는다', () => {
     expect(dialTopEdge).toBeGreaterThanOrEqual(DEVICES[name].topEdge);
   });
 });
+
+describe('알림 설정 버튼 자리', () => {
+  it('기준 화면에서 중심이 358, 79다', () => {
+    const { notificationSettingsCenterX, notificationSettingsCenterY } = layout(390);
+
+    expect({ notificationSettingsCenterX, notificationSettingsCenterY }).toEqual({ notificationSettingsCenterX: 358, notificationSettingsCenterY: 79 });
+  });
+
+  // 32는 가장자리 여백 8 + 반지름 24. `DESIGN.md` §4
+  it.each(DEVICE_NAMES)('%s에서 두 가장자리로부터 거리가 배율만큼 커진다', (name) => {
+    const { notificationSettingsCenterX, notificationSettingsCenterY, scale } = onDevice(name);
+
+    expect({
+      fromRight: DEVICES[name].shortSide - notificationSettingsCenterX,
+      fromTop: notificationSettingsCenterY - DEVICES[name].topEdge,
+    }).toEqual({ fromRight: 32 * scale, fromTop: 32 * scale });
+  });
+});

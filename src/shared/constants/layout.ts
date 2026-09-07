@@ -12,3 +12,9 @@ export const DOT_SIZE = 2;
 
 /** 조작 버튼 한 변 (dot). `DESIGN.md` §4 */
 export const BUTTON_SIZE_IN_DOTS = 28;
+
+/** 알림 설정 버튼 지름 (dot). `DESIGN.md` §4 */
+export const ROUND_BUTTON_DIAMETER_IN_DOTS = 24;
+
+/** 터치 영역이 버튼보다 큰 만큼 (논리 픽셀). `DESIGN.md` §4 */
+export const BUTTON_TOUCH_PADDING = 8;

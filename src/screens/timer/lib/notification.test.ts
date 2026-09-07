@@ -1,7 +1,7 @@
 import { PermissionStatus } from 'expo';
 import { describe, expect, it } from '@jest/globals';
 
-import { scheduleAt } from './notification';
+import { isNotificationBlocked, scheduleAt } from './notification';
 
 import { NOW, type TimerSession } from '@/entities/timer';
 
@@ -40,5 +40,16 @@ describe('알림을 걸 시각', () => {
     const passed: TimerSession = { phase: 'running', mode: 'focus', startedAt: NOW - MINUTE_MS, endsAt: NOW };
 
     expect(at(passed, PermissionStatus.GRANTED)).toBeNull();
+  });
+});
+
+describe('알림이 막힌 상태', () => {
+  it.each<{ situation: string; status: PermissionStatus | null; blocked: boolean }>([
+    { situation: '아직 읽지 않음', status: null, blocked: false },
+    { situation: '허용', status: PermissionStatus.GRANTED, blocked: false },
+    { situation: '아직 묻지 않음', status: PermissionStatus.UNDETERMINED, blocked: true },
+    { situation: '거부', status: PermissionStatus.DENIED, blocked: true },
+  ])('$situation이면 $blocked', ({ status, blocked }) => {
+    expect(isNotificationBlocked(status)).toBe(blocked);
   });
 });
