@@ -9,7 +9,6 @@ export type HapticEvent =
   { type: 'transient'; timeMs: number; intensity: number; sharpness: number } | { type: 'continuous'; timeMs: number; durationMs: number; intensity: number; sharpness: number };
 
 declare class HapticPatternModule extends NativeModule {
-  isSupported(): boolean;
   playAsync(events: HapticEvent[]): Promise<void>;
 }
 

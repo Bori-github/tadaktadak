@@ -16,15 +16,13 @@ struct HapticEventRecord: Record {
 }
 
 public class HapticPatternModule: Module {
+  // 재생은 Expo의 백그라운드 큐에서, `resetHandler`는 Core Haptics의 큐에서 불려 아래 두 값이 겹침
+  private let engineQueue = DispatchQueue(label: "com.boriguri.tadaktadak.haptic-pattern")
   private var engine: CHHapticEngine?
   private var player: CHHapticPatternPlayer?
 
   public func definition() -> ModuleDefinition {
     Name("HapticPattern")
-
-    Function("isSupported") { () -> Bool in
-      CHHapticEngine.capabilitiesForHardware().supportsHaptics
-    }
 
     AsyncFunction("playAsync") { [weak self] (events: [HapticEventRecord]) in
       guard let self else { return }
@@ -38,35 +36,45 @@ public class HapticPatternModule: Module {
     }
 
     OnDestroy { [weak self] in
-      self?.engine?.stop()
+      self?.engineQueue.sync { self?.engine?.stop() }
     }
   }
 
   private func play(_ events: [HapticEventRecord]) throws {
-    let engine = try runningEngine()
-    let pattern = try CHHapticPattern(events: events.map { hapticEvent(from: $0) }, parameters: [])
-    let player = try engine.makePlayer(with: pattern)
+    try engineQueue.sync {
+      let engine = try runningEngine()
+      let pattern = try CHHapticPattern(events: events.map { hapticEvent(from: $0) }, parameters: [])
+      let player = try engine.makePlayer(with: pattern)
 
-    self.player = player
-    try player.start(atTime: CHHapticTimeImmediate)
+      self.player = player
+      try player.start(atTime: CHHapticTimeImmediate)
+    }
   }
 
-  /// UIApplication 활성 알림을 구독하지 않고, 재생 직전에 엔진을 되살림
+  /// `engineQueue` 안에서만 호출. UIApplication 활성 알림을 구독하지 않고, 재생 직전에 엔진을 되살림
   private func runningEngine() throws -> CHHapticEngine {
     if let engine {
-      try engine.start()
-      return engine
+      do {
+        try engine.start()
+        return engine
+      } catch {
+        // 되살아나지 못한 엔진을 붙들고 있으면 이후 재생이 모두 같은 실패를 반복함
+        self.engine = nil
+        throw error
+      }
     }
 
     let created = try CHHapticEngine()
 
-    // 오디오 세션 중단과 백그라운드 진입으로 멈춤. 다음 재생이 새 엔진을 만들게 함
-    created.stoppedHandler = { [weak self] _ in self?.engine = nil }
+    // 놀고 있는 동안 하드웨어를 끔. 타이머 한 번에 한 번 울려 그 사이가 대부분
+    created.isAutoShutdownEnabled = true
 
     // 햅틱 서버가 죽어 리셋되면 플레이어를 해제해야 함. `CHHapticEngine.h` resetHandler
     created.resetHandler = { [weak self] in
-      self?.player = nil
-      try? self?.engine?.start()
+      self?.engineQueue.async {
+        self?.player = nil
+        try? self?.engine?.start()
+      }
     }
 
     try created.start()
