@@ -11,6 +11,10 @@ let mockRead: Promise<string | null> = new Promise(() => {});
 let mockRelease: (raw: string | null) => void = () => {};
 const mockWritten: string[] = [];
 let mockRemovedCount = 0;
+const mockImpacts: string[] = [];
+
+// 프레임 콜백을 테스트가 직접 호출해야 포그라운드 완료가 됨
+let mockOnFrame: ((frame: { timestamp: number }) => void) | null = null;
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
   __esModule: true,
@@ -28,7 +32,11 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 // Jest에는 UI 스레드가 없음
 jest.mock('react-native-reanimated', () => ({
   useSharedValue: (initial: unknown) => mockUseRef({ value: initial }).current,
-  useFrameCallback: () => ({ setActive: () => {} }),
+  useFrameCallback: (callback: (frame: { timestamp: number }) => void) => {
+    mockOnFrame = callback;
+
+    return { setActive: () => {} };
+  },
 }));
 jest.mock('react-native-worklets', () => ({
   scheduleOnRN: (callback: (...args: unknown[]) => void, ...args: unknown[]) => callback(...args),
@@ -37,6 +45,12 @@ jest.mock('react-native-worklets', () => ({
 jest.mock('expo-keep-awake', () => ({
   activateKeepAwakeAsync: async () => {},
   deactivateKeepAwake: async () => {},
+}));
+jest.mock('expo-haptics', () => ({
+  impactAsync: async (style: string) => {
+    mockImpacts.push(style);
+  },
+  ImpactFeedbackStyle: { Heavy: 'heavy' },
 }));
 
 const STORED_PAUSED = JSON.stringify({ phase: 'paused', mode: 'rest', startedAt: NOW, pausedRemainingMs: 90_000 });
@@ -49,6 +63,25 @@ const storedCompleted = (mode: TimerMode) => {
   const endsAt = Date.now() - 1000;
 
   return JSON.stringify({ phase: 'running', mode, startedAt: endsAt - 25 * MINUTE_IN_MS, endsAt });
+};
+
+/** 포그라운드에서 타이머가 완료된 화면 */
+const renderCompletedInForeground = async (focusMinutes: number) => {
+  const { result } = await renderHook(() => useTimerSession({ settingMinutes: { focus: focusMinutes, rest: 0 } }));
+
+  await act(async () => mockRelease(null));
+  await act(async () => result.current.play());
+
+  const onFrame = mockOnFrame;
+
+  if (onFrame === null) throw new Error('프레임 콜백이 등록되지 않음');
+
+  await act(async () => {
+    onFrame({ timestamp: 0 });
+    onFrame({ timestamp: focusMinutes * MINUTE_IN_MS });
+  });
+
+  return result;
 };
 
 const renderCompleted = async (mode: TimerMode, settingMinutes: Record<TimerMode, number> = TIMER_DEFAULT) => {
@@ -65,6 +98,7 @@ beforeEach(() => {
 
   mockWritten.length = 0;
   mockRemovedCount = 0;
+  mockImpacts.length = 0;
   mockRead = new Promise((resolve) => {
     mockRelease = resolve;
   });
@@ -144,6 +178,20 @@ describe('완료 뒤 자동 시작', () => {
     const result = await renderCompleted('rest');
 
     expect(result.current.session).toEqual(READY_SESSION);
+  });
+});
+
+describe('완료 진동', () => {
+  it('포그라운드에서 타이머가 끝나면 강한 진동이 한 번 울린다', async () => {
+    await renderCompletedInForeground(1);
+
+    expect(mockImpacts).toEqual(['heavy']);
+  });
+
+  it('앱 밖에서 끝난 것을 저장값으로 읽었을 때는 울리지 않는다', async () => {
+    await renderCompleted('focus');
+
+    expect(mockImpacts).toEqual([]);
   });
 });
 

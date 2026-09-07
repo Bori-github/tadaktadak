@@ -1,3 +1,4 @@
+import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
@@ -28,6 +29,13 @@ import {
 
 /** 기기 가동 시간을 첫 프레임에서 채우기 전 값 */
 const NOT_STARTED = -1;
+
+const vibrateCompletion = (): void => {
+  impactAsync(ImpactFeedbackStyle.Heavy).catch(() => {
+    // 네이티브 모듈이 없는 빌드에서 에러를 던짐
+    // 타이머 완료는 진행되도록 에러 무시
+  });
+};
 
 type TimerSessionInput = {
   settingMinutes: Record<TimerMode, number>;
@@ -96,8 +104,10 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
       scheduleOnRN(setCountedSeconds, seconds);
     }
 
+    // 포그라운드인 경우 다음 조건에 부합
     if (remaining === 0) {
       running.value = false;
+      scheduleOnRN(vibrateCompletion);
       scheduleOnRN(finish);
     }
   }, false);
