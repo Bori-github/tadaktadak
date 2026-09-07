@@ -109,7 +109,8 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     if (mode === null || isStopRequested.current) return;
 
     // 백그라운드에서 끝난 것은 활성 전환보다 먼저 도착한 프레임이 완료로 만듦. 알림이 이미 울렸으므로 건너뜀
-    if (AppState.currentState !== 'active') return;
+    // `inactive`는 제어센터·전화 배너처럼 화면이 보이는 상태라 여기 넣지 않음
+    if (AppState.currentState === 'background') return;
 
     vibrateCompletion(mode);
   }, [session]);
