@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { act, renderHook } from '@testing-library/react-native';
 import { useRef as mockUseRef } from 'react';
-import { AppState } from 'react-native';
+import { AppState, type AppStateStatus } from 'react-native';
 import { type HapticEvent } from '@modules/haptic-pattern';
 
 import { useTimerSession } from './session';
 
-import { MINUTE_IN_MS, NOW, READY_SESSION, TIMER_DEFAULT, type TimerMode } from '@/entities/timer';
+import { COMPLETION_PATTERN, MINUTE_IN_MS, NOW, READY_SESSION, TIMER_DEFAULT, type TimerMode } from '@/entities/timer';
 
 // 저장값 읽기가 끝나는 시점을 테스트가 쥐고 있어야 「읽는 도중」을 만들 수 있음
 let mockRead: Promise<string | null> = new Promise(() => {});
@@ -238,6 +238,44 @@ describe('완료 진동', () => {
     expect(mockPatterns).toEqual([]);
   });
 
+  it('정지한 뒤 다시 재생해 끝나면 울린다', async () => {
+    const { result } = await renderHook(() => useTimerSession({ settingMinutes: { focus: 1, rest: 0 } }));
+
+    await act(async () => mockRelease(null));
+    await act(async () => result.current.play());
+    await act(async () => result.current.stop());
+    await act(async () => result.current.play());
+
+    const onFrame = mockOnFrame;
+
+    if (onFrame === null) throw new Error('프레임 콜백이 등록되지 않음');
+
+    await act(async () => {
+      onFrame({ timestamp: 0 });
+      onFrame({ timestamp: MINUTE_IN_MS });
+    });
+
+    expect(mockPatterns).toEqual([COMPLETION_PATTERN.focus]);
+  });
+
+  it('휴식이 이어지는 설정에서도 집중 완료 진동은 한 번만 나간다', async () => {
+    const { result } = await renderHook(() => useTimerSession({ settingMinutes: { focus: 1, rest: 5 } }));
+
+    await act(async () => mockRelease(null));
+    await act(async () => result.current.play());
+
+    const onFrame = mockOnFrame;
+
+    if (onFrame === null) throw new Error('프레임 콜백이 등록되지 않음');
+
+    await act(async () => {
+      onFrame({ timestamp: 0 });
+      onFrame({ timestamp: MINUTE_IN_MS });
+    });
+
+    expect(mockPatterns).toEqual([COMPLETION_PATTERN.focus]);
+  });
+
   it('활성 전환보다 먼저 도착한 프레임이 완료를 만들면 울리지 않는다', async () => {
     const { result } = await renderHook(() => useTimerSession({ settingMinutes: { focus: 1, rest: 0 } }));
 
@@ -304,6 +342,41 @@ describe('완료 진동', () => {
     });
 
     expect(mockPatterns).toEqual([]);
+  });
+});
+
+describe('백그라운드 복귀', () => {
+  it('돌아와 완료가 된 뒤에는 이어지는 프레임이 남은 분을 덮지 않는다', async () => {
+    const listeners: ((state: AppStateStatus) => void)[] = [];
+
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_type, listener) => {
+      listeners.push(listener);
+
+      return { remove: () => {} };
+    });
+
+    const { result } = await renderHook(() => useTimerSession({ settingMinutes: { focus: 1, rest: 0 } }));
+
+    await act(async () => mockRelease(null));
+    await act(async () => result.current.play());
+
+    const onFrame = mockOnFrame;
+
+    if (onFrame === null) throw new Error('프레임 콜백이 등록되지 않음');
+
+    await act(async () => onFrame({ timestamp: 0 }));
+
+    jest.setSystemTime(Date.now() + 2 * MINUTE_IN_MS);
+
+    await act(async () => {
+      for (const listener of listeners) listener('active');
+    });
+
+    const settled = result.current.remainingMinutes.value;
+
+    await act(async () => onFrame({ timestamp: 10 }));
+
+    expect(result.current.remainingMinutes.value).toBe(settled);
   });
 });
 
