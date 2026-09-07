@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { act, renderHook } from '@testing-library/react-native';
 import { useRef as mockUseRef } from 'react';
+import { AppState } from 'react-native';
 import { type HapticEvent } from '@modules/haptic-pattern';
 
 import { useTimerSession } from './session';
@@ -19,6 +20,11 @@ let mockOnFrame: ((frame: { timestamp: number }) => void) | null = null;
 
 // 예약과 도착 사이에 정지하는 틈을 만들려면 예약을 붙들 수 있어야 함. `null`이면 곧바로 실행
 let mockPending: (() => void)[] | null = null;
+
+// jest-expo가 `currentState`를 함수로 모의함. 실제 React Native는 문자열이라 문자열을 주도록 되돌림
+let mockAppState = 'active';
+
+Object.defineProperty(AppState, 'currentState', { configurable: true, get: () => mockAppState });
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
   __esModule: true,
@@ -128,6 +134,7 @@ beforeEach(() => {
   mockRemovedCount = 0;
   mockPatterns.length = 0;
   mockPending = null;
+  mockAppState = 'active';
   // 남겨 두면 이번 화면이 등록에 실패했을 때 지난 화면의 콜백을 부름
   mockOnFrame = null;
   mockRead = new Promise((resolve) => {
@@ -227,6 +234,26 @@ describe('완료 진동', () => {
 
   it('앱 밖에서 끝난 것을 저장값으로 읽었을 때는 울리지 않는다', async () => {
     await renderCompleted('focus');
+
+    expect(mockPatterns).toEqual([]);
+  });
+
+  it('활성 전환보다 먼저 도착한 프레임이 완료를 만들면 울리지 않는다', async () => {
+    const { result } = await renderHook(() => useTimerSession({ settingMinutes: { focus: 1, rest: 0 } }));
+
+    await act(async () => mockRelease(null));
+    await act(async () => result.current.play());
+
+    const onFrame = mockOnFrame;
+
+    if (onFrame === null) throw new Error('프레임 콜백이 등록되지 않음');
+
+    await act(async () => onFrame({ timestamp: 0 }));
+
+    // 돌아오는 첫 프레임은 활성 전환보다 먼저 도착함
+    mockAppState = 'background';
+
+    await act(async () => onFrame({ timestamp: MINUTE_IN_MS }));
 
     expect(mockPatterns).toEqual([]);
   });
