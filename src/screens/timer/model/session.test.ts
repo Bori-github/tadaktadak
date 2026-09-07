@@ -220,16 +220,16 @@ describe('완료 뒤 자동 시작', () => {
 });
 
 describe('완료 진동', () => {
-  it('집중 타이머가 끝나면 짧게 끊기는 두드림 세 번이 나간다', async () => {
+  it('집중 타이머가 끝나면 집중 패턴이 나간다', async () => {
     await renderCompletedInForeground(1);
 
-    expect(mockPatterns.map((events) => events.map((event) => event.type))).toEqual([['transient', 'transient', 'transient']]);
+    expect(mockPatterns).toEqual([COMPLETION_PATTERN.focus]);
   });
 
-  it('휴식 타이머가 끝나면 이어지는 떨림 하나가 나간다', async () => {
+  it('휴식 타이머가 끝나면 휴식 패턴이 나간다', async () => {
     await renderRestCompletedInForeground(1);
 
-    expect(mockPatterns.map((events) => events.map((event) => event.type))).toEqual([['continuous']]);
+    expect(mockPatterns).toEqual([COMPLETION_PATTERN.rest]);
   });
 
   it('앱 밖에서 끝난 것을 저장값으로 읽었을 때는 울리지 않는다', async () => {
