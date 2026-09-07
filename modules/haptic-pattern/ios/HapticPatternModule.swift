@@ -60,6 +60,7 @@ public class HapticPatternModule: Module {
       } catch {
         // 되살아나지 못한 엔진을 붙들고 있으면 이후 재생이 모두 같은 실패를 반복함
         self.engine = nil
+        self.player = nil
         throw error
       }
     }
