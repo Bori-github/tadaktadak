@@ -36,7 +36,8 @@ public class HapticPatternModule: Module {
     }
 
     OnDestroy { [weak self] in
-      self?.engineQueue.sync { self?.engine?.stop() }
+      // 재생이 큐를 잡고 `start()`에 들어가 있을 수 있어, 기다리면 부르는 스레드가 멈춤
+      self?.engineQueue.async { self?.engine?.stop() }
     }
   }
 
@@ -65,17 +66,18 @@ public class HapticPatternModule: Module {
       }
     }
 
+    // 엔진이 만들어지고 시작까지 되면서도 울릴 하드웨어가 없는 기기가 있어, 먼저 확인해 대체 진동으로 보냄
+    guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { throw CHHapticError(.notSupported) }
+
     let created = try CHHapticEngine()
 
     // 놀고 있는 동안 하드웨어를 끔. 타이머 한 번에 한 번 울려 그 사이가 대부분
     created.isAutoShutdownEnabled = true
 
     // 햅틱 서버가 죽어 리셋되면 플레이어를 해제해야 함. `CHHapticEngine.h` resetHandler
+    // 다시 시작은 하지 않음. 재생 직전마다 `start()`를 부르므로 여기서 켜면 자동 종료가 무의미해짐
     created.resetHandler = { [weak self] in
-      self?.engineQueue.async {
-        self?.player = nil
-        try? self?.engine?.start()
-      }
+      self?.engineQueue.async { self?.player = nil }
     }
 
     try created.start()
