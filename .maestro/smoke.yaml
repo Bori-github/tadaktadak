@@ -1,0 +1,5 @@
+appId: com.boriguri.tadaktadak
+---
+- launchApp
+# Skia 캔버스에 그린 것은 접근성 트리에 없음
+- assertVisible: '1×'

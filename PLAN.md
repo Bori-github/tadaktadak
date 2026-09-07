@@ -164,6 +164,19 @@ Expo SDK 57 기준. `npx expo install`이 SDK에 맞는 버전을 고른다.
 - 무료 Personal Team은 App Group과 Push Notifications를 켤 수 없다
 - 로컬 알림만 쓰므로 `plugins/withoutPushEntitlement.js`가 `expo-notifications`의 `aps-environment`를 지운다. 원격 푸시가 필요해지면 이 파일을 지우고 Apple Developer Program에 가입한다
 
+### Maestro
+
+E2E는 시뮬레이터 개발 빌드를 대상으로 한다. Expo Go는 `appId`가 `host.exp.Exponent`라 앱을 특정하지 못한다.
+
+| 항목    | 값                                       |
+| ------- | ---------------------------------------- |
+| Maestro | 2.10.0                                   |
+| Java    | Temurin 21. Maestro가 17 이상을 요구한다 |
+
+- 설치는 `curl -fsSL https://get.maestro.mobile.dev | bash`
+- `pnpm ios`로 앱을 올리고 알림 권한 창을 한 번 허용한 뒤 `pnpm e2e`를 실행한다
+- 플로우에 `clearState`를 사용하지 않는다. 알림 권한까지 지워져 매 실행 권한 창이 뜬다
+
 ### Android
 
 - 개발 빌드가 필요 없다. Expo Go로 개발·검증한다
