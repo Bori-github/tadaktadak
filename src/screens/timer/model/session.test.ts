@@ -249,6 +249,14 @@ describe('완료 진동', () => {
     expect(mockPatterns).toEqual([]);
   });
 
+  it('제어센터가 덮은 상태에서 끝나면 울린다', async () => {
+    mockAppState = 'inactive';
+
+    await renderCompletedInForeground(1);
+
+    expect(mockPatterns).toEqual([COMPLETION_PATTERN.focus]);
+  });
+
   it('정지한 뒤 다시 재생해 끝나면 울린다', async () => {
     const { result } = await renderHook(() => useTimerSession({ settingMinutes: { focus: 1, rest: 0 } }));
 
