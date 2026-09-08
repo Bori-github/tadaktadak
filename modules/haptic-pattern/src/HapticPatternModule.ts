@@ -23,6 +23,8 @@ export type HapticEvent =
     });
 
 declare class HapticPatternModule extends NativeModule {
+  /** 이 기기가 패턴 재생을 지원하는지. iPad는 `false`이고 대체 진동도 울리지 않음 */
+  supportsHaptics: boolean;
   playAsync(events: HapticEvent[]): Promise<void>;
 }
 

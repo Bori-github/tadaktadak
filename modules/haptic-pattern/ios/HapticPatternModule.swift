@@ -24,6 +24,11 @@ public class HapticPatternModule: Module {
   public func definition() -> ModuleDefinition {
     Name("HapticPattern")
 
+    // 진동이 울리지 못하는 기기에서 완료를 다른 수단으로 알리게 하려고 밖으로 냄
+    Property("supportsHaptics") {
+      CHHapticEngine.capabilitiesForHardware().supportsHaptics
+    }
+
     AsyncFunction("playAsync") { [weak self] (events: [HapticEventRecord]) in
       guard let self else { return }
 
