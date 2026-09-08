@@ -14,7 +14,8 @@ type EmbersProps = {
   /** 개체 중심 반지름 (px) */
   radius: number;
   dotSize: number;
-  isShown: boolean;
+  /** 튀어 오르기 시작하고 흐른 시간 (밀리초). 노출하지 않으면 `null` */
+  elapsedMs: number | null;
 };
 
 /** 잔광 텍스처 반지름 (px) */
@@ -51,7 +52,7 @@ const drawEmbers = (): SkImage | null => {
   return surface.makeImageSnapshot();
 };
 
-export const Embers = memo(({ centerX, centerY, radius, dotSize, isShown }: EmbersProps) => {
+export const Embers = memo(({ centerX, centerY, radius, dotSize, elapsedMs }: EmbersProps) => {
   const image = useMemo(() => drawEmbers(), []);
   const glowSprites = useMemo(() => Array.from({ length: EMBER_COUNT }, () => GLOW_SPRITE), []);
   const [embers, setEmbers] = useState<Ember[]>([]);
@@ -61,27 +62,28 @@ export const Embers = memo(({ centerX, centerY, radius, dotSize, isShown }: Embe
 
   const rising = useFrameCallback((frame) => {
     'worklet';
-    if (startedAt.value === NOT_STARTED) startedAt.value = frame.timestamp;
+    if (startedAt.value === NOT_STARTED) startedAt.value = frame.timestamp - elapsed.value;
 
     elapsed.value = frame.timestamp - startedAt.value;
   }, false);
 
   useEffect(() => {
-    if (!isShown) {
+    if (elapsedMs === null) {
       setEmbers([]);
       return;
     }
 
+    // 앱 밖에서 흐른 만큼 앞선 자리에서 이어지도록 첫 프레임 전에 채움
     startedAt.value = NOT_STARTED;
-    elapsed.value = 0;
+    elapsed.value = elapsedMs;
     setEmbers(spawnEmbers({ centerX: centerX / dotSize, centerY: centerY / dotSize, radius: radius / dotSize }));
 
-    const burnedOut = setTimeout(() => setEmbers([]), COMPLETED_EFFECT_MS);
+    const burnedOut = setTimeout(() => setEmbers([]), COMPLETED_EFFECT_MS - elapsedMs);
 
     return () => clearTimeout(burnedOut);
     // `useSharedValue`가 준 값은 고정 참조라 뺌. 넣으면 React Compiler 린트가 안에서 쓰는 것을 막음
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isShown, centerX, centerY, radius, dotSize]);
+  }, [elapsedMs, centerX, centerY, radius, dotSize]);
 
   useEffect(() => {
     rising.setActive(embers.length > 0);
