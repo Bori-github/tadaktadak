@@ -42,7 +42,7 @@ export const useNotificationSchedule = ({ session, status, isSettled }: Notifica
       });
     };
 
-    // 예약 실패 시 알림만 빠지고 타이머는 그대로 진행
+    // 예약에 실패해도 타이머는 그대로 진행. 알림만 도착하지 않음
     apply().catch(() => {});
 
     // 화면이 사라질 때 취소하지 않음

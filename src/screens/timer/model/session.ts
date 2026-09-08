@@ -33,7 +33,7 @@ import {
 const NOT_STARTED = -1;
 
 const vibrateCompletion = (mode: TimerMode): void => {
-  // 네이티브 모듈이 없는 빌드에서 `null`. 진동만 빠지고 타이머 완료는 그대로 진행
+  // 네이티브 모듈이 없는 빌드에서 `null`. 재생만 건너뛰고 타이머 완료는 그대로 진행
   hapticPattern?.playAsync(COMPLETION_PATTERN[mode]).catch(() => {});
 };
 
