@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { act, renderHook } from '@testing-library/react-native';
 import { useRef as mockUseRef } from 'react';
-import { AppState, type AppStateStatus } from 'react-native';
+import { AppState, Vibration, type AppStateStatus } from 'react-native';
 import { type HapticEvent } from '@modules/haptic-pattern';
 
 import { useTimerSession } from './session';
@@ -14,6 +14,7 @@ let mockRelease: (raw: string | null) => void = () => {};
 const mockWritten: string[] = [];
 let mockRemovedCount = 0;
 const mockPatterns: HapticEvent[][] = [];
+let mockFallbackCount = 0;
 
 // 프레임 콜백을 테스트가 직접 호출해야 포그라운드 완료가 됨
 let mockOnFrame: ((frame: { timestamp: number }) => void) | null = null;
@@ -62,9 +63,13 @@ jest.mock('expo-keep-awake', () => ({
   activateKeepAwakeAsync: async () => {},
   deactivateKeepAwake: async () => {},
 }));
+let mockPlayRejects = false;
+
 jest.mock('@modules/haptic-pattern', () => ({
   hapticPattern: {
     playAsync: async (events: HapticEvent[]) => {
+      if (mockPlayRejects) throw new Error('인자 변환 실패');
+
       mockPatterns.push(events);
     },
   },
@@ -138,8 +143,13 @@ beforeEach(() => {
   mockWritten.length = 0;
   mockRemovedCount = 0;
   mockPatterns.length = 0;
+  mockPlayRejects = false;
+  mockFallbackCount = 0;
   mockPending = null;
   mockAppState = 'active';
+  jest.mocked(Vibration.vibrate).mockImplementation(() => {
+    mockFallbackCount += 1;
+  });
   mockAppStateListeners.length = 0;
   jest.mocked(AppState.addEventListener).mockImplementation((_type, listener) => {
     mockAppStateListeners.push(listener);
@@ -247,6 +257,14 @@ describe('완료 진동', () => {
     await renderCompleted('focus');
 
     expect(mockPatterns).toEqual([]);
+  });
+
+  it('재생이 거절되면 시스템 진동으로 대체한다', async () => {
+    mockPlayRejects = true;
+
+    await renderCompletedInForeground(1);
+
+    expect(mockFallbackCount).toBe(1);
   });
 
   it('제어센터가 덮은 상태에서 끝나면 울린다', async () => {

@@ -1,6 +1,6 @@
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AppState } from 'react-native';
+import { AppState, Vibration } from 'react-native';
 import { useFrameCallback, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 
@@ -34,7 +34,8 @@ const NOT_STARTED = -1;
 
 const vibrateCompletion = (mode: TimerMode): void => {
   // 네이티브 모듈이 없는 빌드에서 `null`. 재생만 건너뛰고 타이머 완료는 그대로 진행
-  hapticPattern?.playAsync(COMPLETION_PATTERN[mode]).catch(() => {});
+  // JS 값을 Swift 타입으로 변환하다 실패하는 경우, 네이티브 대체 진동이 실행되지 않으므로 시스템 진동으로 대체
+  hapticPattern?.playAsync(COMPLETION_PATTERN[mode]).catch(() => Vibration.vibrate());
 };
 
 type TimerSessionInput = {
