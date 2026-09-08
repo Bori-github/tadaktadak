@@ -90,8 +90,8 @@ const renderBeforeRead = () => renderHook(() => useTimerSession({ settingMinutes
 const COMPLETED_BEFORE_MS = 1000;
 
 /** 완료를 만드는 저장값. 끝날 시각이 지난 진행은 읽을 때 완료가 됨 */
-const storedCompleted = (mode: TimerMode) => {
-  const endsAt = Date.now() - COMPLETED_BEFORE_MS;
+const storedCompleted = (mode: TimerMode, completedBeforeMs = COMPLETED_BEFORE_MS) => {
+  const endsAt = Date.now() - completedBeforeMs;
 
   return JSON.stringify({ phase: 'running', mode, startedAt: endsAt - 25 * MINUTE_IN_MS, endsAt });
 };
@@ -131,10 +131,10 @@ const renderRestCompletedInForeground = async (restMinutes: number) => {
   return result;
 };
 
-const renderCompleted = async (mode: TimerMode, settingMinutes: Record<TimerMode, number> = TIMER_DEFAULT) => {
+const renderCompleted = async (mode: TimerMode, settingMinutes: Record<TimerMode, number> = TIMER_DEFAULT, completedBeforeMs = COMPLETED_BEFORE_MS) => {
   const { result } = await renderHook(() => useTimerSession({ settingMinutes }));
 
-  await act(async () => mockRelease(storedCompleted(mode)));
+  await act(async () => mockRelease(storedCompleted(mode, completedBeforeMs)));
 
   return result;
 };
@@ -236,6 +236,21 @@ describe('완료 뒤 자동 시작', () => {
     });
 
     expect(result.current.session).toEqual(READY_SESSION);
+  });
+
+  it.each([
+    { label: '3499밀리초 전에 끝난 것은 완료 그대로다', completedBeforeMs: 3499, expectedPhase: 'completed' },
+    { label: '3500밀리초 전에 끝난 것은 집중 타이머 대기가 된다', completedBeforeMs: 3500, expectedPhase: 'ready' },
+    { label: '한 시간 전에 끝난 것은 집중 타이머 대기가 된다', completedBeforeMs: 60 * MINUTE_IN_MS, expectedPhase: 'ready' },
+  ])('휴식 타이머가 0분이면 $label', async ({ completedBeforeMs, expectedPhase }) => {
+    const result = await renderCompleted('focus', { focus: 25, rest: 0 }, completedBeforeMs);
+
+    // `setTimeout`은 0을 받아도 지금 실행 중인 코드가 끝난 뒤에 부르므로, `jest.advanceTimersByTime`으로 진행시킴
+    await act(async () => {
+      jest.advanceTimersByTime(0);
+    });
+
+    expect(result.current.session.phase).toBe(expectedPhase);
   });
 
   it('휴식 타이머가 끝나면 집중 타이머 대기가 된다', async () => {
