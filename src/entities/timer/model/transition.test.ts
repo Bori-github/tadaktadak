@@ -94,8 +94,9 @@ describe('완료에서 다음으로', () => {
     });
   });
 
-  it('집중 타이머가 끝나고 휴식 타이머가 0분이면 집중 진행이 다시 시작된다', () => {
-    expect(advanceTimer({ session: focusCompleted, now: NOW, restMs: 0, focusMs: SETTING_MS })).toEqual({
+  // 집중 타이머는 사용자가 재생을 눌러 시작하는 것이므로, 휴식 타이머와 달리 끝난 시각이 아닌 현재 시각부터 계산
+  it('집중 타이머가 5초 전에 끝났어도 휴식 타이머가 0분이면 현재 시각부터 다시 시작한다', () => {
+    expect(advanceTimer({ session: completedBefore(5000), now: NOW, restMs: 0, focusMs: SETTING_MS })).toEqual({
       phase: 'running',
       mode: 'focus',
       startedAt: NOW,
