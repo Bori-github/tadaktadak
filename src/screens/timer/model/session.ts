@@ -1,8 +1,10 @@
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AppState } from 'react-native';
+import { AppState, Vibration } from 'react-native';
 import { useFrameCallback, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
+
+import { hapticPattern } from '@modules/haptic-pattern';
 
 import { millisecondsToMinutes } from '../lib/minutes';
 import { millisecondsToSeconds } from '../lib/seconds';
@@ -11,6 +13,7 @@ import {
   advanceTimer,
   completeTimer,
   COMPLETED_EFFECT_MS,
+  COMPLETION_PATTERN,
   READY_SESSION,
   loadSession,
   notRunningRemainingMs,
@@ -28,6 +31,12 @@ import {
 
 /** 기기 가동 시간을 첫 프레임에서 채우기 전 값 */
 const NOT_STARTED = -1;
+
+const vibrateCompletion = (mode: TimerMode): void => {
+  // 네이티브 모듈이 없는 빌드에서 `null`. 재생만 건너뛰고 타이머 완료는 그대로 진행
+  // JS 값을 Swift 타입으로 변환하다 실패하는 경우, 네이티브 대체 진동이 실행되지 않으므로 시스템 진동으로 대체
+  hapticPattern?.playAsync(COMPLETION_PATTERN[mode]).catch(() => Vibration.vibrate());
+};
 
 type TimerSessionInput = {
   settingMinutes: Record<TimerMode, number>;
@@ -74,8 +83,38 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   const remainingMinutes = useSharedValue(0);
   const countingMode = useSharedValue<TimerMode>('focus');
 
+  // 완료로 넘어간 타이머. 진동이 단계 재확인을 거치게 하려고 여기를 지나감
+  const completedMode = useRef<TimerMode | null>(null);
+  // 갱신 함수는 렌더 단계에서 돌아 정지보다 늦음. 기록을 지우는 대신 무시할 것을 표시
+  const isStopRequested = useRef(false);
+
   // 예약과 도착 사이에 정지될 수 있어 단계 재확인
-  const finish = useCallback(() => setSession((current) => (current.phase === 'running' ? completeTimer(current) : current)), []);
+  const finish = useCallback(
+    () =>
+      setSession((current) => {
+        if (current.phase !== 'running') return current;
+
+        // 갱신 함수가 두 번 불려도 같은 값이라 결과가 같음
+        completedMode.current = current.mode;
+
+        return completeTimer(current);
+      }),
+    [],
+  );
+
+  useEffect(() => {
+    const mode = completedMode.current;
+
+    completedMode.current = null;
+
+    if (mode === null || isStopRequested.current) return;
+
+    // 백그라운드에서 끝난 것은 활성 전환보다 먼저 도착한 프레임이 완료로 만듦. 알림이 이미 울렸으므로 건너뜀
+    // `inactive`는 제어센터·전화 배너처럼 화면이 보이는 상태라 여기 넣지 않음
+    if (AppState.currentState === 'background') return;
+
+    vibrateCompletion(mode);
+  }, [session]);
 
   const counting = useFrameCallback((frame) => {
     'worklet';
@@ -96,6 +135,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
       scheduleOnRN(setCountedSeconds, seconds);
     }
 
+    // 포그라운드인 경우 다음 조건에 부합
     if (remaining === 0) {
       running.value = false;
       scheduleOnRN(finish);
@@ -120,6 +160,8 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     (remainingAtStartMs: number, mode: TimerMode) => {
       const shown = toSeconds(remainingAtStartMs);
       const shownMinutes = toMinutes(remainingAtStartMs);
+
+      isStopRequested.current = false;
 
       scheduleOnUI(() => {
         'worklet';
@@ -152,6 +194,8 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
         scheduleOnUI(() => {
           'worklet';
+          // 백그라운드에서 끝난 뒤 돌아오면 낡은 시작 시각으로 프레임이 완료를 다시 만듦
+          running.value = false;
           remainingMinutes.value = shownMinutes;
           countingMode.value = next.mode;
         });
@@ -159,7 +203,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
       setSession(next);
     },
-    [startCounting, remainingMinutes, countingMode, toMinutes],
+    [startCounting, remainingMinutes, countingMode, running, toMinutes],
   );
 
   useEffect(() => {
@@ -272,6 +316,8 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   const stop = useCallback(() => {
     settled.current = true;
     setIsSettled(true);
+
+    isStopRequested.current = true;
 
     stopCounting();
     setSession(READY_SESSION);

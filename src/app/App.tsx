@@ -5,13 +5,17 @@ import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { hapticPattern } from '@modules/haptic-pattern';
+
 import { TimerScreen } from '@/screens/timer';
 
-// 포그라운드에서는 앱 내 소리·진동이 완료를 알림. 배너까지 뜨면 두 번 알리는 것이 됨. `SPEC.md` 알림과 감각 피드백
+// 진동 지원 여부. 진동을 지원하지 않는 경우 배너로 타이머 완료를 알림
+const showsBanner = hapticPattern?.supportsHaptics !== true;
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowBanner: false,
-    shouldShowList: false,
+    shouldShowBanner: showsBanner,
+    shouldShowList: showsBanner,
     shouldPlaySound: false,
     shouldSetBadge: false,
   }),

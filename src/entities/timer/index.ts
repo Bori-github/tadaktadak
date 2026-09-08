@@ -1,6 +1,7 @@
 export { loadMinutes, loadSession, saveMinutes, saveSession } from './api/storage';
 export { COMPLETED_EFFECT_MS } from './config/effect';
 export { MINUTE_IN_MS, TIMER_DEFAULT, TIMER_RANGE } from './config/minutes';
+export { COMPLETION_PATTERN } from './config/vibration';
 export { NOW } from './lib/fixtures';
 export { ignitionProgress } from './lib/ignition';
 export { notRunningRemainingMs, remainingMs, sessionRemainingMs } from './lib/remaining';

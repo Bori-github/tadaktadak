@@ -8,6 +8,27 @@ const fsdLayers = { layers: { pages: { pattern: 'screens' } } };
 
 const filenameCase = (kind, indexName) => ['error', { case: kind, checkDirectories: false, ignore: [indexName] }];
 
+const typescriptRules = {
+  'import/no-cycle': 'error',
+  'import/no-self-import': 'error',
+  'import/no-useless-path-segments': 'error',
+
+  '@typescript-eslint/no-explicit-any': 'error',
+  '@typescript-eslint/no-unused-vars': 'error',
+  '@typescript-eslint/consistent-type-imports': 'error',
+  '@typescript-eslint/explicit-module-boundary-types': 'error',
+  '@typescript-eslint/no-non-null-assertion': 'warn',
+  '@typescript-eslint/ban-ts-comment': ['error', { 'ts-ignore': true, 'ts-nocheck': true, 'ts-expect-error': 'allow-with-description', minimumDescriptionLength: 3 }],
+  '@typescript-eslint/consistent-type-assertions': ['error', { assertionStyle: 'as', objectLiteralTypeAssertions: 'never' }],
+  'no-restricted-syntax': ['error', { selector: 'TSEnumDeclaration', message: 'enum 대신 `as const` 객체와 유니온 타입을 쓴다' }],
+  'prefer-const': 'error',
+  'func-style': ['error', 'expression', { allowArrowFunctions: true }],
+  'prefer-arrow-callback': 'error',
+  eqeqeq: ['error', 'smart'],
+
+  'unicorn/no-abusive-eslint-disable': 'error',
+};
+
 module.exports = [
   ...expoConfig,
   prettierConfig,
@@ -35,26 +56,19 @@ module.exports = [
 
       'boundaries/no-unknown-files': 'error',
 
-      'import/no-cycle': 'error',
-      'import/no-self-import': 'error',
-      'import/no-useless-path-segments': 'error',
-
-      '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unused-vars': 'error',
-      '@typescript-eslint/consistent-type-imports': 'error',
-      '@typescript-eslint/explicit-module-boundary-types': 'error',
-      '@typescript-eslint/no-non-null-assertion': 'warn',
-      '@typescript-eslint/ban-ts-comment': ['error', { 'ts-ignore': true, 'ts-nocheck': true, 'ts-expect-error': 'allow-with-description', minimumDescriptionLength: 3 }],
-      '@typescript-eslint/consistent-type-assertions': ['error', { assertionStyle: 'as', objectLiteralTypeAssertions: 'never' }],
-      'no-restricted-syntax': ['error', { selector: 'TSEnumDeclaration', message: 'enum 대신 `as const` 객체와 유니온 타입을 쓴다' }],
-      'prefer-const': 'error',
-      'func-style': ['error', 'expression', { allowArrowFunctions: true }],
-      'prefer-arrow-callback': 'error',
-      eqeqeq: ['error', 'smart'],
+      ...typescriptRules,
 
       'react/jsx-no-leaked-render': 'error',
+    },
+  },
+  {
+    files: ['modules/**/*.ts'],
+    plugins: { unicorn },
+    rules: {
+      ...typescriptRules,
 
-      'unicorn/no-abusive-eslint-disable': 'error',
+      // 네이티브 모듈 클래스 이름을 그대로 씀. `expo-haptics`의 `ExpoHaptics.ts`가 선례
+      'unicorn/filename-case': filenameCase('pascalCase', 'index.ts'),
     },
   },
   {
