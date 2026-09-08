@@ -49,6 +49,6 @@ describe('복구한 단계의 남은 시간(밀리초)', () => {
   });
 
   it('완료 상태는 0이다', () => {
-    expect(sessionRemainingMs({ session: { phase: 'completed', mode: 'rest' }, now: NOW })).toBe(0);
+    expect(sessionRemainingMs({ session: { phase: 'completed', mode: 'rest', completedAt: NOW }, now: NOW })).toBe(0);
   });
 });

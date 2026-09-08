@@ -27,8 +27,8 @@ describe('기기에 저장할 타이머 세션 값 문자열', () => {
     });
   });
 
-  it('집중 타이머가 완료된 경우 단계와 모드만 담는다', () => {
-    expect(stored({ phase: 'completed', mode: 'focus' })).toEqual({ phase: 'completed', mode: 'focus' });
+  it('집중 타이머가 완료된 경우 끝난 시각까지 담는다', () => {
+    expect(stored({ phase: 'completed', mode: 'focus', completedAt: NOW })).toEqual({ phase: 'completed', mode: 'focus', completedAt: NOW });
   });
 
   it('대기 상태는 저장할 문자열이 없다', () => {
@@ -40,7 +40,7 @@ describe('저장한 문자열을 다시 읽기', () => {
   it.each<{ label: string; session: TimerSession }>([
     { label: '진행 상태', session: { phase: 'running', mode: 'focus', startedAt: NOW, endsAt: NOW + 25 * MINUTE_IN_MS } },
     { label: '일시정지 상태', session: { phase: 'paused', mode: 'rest', startedAt: NOW - 3.5 * MINUTE_IN_MS, pausedRemainingMs: 90_000 } },
-    { label: '완료 상태', session: { phase: 'completed', mode: 'focus' } },
+    { label: '완료 상태', session: { phase: 'completed', mode: 'focus', completedAt: NOW } },
   ])('$label는 저장한 값 그대로 돌아온다', ({ session }) => {
     expect(parseSession(serializeSession(session))).toEqual(session);
   });

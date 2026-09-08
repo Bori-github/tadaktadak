@@ -13,7 +13,7 @@ const STARTED_AT = NOW - 22 * MINUTE_IN_MS;
 
 const running: RunningSession = { phase: 'running', mode: 'focus', startedAt: STARTED_AT, endsAt: NOW + 3 * MINUTE_IN_MS };
 const paused: PausedSession = { phase: 'paused', mode: 'focus', startedAt: STARTED_AT, pausedRemainingMs: 3 * MINUTE_IN_MS };
-const focusCompleted: CompletedSession = { phase: 'completed', mode: 'focus' };
+const focusCompleted: CompletedSession = { phase: 'completed', mode: 'focus', completedAt: NOW };
 
 describe('단계 전이', () => {
   it('25분으로 시작하면 25분 뒤에 끝나는 진행이 된다', () => {
@@ -53,8 +53,8 @@ describe('단계 전이', () => {
     expect(resumeTimer({ session: stopped, now: NOW + MINUTE_IN_MS }).startedAt).toBe(running.startedAt);
   });
 
-  it('집중 타이머가 완료된 경우 끝날 시각 없이 단계와 모드 값을 가진다', () => {
-    expect(completeTimer(running)).toEqual({ phase: 'completed', mode: 'focus' });
+  it('집중 타이머가 완료된 경우 끝날 시각을 끝난 시각으로 담는다', () => {
+    expect(completeTimer(running)).toEqual({ phase: 'completed', mode: 'focus', completedAt: NOW + 3 * MINUTE_IN_MS });
   });
 
   it('휴식 타이머가 완료된 경우 집중 타이머 대기 값을 가진다', () => {

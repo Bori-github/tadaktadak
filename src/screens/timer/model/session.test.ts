@@ -86,9 +86,12 @@ const STORED_PAUSED = JSON.stringify({ phase: 'paused', mode: 'rest', startedAt:
 /** 저장값을 아직 읽지 못한 상태의 화면 */
 const renderBeforeRead = () => renderHook(() => useTimerSession({ settingMinutes: TIMER_DEFAULT }));
 
+/** 완료를 만드는 저장값의 끝날 시각이 지금보다 앞선 정도 (밀리초) */
+const COMPLETED_BEFORE_MS = 1000;
+
 /** 완료를 만드는 저장값. 끝날 시각이 지난 진행은 읽을 때 완료가 됨 */
 const storedCompleted = (mode: TimerMode) => {
-  const endsAt = Date.now() - 1000;
+  const endsAt = Date.now() - COMPLETED_BEFORE_MS;
 
   return JSON.stringify({ phase: 'running', mode, startedAt: endsAt - 25 * MINUTE_IN_MS, endsAt });
 };
@@ -214,13 +217,14 @@ describe('완료 뒤 자동 시작', () => {
   });
 
   it('휴식 타이머가 0분이면 완료 연출이 도는 3499밀리초까지는 완료 그대로다', async () => {
+    const completedAt = Date.now() - COMPLETED_BEFORE_MS;
     const result = await renderCompleted('focus', { focus: 25, rest: 0 });
 
     await act(async () => {
       jest.advanceTimersByTime(3499);
     });
 
-    expect(result.current.session).toEqual({ phase: 'completed', mode: 'focus' });
+    expect(result.current.session).toEqual({ phase: 'completed', mode: 'focus', completedAt });
   });
 
   it('휴식 타이머가 0분이면 완료 연출이 끝난 3500밀리초에 집중 타이머 대기가 된다', async () => {

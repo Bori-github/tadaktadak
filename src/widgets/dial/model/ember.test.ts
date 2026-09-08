@@ -37,7 +37,7 @@ describe('불티를 노출하는 동안', () => {
   });
 
   it('집중 완료 단계에서는 노출한다', async () => {
-    const { result } = await shown({ phase: 'completed', mode: 'focus' });
+    const { result } = await shown({ phase: 'completed', mode: 'focus', completedAt: Date.now() });
 
     expect(result.current).toBe(true);
   });

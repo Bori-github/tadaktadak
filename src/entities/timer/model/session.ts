@@ -13,7 +13,8 @@ export type PausedSession = { phase: 'paused'; mode: TimerMode; startedAt: numbe
 
 export type ReadySession = { phase: 'ready'; mode: TimerMode };
 
-export type CompletedSession = { phase: 'completed'; mode: TimerMode };
+/** 완료. 연출 남은 길이의 기준은 끝난 시각 */
+export type CompletedSession = { phase: 'completed'; mode: TimerMode; completedAt: number };
 
 /** 타이머 세션 값. `SPEC.md` 기기에 저장하는 값 */
 export type TimerSession = ReadySession | CompletedSession | RunningSession | PausedSession;

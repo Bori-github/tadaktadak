@@ -13,7 +13,7 @@ const rising: Ember = { x: 0, y: 0, velocityX: 0, velocityY: -1, lifeMs: 2800 };
 const REST_MS = 5 * MINUTE_IN_MS;
 
 const resting: RunningSession = { phase: 'running', mode: 'rest', startedAt: NOW, endsAt: NOW + REST_MS };
-const focusCompleted: TimerSession = { phase: 'completed', mode: 'focus' };
+const focusCompleted: TimerSession = { phase: 'completed', mode: 'focus', completedAt: NOW };
 
 describe('불티 생성', () => {
   it('80개를 만든다', () => {
@@ -96,7 +96,7 @@ describe('불티가 노출되는 동안', () => {
   });
 
   it.each([
-    { label: '휴식 완료', session: { phase: 'completed', mode: 'rest' } },
+    { label: '휴식 완료', session: { phase: 'completed', mode: 'rest', completedAt: NOW } },
     { label: '집중 진행', session: { phase: 'running', mode: 'focus', startedAt: NOW, endsAt: NOW + 25 * MINUTE_IN_MS } },
     { label: '휴식 일시정지', session: { phase: 'paused', mode: 'rest', startedAt: NOW - MINUTE_IN_MS, pausedRemainingMs: 4 * MINUTE_IN_MS } },
     { label: '집중 대기', session: READY_SESSION },

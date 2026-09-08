@@ -70,10 +70,11 @@ export const resumeTimer = ({ session, now }: ResumeInput): RunningSession => ({
 /**
  * 타이머 시간 완료. `DESIGN.md` §8 휴식 타이머
  *
- * @param session - 동작하던 타이머 세션 값
- * @returns 집중은 끝날 시각 없는 완료, 휴식은 연출이 없어 집중 타이머 대기
+ * @param session - 진행 중이던 타이머 세션 값
+ * @returns 집중은 끝날 시각을 끝난 시각으로 옮긴 완료, 휴식은 연출이 없어 집중 타이머 대기
  */
-export const completeTimer = (session: TimerSession): TimerSession => (session.mode === 'rest' ? READY_SESSION : { phase: 'completed', mode: session.mode });
+export const completeTimer = (session: RunningSession): TimerSession =>
+  session.mode === 'rest' ? READY_SESSION : { phase: 'completed', mode: session.mode, completedAt: session.endsAt };
 
 /**
  * 완료에서 다음 단계로. `DESIGN.md` §8 휴식 타이머
