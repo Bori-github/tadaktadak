@@ -67,6 +67,24 @@ describe('단계 전이', () => {
 });
 
 describe('완료에서 다음으로', () => {
+  const completedBefore = (elapsedMs: number): CompletedSession => ({ phase: 'completed', mode: 'focus', completedAt: NOW - elapsedMs });
+
+  it('집중이 5초 전에 끝났으면 휴식도 5초 지난 자리에서 이어진다', () => {
+    expect(advanceTimer({ session: completedBefore(5000), now: NOW, restMs: REST_MS, focusMs: SETTING_MS })).toEqual({
+      phase: 'running',
+      mode: 'rest',
+      startedAt: NOW - 5000,
+      endsAt: NOW - 5000 + REST_MS,
+    });
+  });
+
+  it.each([
+    { label: '휴식 진행이다', elapsedMs: REST_MS - 1, expected: 'running' },
+    { label: '집중 타이머 대기다', elapsedMs: REST_MS, expected: 'ready' },
+  ])('집중이 끝나고 $elapsedMs밀리초 지난 뒤 읽으면 $label', ({ elapsedMs, expected }) => {
+    expect(advanceTimer({ session: completedBefore(elapsedMs), now: NOW, restMs: REST_MS, focusMs: SETTING_MS }).phase).toBe(expected);
+  });
+
   it('집중 타이머가 끝나고 휴식 타이머가 5분이면 5분 뒤에 끝나는 휴식 진행이 된다', () => {
     expect(advanceTimer({ session: focusCompleted, now: NOW, restMs: REST_MS, focusMs: SETTING_MS })).toEqual({
       phase: 'running',

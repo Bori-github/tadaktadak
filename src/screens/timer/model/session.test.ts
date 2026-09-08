@@ -210,10 +210,11 @@ describe('저장값 읽은 뒤 맞추기', () => {
 });
 
 describe('완료 뒤 자동 시작', () => {
-  it('집중 타이머가 끝나면 그 자리에서 휴식 진행이 된다', async () => {
+  it('1초 전에 끝난 집중을 읽으면 그 시각부터 휴식 진행이 된다', async () => {
+    const completedAt = Date.now() - COMPLETED_BEFORE_MS;
     const result = await renderCompleted('focus');
 
-    expect(result.current.session).toEqual({ phase: 'running', mode: 'rest', startedAt: Date.now(), endsAt: Date.now() + TIMER_DEFAULT.rest * MINUTE_IN_MS });
+    expect(result.current.session).toEqual({ phase: 'running', mode: 'rest', startedAt: completedAt, endsAt: completedAt + TIMER_DEFAULT.rest * MINUTE_IN_MS });
   });
 
   it('휴식 타이머가 0분이고 1초 전에 끝난 것을 읽으면 2499밀리초까지는 완료 그대로다', async () => {

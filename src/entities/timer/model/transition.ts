@@ -87,6 +87,10 @@ export const completeTimer = (session: RunningSession): TimerSession =>
  */
 export const advanceTimer = ({ session, now, restMs, focusMs }: AdvanceInput): TimerSession => {
   if (session.mode !== 'focus') return READY_SESSION;
+  if (restMs === 0) return { phase: 'running', mode: 'focus', startedAt: now, endsAt: now + focusMs };
 
-  return restMs > 0 ? { phase: 'running', mode: 'rest', startedAt: now, endsAt: now + restMs } : { phase: 'running', mode: 'focus', startedAt: now, endsAt: now + focusMs };
+  // 백그라운드에서 집중 타이머가 완료되고 포그라운드로 돌아왔을 때, 정해진 휴식 타이머 완료 시각을 수행하기 위해 `completedAt`을 기준으로 시간 계산
+  const endsAt = session.completedAt + restMs;
+
+  return endsAt > now ? { phase: 'running', mode: 'rest', startedAt: session.completedAt, endsAt } : READY_SESSION;
 };
