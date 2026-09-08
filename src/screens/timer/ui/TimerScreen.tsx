@@ -19,7 +19,7 @@ import { SpeedControl } from './SpeedControl';
 import { ControlButtons, Controls, type ControlButton } from '@/widgets/controls';
 import {
   colorMode,
-  useCompletedEffectElapsedMs,
+  useCompletedEffectStartedAt,
   isThumbTwinkling,
   restDialMinutes,
   DialArc,
@@ -76,8 +76,8 @@ export const TimerScreen = (): JSX.Element => {
 
   const twinkling = isThumbTwinkling({ isResting: resting, phase: session.phase });
 
-  const effectElapsedMs = useCompletedEffectElapsedMs(session);
-  const effectShown = effectElapsedMs !== null;
+  const effectStartedAt = useCompletedEffectStartedAt(session);
+  const effectShown = effectStartedAt !== null;
 
   // 층별 동작은 `DESIGN.md` §8
   const dialMinutes = useDerivedValue(() => {
@@ -135,7 +135,7 @@ export const TimerScreen = (): JSX.Element => {
             isPaused={session.phase === 'paused'}
             isReady={session.phase === 'ready'}
           />
-          <Embers centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} elapsedMs={effectElapsedMs} />
+          <Embers centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} effectStartedAt={effectStartedAt} />
           <Thumb centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} isTwinkling={twinkling} />
           <Numerals centerX={centerX} centerY={centerY} radius={layout.numeralRadius} dotSize={layout.dotSize} />
           <DialReadout

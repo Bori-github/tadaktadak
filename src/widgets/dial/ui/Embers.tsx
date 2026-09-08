@@ -14,8 +14,7 @@ type EmbersProps = {
   /** 개체 중심 반지름 (px) */
   radius: number;
   dotSize: number;
-  /** 튀어 오르기 시작하고 흐른 시간 (밀리초). 노출하지 않으면 `null` */
-  elapsedMs: number | null;
+  effectStartedAt: number | null;
 };
 
 /** 잔광 텍스처 반지름 (px) */
@@ -52,29 +51,31 @@ const drawEmbers = (): SkImage | null => {
   return surface.makeImageSnapshot();
 };
 
-export const Embers = memo(({ centerX, centerY, radius, dotSize, elapsedMs }: EmbersProps) => {
+export const Embers = memo(({ centerX, centerY, radius, dotSize, effectStartedAt }: EmbersProps) => {
   const image = useMemo(() => drawEmbers(), []);
   const glowSprites = useMemo(() => Array.from({ length: EMBER_COUNT }, () => GLOW_SPRITE), []);
   const [embers, setEmbers] = useState<Ember[]>([]);
 
   const elapsed = useSharedValue(0);
-  const startedAt = useSharedValue(NOT_STARTED);
+  const frameStartedAt = useSharedValue(NOT_STARTED);
 
   const rising = useFrameCallback((frame) => {
     'worklet';
-    if (startedAt.value === NOT_STARTED) startedAt.value = frame.timestamp - elapsed.value;
+    if (frameStartedAt.value === NOT_STARTED) frameStartedAt.value = frame.timestamp - elapsed.value;
 
-    elapsed.value = frame.timestamp - startedAt.value;
+    elapsed.value = frame.timestamp - frameStartedAt.value;
   }, false);
 
   useEffect(() => {
-    if (elapsedMs === null) {
+    if (effectStartedAt === null) {
       setEmbers([]);
       return;
     }
 
+    const elapsedMs = Date.now() - effectStartedAt;
+
     // 앱 밖에서 흐른 만큼 앞선 자리에서 이어지도록 첫 프레임 전에 채움
-    startedAt.value = NOT_STARTED;
+    frameStartedAt.value = NOT_STARTED;
     elapsed.value = elapsedMs;
     setEmbers(spawnEmbers({ centerX: centerX / dotSize, centerY: centerY / dotSize, radius: radius / dotSize }));
 
@@ -83,7 +84,7 @@ export const Embers = memo(({ centerX, centerY, radius, dotSize, elapsedMs }: Em
     return () => clearTimeout(burnedOut);
     // `useSharedValue`가 준 값은 고정 참조라 뺌. 넣으면 React Compiler 린트가 안에서 쓰는 것을 막음
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elapsedMs, centerX, centerY, radius, dotSize]);
+  }, [effectStartedAt, centerX, centerY, radius, dotSize]);
 
   useEffect(() => {
     rising.setActive(embers.length > 0);
