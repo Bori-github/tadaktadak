@@ -26,6 +26,6 @@ export const completedEffectStartedAt = (session: TimerSession): number | null =
  *
  * @param input.startedAt - 연출이 시작된 시각 (밀리초)
  * @param input.now - 지금 시각 (밀리초)
- * @returns 남은 시간. 이미 끝났으면 0
+ * @returns 남은 시간. 이미 끝났으면 0, `startedAt`이 미래면 `COMPLETED_EFFECT_MS`
  */
-export const completedEffectRemainingMs = ({ startedAt, now }: RemainingInput): number => Math.max(0, startedAt + COMPLETED_EFFECT_MS - now);
+export const completedEffectRemainingMs = ({ startedAt, now }: RemainingInput): number => Math.max(0, Math.min(COMPLETED_EFFECT_MS, startedAt + COMPLETED_EFFECT_MS - now));

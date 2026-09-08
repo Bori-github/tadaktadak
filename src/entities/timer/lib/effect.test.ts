@@ -36,6 +36,11 @@ describe('완료 연출이 끝나기까지', () => {
     expect(remaining(resting, NOW + elapsedMs)).toBe(expected);
   });
 
+  // 기기 시각을 뒤로 돌리면 `completedAt`이 미래가 됨
+  it('끝난 시각이 1초 뒤 미래여도 연출 길이를 넘지 않는다', () => {
+    expect(remaining(focusCompleted, NOW - 1000)).toBe(3500);
+  });
+
   it('휴식 타이머 시작 1초 뒤에 멈췄다 한 시간 뒤에 재개해도 남지 않는다', () => {
     const stopped = pauseTimer({ session: resting, now: NOW + 1000 });
     const resumedAt = NOW + 60 * MINUTE_IN_MS;
