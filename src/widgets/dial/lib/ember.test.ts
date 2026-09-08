@@ -112,11 +112,11 @@ describe('불티가 없어질 때까지', () => {
   const remaining = (now: number) => emberRemainingMs({ session: resting, now });
 
   it.each([
-    [0, 3500],
-    [3499, 1],
-    [3500, 0],
-    [4000, 0],
-  ])('휴식이 시작되고 %i밀리초에 %i밀리초 남는다', (elapsedMs, expected) => {
+    { elapsedMs: 0, expected: 3500 },
+    { elapsedMs: 3499, expected: 1 },
+    { elapsedMs: 3500, expected: 0 },
+    { elapsedMs: 4000, expected: 0 },
+  ])('휴식이 시작되고 $elapsedMs밀리초에 $expected밀리초 남는다', ({ elapsedMs, expected }) => {
     expect(remaining(NOW + elapsedMs)).toBe(expected);
   });
 
