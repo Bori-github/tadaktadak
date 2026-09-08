@@ -70,6 +70,12 @@ jest.mock('@modules/haptic-pattern', () => ({
   },
 }));
 
+const requireFrameCallback = () => {
+  if (mockOnFrame === null) throw new Error('프레임 콜백이 등록되지 않음');
+
+  return mockOnFrame;
+};
+
 const STORED_PAUSED = JSON.stringify({ phase: 'paused', mode: 'rest', startedAt: NOW, pausedRemainingMs: 90_000 });
 
 /** 저장값을 아직 읽지 못한 상태의 화면 */
@@ -89,9 +95,7 @@ const renderCompletedInForeground = async (focusMinutes: number) => {
   await act(async () => mockRelease(null));
   await act(async () => result.current.play());
 
-  const onFrame = mockOnFrame;
-
-  if (onFrame === null) throw new Error('프레임 콜백이 등록되지 않음');
+  const onFrame = requireFrameCallback();
 
   await act(async () => {
     onFrame({ timestamp: 0 });
@@ -109,9 +113,7 @@ const renderRestCompletedInForeground = async (restMinutes: number) => {
 
   await act(async () => mockRelease(JSON.stringify({ phase: 'running', mode: 'rest', startedAt: now, endsAt: now + restMinutes * MINUTE_IN_MS })));
 
-  const onFrame = mockOnFrame;
-
-  if (onFrame === null) throw new Error('프레임 콜백이 등록되지 않음');
+  const onFrame = requireFrameCallback();
 
   await act(async () => {
     onFrame({ timestamp: 0 });
@@ -255,9 +257,7 @@ describe('완료 진동', () => {
     await act(async () => result.current.stop());
     await act(async () => result.current.play());
 
-    const onFrame = mockOnFrame;
-
-    if (onFrame === null) throw new Error('프레임 콜백이 등록되지 않음');
+    const onFrame = requireFrameCallback();
 
     await act(async () => {
       onFrame({ timestamp: 0 });
@@ -273,9 +273,7 @@ describe('완료 진동', () => {
     await act(async () => mockRelease(null));
     await act(async () => result.current.play());
 
-    const onFrame = mockOnFrame;
-
-    if (onFrame === null) throw new Error('프레임 콜백이 등록되지 않음');
+    const onFrame = requireFrameCallback();
 
     await act(async () => {
       onFrame({ timestamp: 0 });
@@ -291,9 +289,7 @@ describe('완료 진동', () => {
     await act(async () => mockRelease(null));
     await act(async () => result.current.play());
 
-    const onFrame = mockOnFrame;
-
-    if (onFrame === null) throw new Error('프레임 콜백이 등록되지 않음');
+    const onFrame = requireFrameCallback();
 
     await act(async () => onFrame({ timestamp: 0 }));
 
@@ -311,9 +307,7 @@ describe('완료 진동', () => {
     await act(async () => mockRelease(null));
     await act(async () => result.current.play());
 
-    const onFrame = mockOnFrame;
-
-    if (onFrame === null) throw new Error('프레임 콜백이 등록되지 않음');
+    const onFrame = requireFrameCallback();
 
     await act(async () => {
       onFrame({ timestamp: 0 });
@@ -330,9 +324,7 @@ describe('완료 진동', () => {
     await act(async () => mockRelease(null));
     await act(async () => result.current.play());
 
-    const onFrame = mockOnFrame;
-
-    if (onFrame === null) throw new Error('프레임 콜백이 등록되지 않음');
+    const onFrame = requireFrameCallback();
 
     mockPending = [];
 
@@ -361,9 +353,7 @@ describe('백그라운드 복귀', () => {
     await act(async () => mockRelease(null));
     await act(async () => result.current.play());
 
-    const onFrame = mockOnFrame;
-
-    if (onFrame === null) throw new Error('프레임 콜백이 등록되지 않음');
+    const onFrame = requireFrameCallback();
 
     await act(async () => onFrame({ timestamp: 0 }));
 
