@@ -1,19 +1,13 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { EMBER_COLORS, EMBER_COUNT, emberAt, emberRemainingMs, emberColorIndex, isEmberShown, spawnEmbers, type Ember } from './ember';
+import { EMBER_COLORS, EMBER_COUNT, emberAt, emberColorIndex, spawnEmbers, type Ember } from './ember';
 
-import { MINUTE_IN_MS, NOW, pauseTimer, READY_SESSION, resumeTimer, type RunningSession, type TimerSession } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 
 const embers = (random?: () => number) => spawnEmbers({ centerX: 100, centerY: 100, radius: 76.5, random });
 
 /** 12시에서 초당 한 도트로 곧게 오르는 불티. 수명은 2.8초 */
 const rising: Ember = { x: 0, y: 0, velocityX: 0, velocityY: -1, lifeMs: 2800 };
-
-const REST_MS = 5 * MINUTE_IN_MS;
-
-const resting: RunningSession = { phase: 'running', mode: 'rest', startedAt: NOW, endsAt: NOW + REST_MS };
-const focusCompleted: TimerSession = { phase: 'completed', mode: 'focus', completedAt: NOW };
 
 describe('불티 생성', () => {
   it('80개를 만든다', () => {
@@ -71,62 +65,6 @@ describe('불티 수명', () => {
     [3200, 0],
   ])('노출 후 %i밀리초에 남은 수명은 %s다', (elapsedMs, expected) => {
     expect(emberAt(rising, elapsedMs).life).toBeCloseTo(expected, 10);
-  });
-});
-
-describe('불티가 노출되는 동안', () => {
-  const shown = (session: TimerSession, now: number) => isEmberShown({ session, now });
-
-  it.each([
-    { label: '노출된다', elapsedMs: 3499, expected: true },
-    { label: '노출되지 않는다', elapsedMs: 3500, expected: false },
-  ])('휴식이 시작되고 $elapsedMs밀리초에 $label', ({ elapsedMs, expected }) => {
-    expect(shown(resting, NOW + elapsedMs)).toBe(expected);
-  });
-
-  it.each([
-    { label: '노출된다', elapsedMs: 3499, expected: true },
-    { label: '노출되지 않는다', elapsedMs: 3500, expected: false },
-  ])('집중이 끝나고 $elapsedMs밀리초에 $label', ({ elapsedMs, expected }) => {
-    expect(shown(focusCompleted, NOW + elapsedMs)).toBe(expected);
-  });
-
-  it('휴식 시작 1초 뒤에 멈췄다 한 시간 뒤에 재개해도 노출되지 않는다', () => {
-    const stopped = pauseTimer({ session: resting, now: NOW + 1000 });
-    const resumedAt = NOW + 60 * MINUTE_IN_MS;
-
-    expect(shown(resumeTimer({ session: stopped, now: resumedAt }), resumedAt)).toBe(false);
-  });
-
-  it.each([
-    { label: '휴식 완료', session: { phase: 'completed', mode: 'rest', completedAt: NOW } },
-    { label: '집중 진행', session: { phase: 'running', mode: 'focus', startedAt: NOW, endsAt: NOW + 25 * MINUTE_IN_MS } },
-    { label: '휴식 일시정지', session: { phase: 'paused', mode: 'rest', startedAt: NOW - MINUTE_IN_MS, pausedRemainingMs: 4 * MINUTE_IN_MS } },
-    { label: '집중 대기', session: READY_SESSION },
-  ] as { label: string; session: TimerSession }[])('$label에서는 노출되지 않는다', ({ session }) => {
-    expect(shown(session, NOW)).toBe(false);
-  });
-});
-
-describe('불티가 없어질 때까지', () => {
-  const remaining = (now: number) => emberRemainingMs({ session: resting, now });
-
-  it.each([
-    { elapsedMs: 0, expected: 3500 },
-    { elapsedMs: 3499, expected: 1 },
-    { elapsedMs: 3500, expected: 0 },
-    { elapsedMs: 4000, expected: 0 },
-  ])('휴식이 시작되고 $elapsedMs밀리초에 $expected밀리초 남는다', ({ elapsedMs, expected }) => {
-    expect(remaining(NOW + elapsedMs)).toBe(expected);
-  });
-
-  it.each([
-    { elapsedMs: 0, expected: 3500 },
-    { elapsedMs: 3499, expected: 1 },
-    { elapsedMs: 3500, expected: 0 },
-    { elapsedMs: 4000, expected: 0 },
-  ])('집중이 끝나고 $elapsedMs밀리초에 $expected밀리초 남는다', ({ elapsedMs, expected }) => {
-    expect(emberRemainingMs({ session: focusCompleted, now: NOW + elapsedMs })).toBe(expected);
   });
 });
 

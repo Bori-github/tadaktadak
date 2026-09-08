@@ -1,5 +1,5 @@
 export { colorMode } from './lib/color';
-export { useEmberElapsedMs } from './model/ember';
+export { useCompletedEffectElapsedMs } from './model/ember';
 export { isThumbTwinkling } from './lib/twinkle';
 export { restDialMinutes } from './lib/rest';
 export { useDialDrag } from './model/drag';

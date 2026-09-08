@@ -12,7 +12,7 @@ import { millisecondsToSeconds } from '../lib/seconds';
 import {
   advanceTimer,
   completeTimer,
-  COMPLETED_EFFECT_MS,
+  completedEffectRemainingMs,
   COMPLETION_PATTERN,
   READY_SESSION,
   loadSession,
@@ -262,7 +262,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   useEffect(() => {
     if (returnsToReadyAt === null) return;
 
-    const waiting = setTimeout(() => applySession(READY_SESSION, Date.now()), Math.max(0, returnsToReadyAt + COMPLETED_EFFECT_MS - Date.now()));
+    const waiting = setTimeout(() => applySession(READY_SESSION, Date.now()), completedEffectRemainingMs({ startedAt: returnsToReadyAt, now: Date.now() }));
 
     return () => clearTimeout(waiting);
   }, [returnsToReadyAt, applySession]);

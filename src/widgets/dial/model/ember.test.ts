@@ -1,7 +1,7 @@
 import { describe, expect, it, jest, beforeEach, afterEach } from '@jest/globals';
 import { act, renderHook } from '@testing-library/react-native';
 
-import { useEmberElapsedMs } from './ember';
+import { useCompletedEffectElapsedMs } from './ember';
 
 import { MINUTE_IN_MS, pauseTimer, resumeTimer, type RunningSession, type TimerSession } from '@/entities/timer';
 
@@ -9,7 +9,8 @@ const REST_MS = 5 * MINUTE_IN_MS;
 
 const restingFrom = (startedAt: number): RunningSession => ({ phase: 'running', mode: 'rest', startedAt, endsAt: startedAt + REST_MS });
 
-const elapsed = async (session: TimerSession) => renderHook(({ current }: { current: TimerSession }) => useEmberElapsedMs(current), { initialProps: { current: session } });
+const elapsed = async (session: TimerSession) =>
+  renderHook(({ current }: { current: TimerSession }) => useCompletedEffectElapsedMs(current), { initialProps: { current: session } });
 
 beforeEach(() => {
   jest.useFakeTimers();
