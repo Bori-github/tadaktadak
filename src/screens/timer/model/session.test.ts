@@ -21,6 +21,9 @@ let mockOnFrame: ((frame: { timestamp: number }) => void) | null = null;
 // 예약과 도착 사이에 정지하는 틈을 만들려면 예약을 붙들 수 있어야 함. `null`이면 곧바로 실행
 let mockPending: (() => void)[] | null = null;
 
+// 포그라운드 복귀를 테스트에서 직접 생성해야 함
+const mockAppStateListeners: ((state: AppStateStatus) => void)[] = [];
+
 // jest-expo가 `currentState`를 함수로 모의함. 실제 React Native는 문자열이라 문자열을 주도록 되돌림
 let mockAppState = 'active';
 
@@ -135,6 +138,12 @@ beforeEach(() => {
   mockPatterns.length = 0;
   mockPending = null;
   mockAppState = 'active';
+  mockAppStateListeners.length = 0;
+  jest.mocked(AppState.addEventListener).mockImplementation((_type, listener) => {
+    mockAppStateListeners.push(listener);
+
+    return { remove: () => {} };
+  });
   // 남겨 두면 이번 화면이 등록에 실패했을 때 지난 화면의 콜백을 부름
   mockOnFrame = null;
   mockRead = new Promise((resolve) => {
@@ -347,14 +356,6 @@ describe('완료 진동', () => {
 
 describe('백그라운드 복귀', () => {
   it('돌아와 완료가 된 뒤에는 이어지는 프레임이 남은 분을 덮지 않는다', async () => {
-    const listeners: ((state: AppStateStatus) => void)[] = [];
-
-    jest.spyOn(AppState, 'addEventListener').mockImplementation((_type, listener) => {
-      listeners.push(listener);
-
-      return { remove: () => {} };
-    });
-
     const { result } = await renderHook(() => useTimerSession({ settingMinutes: { focus: 1, rest: 0 } }));
 
     await act(async () => mockRelease(null));
@@ -369,7 +370,7 @@ describe('백그라운드 복귀', () => {
     jest.setSystemTime(Date.now() + 2 * MINUTE_IN_MS);
 
     await act(async () => {
-      for (const listener of listeners) listener('active');
+      for (const listener of mockAppStateListeners) listener('active');
     });
 
     const settled = result.current.remainingMinutes.value;
