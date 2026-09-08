@@ -16,7 +16,7 @@ struct HapticEventRecord: Record {
 }
 
 public class HapticPatternModule: Module {
-  // 재생은 Expo의 백그라운드 큐에서, `resetHandler`는 Core Haptics의 큐에서 불려 아래 두 값이 겹침
+  // `resetHandler`가 Core Haptics의 큐에서 불려, 아래 두 값을 만지는 자리를 이 큐 하나로 모음
   private let engineQueue = DispatchQueue(label: "com.boriguri.tadaktadak.haptic-pattern")
   private var engine: CHHapticEngine?
   private var player: CHHapticPatternPlayer?
@@ -34,6 +34,8 @@ public class HapticPatternModule: Module {
         AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
       }
     }
+    // 지정하지 않으면 Expo가 모든 모듈이 함께 쓰는 직렬 큐에서 돌려, 엔진 시작이 다른 모듈의 비동기 호출을 막음
+    .runOnQueue(engineQueue)
 
     OnDestroy { [weak self] in
       // 재생이 큐를 잡고 `start()`에 들어가 있을 수 있어, 기다리면 부르는 스레드가 멈춤
@@ -41,15 +43,16 @@ public class HapticPatternModule: Module {
     }
   }
 
+  /// `engineQueue` 안에서만 호출
   private func play(_ events: [HapticEventRecord]) throws {
-    try engineQueue.sync {
-      let engine = try runningEngine()
-      let pattern = try CHHapticPattern(events: events.map { hapticEvent(from: $0) }, parameters: [])
-      let player = try engine.makePlayer(with: pattern)
+    let engine = try runningEngine()
+    let pattern = try CHHapticPattern(events: events.map { hapticEvent(from: $0) }, parameters: [])
 
-      self.player = player
-      try player.start(atTime: CHHapticTimeImmediate)
-    }
+    let player = try engine.makePlayer(with: pattern)
+
+    // 재생이 끝날 때까지 붙들지 않으면 패턴 도중에 해제됨
+    self.player = player
+    try player.start(atTime: CHHapticTimeImmediate)
   }
 
   /// `engineQueue` 안에서만 호출. UIApplication 활성 알림을 구독하지 않고, 재생 직전에 엔진을 되살림
