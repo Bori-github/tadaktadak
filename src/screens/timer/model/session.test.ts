@@ -216,22 +216,22 @@ describe('완료 뒤 자동 시작', () => {
     expect(result.current.session).toEqual({ phase: 'running', mode: 'rest', startedAt: Date.now(), endsAt: Date.now() + TIMER_DEFAULT.rest * MINUTE_IN_MS });
   });
 
-  it('휴식 타이머가 0분이면 완료 연출이 도는 3499밀리초까지는 완료 그대로다', async () => {
+  it('휴식 타이머가 0분이고 1초 전에 끝난 것을 읽으면 2499밀리초까지는 완료 그대로다', async () => {
     const completedAt = Date.now() - COMPLETED_BEFORE_MS;
     const result = await renderCompleted('focus', { focus: 25, rest: 0 });
 
     await act(async () => {
-      jest.advanceTimersByTime(3499);
+      jest.advanceTimersByTime(2499);
     });
 
     expect(result.current.session).toEqual({ phase: 'completed', mode: 'focus', completedAt });
   });
 
-  it('휴식 타이머가 0분이면 완료 연출이 끝난 3500밀리초에 집중 타이머 대기가 된다', async () => {
+  it('휴식 타이머가 0분이고 1초 전에 끝난 것을 읽으면 2500밀리초에 집중 타이머 대기가 된다', async () => {
     const result = await renderCompleted('focus', { focus: 25, rest: 0 });
 
     await act(async () => {
-      jest.advanceTimersByTime(3500);
+      jest.advanceTimersByTime(2500);
     });
 
     expect(result.current.session).toEqual(READY_SESSION);

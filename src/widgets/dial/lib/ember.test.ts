@@ -84,8 +84,11 @@ describe('불티가 노출되는 동안', () => {
     expect(shown(resting, NOW + elapsedMs)).toBe(expected);
   });
 
-  it('집중 완료 단계에서는 노출된다', () => {
-    expect(shown(focusCompleted, NOW)).toBe(true);
+  it.each([
+    { label: '노출된다', elapsedMs: 3499, expected: true },
+    { label: '노출되지 않는다', elapsedMs: 3500, expected: false },
+  ])('집중이 끝나고 $elapsedMs밀리초에 $label', ({ elapsedMs, expected }) => {
+    expect(shown(focusCompleted, NOW + elapsedMs)).toBe(expected);
   });
 
   it('휴식 시작 1초 뒤에 멈췄다 한 시간 뒤에 재개해도 노출되지 않는다', () => {
@@ -117,8 +120,13 @@ describe('불티가 없어질 때까지', () => {
     expect(remaining(NOW + elapsedMs)).toBe(expected);
   });
 
-  it('집중 완료 단계에서는 잴 수 없다', () => {
-    expect(emberRemainingMs({ session: focusCompleted, now: NOW })).toBeNull();
+  it.each([
+    { elapsedMs: 0, expected: 3500 },
+    { elapsedMs: 3499, expected: 1 },
+    { elapsedMs: 3500, expected: 0 },
+    { elapsedMs: 4000, expected: 0 },
+  ])('집중이 끝나고 $elapsedMs밀리초에 $expected밀리초 남는다', ({ elapsedMs, expected }) => {
+    expect(emberRemainingMs({ session: focusCompleted, now: NOW + elapsedMs })).toBe(expected);
   });
 });
 

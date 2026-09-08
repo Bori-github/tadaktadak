@@ -256,15 +256,16 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     applySession(advanceTimer({ session, now, restMs, focusMs }), now);
   }, [startsRestAutomatically, session, restMs, focusMs, applySession]);
 
-  const returnsToReady = session.phase === 'completed' && restMs === 0;
+  // 완료 중 리렌더마다 아래 이펙트가 다시 돌아 남은 시간을 새로 재는 것을 막으려고, 세션 객체가 아닌 끝난 시각을 의존성으로 둠
+  const returnsToReadyAt = session.phase === 'completed' && restMs === 0 ? session.completedAt : null;
 
   useEffect(() => {
-    if (!returnsToReady) return;
+    if (returnsToReadyAt === null) return;
 
-    const waiting = setTimeout(() => applySession(READY_SESSION, Date.now()), COMPLETED_EFFECT_MS);
+    const waiting = setTimeout(() => applySession(READY_SESSION, Date.now()), Math.max(0, returnsToReadyAt + COMPLETED_EFFECT_MS - Date.now()));
 
     return () => clearTimeout(waiting);
-  }, [returnsToReady, applySession]);
+  }, [returnsToReadyAt, applySession]);
 
   const play = useCallback(() => {
     settled.current = true;
