@@ -5,7 +5,7 @@ import { buttonCentersX, buttonTouchSize, type ControlButton } from '../lib/layo
 import { isStopEnabled } from '../lib/state';
 
 import { type TimerPhase } from '@/entities/timer';
-import { touchArea, vibrate } from '@/shared/lib';
+import { playVibration, touchArea } from '@/shared/lib';
 
 type ControlButtonsProps = {
   centerX: number;
@@ -22,7 +22,7 @@ export const ControlButtons = memo(({ centerX, centerY, dotSize, phase, onPlay, 
   const size = buttonTouchSize(dotSize);
 
   const handlePressIn = (button: ControlButton) => {
-    vibrate();
+    playVibration();
     onPressedChange(button);
   };
 

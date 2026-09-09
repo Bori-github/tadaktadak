@@ -6,7 +6,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { isWithinThumb, minutesFromPoint, pointOnDial } from '../lib/geometry';
 
 import { TIMER_RANGE, type TimerMode } from '@/entities/timer';
-import { holdVibration, releaseVibration, vibrate } from '@/shared/lib';
+import { holdVibration, playVibration, releaseVibration } from '@/shared/lib';
 
 type DialDragInput = {
   /** 시계판 중심 (px) */
@@ -81,7 +81,7 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
 
           dragged.value = next;
           changed.value = true;
-          scheduleOnRN(vibrate);
+          scheduleOnRN(playVibration);
           scheduleOnRN(onChange, next);
         })
         .onFinalize(() => {

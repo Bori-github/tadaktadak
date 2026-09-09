@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 import { type HapticEvent } from '@modules/haptic-pattern';
 
-import { holdVibration, prepareVibration, releaseVibration, vibrate } from './vibration';
+import { holdVibration, playVibration, prepareVibration, releaseVibration } from './vibration';
 
 const PATTERN: HapticEvent[] = [{ type: 'transient', timeMs: 0, intensity: 0.4, sharpness: 0.5 }];
 
@@ -37,7 +37,7 @@ beforeEach(() => {
 describe('조작 진동', () => {
   it('등록한 이름으로 재생한다', () => {
     prepareVibration(PATTERN);
-    vibrate();
+    playVibration();
 
     expect(mockPrepared).toEqual([{ name: expect.any(String), events: PATTERN }]);
     expect(mockPlayedNames).toEqual([mockPrepared[0]?.name]);
@@ -48,7 +48,7 @@ describe('조작 진동', () => {
 
     expect(() => {
       prepareVibration(PATTERN);
-      vibrate();
+      playVibration();
       holdVibration();
       releaseVibration();
     }).not.toThrow();

@@ -4,7 +4,7 @@ import { Pressable } from 'react-native';
 import { FOCUS_SIZE, REST_OFFSET_IN_DOTS, REST_SIZE, TOUCH_MARGIN } from '../config/readout';
 
 import { type TimerMode } from '@/entities/timer';
-import { vibrate } from '@/shared/lib';
+import { playVibration } from '@/shared/lib';
 
 type Size = { widthInDots: number; heightInDots: number };
 
@@ -37,11 +37,11 @@ type ReadoutButtonsProps = {
 
 export const ReadoutButtons = ({ centerX, centerY, dotSize, onSelect }: ReadoutButtonsProps): JSX.Element => (
   <>
-    <Pressable accessibilityRole="button" style={touchArea(centerX, centerY, FOCUS_SIZE, dotSize)} onPressIn={() => vibrate()} onPress={() => onSelect('focus')} />
+    <Pressable accessibilityRole="button" style={touchArea(centerX, centerY, FOCUS_SIZE, dotSize)} onPressIn={() => playVibration()} onPress={() => onSelect('focus')} />
     <Pressable
       accessibilityRole="button"
       style={touchArea(centerX, centerY + REST_OFFSET_IN_DOTS * dotSize, REST_SIZE, dotSize)}
-      onPressIn={() => vibrate()}
+      onPressIn={() => playVibration()}
       onPress={() => onSelect('rest')}
     />
   </>

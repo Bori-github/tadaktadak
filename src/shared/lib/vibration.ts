@@ -10,7 +10,7 @@ export const prepareVibration = (events: HapticEvent[]): void => {
 };
 
 /** 등록한 패턴을 재생. 네이티브 모듈이 없는 빌드에서는 진동이 울리지 않음 */
-export const vibrate = (): void => {
+export const playVibration = (): void => {
   hapticPattern?.play(PATTERN_NAME);
 };
 
