@@ -76,7 +76,7 @@ export const Embers = memo(({ centerX, centerY, radius, dotSize, effectStartedAt
     // 앱 밖에서 흐른 만큼 앞선 자리에서 이어지도록 첫 프레임 전에 채움
     frameStartedAt.value = NOT_STARTED;
     elapsed.value = elapsedMs;
-    setEmbers(spawnEmbers({ centerX: centerX / dotSize, centerY: centerY / dotSize, radius: radius / dotSize }));
+    setEmbers(spawnEmbers({ centerX: centerX / dotSize, centerY: centerY / dotSize, radius: radius / dotSize, elapsedMs }));
 
     // 연출이 끝나면 `useCompletedEffectStartedAt`이 `null`을 주고 위 분기가 지우므로, 여기서 따로 예약하지 않음
     // `useSharedValue`가 준 값은 고정 참조라 뺌. 넣으면 React Compiler 린트가 안에서 쓰는 것을 막음

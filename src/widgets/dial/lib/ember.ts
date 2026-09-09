@@ -27,6 +27,8 @@ type SpawnInput = {
   centerY: number;
   /** 개체 중심 반지름 (dot) */
   radius: number;
+  /** 연출이 시작된 뒤 흐른 시간 (밀리초) */
+  elapsedMs: number;
   random?: () => number;
 };
 
@@ -73,10 +75,10 @@ const damped = (ratio: number, frames: number): number => {
  * 완료에서 개체 둘레에 노출되는 불티. `DESIGN.md` §9 완료
  *
  * @param [input.random] - 0 이상 1 미만의 값. 편차를 고정하려면 넘김
- * @returns 위치·속도·수명에 편차를 적용한 불티 80개
+ * @returns 위치·속도·수명에 편차를 적용한 불티 80개. `lifeMs`가 `elapsedMs` 이하인 것은 제외
  */
-export const spawnEmbers = ({ centerX, centerY, radius, random = Math.random }: SpawnInput): Ember[] =>
-  Array.from({ length: EMBER_COUNT }, () => {
+export const spawnEmbers = ({ centerX, centerY, radius, elapsedMs, random = Math.random }: SpawnInput): Ember[] => {
+  const embers = Array.from({ length: EMBER_COUNT }, () => {
     const angle = random() * 2 * Math.PI;
     const distance = radius * withSpread(random, SPAWN_BAND);
 
@@ -88,6 +90,10 @@ export const spawnEmbers = ({ centerX, centerY, radius, random = Math.random }: 
       lifeMs: LIFE_MS * withSpread(random, LIFE_SPREAD),
     };
   });
+
+  // `emberAt`이 남은 수명 0을 주어 `Embers`가 그리지 않을 불티라, 프레임마다 위치를 계산하지 않게 제외
+  return embers.filter((ember) => ember.lifeMs > elapsedMs);
+};
 
 /**
  * 노출 후 `elapsedMs`가 지난 불티. `DESIGN.md` §9 완료

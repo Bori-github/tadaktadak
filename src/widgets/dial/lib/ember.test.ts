@@ -4,7 +4,7 @@ import { EMBER_COLORS, EMBER_COUNT, emberAt, emberColorIndex, spawnEmbers, type 
 
 import { COLORS } from '@/shared/constants';
 
-const embers = (random?: () => number) => spawnEmbers({ centerX: 100, centerY: 100, radius: 76.5, random });
+const embers = (random?: () => number, elapsedMs = 0) => spawnEmbers({ centerX: 100, centerY: 100, radius: 76.5, elapsedMs, random });
 
 /** 12시에서 초당 한 도트로 곧게 오르는 불티. 수명은 2.8초 */
 const rising: Ember = { x: 0, y: 0, velocityX: 0, velocityY: -1, lifeMs: 2800 };
@@ -33,6 +33,13 @@ describe('불티 생성', () => {
     { label: '오른쪽 끝', value: 1, expected: 0.32 },
   ])('3시 방향 불티의 $label 가로 속도는 $expected 도트/프레임이다', ({ value, expected }) => {
     expect(embers(() => value)[0]?.velocityX).toBeCloseTo(expected, 10);
+  });
+
+  it.each([
+    { elapsedMs: 2099, expected: EMBER_COUNT },
+    { elapsedMs: 2100, expected: 0 },
+  ])('수명 2100밀리초로 만들면 노출 후 $elapsedMs밀리초에 $expected개가 된다', ({ elapsedMs, expected }) => {
+    expect(embers(() => 0, elapsedMs)).toHaveLength(expected);
   });
 
   it.each([
