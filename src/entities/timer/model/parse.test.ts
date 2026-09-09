@@ -22,6 +22,7 @@ describe('저장된 타이머 세션 값 읽기', () => {
     { label: '진행인데 시작한 시각이 없으면', raw: `{"phase":"running","mode":"focus","startedAt":null,"endsAt":${NOW},"pausedRemainingMs":null}` },
     { label: '일시정지인데 시작한 시각이 없으면', raw: '{"phase":"paused","mode":"focus","startedAt":null,"endsAt":null,"pausedRemainingMs":90000}' },
     { label: '완료인데 끝난 시각이 없으면', raw: '{"phase":"completed","mode":"focus"}' },
+    { label: '완료인데 끝난 시각이 숫자가 아니면', raw: '{"phase":"completed","mode":"focus","completedAt":null}' },
   ])('$label 버린다', ({ raw }) => {
     expect(parseSession(raw)).toBeNull();
   });

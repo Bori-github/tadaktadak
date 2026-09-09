@@ -43,6 +43,16 @@ describe('불티를 노출하는 동안', () => {
     expect(result.current).not.toBeNull();
   });
 
+  it('집중 타이머가 끝나고 3500밀리초가 지나면 꺼진다', async () => {
+    const { result } = await startedAt({ phase: 'completed', mode: 'focus', completedAt: Date.now() });
+
+    await act(async () => {
+      jest.advanceTimersByTime(3500);
+    });
+
+    expect(result.current).toBeNull();
+  });
+
   it.each([
     { label: '방금', completedBeforeMs: 0 },
     { label: '1초 전에', completedBeforeMs: 1000 },
