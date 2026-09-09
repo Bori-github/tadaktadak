@@ -2,27 +2,36 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 import { type HapticEvent } from '@modules/haptic-pattern';
 
-import { prepareVibration, vibrate } from './vibration';
+import { holdVibration, prepareVibration, releaseVibration, vibrate } from './vibration';
 
 const PATTERN: HapticEvent[] = [{ type: 'transient', timeMs: 0, intensity: 0.4, sharpness: 0.5 }];
 
-const mockPreparedNames: string[] = [];
+type PreparedCall = { name: string; events: HapticEvent[] };
+
+const mockPrepared: PreparedCall[] = [];
 const mockPlayedNames: string[] = [];
+let mockModule: unknown;
 
 jest.mock('@modules/haptic-pattern', () => ({
-  hapticPattern: {
-    prepareAsync: async (name: string) => {
-      mockPreparedNames.push(name);
-    },
-    play: (name: string) => {
-      mockPlayedNames.push(name);
-    },
+  // 게터라 읽을 때마다 돌아, 모듈을 찾지 못한 빌드를 테스트 중에 흉내 낼 수 있음
+  get hapticPattern() {
+    return mockModule;
   },
 }));
 
 beforeEach(() => {
-  mockPreparedNames.length = 0;
+  mockPrepared.length = 0;
   mockPlayedNames.length = 0;
+  mockModule = {
+    prepareAsync: async (name: string, events: HapticEvent[]) => {
+      mockPrepared.push({ name, events });
+    },
+    play: (name: string) => {
+      mockPlayedNames.push(name);
+    },
+    holdAsync: async () => {},
+    release: () => {},
+  };
 });
 
 describe('조작 진동', () => {
@@ -30,7 +39,18 @@ describe('조작 진동', () => {
     prepareVibration(PATTERN);
     vibrate();
 
-    expect(mockPreparedNames).toEqual([expect.any(String)]);
-    expect(mockPlayedNames).toEqual(mockPreparedNames);
+    expect(mockPrepared).toEqual([{ name: expect.any(String), events: PATTERN }]);
+    expect(mockPlayedNames).toEqual([mockPrepared[0]?.name]);
+  });
+
+  it('네이티브 모듈이 없으면 넷 다 아무 일도 하지 않는다', () => {
+    mockModule = null;
+
+    expect(() => {
+      prepareVibration(PATTERN);
+      vibrate();
+      holdVibration();
+      releaseVibration();
+    }).not.toThrow();
   });
 });

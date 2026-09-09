@@ -19,7 +19,6 @@ const mockHardware: string[] = [];
 
 jest.mock('@modules/haptic-pattern', () => ({
   hapticPattern: {
-    prepareAsync: async () => {},
     play: () => {
       mockVibrations += 1;
     },
@@ -145,6 +144,18 @@ describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
     await act(async () => {
       unmount();
     });
+
+    expect(mockHardware).toEqual(['hold', 'release']);
+  });
+
+  it('끌기 도중 손가락을 하나 더 대도 자동 종료 방지를 거듭 걸지 않는다', async () => {
+    const { handlers, manager } = await renderDrag();
+    const grab = buildTouch(getDialPoint(START_MINUTES));
+    const second = { id: POINTER_ID + 1, ...getDialPoint(START_MINUTES) };
+
+    handlers.onTouchesDown({ changedTouches: [grab], allTouches: [grab] }, manager);
+    handlers.onTouchesDown({ changedTouches: [second], allTouches: [grab, second] }, manager);
+    handlers.onFinalize();
 
     expect(mockHardware).toEqual(['hold', 'release']);
   });
