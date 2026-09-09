@@ -12,10 +12,11 @@ jest.mock('react-native-worklets', () => ({
   scheduleOnRN: (callback: (...args: unknown[]) => void, ...args: unknown[]) => callback(...args),
 }));
 
+type AutoShutdownCall = 'hold' | 'release';
+
 /** 진동을 재생한 횟수 */
 let mockVibrations = 0;
-/** 자동 종료를 막고 되돌린 순서 */
-const mockHardware: string[] = [];
+const mockAutoShutdown: AutoShutdownCall[] = [];
 
 jest.mock('@modules/haptic-pattern', () => ({
   hapticPattern: {
@@ -23,10 +24,10 @@ jest.mock('@modules/haptic-pattern', () => ({
       mockVibrations += 1;
     },
     holdAsync: async () => {
-      mockHardware.push('hold');
+      mockAutoShutdown.push('hold');
     },
     release: () => {
-      mockHardware.push('release');
+      mockAutoShutdown.push('release');
     },
   },
 }));
@@ -97,7 +98,7 @@ const drag = async ({ grabAt, through }: DragInput) => {
 
 beforeEach(() => {
   mockVibrations = 0;
-  mockHardware.length = 0;
+  mockAutoShutdown.length = 0;
 });
 
 describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
@@ -124,7 +125,7 @@ describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
   it('손잡이를 잡으면 자동 종료를 막고 뗄 때 되돌린다', async () => {
     await drag({ grabAt: getDialPoint(START_MINUTES), through: [26] });
 
-    expect(mockHardware).toEqual(['hold', 'release']);
+    expect(mockAutoShutdown).toEqual(['hold', 'release']);
   });
 
   it('손잡이 밖을 잡으면 끌어도 타이머 시간이 바뀌지 않는다', async () => {
@@ -145,7 +146,7 @@ describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
       unmount();
     });
 
-    expect(mockHardware).toEqual(['hold', 'release']);
+    expect(mockAutoShutdown).toEqual(['hold', 'release']);
   });
 
   it('끌기 도중 손가락을 하나 더 대도 자동 종료를 거듭 막지 않는다', async () => {
@@ -157,12 +158,12 @@ describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
     handlers.onTouchesDown({ changedTouches: [second], allTouches: [grab, second] }, manager);
     handlers.onFinalize();
 
-    expect(mockHardware).toEqual(['hold', 'release']);
+    expect(mockAutoShutdown).toEqual(['hold', 'release']);
   });
 
   it('손잡이 밖을 잡으면 자동 종료를 건드리지 않는다', async () => {
     await drag({ grabAt: getDialPoint(START_MINUTES + 15), through: [26, 27] });
 
-    expect(mockHardware).toEqual([]);
+    expect(mockAutoShutdown).toEqual([]);
   });
 });
