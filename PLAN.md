@@ -185,4 +185,27 @@ E2E는 시뮬레이터 개발 빌드를 대상으로 한다. Expo Go는 `appId`�
 
 ### Android
 
-- 개발 빌드가 필요 없다. Expo Go로 개발·검증한다
+`pnpm android` 개발 빌드로 개발·검증한다.
+
+| 항목           | 값            |
+| -------------- | ------------- |
+| Android Studio | 2026.1        |
+| SDK Platform   | 36            |
+| Build-Tools    | 36.0.0        |
+| NDK            | 27.1.12297006 |
+| Java           | Temurin 21    |
+
+- 설치는 `brew install --cask android-studio android-commandlinetools`
+- SDK 구성 요소는 `sdkmanager --sdk_root=$HOME/Library/Android/sdk "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006" "emulator" "system-images;android-36;google_apis;x86_64"`
+- AVD는 `avdmanager create avd -n Pixel_10 -k "system-images;android-36;google_apis;x86_64" -d pixel_10`
+- `~/.zshrc`에 아래를 추가한다
+
+```sh
+export JAVA_HOME="$(/usr/libexec/java_home -v 21)"
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+export PATH="$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools"
+```
+
+**유의사항**
+
+- Android용 Expo Go에서는 `expo-notifications` 55 이상이 import 시점에 예외를 던져 앱이 뜨지 않는다
