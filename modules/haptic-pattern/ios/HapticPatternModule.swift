@@ -36,7 +36,7 @@ public class HapticPatternModule: Module {
       guard let self else { return }
 
       do {
-        try self.play(events)
+        try self.playOnce(events)
       } catch {
         // 재생에 실패하면 시스템 진동으로 대체. 햅틱 하드웨어가 없는 기기는 엔진 생성에서 `CHHapticError.Code.notSupported`로 실패
         AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
@@ -82,7 +82,7 @@ public class HapticPatternModule: Module {
   }
 
   /// `engineQueue` 안에서만 호출
-  private func play(_ events: [HapticEventRecord]) throws {
+  private func playOnce(_ events: [HapticEventRecord]) throws {
     let engine = try runningEngine()
     let pattern = try CHHapticPattern(events: events.map { hapticEvent(from: $0) }, parameters: [])
 
