@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it, jest } from '@jest/globals';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { ReadoutButtons } from './ReadoutButtons';
@@ -11,7 +11,19 @@ const CENTER_Y = 360;
 
 type Rect = { left: number; top: number; width: number; height: number };
 
+/** 진동을 재생한 횟수 */
+let mockVibrations = 0;
+
+jest.mock('@modules/haptic-pattern', () => ({
+  hapticPattern: {
+    play: () => {
+      mockVibrations += 1;
+    },
+  },
+}));
+
 const buttons = async (dotSize: number, onSelect: (target: TimerMode) => void = () => {}) => {
+  mockVibrations = 0;
   await render(<ReadoutButtons centerX={CENTER_X} centerY={CENTER_Y} dotSize={dotSize} onSelect={onSelect} />);
 
   const [focus, rest] = screen.getAllByRole('button');
@@ -65,5 +77,14 @@ describe('누르면 그쪽 이름을 넘긴다', () => {
 
   it('아래 숫자는 휴식이다', async () => {
     expect(await press('rest')).toEqual(['rest']);
+  });
+});
+
+describe('누르는 순간 진동한다', () => {
+  it.each(['focus', 'rest'] as TimerMode[])('%s 숫자', async (target) => {
+    const found = await buttons(2);
+    fireEvent(found[target], 'pressIn');
+
+    expect(mockVibrations).toBe(1);
   });
 });

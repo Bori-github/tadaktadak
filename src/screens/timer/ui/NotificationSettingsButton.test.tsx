@@ -10,10 +10,22 @@ const CENTER_Y = 79;
 
 type Rect = { position: string; left: number; top: number; width: number; height: number };
 
+/** 진동을 재생한 횟수 */
+let mockVibrations = 0;
+
+jest.mock('@modules/haptic-pattern', () => ({
+  hapticPattern: {
+    play: () => {
+      mockVibrations += 1;
+    },
+  },
+}));
+
 const pressedChanges: boolean[] = [];
 
 const button = async (dotSize = 2) => {
   pressedChanges.length = 0;
+  mockVibrations = 0;
   await render(<NotificationSettingsButton centerX={CENTER_X} centerY={CENTER_Y} dotSize={dotSize} onPressedChange={(pressed) => pressedChanges.push(pressed)} />);
 
   return screen.getByRole('button');
@@ -43,6 +55,13 @@ describe('누름', () => {
 
     expect(openSettings).toHaveBeenCalledTimes(1);
     openSettings.mockRestore();
+  });
+
+  it('누르는 순간 진동한다', async () => {
+    const target = await button();
+    fireEvent(target, 'pressIn');
+
+    expect(mockVibrations).toBe(1);
   });
 
   it('누르고 뗄 때 눌림을 알린다', async () => {
