@@ -66,7 +66,7 @@ public class HapticPatternModule: Module {
 
       let engine = try self.runningEngine()
 
-      // 유휴에 하드웨어가 꺼지면 다음 재생의 시작이 늦어짐. `CHHapticEngine.h` autoShutdownEnabled
+      // 재생이 없는 동안 하드웨어가 꺼지면 다음 재생의 시작이 늦어짐. `CHHapticEngine.h` autoShutdownEnabled
       engine.isAutoShutdownEnabled = false
     }
     .runOnQueue(engineQueue)
@@ -130,7 +130,7 @@ public class HapticPatternModule: Module {
 
     let created = try CHHapticEngine()
 
-    // 유휴 동안 하드웨어를 끔. 타이머 한 번에 한 번 울려 그 사이가 대부분
+    // 재생이 없는 동안 하드웨어를 끔. 타이머 한 번에 한 번 울려 그 사이가 대부분
     created.isAutoShutdownEnabled = true
 
     // 햅틱 서버가 중단돼 리셋되면 플레이어를 해제해야 함. `CHHapticEngine.h` resetHandler

@@ -30,9 +30,9 @@ declare class HapticPatternModule extends NativeModule {
   prepareAsync(name: string, events: HapticEvent[]): Promise<void>;
   /** 등록된 패턴을 재생. 등록되지 않은 패턴은 동작하지 않음 */
   play(name: string): void;
-  /** `release`를 호출할 때까지 진동 하드웨어를 켜 둠 */
+  /** `release`를 호출할 때까지 자동 종료를 막음 */
   holdAsync(): Promise<void>;
-  /** `holdAsync`로 켜 둔 진동 하드웨어가 유휴에 꺼지게 함 */
+  /** `holdAsync`로 막아 둔 자동 종료를 되돌림 */
   release(): void;
 }
 

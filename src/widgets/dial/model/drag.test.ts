@@ -14,7 +14,7 @@ jest.mock('react-native-worklets', () => ({
 
 /** 진동을 재생한 횟수 */
 let mockVibrations = 0;
-/** 진동 하드웨어를 켜고 놓은 차례 */
+/** 자동 종료를 막고 되돌린 순서 */
 const mockHardware: string[] = [];
 
 jest.mock('@modules/haptic-pattern', () => ({
@@ -121,7 +121,7 @@ describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
     expect(mockVibrations).toBe(2);
   });
 
-  it('손잡이를 잡으면 진동 하드웨어를 켜 두고 뗄 때 놓는다', async () => {
+  it('손잡이를 잡으면 자동 종료를 막고 뗄 때 되돌린다', async () => {
     await drag({ grabAt: getDialPoint(START_MINUTES), through: [26] });
 
     expect(mockHardware).toEqual(['hold', 'release']);
@@ -135,7 +135,7 @@ describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
     expect(onChangeEnd).not.toHaveBeenCalled();
   });
 
-  it('끌기 도중 화면이 사라져도 자동 종료 방지를 되돌린다', async () => {
+  it('끌기 도중 화면이 사라져도 자동 종료를 되돌린다', async () => {
     const { handlers, manager, unmount } = await renderDrag();
     const grab = buildTouch(getDialPoint(START_MINUTES));
 
@@ -148,7 +148,7 @@ describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
     expect(mockHardware).toEqual(['hold', 'release']);
   });
 
-  it('끌기 도중 손가락을 하나 더 대도 자동 종료 방지를 거듭 걸지 않는다', async () => {
+  it('끌기 도중 손가락을 하나 더 대도 자동 종료를 거듭 막지 않는다', async () => {
     const { handlers, manager } = await renderDrag();
     const grab = buildTouch(getDialPoint(START_MINUTES));
     const second = { id: POINTER_ID + 1, ...getDialPoint(START_MINUTES) };
@@ -160,7 +160,7 @@ describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
     expect(mockHardware).toEqual(['hold', 'release']);
   });
 
-  it('손잡이 밖을 잡으면 진동 하드웨어를 건드리지 않는다', async () => {
+  it('손잡이 밖을 잡으면 자동 종료를 건드리지 않는다', async () => {
     await drag({ grabAt: getDialPoint(START_MINUTES + 15), through: [26, 27] });
 
     expect(mockHardware).toEqual([]);

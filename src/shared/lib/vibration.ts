@@ -14,13 +14,13 @@ export const playVibration = (): void => {
   hapticPattern?.play(PATTERN_NAME);
 };
 
-/** 진동이 잇따르는 동안 하드웨어를 켜 둠 */
+/** 진동이 잇따르는 동안 자동 종료를 막음 */
 export const holdVibration = (): void => {
-  // 실패하면 유휴에 하드웨어가 꺼져 다음 진동의 시작이 늦어짐
+  // 실패하면 자동 종료를 막지 않아 다음 진동의 시작이 늦어짐
   hapticPattern?.holdAsync().catch(() => {});
 };
 
-/** 켜 둔 하드웨어가 유휴에 꺼짐 */
+/** 막아 둔 자동 종료를 되돌림 */
 export const releaseVibration = (): void => {
   hapticPattern?.release();
 };
