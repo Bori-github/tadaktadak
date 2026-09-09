@@ -5,7 +5,6 @@ import { useDerivedValue, useFrameCallback, useSharedValue } from 'react-native-
 import { DOT_SAMPLING, SOFT_SAMPLING } from '../lib/atlas';
 import { BLOOM_GRADIENT } from '../lib/bloom';
 import { EMBER_COLORS, EMBER_COUNT, EMBER_GLOW_ALPHA, EMBER_GLOW_RADIUS, emberAt, emberColorIndex, spawnEmbers, type Ember } from '../lib/ember';
-import { COMPLETED_EFFECT_MS } from '@/entities/timer';
 import { DOT_SIZE } from '@/shared/constants';
 
 type EmbersProps = {
@@ -79,9 +78,7 @@ export const Embers = memo(({ centerX, centerY, radius, dotSize, effectStartedAt
     elapsed.value = elapsedMs;
     setEmbers(spawnEmbers({ centerX: centerX / dotSize, centerY: centerY / dotSize, radius: radius / dotSize }));
 
-    const burnedOut = setTimeout(() => setEmbers([]), COMPLETED_EFFECT_MS - elapsedMs);
-
-    return () => clearTimeout(burnedOut);
+    // 연출이 끝나면 `useCompletedEffectStartedAt`이 `null`을 주고 위 분기가 지우므로, 여기서 따로 예약하지 않음
     // `useSharedValue`가 준 값은 고정 참조라 뺌. 넣으면 React Compiler 린트가 안에서 쓰는 것을 막음
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectStartedAt, centerX, centerY, radius, dotSize]);
