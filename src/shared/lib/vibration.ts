@@ -1,17 +1,17 @@
 import { hapticPattern, type HapticEvent } from '@modules/haptic-pattern';
 
-/** 미리 만들어 둔 진동 패턴의 이름 */
-export type VibrationName = 'snap';
+/** 네이티브 모듈에 등록하는 이름. 앱이 쓰는 조작 진동이 하나뿐이라 부르는 쪽에서 고르지 않음 */
+const PATTERN_NAME = 'tap';
 
-/** 패턴을 이름에 붙여 등록 */
-export const prepareVibration = (name: VibrationName, events: HapticEvent[]): void => {
-  // 등록하지 않은 이름이거나 실패하면 그 이름의 진동이 울리지 않음
-  hapticPattern?.prepareAsync(name, events).catch(() => {});
+/** 조작 진동 패턴을 등록 */
+export const prepareVibration = (events: HapticEvent[]): void => {
+  // 등록하지 않았거나 실패하면 진동이 울리지 않음
+  hapticPattern?.prepareAsync(PATTERN_NAME, events).catch(() => {});
 };
 
-/** 미리 만들어 둔 패턴을 재생. 네이티브 모듈이 없는 빌드에서는 진동이 울리지 않음 */
-export const vibrate = (name: VibrationName): void => {
-  hapticPattern?.play(name);
+/** 등록한 패턴을 재생. 네이티브 모듈이 없는 빌드에서는 진동이 울리지 않음 */
+export const vibrate = (): void => {
+  hapticPattern?.play(PATTERN_NAME);
 };
 
 /** 진동이 잇따르는 동안 하드웨어를 켜 둠 */

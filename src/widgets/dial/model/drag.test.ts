@@ -12,18 +12,16 @@ jest.mock('react-native-worklets', () => ({
   scheduleOnRN: (callback: (...args: unknown[]) => void, ...args: unknown[]) => callback(...args),
 }));
 
-const mockVibrations: string[] = [];
+/** 진동을 재생한 횟수 */
+let mockVibrations = 0;
 /** 진동 하드웨어를 켜고 놓은 차례 */
 const mockHardware: string[] = [];
-const mockPrepared: string[] = [];
 
 jest.mock('@modules/haptic-pattern', () => ({
   hapticPattern: {
-    prepareAsync: async (name: string) => {
-      mockPrepared.push(name);
-    },
-    play: (name: string) => {
-      mockVibrations.push(name);
+    prepareAsync: async () => {},
+    play: () => {
+      mockVibrations += 1;
     },
     holdAsync: async () => {
       mockHardware.push('hold');
@@ -92,9 +90,8 @@ const drag = async ({ grabAt, through }: DragInput) => {
 };
 
 beforeEach(() => {
-  mockVibrations.length = 0;
+  mockVibrations = 0;
   mockHardware.length = 0;
-  mockPrepared.length = 0;
 });
 
 describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
@@ -115,7 +112,7 @@ describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
   it('같은 눈금에 머무는 동안에는 진동하지 않고 눈금을 넘을 때마다 한 번씩 진동한다', async () => {
     await drag({ grabAt: getDialPoint(START_MINUTES), through: [26, 26, 27] });
 
-    expect(mockVibrations).toEqual(['snap', 'snap']);
+    expect(mockVibrations).toBe(2);
   });
 
   it('손잡이를 잡으면 진동 하드웨어를 켜 두고 뗄 때 놓는다', async () => {
@@ -130,12 +127,6 @@ describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
     expect(manager.fail).toHaveBeenCalled();
     expect(onChange).not.toHaveBeenCalled();
     expect(onChangeEnd).not.toHaveBeenCalled();
-  });
-
-  it('제스처를 만들 때 스냅 패턴을 미리 등록한다', async () => {
-    await drag({ grabAt: getDialPoint(START_MINUTES), through: [] });
-
-    expect(mockPrepared).toEqual(['snap']);
   });
 
   it('손잡이 밖을 잡으면 진동 하드웨어를 건드리지 않는다', async () => {

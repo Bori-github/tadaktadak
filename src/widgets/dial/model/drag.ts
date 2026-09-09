@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Gesture } from 'react-native-gesture-handler';
 import { useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
@@ -6,8 +6,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { isWithinThumb, minutesFromPoint, pointOnDial } from '../lib/geometry';
 
 import { TIMER_RANGE, type TimerMode } from '@/entities/timer';
-import { SNAP_PATTERN } from '@/shared/constants';
-import { holdVibration, prepareVibration, releaseVibration, vibrate } from '@/shared/lib';
+import { holdVibration, releaseVibration, vibrate } from '@/shared/lib';
 
 type DialDragInput = {
   /** 시계판 중심 (px) */
@@ -38,10 +37,6 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
   const grabbed = useSharedValue(false);
   const pointerId = useSharedValue(-1);
   const changed = useSharedValue(false);
-
-  useEffect(() => {
-    prepareVibration('snap', SNAP_PATTERN);
-  }, []);
 
   return useMemo(() => {
     const { min, max } = TIMER_RANGE[mode];
@@ -78,7 +73,7 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
 
           dragged.value = next;
           changed.value = true;
-          scheduleOnRN(vibrate, 'snap');
+          scheduleOnRN(vibrate);
           scheduleOnRN(onChange, next);
         })
         .onFinalize(() => {
