@@ -85,6 +85,16 @@ describe('완료에서 다음으로', () => {
     expect(advanceTimer({ session: completedBefore(elapsedMs), now: NOW, restMs: REST_MS, focusMs: SETTING_MS }).phase).toBe(expected);
   });
 
+  // 시스템 시각을 과거로 바꾸면 `now`가 `completedAt`보다 앞섬
+  it('끝난 시각이 1초 뒤 미래여도 휴식 타이머가 설정한 5분을 넘지 않는다', () => {
+    expect(advanceTimer({ session: completedBefore(-1000), now: NOW, restMs: REST_MS, focusMs: SETTING_MS })).toEqual({
+      phase: 'running',
+      mode: 'rest',
+      startedAt: NOW,
+      endsAt: NOW + REST_MS,
+    });
+  });
+
   it('집중 타이머가 끝나고 휴식 타이머가 5분이면 5분 뒤에 끝나는 휴식 진행이 된다', () => {
     expect(advanceTimer({ session: focusCompleted, now: NOW, restMs: REST_MS, focusMs: SETTING_MS })).toEqual({
       phase: 'running',

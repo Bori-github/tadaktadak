@@ -36,7 +36,7 @@ describe('완료 연출이 끝나기까지', () => {
     expect(remaining(resting, NOW + elapsedMs)).toBe(expected);
   });
 
-  // 기기 시각을 뒤로 돌리면 `completedAt`이 미래가 됨
+  // 시스템 시각을 과거로 바꾸면 `now`가 `startedAt`보다 앞섬
   it('끝난 시각이 1초 뒤 미래여도 연출 길이를 넘지 않는다', () => {
     expect(remaining(focusCompleted, NOW - 1000)).toBe(3500);
   });
