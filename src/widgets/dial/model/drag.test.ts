@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { renderHook } from '@testing-library/react-native';
+import { act, renderHook } from '@testing-library/react-native';
 
 import { useDialDrag } from './drag';
 import { pointOnDial } from '../lib/geometry';
@@ -55,12 +55,13 @@ type DragInput = {
   through: number[];
 };
 
-/** 한 번의 끌기를 끝까지 재생하고 두 콜백이 받은 것을 돌려줌 */
-const drag = async ({ grabAt, through }: DragInput) => {
+const buildTouch = (point: Point): Touch => ({ id: POINTER_ID, ...point });
+
+const renderDrag = async () => {
   const onChange = jest.fn<(minutes: number) => void>();
   const onChangeEnd = jest.fn<(minutes: number) => void>();
 
-  const { result } = await renderHook(() =>
+  const { result, unmount } = await renderHook(() =>
     useDialDrag({
       centerX: CENTER_X,
       centerY: CENTER_Y,
@@ -77,7 +78,13 @@ const drag = async ({ grabAt, through }: DragInput) => {
   // `fireGestureHandler`가 터치 이벤트를 내보내지 못해 제스처의 콜백을 직접 부름
   const handlers = result.current.handlers as unknown as TouchHandlers;
   const manager = { activate: jest.fn(), fail: jest.fn() };
-  const buildTouch = (point: Point): Touch => ({ id: POINTER_ID, ...point });
+
+  return { handlers, manager, unmount, onChange, onChangeEnd };
+};
+
+/** 한 번의 끌기를 끝까지 재생하고 두 콜백이 받은 것을 돌려줌 */
+const drag = async ({ grabAt, through }: DragInput) => {
+  const { handlers, manager, onChange, onChangeEnd } = await renderDrag();
 
   handlers.onTouchesDown({ changedTouches: [buildTouch(grabAt)], allTouches: [buildTouch(grabAt)] }, manager);
   for (const minutes of through) {
@@ -127,6 +134,19 @@ describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
     expect(manager.fail).toHaveBeenCalled();
     expect(onChange).not.toHaveBeenCalled();
     expect(onChangeEnd).not.toHaveBeenCalled();
+  });
+
+  it('끌기 도중 화면이 사라져도 자동 종료 방지를 되돌린다', async () => {
+    const { handlers, manager, unmount } = await renderDrag();
+    const grab = buildTouch(getDialPoint(START_MINUTES));
+
+    // 화면이 사라지면 제스처가 버려져 `onFinalize`가 호출되지 않음
+    handlers.onTouchesDown({ changedTouches: [grab], allTouches: [grab] }, manager);
+    await act(async () => {
+      unmount();
+    });
+
+    expect(mockHardware).toEqual(['hold', 'release']);
   });
 
   it('손잡이 밖을 잡으면 진동 하드웨어를 건드리지 않는다', async () => {

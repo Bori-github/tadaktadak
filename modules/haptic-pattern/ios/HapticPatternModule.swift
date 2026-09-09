@@ -142,6 +142,11 @@ public class HapticPatternModule: Module {
       }
     }
 
+    // 자동 종료를 막아 둔 채 백그라운드로 멈추면 재시작해도 막은 것이 남아, 여기서 되돌림. `CHHapticEngine.h` ApplicationSuspended
+    created.stoppedHandler = { [weak self] _ in
+      self?.engineQueue.async { self?.engine?.isAutoShutdownEnabled = true }
+    }
+
     try created.start()
     engine = created
 

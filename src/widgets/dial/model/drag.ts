@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Gesture } from 'react-native-gesture-handler';
 import { useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
@@ -37,6 +37,14 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
   const grabbed = useSharedValue(false);
   const pointerId = useSharedValue(-1);
   const changed = useSharedValue(false);
+
+  // 끌기 도중 제스처가 버려지면 `onFinalize`가 호출되지 않아, 언마운트 시 자동 종료를 되돌림
+  useEffect(
+    () => () => {
+      releaseVibration();
+    },
+    [],
+  );
 
   return useMemo(() => {
     const { min, max } = TIMER_RANGE[mode];
