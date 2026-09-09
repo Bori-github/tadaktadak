@@ -12,7 +12,7 @@ const RUNNING: TimerSession = { phase: 'running', mode: 'focus', startedAt: NOW,
 const NOT_RUNNING: { situation: string; session: TimerSession }[] = [
   { situation: '대기', session: { phase: 'ready', mode: 'focus' } },
   { situation: '일시정지', session: { phase: 'paused', mode: 'focus', startedAt: NOW, pausedRemainingMs: MINUTE_MS } },
-  { situation: '완료', session: { phase: 'completed', mode: 'focus' } },
+  { situation: '완료', session: { phase: 'completed', mode: 'focus', completedAt: NOW } },
 ];
 
 const WITHOUT_PERMISSION: { situation: string; status: PermissionStatus | null }[] = [

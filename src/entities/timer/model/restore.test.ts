@@ -21,8 +21,8 @@ describe('앱 재실행', () => {
   it.each([
     { label: '1분 전에 끝났으면', endsAt: NOW - MINUTE_IN_MS },
     { label: '끝날 시각이 지금과 같으면', endsAt: NOW },
-  ])('진행 중에 종료됐고 $label 완료로 돌아온다', ({ endsAt }) => {
-    expect(restoreSession({ stored: runningUntil(endsAt), now: NOW, stopped: false })).toEqual({ phase: 'completed', mode: 'focus' });
+  ])('진행 중에 종료됐고 $label 그 시각에 끝난 완료로 돌아온다', ({ endsAt }) => {
+    expect(restoreSession({ stored: runningUntil(endsAt), now: NOW, stopped: false })).toEqual({ phase: 'completed', mode: 'focus', completedAt: endsAt });
   });
 
   it('대기 상태로 저장됐으면 집중 타이머 대기다', () => {
@@ -30,7 +30,7 @@ describe('앱 재실행', () => {
   });
 
   it('완료 상태로 저장됐으면 완료로 돌아온다', () => {
-    const stored: TimerSession = { phase: 'completed', mode: 'focus' };
+    const stored: TimerSession = { phase: 'completed', mode: 'focus', completedAt: NOW - MINUTE_IN_MS };
 
     expect(restoreSession({ stored, now: NOW, stopped: false })).toEqual(stored);
   });

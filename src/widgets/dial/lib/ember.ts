@@ -1,4 +1,3 @@
-import { COMPLETED_EFFECT_MS, type TimerSession } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 
 /** 불티 하나가 노출될 때의 위치·속도·수명. `DESIGN.md` §9 완료 */
@@ -28,6 +27,8 @@ type SpawnInput = {
   centerY: number;
   /** 개체 중심 반지름 (dot) */
   radius: number;
+  /** 연출이 시작된 뒤 흐른 시간 (밀리초) */
+  elapsedMs: number;
   random?: () => number;
 };
 
@@ -43,39 +44,6 @@ export const EMBER_COLORS = [COLORS.fire.core, COLORS.fire.mid, COLORS.fire.base
 
 const LIFE_MS = 2800;
 const LIFE_SPREAD: Spread = { min: 0.75, max: 1.25 };
-
-type EmberShownInput = {
-  session: TimerSession;
-  now: number;
-};
-
-/**
- * 불티가 노출되는지 여부. `DESIGN.md` §9 완료
- *
- * @param input.session - 지금 타이머 세션
- * @param input.now - 지금 시각 (밀리초)
- * @returns 집중 타이머가 끝나고 불티 수명이 다하기 전이면 `true`
- */
-export const isEmberShown = ({ session, now }: EmberShownInput): boolean => {
-  if (session.phase === 'completed') return session.mode === 'focus';
-
-  const remaining = emberRemainingMs({ session, now });
-
-  return remaining !== null && remaining > 0;
-};
-
-/**
- * 불티가 없어질 때까지 남은 시간 (밀리초). `DESIGN.md` §9 완료
- *
- * @param input.session - 지금 타이머 세션
- * @param input.now - 지금 시각 (밀리초)
- * @returns 휴식 진행에서 남은 시간. 그 밖의 단계에서는 `null`
- */
-export const emberRemainingMs = ({ session, now }: EmberShownInput): number | null => {
-  if (session.phase !== 'running' || session.mode !== 'rest') return null;
-
-  return Math.max(0, session.startedAt + COMPLETED_EFFECT_MS - now);
-};
 
 const RISE = 0.6;
 const RISE_SPREAD: Spread = { min: 0.55, max: 1.45 };
@@ -107,10 +75,10 @@ const damped = (ratio: number, frames: number): number => {
  * 완료에서 개체 둘레에 노출되는 불티. `DESIGN.md` §9 완료
  *
  * @param [input.random] - 0 이상 1 미만의 값. 편차를 고정하려면 넘김
- * @returns 위치·속도·수명에 편차를 적용한 불티 80개
+ * @returns 위치·속도·수명에 편차를 적용한 불티 80개. `lifeMs`가 `elapsedMs` 이하인 것은 제외
  */
-export const spawnEmbers = ({ centerX, centerY, radius, random = Math.random }: SpawnInput): Ember[] =>
-  Array.from({ length: EMBER_COUNT }, () => {
+export const spawnEmbers = ({ centerX, centerY, radius, elapsedMs, random = Math.random }: SpawnInput): Ember[] => {
+  const embers = Array.from({ length: EMBER_COUNT }, () => {
     const angle = random() * 2 * Math.PI;
     const distance = radius * withSpread(random, SPAWN_BAND);
 
@@ -122,6 +90,10 @@ export const spawnEmbers = ({ centerX, centerY, radius, random = Math.random }: 
       lifeMs: LIFE_MS * withSpread(random, LIFE_SPREAD),
     };
   });
+
+  // `emberAt`이 남은 수명 0을 주어 `Embers`가 그리지 않을 불티라, 프레임마다 위치를 계산하지 않게 제외
+  return embers.filter((ember) => ember.lifeMs > elapsedMs);
+};
 
 /**
  * 노출 후 `elapsedMs`가 지난 불티. `DESIGN.md` §9 완료

@@ -17,7 +17,20 @@ import { NotificationSettingsButton } from './NotificationSettingsButton';
 import { SpeedControl } from './SpeedControl';
 
 import { ControlButtons, Controls, type ControlButton } from '@/widgets/controls';
-import { colorMode, useEmberShown, isThumbTwinkling, restDialMinutes, DialArc, Embers, Thumb, DialItems, DialReadout, ReadoutButtons, Numerals, useDialDrag } from '@/widgets/dial';
+import {
+  colorMode,
+  useCompletedEffectStartedAt,
+  isThumbTwinkling,
+  restDialMinutes,
+  DialArc,
+  Embers,
+  Thumb,
+  DialItems,
+  DialReadout,
+  ReadoutButtons,
+  Numerals,
+  useDialDrag,
+} from '@/widgets/dial';
 import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 import { RoundDotButton } from '@/shared/ui/dot-button';
@@ -63,7 +76,8 @@ export const TimerScreen = (): JSX.Element => {
 
   const twinkling = isThumbTwinkling({ isResting: resting, phase: session.phase });
 
-  const emberShown = useEmberShown(session);
+  const effectStartedAt = useCompletedEffectStartedAt(session);
+  const effectShown = effectStartedAt !== null;
 
   // 층별 동작은 `DESIGN.md` §8
   const dialMinutes = useDerivedValue(() => {
@@ -78,7 +92,7 @@ export const TimerScreen = (): JSX.Element => {
   const countedMinutes = resting ? restDialMinutes({ focusMinutes: minutes.focus, restMinutes: minutes.rest, remainingMinutes: shownMinutes }) : shownMinutes;
 
   // 대기에서 설정 시간을 넘기면 아무 눈금도 붙지 않음
-  const litMinutes = editing ? selected : emberShown ? 0 : countedMinutes;
+  const litMinutes = editing ? selected : effectShown ? 0 : countedMinutes;
 
   // 휴식 타이머 시간을 넣으면 집중이 점화한 개체가 꺼짐
   const itemMinutes = resting ? minutes.focus : selected;
@@ -121,7 +135,7 @@ export const TimerScreen = (): JSX.Element => {
             isPaused={session.phase === 'paused'}
             isReady={session.phase === 'ready'}
           />
-          <Embers centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} isShown={emberShown} />
+          <Embers centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} effectStartedAt={effectStartedAt} />
           <Thumb centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} isTwinkling={twinkling} />
           <Numerals centerX={centerX} centerY={centerY} radius={layout.numeralRadius} dotSize={layout.dotSize} />
           <DialReadout

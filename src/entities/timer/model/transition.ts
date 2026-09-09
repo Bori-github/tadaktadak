@@ -70,10 +70,11 @@ export const resumeTimer = ({ session, now }: ResumeInput): RunningSession => ({
 /**
  * 타이머 시간 완료. `DESIGN.md` §8 휴식 타이머
  *
- * @param session - 동작하던 타이머 세션 값
- * @returns 집중은 끝날 시각 없는 완료, 휴식은 연출이 없어 집중 타이머 대기
+ * @param session - 진행 중이던 타이머 세션 값
+ * @returns 집중은 끝날 시각을 끝난 시각으로 옮긴 완료, 휴식은 연출이 없어 집중 타이머 대기
  */
-export const completeTimer = (session: TimerSession): TimerSession => (session.mode === 'rest' ? READY_SESSION : { phase: 'completed', mode: session.mode });
+export const completeTimer = (session: RunningSession): TimerSession =>
+  session.mode === 'rest' ? READY_SESSION : { phase: 'completed', mode: session.mode, completedAt: session.endsAt };
 
 /**
  * 완료에서 다음 단계로. `DESIGN.md` §8 휴식 타이머
@@ -86,6 +87,12 @@ export const completeTimer = (session: TimerSession): TimerSession => (session.m
  */
 export const advanceTimer = ({ session, now, restMs, focusMs }: AdvanceInput): TimerSession => {
   if (session.mode !== 'focus') return READY_SESSION;
+  if (restMs === 0) return { phase: 'running', mode: 'focus', startedAt: now, endsAt: now + focusMs };
 
-  return restMs > 0 ? { phase: 'running', mode: 'rest', startedAt: now, endsAt: now + restMs } : { phase: 'running', mode: 'focus', startedAt: now, endsAt: now + focusMs };
+  // 백그라운드에서 집중 타이머가 완료되고 포그라운드로 돌아왔을 때, 정해진 휴식 타이머 완료 시각을 수행하기 위해 `completedAt`을 기준으로 시간 계산
+  // 시스템 시각을 과거로 바꾸면 `now`가 `completedAt`보다 앞서므로, 휴식 타이머가 `restMs`보다 길어지지 않게 자름
+  const startedAt = Math.min(now, session.completedAt);
+  const endsAt = startedAt + restMs;
+
+  return endsAt > now ? { phase: 'running', mode: 'rest', startedAt, endsAt } : READY_SESSION;
 };

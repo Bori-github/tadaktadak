@@ -23,7 +23,7 @@ export const parseSession = (raw: string | null): TimerSession | null => {
 
   if (typeof value !== 'object' || value === null) return null;
 
-  const { phase, mode, startedAt, endsAt, pausedRemainingMs } = value as Record<string, unknown>;
+  const { phase, mode, startedAt, endsAt, pausedRemainingMs, completedAt } = value as Record<string, unknown>;
   if (!isPhase(phase)) return null;
   if (!isMode(mode)) return null;
 
@@ -35,6 +35,8 @@ export const parseSession = (raw: string | null): TimerSession | null => {
 
     return typeof pausedRemainingMs === 'number' ? { phase, mode, startedAt, pausedRemainingMs } : null;
   }
+
+  if (phase === 'completed') return typeof completedAt === 'number' ? { phase, mode, completedAt } : null;
 
   return { phase, mode };
 };

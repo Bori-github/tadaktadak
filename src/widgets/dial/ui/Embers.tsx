@@ -5,7 +5,6 @@ import { useDerivedValue, useFrameCallback, useSharedValue } from 'react-native-
 import { DOT_SAMPLING, SOFT_SAMPLING } from '../lib/atlas';
 import { BLOOM_GRADIENT } from '../lib/bloom';
 import { EMBER_COLORS, EMBER_COUNT, EMBER_GLOW_ALPHA, EMBER_GLOW_RADIUS, emberAt, emberColorIndex, spawnEmbers, type Ember } from '../lib/ember';
-import { COMPLETED_EFFECT_MS } from '@/entities/timer';
 import { DOT_SIZE } from '@/shared/constants';
 
 type EmbersProps = {
@@ -14,7 +13,7 @@ type EmbersProps = {
   /** 개체 중심 반지름 (px) */
   radius: number;
   dotSize: number;
-  isShown: boolean;
+  effectStartedAt: number | null;
 };
 
 /** 잔광 텍스처 반지름 (px) */
@@ -51,37 +50,38 @@ const drawEmbers = (): SkImage | null => {
   return surface.makeImageSnapshot();
 };
 
-export const Embers = memo(({ centerX, centerY, radius, dotSize, isShown }: EmbersProps) => {
+export const Embers = memo(({ centerX, centerY, radius, dotSize, effectStartedAt }: EmbersProps) => {
   const image = useMemo(() => drawEmbers(), []);
   const glowSprites = useMemo(() => Array.from({ length: EMBER_COUNT }, () => GLOW_SPRITE), []);
   const [embers, setEmbers] = useState<Ember[]>([]);
 
   const elapsed = useSharedValue(0);
-  const startedAt = useSharedValue(NOT_STARTED);
+  const frameStartedAt = useSharedValue(NOT_STARTED);
 
   const rising = useFrameCallback((frame) => {
     'worklet';
-    if (startedAt.value === NOT_STARTED) startedAt.value = frame.timestamp;
+    if (frameStartedAt.value === NOT_STARTED) frameStartedAt.value = frame.timestamp - elapsed.value;
 
-    elapsed.value = frame.timestamp - startedAt.value;
+    elapsed.value = frame.timestamp - frameStartedAt.value;
   }, false);
 
   useEffect(() => {
-    if (!isShown) {
+    if (effectStartedAt === null) {
       setEmbers([]);
       return;
     }
 
-    startedAt.value = NOT_STARTED;
-    elapsed.value = 0;
-    setEmbers(spawnEmbers({ centerX: centerX / dotSize, centerY: centerY / dotSize, radius: radius / dotSize }));
+    const elapsedMs = Date.now() - effectStartedAt;
 
-    const burnedOut = setTimeout(() => setEmbers([]), COMPLETED_EFFECT_MS);
+    // 앱 밖에서 흐른 만큼 앞선 자리에서 이어지도록 첫 프레임 전에 채움
+    frameStartedAt.value = NOT_STARTED;
+    elapsed.value = elapsedMs;
+    setEmbers(spawnEmbers({ centerX: centerX / dotSize, centerY: centerY / dotSize, radius: radius / dotSize, elapsedMs }));
 
-    return () => clearTimeout(burnedOut);
+    // 연출이 끝나면 `useCompletedEffectStartedAt`이 `null`을 주고 위 분기가 지우므로, 여기서 따로 예약하지 않음
     // `useSharedValue`가 준 값은 고정 참조라 뺌. 넣으면 React Compiler 린트가 안에서 쓰는 것을 막음
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isShown, centerX, centerY, radius, dotSize]);
+  }, [effectStartedAt, centerX, centerY, radius, dotSize]);
 
   useEffect(() => {
     rising.setActive(embers.length > 0);
