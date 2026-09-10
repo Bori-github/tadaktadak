@@ -119,7 +119,7 @@
 
 ### Live Activity (개발 빌드)
 
-- [ ] 개발 빌드 전환 (서명). 120Hz 설정 (`app.json` `ios.infoPlist`의 `CADisableMinimumFrameDurationOnPhone`)
+- [x] 개발 빌드 전환 (서명). 120Hz 설정 (`app.json` `ios.infoPlist`의 `CADisableMinimumFrameDurationOnPhone`)
 - [ ] Widget Extension 타겟 추가와 앱 연결 (`@bacons/apple-targets`)
   - 실시간 현황 스위치가 켜져 있는지 확인하는 방법을 정한다
 - [ ] 정지됨 플래그를 앱에 전달하는 방식을 정한다. App Group은 Apple Developer Program 가입이 필요하다. 대안은 App Intent의 `openAppWhenRun`. 근거는 `.claude/docs/live-activity.md`

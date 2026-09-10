@@ -9,6 +9,18 @@
 - Live Activity의 수명은 앱 프로세스와 분리돼 있다. 앱을 종료하거나 시스템이 종료해도 남는다
 - 최대 8시간 뒤 시스템이 끝낸다. 끝난 뒤에도 잠금화면에는 최대 4시간 더 남을 수 있다
 
+## 버전별 지원 기능
+
+| 버전     | 기능                                                                 |
+| -------- | -------------------------------------------------------------------- |
+| iOS 16.1 | 도입. 잠금화면과 Dynamic Island 표시, 앱에서 시작, 푸시 토큰 갱신    |
+| iOS 16.2 | `ActivityContent` (`staleDate`, `relevanceScore`), 잦은 갱신 허용 키 |
+| iOS 17   | App Intents 버튼과 토글, StandBy 표시, iPad 지원                     |
+| iOS 17.2 | push-to-start. 앱을 실행하지 않고 서버에서 시작                      |
+| iOS 18   | 채널 브로드캐스트 푸시, Apple Watch 스마트 스택 표시                 |
+| iOS 26   | 예약 시작, CarPlay 표시, macOS 26 표시                               |
+| iOS 26.5 | 서드파티 액세서리 표시(`AccessoryLiveActivities`). EU 한정           |
+
 ## 앱 상태별로 되는 것
 
 | 동작                         | 앱 실행 중 | 앱 잠듦·종료 | 서버 푸시 |
@@ -73,6 +85,29 @@
 - Apple, [applicationWillTerminate(_:)](<https://developer.apple.com/documentation/uikit/uiapplicationdelegate/applicationwillterminate(_:)>)
 - Apple Developer Forums, [Force quitting the app doesn't end the Live Activities](https://developer.apple.com/forums/thread/729651)
 - Apple Developer Forums, [App Groups capability is not available](https://developer.apple.com/forums/thread/656271)
-- Apple, [Your (Personal Team) cannot be used to Code Sign your App for submission to the App Store](https://developer.apple.com/library/archive/qa/qa1915/_index.html)
 - Flow, [Live Activity, Dynamic Island, and App Blocking](https://www.flow.app/blog/devblog-live-activity-dynamic-island-and-app-blocking)
 - Corca, [Live Activity 더 깊게 사용해보기: 실시간 일정 기능 개발기](https://medium.com/corca/live-activity-%EB%8D%94-%EA%B9%8A%EA%B2%8C-%EC%82%AC%EC%9A%A9%ED%95%B4%EB%B3%B4%EA%B8%B0-%EC%8B%A4%EC%8B%9C%EA%B0%84-%EC%9D%BC%EC%A0%95-%EA%B8%B0%EB%8A%A5-%EA%B0%9C%EB%B0%9C%EA%B8%B0-eb10c12bb4ce)
+
+---
+
+## 개발 과정
+
+### 빌드 설정
+
+Live Activity 지원 여부는 앱 설정에서 선언한다. `app.json`의 `ios.infoPlist`에 추가한다.
+
+```json
+{
+  "ios": {
+    "infoPlist": {
+      "NSSupportsLiveActivities": true,
+      "CADisableMinimumFrameDurationOnPhone": true
+    }
+  }
+}
+```
+
+| 키                                     | 의미                                                                          |
+| -------------------------------------- | ----------------------------------------------------------------------------- |
+| `NSSupportsLiveActivities`             | 앱의 Live Activity 사용 선언. 잠금화면과 Dynamic Island 표시가 이 키로 활성화 |
+| `CADisableMinimumFrameDurationOnPhone` | 시스템 기본 주사율 상한 해제. ProMotion 화면에서만 효과                       |
