@@ -10,7 +10,11 @@
     "ios": {
       "bundleIdentifier": "com.boriguri.tadaktadak",
       "supportsTablet": true,
-      "requireFullScreen": true
+      "requireFullScreen": true,
+      "infoPlist": {
+        "NSSupportsLiveActivities": true,
+        "CADisableMinimumFrameDurationOnPhone": true
+      }
     },
     "android": {
       "package": "com.boriguri.tadaktadak",
