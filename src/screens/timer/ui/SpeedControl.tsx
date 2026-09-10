@@ -20,7 +20,7 @@ export const SpeedControl = ({ speed, enabled, onSelect }: SpeedControlProps): J
   return (
     <View style={[styles.row, { bottom: insets.bottom + 8 }, enabled ? null : styles.locked]} pointerEvents={enabled ? 'auto' : 'none'}>
       {TIMER_SPEEDS.map((option) => (
-        <Pressable key={option} style={[styles.item, option === speed && styles.selected]} onPress={() => onSelect(option)}>
+        <Pressable key={option} testID={`speed-${option}x`} style={[styles.item, option === speed && styles.selected]} onPress={() => onSelect(option)}>
           <Text style={styles.label}>{option}×</Text>
         </Pressable>
       ))}

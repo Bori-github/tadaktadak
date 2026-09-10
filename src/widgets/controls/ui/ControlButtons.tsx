@@ -29,6 +29,7 @@ export const ControlButtons = memo(({ centerX, centerY, dotSize, phase, onPlay, 
   return (
     <>
       <Pressable
+        testID="controls-play"
         accessibilityRole="button"
         style={touchArea({ centerX: centers.play, centerY, size })}
         onPressIn={() => handlePressIn('play')}
@@ -36,6 +37,7 @@ export const ControlButtons = memo(({ centerX, centerY, dotSize, phase, onPlay, 
         onPress={onPlay}
       />
       <Pressable
+        testID="controls-stop"
         accessibilityRole="button"
         style={touchArea({ centerX: centers.stop, centerY, size })}
         disabled={!isStopEnabled(phase)}
