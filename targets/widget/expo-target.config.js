@@ -2,4 +2,5 @@
 module.exports = {
   type: 'widget',
   icon: '../../assets/icon.png',
+  deploymentTarget: '18.0',
 };
