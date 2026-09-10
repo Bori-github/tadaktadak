@@ -10,7 +10,7 @@
 - [x] 패키지 설치 (Expo SDK 버전에 맞춤)
   - `expo-notifications` 로컬 알림이 Expo Go에서 동작하는지 첫날 확인한다
 - [x] 팔레트와 수치 상수 파일. 상수는 `DESIGN.md` §7의 확정값 4개만 두고 나머지는 계산한다
-- [x] 빈 Widget Extension 타겟으로 prebuild·서명·설치 확인. App Group은 무료 Personal Team으로 켤 수 없어 뺀다
+- [x] 빈 Widget Extension 타겟으로 prebuild·서명·설치 확인
 
 ### 기능·화면 구현 (Expo Go)
 
@@ -166,13 +166,13 @@ Expo SDK 57 기준. `npx expo install`이 SDK에 맞는 버전을 고른다.
 - `@bacons/apple-targets`: `targets/` 폴더의 SwiftUI 코드를 prebuild 때 Widget Extension 타겟으로 붙여 준다. Xcode 16 이상을 요구한다
 - Team ID는 `.env`의 `EXPO_APPLE_TEAM_ID`에 둔다. `app.config.js`가 읽어 두 타겟의 서명 팀을 채운다
 
-| 서명                    | 비용      | 기기 직접 설치       | TestFlight | App Store |
-| ----------------------- | --------- | -------------------- | ---------- | --------- |
-| 무료 Personal Team      | 없음      | 가능. 7일마다 재설치 | 불가       | 불가      |
-| Apple Developer Program | 연 99달러 | 가능. 1년            | 가능       | 가능      |
+| 서명                        | 비용      | 기기 직접 설치       | TestFlight | App Store |
+| --------------------------- | --------- | -------------------- | ---------- | --------- |
+| 무료 Personal Team          | 없음      | 가능. 7일마다 재설치 | 불가       | 불가      |
+| **Apple Developer Program** | 연 99달러 | 가능. 1년            | 가능       | 가능      |
 
-- 무료 Personal Team은 App Group과 Push Notifications를 켤 수 없다
-- 로컬 알림만 쓰므로 `plugins/withoutPushEntitlement.js`가 `expo-notifications`의 `aps-environment`를 지운다. 원격 푸시가 필요해지면 이 파일을 지우고 Apple Developer Program에 가입한다
+- Apple Developer Program으로 전환하여 App Group과 Push Notifications를 사용할 수 있다
+- 로컬 알림만 쓰므로 `plugins/withoutPushEntitlement.js`가 `expo-notifications`의 `aps-environment`를 지운다. 원격 푸시를 도입하면 이 파일을 지운다
 
 ### Maestro
 
