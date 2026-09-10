@@ -1,6 +1,5 @@
 import SwiftUI
 
-// 원본: src/shared/constants/colors.ts
 enum Palette {
     static let canvas = Color(hex: 0x141021)
 
