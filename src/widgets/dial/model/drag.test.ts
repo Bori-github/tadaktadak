@@ -1,5 +1,5 @@
-import { describe, expect, it, jest } from '@jest/globals';
-import { renderHook } from '@testing-library/react-native';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { act, renderHook } from '@testing-library/react-native';
 
 import { useDialDrag } from './drag';
 import { pointOnDial } from '../lib/geometry';
@@ -10,6 +10,26 @@ jest.mock('react-native-reanimated', () => ({
 }));
 jest.mock('react-native-worklets', () => ({
   scheduleOnRN: (callback: (...args: unknown[]) => void, ...args: unknown[]) => callback(...args),
+}));
+
+type AutoShutdownCall = 'hold' | 'release';
+
+/** 진동을 재생한 횟수 */
+let mockVibrations = 0;
+const mockAutoShutdown: AutoShutdownCall[] = [];
+
+jest.mock('@modules/haptic-pattern', () => ({
+  hapticPattern: {
+    play: () => {
+      mockVibrations += 1;
+    },
+    holdAsync: async () => {
+      mockAutoShutdown.push('hold');
+    },
+    release: () => {
+      mockAutoShutdown.push('release');
+    },
+  },
 }));
 
 const CENTER_X = 200;
@@ -35,12 +55,13 @@ type DragInput = {
   through: number[];
 };
 
-/** 한 번의 끌기를 끝까지 재생하고 두 콜백이 받은 것을 돌려줌 */
-const drag = async ({ grabAt, through }: DragInput) => {
+const buildTouch = (point: Point): Touch => ({ id: POINTER_ID, ...point });
+
+const renderDrag = async () => {
   const onChange = jest.fn<(minutes: number) => void>();
   const onChangeEnd = jest.fn<(minutes: number) => void>();
 
-  const { result } = await renderHook(() =>
+  const { result, unmount } = await renderHook(() =>
     useDialDrag({
       centerX: CENTER_X,
       centerY: CENTER_Y,
@@ -57,7 +78,13 @@ const drag = async ({ grabAt, through }: DragInput) => {
   // `fireGestureHandler`가 터치 이벤트를 내보내지 못해 제스처의 콜백을 직접 부름
   const handlers = result.current.handlers as unknown as TouchHandlers;
   const manager = { activate: jest.fn(), fail: jest.fn() };
-  const buildTouch = (point: Point): Touch => ({ id: POINTER_ID, ...point });
+
+  return { handlers, manager, unmount, onChange, onChangeEnd };
+};
+
+/** 한 번의 끌기를 끝까지 재생하고 두 콜백이 받은 것을 돌려줌 */
+const drag = async ({ grabAt, through }: DragInput) => {
+  const { handlers, manager, onChange, onChangeEnd } = await renderDrag();
 
   handlers.onTouchesDown({ changedTouches: [buildTouch(grabAt)], allTouches: [buildTouch(grabAt)] }, manager);
   for (const minutes of through) {
@@ -68,6 +95,11 @@ const drag = async ({ grabAt, through }: DragInput) => {
 
   return { onChange, onChangeEnd, manager };
 };
+
+beforeEach(() => {
+  mockVibrations = 0;
+  mockAutoShutdown.length = 0;
+});
 
 describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
   it('눈금 세 개를 지나 끌면 세 번 바뀌고 저장은 마지막 값으로 한 번만 한다', async () => {
@@ -84,11 +116,54 @@ describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
     expect(onChangeEnd).not.toHaveBeenCalled();
   });
 
+  it('같은 눈금에 머무는 동안에는 진동하지 않고 눈금을 넘을 때마다 한 번씩 진동한다', async () => {
+    await drag({ grabAt: getDialPoint(START_MINUTES), through: [26, 26, 27] });
+
+    expect(mockVibrations).toBe(2);
+  });
+
+  it('손잡이를 잡으면 자동 종료를 막고 뗄 때 되돌린다', async () => {
+    await drag({ grabAt: getDialPoint(START_MINUTES), through: [26] });
+
+    expect(mockAutoShutdown).toEqual(['hold', 'release']);
+  });
+
   it('손잡이 밖을 잡으면 끌어도 타이머 시간이 바뀌지 않는다', async () => {
     const { onChange, onChangeEnd, manager } = await drag({ grabAt: getDialPoint(START_MINUTES + 15), through: [26, 27, 28] });
 
     expect(manager.fail).toHaveBeenCalled();
     expect(onChange).not.toHaveBeenCalled();
     expect(onChangeEnd).not.toHaveBeenCalled();
+  });
+
+  it('끌기 도중 화면이 사라져도 자동 종료를 되돌린다', async () => {
+    const { handlers, manager, unmount } = await renderDrag();
+    const grab = buildTouch(getDialPoint(START_MINUTES));
+
+    // 화면이 사라지면 제스처가 버려져 `onFinalize`가 호출되지 않음
+    handlers.onTouchesDown({ changedTouches: [grab], allTouches: [grab] }, manager);
+    await act(async () => {
+      unmount();
+    });
+
+    expect(mockAutoShutdown).toEqual(['hold', 'release']);
+  });
+
+  it('끌기 도중 손가락을 하나 더 대도 자동 종료를 거듭 막지 않는다', async () => {
+    const { handlers, manager } = await renderDrag();
+    const grab = buildTouch(getDialPoint(START_MINUTES));
+    const second = { id: POINTER_ID + 1, ...getDialPoint(START_MINUTES) };
+
+    handlers.onTouchesDown({ changedTouches: [grab], allTouches: [grab] }, manager);
+    handlers.onTouchesDown({ changedTouches: [second], allTouches: [grab, second] }, manager);
+    handlers.onFinalize();
+
+    expect(mockAutoShutdown).toEqual(['hold', 'release']);
+  });
+
+  it('손잡이 밖을 잡으면 자동 종료를 건드리지 않는다', async () => {
+    await drag({ grabAt: getDialPoint(START_MINUTES + 15), through: [26, 27] });
+
+    expect(mockAutoShutdown).toEqual([]);
   });
 });

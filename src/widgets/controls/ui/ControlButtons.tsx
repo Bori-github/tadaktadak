@@ -5,7 +5,7 @@ import { buttonCentersX, buttonTouchSize, type ControlButton } from '../lib/layo
 import { isStopEnabled } from '../lib/state';
 
 import { type TimerPhase } from '@/entities/timer';
-import { touchArea } from '@/shared/lib';
+import { playVibration, touchArea } from '@/shared/lib';
 
 type ControlButtonsProps = {
   centerX: number;
@@ -21,12 +21,17 @@ export const ControlButtons = memo(({ centerX, centerY, dotSize, phase, onPlay, 
   const centers = buttonCentersX(centerX, dotSize);
   const size = buttonTouchSize(dotSize);
 
+  const handlePressIn = (button: ControlButton) => {
+    playVibration();
+    onPressedChange(button);
+  };
+
   return (
     <>
       <Pressable
         accessibilityRole="button"
         style={touchArea({ centerX: centers.play, centerY, size })}
-        onPressIn={() => onPressedChange('play')}
+        onPressIn={() => handlePressIn('play')}
         onPressOut={() => onPressedChange(null)}
         onPress={onPlay}
       />
@@ -34,7 +39,7 @@ export const ControlButtons = memo(({ centerX, centerY, dotSize, phase, onPlay, 
         accessibilityRole="button"
         style={touchArea({ centerX: centers.stop, centerY, size })}
         disabled={!isStopEnabled(phase)}
-        onPressIn={() => onPressedChange('stop')}
+        onPressIn={() => handlePressIn('stop')}
         onPressOut={() => onPressedChange(null)}
         onPress={onStop}
       />

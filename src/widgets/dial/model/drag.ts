@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Gesture } from 'react-native-gesture-handler';
 import { useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
@@ -6,6 +6,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { isWithinThumb, minutesFromPoint, pointOnDial } from '../lib/geometry';
 
 import { TIMER_RANGE, type TimerMode } from '@/entities/timer';
+import { holdVibration, playVibration, releaseVibration } from '@/shared/lib';
 
 type DialDragInput = {
   /** 시계판 중심 (px) */
@@ -37,6 +38,14 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
   const pointerId = useSharedValue(-1);
   const changed = useSharedValue(false);
 
+  // 끌기 도중 제스처가 버려지면 `onFinalize`가 호출되지 않아, 언마운트 시 자동 종료를 되돌림
+  useEffect(
+    () => () => {
+      releaseVibration();
+    },
+    [],
+  );
+
   return useMemo(() => {
     const { min, max } = TIMER_RANGE[mode];
     const thumb = pointOnDial(centerX, centerY, radius, minutes * 6);
@@ -57,6 +66,7 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
           dragged.value = minutes;
           changed.value = false;
           pointerId.value = touch.id;
+          if (grabbed.value) scheduleOnRN(holdVibration);
           if (!grabbed.value) manager.fail();
         })
         .onTouchesMove((event, manager) => {
@@ -71,9 +81,11 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
 
           dragged.value = next;
           changed.value = true;
+          scheduleOnRN(playVibration);
           scheduleOnRN(onChange, next);
         })
         .onFinalize(() => {
+          if (grabbed.value) scheduleOnRN(releaseVibration);
           if (changed.value) scheduleOnRN(onChangeEnd, dragged.value);
 
           grabbed.value = false;

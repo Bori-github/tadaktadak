@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it, jest } from '@jest/globals';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { ControlButtons } from './ControlButtons';
@@ -13,10 +13,22 @@ const CENTER_Y = 700;
 
 type Rect = { left: number; top: number; width: number; height: number };
 
+/** 진동을 재생한 횟수 */
+let mockVibrations = 0;
+
+jest.mock('@modules/haptic-pattern', () => ({
+  hapticPattern: {
+    play: () => {
+      mockVibrations += 1;
+    },
+  },
+}));
+
 const pressed: string[] = [];
 
 const buttons = async (phase: TimerPhase, dotSize = 2) => {
   pressed.length = 0;
+  mockVibrations = 0;
   await render(
     <ControlButtons
       centerX={CENTER_X}
@@ -92,5 +104,21 @@ describe('잠긴 버튼은 눌리지 않는다', () => {
     await fireEvent.press(stop);
 
     expect(pressed).toEqual([]);
+  });
+});
+
+describe('누르는 순간 진동한다', () => {
+  it('재생 버튼', async () => {
+    const { play } = await buttons('ready');
+    fireEvent(play, 'pressIn');
+
+    expect(mockVibrations).toBe(1);
+  });
+
+  it('대기에서 잠긴 정지 버튼은 진동하지 않는다', async () => {
+    const { stop } = await buttons('ready');
+    fireEvent(stop, 'pressIn');
+
+    expect(mockVibrations).toBe(0);
   });
 });

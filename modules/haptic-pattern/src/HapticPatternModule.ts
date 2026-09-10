@@ -26,6 +26,14 @@ declare class HapticPatternModule extends NativeModule {
   /** 이 기기가 패턴 재생을 지원하는지. iPad는 `false`이고 대체 진동도 울리지 않음 */
   supportsHaptics: boolean;
   playAsync(events: HapticEvent[]): Promise<void>;
+  /** 반복 재생할 패턴의 이름을 등록 */
+  prepareAsync(name: string, events: HapticEvent[]): Promise<void>;
+  /** 등록된 패턴을 재생. 등록되지 않은 패턴은 동작하지 않음 */
+  play(name: string): void;
+  /** `release`를 호출할 때까지 자동 종료를 막음 */
+  holdAsync(): Promise<void>;
+  /** `holdAsync`로 막아 둔 자동 종료를 되돌림 */
+  release(): void;
 }
 
 export const hapticPattern = requireOptionalNativeModule<HapticPatternModule>('HapticPattern');

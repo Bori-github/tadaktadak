@@ -8,8 +8,6 @@
     "@shopify/react-native-skia": "2.6.2",
     "expo": "~57.0.16",
     "expo-asset": "~57.0.14",
-    "expo-audio": "~57.0.4",
-    "expo-haptics": "~57.0.1",
     "expo-keep-awake": "~57.0.1",
     "expo-notifications": "~57.0.14",
     "expo-status-bar": "~57.0.1",
