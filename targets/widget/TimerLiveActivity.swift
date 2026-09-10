@@ -5,51 +5,53 @@ import WidgetKit
 struct TimerLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: TimerActivityAttributes.self) { context in
-            LockScreenView(state: context.state)
+            LockScreenView(mode: context.attributes.mode, state: context.state)
                 .activityBackgroundTint(Palette.canvas)
-                .activitySystemActionForegroundColor(Palette.text(context.state.mode))
+                .activitySystemActionForegroundColor(Palette.text(context.attributes.mode))
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.center) {
-                    RemainingTimeText(state: context.state)
+                    RemainingTimeText(mode: context.attributes.mode, state: context.state)
                         .font(.system(size: 28, weight: .medium))
                 }
             } compactLeading: {
                 EmptyView()
             } compactTrailing: {
-                RemainingTimeText(state: context.state)
+                RemainingTimeText(mode: context.attributes.mode, state: context.state)
             } minimal: {
-                RemainingTimeText(state: context.state)
+                RemainingTimeText(mode: context.attributes.mode, state: context.state)
             }
         }
     }
 }
 
 private struct RemainingTimeText: View {
+    let mode: TimerActivityMode
     let state: TimerActivityAttributes.ContentState
 
     var body: some View {
-        Text(timerInterval: state.startedAt...state.endsAt, countsDown: true)
+        Text(timerInterval: state.progressStartsAt...state.endsAt, countsDown: true)
             .monospacedDigit()
-            .foregroundStyle(Palette.text(state.mode))
+            .foregroundStyle(Palette.text(mode))
     }
 }
 
 private struct LockScreenView: View {
+    let mode: TimerActivityMode
     let state: TimerActivityAttributes.ContentState
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            RemainingTimeText(state: state)
+            RemainingTimeText(mode: mode, state: state)
                 .font(.system(size: 34, weight: .medium))
 
-            ProgressView(timerInterval: state.startedAt...state.endsAt, countsDown: false) {
+            ProgressView(timerInterval: state.progressStartsAt...state.endsAt, countsDown: mode == .focus) {
                 EmptyView()
             } currentValueLabel: {
                 EmptyView()
             }
             .progressViewStyle(.linear)
-            .tint(Palette.arc(state.mode))
+            .tint(Palette.arc(mode))
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -57,18 +59,19 @@ private struct LockScreenView: View {
 }
 
 extension TimerActivityAttributes.ContentState {
-    fileprivate static var focus: Self {
-        .init(mode: .focus, startedAt: .now, endsAt: .now.addingTimeInterval(25 * 60))
-    }
-
-    fileprivate static var rest: Self {
-        .init(mode: .rest, startedAt: .now, endsAt: .now.addingTimeInterval(5 * 60))
+    fileprivate static func running(minutes: Double) -> Self {
+        .init(progressStartsAt: .now, endsAt: .now.addingTimeInterval(minutes * 60))
     }
 }
 
-#Preview("잠금화면", as: .content, using: TimerActivityAttributes()) {
+#Preview("집중", as: .content, using: TimerActivityAttributes(mode: .focus)) {
     TimerLiveActivity()
 } contentStates: {
-    TimerActivityAttributes.ContentState.focus
-    TimerActivityAttributes.ContentState.rest
+    TimerActivityAttributes.ContentState.running(minutes: 25)
+}
+
+#Preview("휴식", as: .content, using: TimerActivityAttributes(mode: .rest)) {
+    TimerLiveActivity()
+} contentStates: {
+    TimerActivityAttributes.ContentState.running(minutes: 5)
 }

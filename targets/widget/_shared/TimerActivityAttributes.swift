@@ -8,8 +8,10 @@ enum TimerActivityMode: String, Codable, Hashable {
 
 struct TimerActivityAttributes: ActivityAttributes {
     struct ContentState: Codable, Hashable {
-        var mode: TimerActivityMode
-        var startedAt: Date
+        // (endsAt - 타이머 시간) = progressStartsAt
+        var progressStartsAt: Date
         var endsAt: Date
     }
+
+    let mode: TimerActivityMode
 }
