@@ -123,11 +123,13 @@
 - [x] Widget Extension 타겟 추가와 앱 연결 (`@bacons/apple-targets`)
   - 실시간 현황 스위치는 `ActivityAuthorizationInfo().areActivitiesEnabled`를 호출 시점에 읽어 확인한다
 - [x] 정지됨 플래그를 앱에 전달하는 방식을 정한다. `LiveActivityIntent`가 앱 프로세스에서 실행돼 `UserDefaults.standard`를 쓰므로 App Group을 쓰지 않는다. 근거는 `.claude/docs/live-activity.md`
-- [ ] ActivityKit 브리지 모듈 (Expo 로컬 모듈, Swift와 TypeScript). 시작·종료, 정지됨 플래그 읽기
-- [ ] Live Activity 화면 (SwiftUI. 아이콘, 남은 시간, 진행 막대, 정지 버튼)
-- [ ] 정지 버튼 App Intent (Swift). 알림 취소, Live Activity 종료, 정지됨 플래그 쓰기
+- [x] ActivityKit 브리지 모듈 (Expo 로컬 모듈, Swift와 TypeScript). 시작·종료, 정지됨 플래그 읽기
+- [x] Live Activity 화면 (SwiftUI. 아이콘, 남은 시간, 진행 막대, 정지 버튼). 버튼·모닥불은 피그마에서 내보낸 PNG(`targets/widget/images/`)
+- [x] 정지 버튼 App Intent (Swift). 알림 취소, Live Activity 종료, 정지됨 플래그 쓰기
 - [x] 상태 전달과 시작·일시정지·종료 연동
 - [ ] 실기기 검증 (Live Activity 표시, 정지 버튼 → 앱 재실행 시 대기, 스와이프 해제)
+  - 시뮬레이터에서 확인한 것: 앱이 백그라운드일 때 정지 버튼 → 앱 복귀 시 집중 타이머 대기
+  - 실기기에서 확인할 것: 앱을 종료한 상태에서 정지 버튼을 눌렀을 때. Intent가 앱 프로세스를 새로 띄운다
 
 ## 개발 환경
 
