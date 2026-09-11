@@ -15,3 +15,8 @@ struct TimerActivityAttributes: ActivityAttributes {
 
     let mode: TimerActivityMode
 }
+
+/// 정지 버튼이 `UserDefaults.standard`에 남기는 정지됨 플래그. 앱이 실행·복귀할 때 읽고 지움
+enum TimerStoppedFlag {
+    static let key = "liveActivityStopped"
+}
