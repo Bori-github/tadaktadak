@@ -65,18 +65,24 @@ jest.mock('expo-keep-awake', () => ({
 }));
 let mockPlayRejects = false;
 
-// 잠금화면 정지 버튼이 남긴 플래그. 읽으면 지워지는 네이티브 동작을 그대로 흉내 냄
-let mockStopped = false;
+// `StopTimerIntent`가 저장한 `endsAt`. 읽으면 제거되는 `consumeStoppedEndsAt` 동작을 모의
+let mockStoppedEndsAt: number | null = null;
+// Android처럼 네이티브 모듈이 없는 빌드
+let mockHasLiveActivityModule = true;
 
 jest.mock('@modules/live-activity', () => ({
-  liveActivity: {
-    consumeStoppedFlag: () => {
-      const stopped = mockStopped;
+  get liveActivity() {
+    if (!mockHasLiveActivityModule) return null;
 
-      mockStopped = false;
+    return {
+      consumeStoppedEndsAt: () => {
+        const endsAt = mockStoppedEndsAt;
 
-      return stopped;
-    },
+        mockStoppedEndsAt = null;
+
+        return endsAt;
+      },
+    };
   },
 }));
 
@@ -162,7 +168,8 @@ beforeEach(() => {
   mockRemovedCount = 0;
   mockPatterns.length = 0;
   mockPlayRejects = false;
-  mockStopped = false;
+  mockStoppedEndsAt = null;
+  mockHasLiveActivityModule = true;
   mockFallbackCount = 0;
   mockPending = null;
   mockAppState = 'active';
@@ -226,42 +233,89 @@ describe('저장값 읽은 뒤 맞추기', () => {
 });
 
 describe('잠금화면 정지 버튼', () => {
+  const storedRunning = (endsAt: number) => JSON.stringify({ phase: 'running', mode: 'focus', startedAt: endsAt - 25 * MINUTE_IN_MS, endsAt });
+
+  const renderRunning = async () => {
+    const { result } = await renderBeforeRead();
+
+    await act(async () => mockRelease(null));
+    await act(async () => result.current.play());
+
+    const { session } = result.current;
+
+    if (session.phase !== 'running') throw new Error('재생 뒤 진행이 아님');
+
+    return { result, endsAt: session.endsAt };
+  };
+
+  const returnToForeground = async () => {
+    await act(async () => {
+      for (const listener of mockAppStateListeners) listener('active');
+    });
+  };
+
   it('앱 밖에서 정지한 뒤 재실행하면 저장된 진행을 버리고 집중 타이머 대기가 된다', async () => {
-    mockStopped = true;
+    const endsAt = Date.now() + 25 * MINUTE_IN_MS;
+
+    mockStoppedEndsAt = endsAt;
 
     const { result } = await renderBeforeRead();
-    const now = Date.now();
 
-    await act(async () => mockRelease(JSON.stringify({ phase: 'running', mode: 'focus', startedAt: now, endsAt: now + 25 * MINUTE_IN_MS })));
+    await act(async () => mockRelease(storedRunning(endsAt)));
 
     expect(result.current.session).toEqual(READY_SESSION);
     expect(mockRemovedCount).toBe(1);
   });
 
   it('진행 중 백그라운드에서 정지하고 돌아오면 집중 타이머 대기가 된다', async () => {
-    const { result } = await renderBeforeRead();
+    const { result, endsAt } = await renderRunning();
 
-    await act(async () => mockRelease(null));
-    await act(async () => result.current.play());
+    mockStoppedEndsAt = endsAt;
 
-    mockStopped = true;
-
-    await act(async () => {
-      for (const listener of mockAppStateListeners) listener('active');
-    });
+    await returnToForeground();
 
     expect(result.current.session).toEqual(READY_SESSION);
   });
 
   it('정지하지 않고 돌아오면 진행이 이어진다', async () => {
+    const { result } = await renderRunning();
+
+    await returnToForeground();
+
+    expect(result.current.session.phase).toBe('running');
+  });
+
+  it('지난 타이머의 정지 값이 남아 있어도 새 진행은 이어진다', async () => {
+    const { result, endsAt } = await renderRunning();
+
+    mockStoppedEndsAt = endsAt - MINUTE_IN_MS;
+
+    await returnToForeground();
+
+    expect(result.current.session.phase).toBe('running');
+    // 한 번 읽은 값은 지워져 다음 복귀에서 다시 읽지 않음
+    expect(mockStoppedEndsAt).toBeNull();
+  });
+
+  it('저장값을 읽기 전에 재생하면 남은 정지 값이 그 진행을 되돌리지 않는다', async () => {
+    // 시각이 멈춘 테스트라 25분 뒤로 두면 새 진행의 끝날 시각과 같아짐
+    mockStoppedEndsAt = Date.now() + 10 * MINUTE_IN_MS;
+
     const { result } = await renderBeforeRead();
 
-    await act(async () => mockRelease(null));
     await act(async () => result.current.play());
+    await act(async () => mockRelease(null));
+    await returnToForeground();
 
-    await act(async () => {
-      for (const listener of mockAppStateListeners) listener('active');
-    });
+    expect(result.current.session.phase).toBe('running');
+  });
+
+  it('네이티브 모듈이 없으면 저장된 진행을 그대로 잇는다', async () => {
+    mockHasLiveActivityModule = false;
+
+    const { result } = await renderBeforeRead();
+
+    await act(async () => mockRelease(storedRunning(Date.now() + 25 * MINUTE_IN_MS)));
 
     expect(result.current.session.phase).toBe('running');
   });

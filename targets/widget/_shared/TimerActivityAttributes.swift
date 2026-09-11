@@ -1,6 +1,9 @@
 import ActivityKit
 import Foundation
 
+// `modules/live-activity/ios/`에 심볼릭 링크로 들어가 Pod에서도 컴파일됨
+// 앱 타겟과 Pod가 함께 쓰는 값은 이 파일에 위치
+
 enum TimerActivityMode: String, Codable, Hashable {
     case focus
     case rest
@@ -11,12 +14,24 @@ struct TimerActivityAttributes: ActivityAttributes {
         // (endsAt - 타이머 시간) = progressStartsAt
         var progressStartsAt: Date
         var endsAt: Date
+
+        /// JavaScript의 `session.endsAt`과 같은 단위
+        /// 반올림하지 않으면 `Date` 변환에서 1밀리초가 어긋남
+        var endsAtInMilliseconds: Int {
+            Int((endsAt.timeIntervalSince1970 * 1000).rounded())
+        }
     }
 
     let mode: TimerActivityMode
+
+    static func endAllActivities() async {
+        for activity in Activity<TimerActivityAttributes>.activities {
+            await activity.end(nil, dismissalPolicy: .immediate)
+        }
+    }
 }
 
-/// 정지 버튼이 `UserDefaults.standard`에 남기는 정지됨 플래그. 앱이 실행·복귀할 때 읽고 지움
+/// `StopTimerIntent`가 저장하는 값. 정지한 Live Activity의 `endsAt`(밀리초)
 enum TimerStoppedFlag {
-    static let key = "liveActivityStopped"
+    static let key = "liveActivityStoppedEndsAt"
 }

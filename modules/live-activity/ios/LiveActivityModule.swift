@@ -61,18 +61,16 @@ public class LiveActivityModule: Module {
     AsyncFunction("endAsync") {
       guard #available(iOS 18.0, *) else { return }
 
-      for activity in Activity<TimerActivityAttributes>.activities {
-        await activity.end(nil, dismissalPolicy: .immediate)
-      }
+      await TimerActivityAttributes.endAllActivities()
     }
 
-    Function("consumeStoppedFlag") { () -> Bool in
+    Function("consumeStoppedEndsAt") { () -> Int? in
       let defaults = UserDefaults.standard
-      let stopped = defaults.bool(forKey: TimerStoppedFlag.key)
+      let endsAt = defaults.object(forKey: TimerStoppedFlag.key) as? Int
 
       defaults.removeObject(forKey: TimerStoppedFlag.key)
 
-      return stopped
+      return endsAt
     }
   }
 }

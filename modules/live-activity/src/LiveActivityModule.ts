@@ -20,8 +20,8 @@ declare class LiveActivityModule extends NativeModule {
   startAsync(content: LiveActivityContent): Promise<void>;
   /** 남아 있는 Live Activity를 모두 즉시 종료 */
   endAsync(): Promise<void>;
-  /** 잠금화면 정지 버튼이 남긴 정지됨 플래그. 읽으면서 지움 */
-  consumeStoppedFlag(): boolean;
+  /** `StopTimerIntent`가 `UserDefaults`에 저장한, 정지한 Live Activity의 `endsAt`(밀리초) */
+  consumeStoppedEndsAt(): number | null;
 }
 
 export const liveActivity = requireOptionalNativeModule<LiveActivityModule>('LiveActivity');
