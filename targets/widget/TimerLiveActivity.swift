@@ -22,6 +22,8 @@ struct TimerLiveActivity: Widget {
                 RemainingTimeText(mode: context.attributes.mode, state: context.state)
             }
         }
+        // Live Activity 자체 여백 제거
+        .contentMarginsDisabled()
     }
 }
 
@@ -36,24 +38,43 @@ private struct RemainingTimeText: View {
     }
 }
 
+/// Live Activity · 잠금화면 프레임 배치
 private struct LockScreenView: View {
     let mode: TimerActivityMode
     let state: TimerActivityAttributes.ContentState
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            RemainingTimeText(mode: mode, state: state)
-                .font(.system(size: 34, weight: .medium))
+        VStack(alignment: .leading, spacing: 0) {
+            Text("타닥타닥")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(Palette.appName)
 
-            ProgressView(timerInterval: state.progressStartsAt...state.endsAt, countsDown: mode == .focus) {
-                EmptyView()
-            } currentValueLabel: {
-                EmptyView()
+            HStack(spacing: 20) {
+                Button(intent: StopTimerIntent()) {
+                    Image("button-round-enabled")
+                        .overlay { Image("icon-stop") }
+                }
+                .buttonStyle(.plain)
+
+                RemainingTimeText(mode: mode, state: state)
+                    .font(.system(size: 34, weight: .medium))
             }
-            .progressViewStyle(.linear)
-            .tint(Palette.arc(mode))
+            .padding(.top, 11)
+
+            HStack(spacing: 12) {
+                ProgressView(timerInterval: state.progressStartsAt...state.endsAt, countsDown: mode == .focus) {
+                    EmptyView()
+                } currentValueLabel: {
+                    EmptyView()
+                }
+                .progressViewStyle(.linear)
+                .tint(Palette.arc(mode))
+
+                Image(mode == .focus ? "bonfire-hot-still-9" : "bonfire-cold-9")
+            }
+            .padding(.top, 12)
         }
-        .padding()
+        .padding(EdgeInsets(top: 13, leading: 16, bottom: 14, trailing: 16))
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
