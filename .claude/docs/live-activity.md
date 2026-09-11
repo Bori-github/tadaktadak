@@ -45,12 +45,39 @@
 - 예약된 로컬 알림은 앱이 죽어도 시간이 되면 울린다
 - 남은 Live Activity를 정리할 수 있는 다음 순간은 앱 재실행 때다. `Activity.activities`로 찾아 이어가거나 끝낸다. Apple도 이 방식을 안내한다
 
+## App Intent
+
+- Apple의 App Intents 프레임워크(iOS 16 이상)에 있는 프로토콜을 말하며 「앱이 할 수 있는 동작 하나」를 시스템에 등록하는 단위이다.
+- 구조체 하나가 동작 하나다. 할 일은 `perform()`에 적는다. 빌드하면 컴파일러가 Intent 타입을 메타데이터로 묶고 iOS가 읽으므로 등록 코드는 없다
+
+| 진입점                      | 도입   |
+| --------------------------- | ------ |
+| 단축어 앱, Siri             | iOS 16 |
+| Spotlight 검색 결과의 동작  | iOS 16 |
+| 홈 화면 위젯의 버튼과 토글  | iOS 17 |
+| Live Activity의 버튼과 토글 | iOS 17 |
+| 제어 센터 컨트롤, 동작 버튼 | iOS 18 |
+
+- Live Activity 버튼은 SwiftUI의 `Button(intent:)`로 만든다. 잠금화면에서 누르면 iOS가 그 Intent의 `perform()`을 호출한다. 버튼이 앱 코드를 직접 부르지 않고 iOS가 대신 호출하므로, 화면을 그리는 Widget Extension과 앱이 다른 프로세스여도 버튼은 동작한다
+
+### 실행 프로세스
+
+- 일반 `AppIntent`는 버튼이 놓인 Widget Extension 프로세스에서 실행된다
+- `LiveActivityIntent`, `AudioPlaybackIntent`, `ForegroundContinuableIntent`, `PushToTalkTransmissionIntent`를 채택하거나 `openAppWhenRun = true`인 Intent는 앱 프로세스에서 실행된다
+  - `openAppWhenRun = true`는 앱을 열어 화면에 보여 준다. 잠금화면에서는 잠금 해제를 거친 뒤 열린다.
+  - `LiveActivityIntent`, `AudioPlaybackIntent`, `ForegroundContinuableIntent`, `PushToTalkTransmissionIntent`는 앱을 열지 않고 프로세스만 백그라운드로 띄운다
+
+### Intent에서 앱으로 값 전달
+
+- Intent는 Swift라 JavaScript가 `AsyncStorage`에 쓴 값을 건드리지 않는다. Intent가 한 일을 앱이 알아야 하면 플래그로 남기고, 앱이 실행·포그라운드 복귀 때 읽는다
+- 플래그 저장소는 Intent가 실행되는 프로세스로 정해진다.
+  - Widget Extension 프로세스: App Group 컨테이너의 `UserDefaults(suiteName:)`
+  - 앱 프로세스: 앱 컨테이너의 `UserDefaults.standard`
+
 ## App Group
 
-- 정지 버튼 App Intent는 앱이 아니라 Widget Extension 프로세스에서 실행된다. 둘은 각자의 샌드박스 컨테이너를 쓴다
-- 앱과 Widget Extension은 서로의 `UserDefaults.standard`를 읽지 못한다
-- 정지 버튼을 눌러도 앱이 저장한 끝날 시각은 그대로 남는다. 재실행한 앱은 그 값만 보고 타이머가 진행 중이라고 판단한다
-- App Group은 앱과 Widget Extension이 함께 여는 컨테이너다. 정지됨 플래그를 여기에 둔다
+- 앱과 App Extension(Widget Extension 등)은 iOS에서 각각 별개의 프로세스와 별개의 샌드박스 컨테이너를 사용한다. 앱의 값을 App Extension에서 읽지 못하고, App Extension의 값을 앱에서 읽지 못한다
+- App Group은 같은 개발 팀의 앱과 App Extension이 함께 여는 공유 컨테이너다
 
 ### 서명 제약
 
@@ -66,10 +93,11 @@
 
 ### App Group 대안
 
-| 방법                                            | 단점                                                                       |
-| ----------------------------------------------- | -------------------------------------------------------------------------- |
-| 앱이 재실행 때 `Activity.activities`로 추론한다 | 스와이프 해제도 정지로 읽혀 타이머가 취소된다                              |
-| App Intent에 `openAppWhenRun = true`를 준다     | 잠금화면에서 정지를 누르면 앱이 열린다. 정리는 앱이 자기 프로세스에서 한다 |
+| 방법                                            | 단점                                                                                                                     |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| 앱이 재실행 때 `Activity.activities`로 추론한다 | 스와이프 해제도 정지로 읽혀 타이머가 취소된다                                                                            |
+| App Intent에 `openAppWhenRun = true`를 준다     | 잠금화면에서 정지를 누르면 앱이 열린다. 정리는 앱이 자기 프로세스에서 한다                                               |
+| 정지 버튼을 `LiveActivityIntent`로 만든다       | 정지마다 앱 프로세스가 백그라운드로 뜬다. React Native 런타임이 함께 뜨는지, 뜨면 세션 훅이 어떻게 도는지 실기기 확인 전 |
 
 ## 사례
 
@@ -82,6 +110,8 @@
 
 - Apple, [Displaying live data with Live Activities](https://developer.apple.com/documentation/activitykit/displaying-live-data-with-live-activities)
 - Apple, [Starting and updating Live Activities with ActivityKit push notifications](https://developer.apple.com/documentation/activitykit/starting-and-updating-live-activities-with-activitykit-push-notifications)
+- Apple, [Adding interactivity to widgets and Live Activities](https://developer.apple.com/documentation/widgetkit/adding-interactivity-to-widgets-and-live-activities)
+- Apple, [LiveActivityIntent](https://developer.apple.com/documentation/appintents/liveactivityintent)
 - Apple, [applicationWillTerminate(_:)](<https://developer.apple.com/documentation/uikit/uiapplicationdelegate/applicationwillterminate(_:)>)
 - Apple Developer Forums, [Force quitting the app doesn't end the Live Activities](https://developer.apple.com/forums/thread/729651)
 - Apple Developer Forums, [App Groups capability is not available](https://developer.apple.com/forums/thread/656271)
