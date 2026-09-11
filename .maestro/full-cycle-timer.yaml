@@ -1,0 +1,63 @@
+appId: com.boriguri.tadaktadak
+name: 집중/휴식 타이머를 모두 실행하는 전체 타이머 사이클
+---
+# 전제: 앱 설정이 집중 60초, 휴식 60초 (이 플로우에서 설정하지 않음)
+- launchApp
+
+# 이전 실행이 남긴 세션이 있으면 정지 버튼이 활성화됨
+# 세션 복원이 늦게 반영될 수 있어 최대 10초 기다림
+# 정리할 세션이 없으면 10초를 모두 기다린 뒤 실패 없이 넘어감
+- extendedWaitUntil:
+    visible:
+      id: 'controls-stop'
+      enabled: true
+    timeout: 10000
+    optional: true
+
+# 정지 버튼이 활성 상태면 탭해서 이전 세션 정리
+# when의 대기 한도(7초)도 launchApp 기준이라, 위에서 10초를 쓴 경우 바로 판단
+- runFlow:
+    when:
+      visible:
+        id: 'controls-stop'
+        enabled: true
+    commands:
+      - tapOn:
+          id: 'controls-stop'
+
+- tapOn:
+    id: 'controls-play'
+# 아래 timeout은 모두 이 탭 시각(t=0) 기준 마감 시각
+# (앞 대기가 쓴 시간만큼 뒤 대기의 남은 시간이 줄어듦)
+
+# [마감 t=90s] 집중 타이머 남은 시간이 10 이하가 될 때까지
+# 예상 통과: t=50s
+- extendedWaitUntil:
+    visible:
+      id: 'remaining-seconds'
+      text: '^([0-9]|10)$'
+    timeout: 90000
+
+# [마감 t=90s] 남은 시간이 다시 30~60이 되면 휴식 타이머가 시작된 것
+# 이미 10 이하를 지났으므로 집중 타이머 초반과 헷갈리지 않음
+# 예상 통과: t=60s / 조건: 휴식 ≥ 30초, 집중 + max(0, 휴식 − 60) ≤ 90초
+- extendedWaitUntil:
+    visible:
+      id: 'remaining-seconds'
+      text: '^([3-5][0-9]|60)$'
+    timeout: 90000
+
+# [마감 t=150s] 정지 버튼이 비활성화되면 휴식 타이머 종료
+# 예상 통과: t=120s / 조건: 집중 + 휴식 ≤ 150초
+- extendedWaitUntil:
+    visible:
+      id: 'controls-stop'
+      enabled: false
+    timeout: 150000
+
+# [마감 t=155s] 남은 시간 표시가 사라질 때까지
+# assertNotVisible은 기본 한도가 탭 기준 17초라 이 시점엔 한 번만 확인하므로 extendedWaitUntil 사용
+- extendedWaitUntil:
+    notVisible:
+      id: 'remaining-seconds'
+    timeout: 155000

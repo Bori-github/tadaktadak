@@ -19,6 +19,7 @@ export const NotificationSettingsButton = memo(({ centerX, centerY, dotSize, onP
 
   return (
     <Pressable
+      testID="notification-settings"
       accessibilityRole="button"
       style={touchArea({ centerX, centerY, size })}
       onPressIn={() => {

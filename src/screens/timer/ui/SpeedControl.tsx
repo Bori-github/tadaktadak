@@ -1,6 +1,5 @@
 import { type JSX } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { COLORS } from '@/shared/constants';
 
@@ -13,28 +12,19 @@ type SpeedControlProps = {
   onSelect: (speed: number) => void;
 };
 
-/** 개발 빌드에서만 그리는 배속 조작 */
-export const SpeedControl = ({ speed, enabled, onSelect }: SpeedControlProps): JSX.Element => {
-  const insets = useSafeAreaInsets();
-
-  return (
-    <View style={[styles.row, { bottom: insets.bottom + 8 }, enabled ? null : styles.locked]} pointerEvents={enabled ? 'auto' : 'none'}>
-      {TIMER_SPEEDS.map((option) => (
-        <Pressable key={option} style={[styles.item, option === speed && styles.selected]} onPress={() => onSelect(option)}>
-          <Text style={styles.label}>{option}×</Text>
-        </Pressable>
-      ))}
-    </View>
-  );
-};
+export const SpeedControl = ({ speed, enabled, onSelect }: SpeedControlProps): JSX.Element => (
+  <View style={[styles.row, enabled ? null : styles.locked]} pointerEvents={enabled ? 'auto' : 'none'}>
+    {TIMER_SPEEDS.map((option) => (
+      <Pressable key={option} testID={`speed-${option}x`} style={[styles.item, option === speed && styles.selected]} onPress={() => onSelect(option)}>
+        <Text style={styles.label}>{option}×</Text>
+      </Pressable>
+    ))}
+  </View>
+);
 
 const styles = StyleSheet.create({
   row: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
     flexDirection: 'row',
-    justifyContent: 'center',
     gap: 6,
   },
   item: {

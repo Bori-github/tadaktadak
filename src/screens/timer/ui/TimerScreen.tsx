@@ -13,8 +13,8 @@ import { useNotificationPermission } from '../model/permission';
 import { useTimerSession } from '../model/session';
 import { useTimerSpeed } from '../model/speed';
 
+import { DevPanel } from './DevPanel';
 import { NotificationSettingsButton } from './NotificationSettingsButton';
-import { SpeedControl } from './SpeedControl';
 
 import { ControlButtons, Controls, type ControlButton } from '@/widgets/controls';
 import {
@@ -176,7 +176,7 @@ export const TimerScreen = (): JSX.Element => {
             onPressedChange={setNotificationSettingsPressed}
           />
         ) : null}
-        {__DEV__ ? <SpeedControl speed={speed} enabled={editing} onSelect={setSpeed} /> : null}
+        {__DEV__ ? <DevPanel seconds={remainingSeconds} speed={speed} isSpeedEnabled={editing} onSelectSpeed={setSpeed} /> : null}
       </View>
     </GestureDetector>
   );
