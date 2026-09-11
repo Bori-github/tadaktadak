@@ -2,7 +2,7 @@
 id: tadaktadak
 name: "타닥타닥"
 figma: "https://www.figma.com/design/qmtzKbnYAsTAXvn0CBbfo2/tadaktadak"
-updated: 2026-09-05
+updated: 2026-09-12
 category: personal-tool
 bundle_id: "com.boriguri.tadaktadak"
 primary_color: "#ffb43c"
