@@ -65,6 +65,21 @@ jest.mock('expo-keep-awake', () => ({
 }));
 let mockPlayRejects = false;
 
+// 잠금화면 정지 버튼이 남긴 플래그. 읽으면 지워지는 네이티브 동작을 그대로 흉내 냄
+let mockStopped = false;
+
+jest.mock('@modules/live-activity', () => ({
+  liveActivity: {
+    consumeStoppedFlag: () => {
+      const stopped = mockStopped;
+
+      mockStopped = false;
+
+      return stopped;
+    },
+  },
+}));
+
 jest.mock('@modules/haptic-pattern', () => ({
   hapticPattern: {
     playAsync: async (events: HapticEvent[]) => {
@@ -147,6 +162,7 @@ beforeEach(() => {
   mockRemovedCount = 0;
   mockPatterns.length = 0;
   mockPlayRejects = false;
+  mockStopped = false;
   mockFallbackCount = 0;
   mockPending = null;
   mockAppState = 'active';
@@ -206,6 +222,48 @@ describe('저장값 읽은 뒤 맞추기', () => {
 
     expect(result.current.session).toEqual(READY_SESSION);
     expect(mockRemovedCount).toBe(1);
+  });
+});
+
+describe('잠금화면 정지 버튼', () => {
+  it('앱 밖에서 정지한 뒤 재실행하면 저장된 진행을 버리고 집중 타이머 대기가 된다', async () => {
+    mockStopped = true;
+
+    const { result } = await renderBeforeRead();
+    const now = Date.now();
+
+    await act(async () => mockRelease(JSON.stringify({ phase: 'running', mode: 'focus', startedAt: now, endsAt: now + 25 * MINUTE_IN_MS })));
+
+    expect(result.current.session).toEqual(READY_SESSION);
+    expect(mockRemovedCount).toBe(1);
+  });
+
+  it('진행 중 백그라운드에서 정지하고 돌아오면 집중 타이머 대기가 된다', async () => {
+    const { result } = await renderBeforeRead();
+
+    await act(async () => mockRelease(null));
+    await act(async () => result.current.play());
+
+    mockStopped = true;
+
+    await act(async () => {
+      for (const listener of mockAppStateListeners) listener('active');
+    });
+
+    expect(result.current.session).toEqual(READY_SESSION);
+  });
+
+  it('정지하지 않고 돌아오면 진행이 이어진다', async () => {
+    const { result } = await renderBeforeRead();
+
+    await act(async () => mockRelease(null));
+    await act(async () => result.current.play());
+
+    await act(async () => {
+      for (const listener of mockAppStateListeners) listener('active');
+    });
+
+    expect(result.current.session.phase).toBe('running');
   });
 });
 

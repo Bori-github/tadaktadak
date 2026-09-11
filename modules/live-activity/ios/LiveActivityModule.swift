@@ -65,5 +65,14 @@ public class LiveActivityModule: Module {
         await activity.end(nil, dismissalPolicy: .immediate)
       }
     }
+
+    Function("consumeStoppedFlag") { () -> Bool in
+      let defaults = UserDefaults.standard
+      let stopped = defaults.bool(forKey: TimerStoppedFlag.key)
+
+      defaults.removeObject(forKey: TimerStoppedFlag.key)
+
+      return stopped
+    }
   }
 }

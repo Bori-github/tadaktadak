@@ -5,6 +5,7 @@ import { useFrameCallback, useSharedValue, type SharedValue } from 'react-native
 import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 
 import { hapticPattern } from '@modules/haptic-pattern';
+import { liveActivity } from '@modules/live-activity';
 
 import { millisecondsToMinutes } from '../lib/minutes';
 import { millisecondsToSeconds } from '../lib/seconds';
@@ -31,6 +32,9 @@ import {
 
 /** 기기 가동 시간을 첫 프레임에서 채우기 전 값 */
 const NOT_STARTED = -1;
+
+// 네이티브 모듈이 없는 빌드에서 `null`. 잠금화면 정지 버튼도 없으므로 정지되지 않은 것으로 봄
+const consumeStoppedFlag = (): boolean => liveActivity?.consumeStoppedFlag() ?? false;
 
 const vibrateCompletion = (mode: TimerMode): void => {
   // 네이티브 모듈이 없는 빌드에서 `null`. 재생만 건너뛰고 타이머 완료는 그대로 진행
@@ -222,7 +226,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
         settled.current = true;
         setIsSettled(true);
 
-        const next = restoreSession({ stored, now, stopped: false });
+        const next = restoreSession({ stored, now, stopped: consumeStoppedFlag() });
 
         applySession(next, now);
         // 초기값 READY_SESSION과 같은 객체면 리렌더가 없어 [session] 이펙트가 돌지 않으므로 여기서 한 번 저장
@@ -308,7 +312,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
       if (next !== 'active') return;
 
       const now = Date.now();
-      applySession(restoreSession({ stored: session, now, stopped: false }), now);
+      applySession(restoreSession({ stored: session, now, stopped: consumeStoppedFlag() }), now);
     });
 
     return () => subscription.remove();
