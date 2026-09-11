@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { isNotificationBlocked } from '../lib/notification';
 
+import { useLiveActivity } from '../model/liveActivity';
 import { useStoredMinutes } from '../model/minutes';
 import { useNotificationSchedule } from '../model/notification';
 import { useNotificationPermission } from '../model/permission';
@@ -56,6 +57,7 @@ export const TimerScreen = (): JSX.Element => {
   const permission = useNotificationPermission();
 
   useNotificationSchedule({ session, status: permission, isSettled });
+  useLiveActivity({ session, settingMinutes: realSettingMinutes, isSettled });
 
   const notificationSettingsShown = isNotificationBlocked(permission);
 

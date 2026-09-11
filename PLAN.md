@@ -120,13 +120,13 @@
 ### Live Activity (개발 빌드)
 
 - [x] 개발 빌드 전환 (서명). 120Hz 설정 (`app.json` `ios.infoPlist`의 `CADisableMinimumFrameDurationOnPhone`)
-- [ ] Widget Extension 타겟 추가와 앱 연결 (`@bacons/apple-targets`)
-  - 실시간 현황 스위치가 켜져 있는지 확인하는 방법을 정한다
-- [ ] 정지됨 플래그를 앱에 전달하는 방식을 정한다. App Group은 Apple Developer Program 가입이 필요하다. 대안은 App Intent의 `openAppWhenRun`. 근거는 `.claude/docs/live-activity.md`
+- [x] Widget Extension 타겟 추가와 앱 연결 (`@bacons/apple-targets`)
+  - 실시간 현황 스위치는 `ActivityAuthorizationInfo().areActivitiesEnabled`를 호출 시점에 읽어 확인한다
+- [x] 정지됨 플래그를 앱에 전달하는 방식을 정한다. `LiveActivityIntent`가 앱 프로세스에서 실행돼 `UserDefaults.standard`를 쓰므로 App Group을 쓰지 않는다. 근거는 `.claude/docs/live-activity.md`
 - [ ] ActivityKit 브리지 모듈 (Expo 로컬 모듈, Swift와 TypeScript). 시작·종료, 정지됨 플래그 읽기
 - [ ] Live Activity 화면 (SwiftUI. 아이콘, 남은 시간, 진행 막대, 정지 버튼)
 - [ ] 정지 버튼 App Intent (Swift). 알림 취소, Live Activity 종료, 정지됨 플래그 쓰기
-- [ ] 상태 전달과 시작·일시정지·종료 연동
+- [x] 상태 전달과 시작·일시정지·종료 연동
 - [ ] 실기기 검증 (Live Activity 표시, 정지 버튼 → 앱 재실행 시 대기, 스와이프 해제)
 
 ## 개발 환경
