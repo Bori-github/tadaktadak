@@ -2,7 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { type PermissionStatus } from 'expo';
 import { useEffect } from 'react';
 
-import { notificationTitle, scheduleAt } from '../lib/notification';
+import { notificationBody, scheduleAt } from '../lib/notification';
 
 import { type TimerSession } from '@/entities/timer';
 
@@ -37,7 +37,7 @@ export const useNotificationSchedule = ({ session, status, isSettled }: Notifica
       if (!live || at === null) return;
 
       await Notifications.scheduleNotificationAsync({
-        content: { title: notificationTitle(session.mode) },
+        content: { title: '타닥타닥', body: notificationBody(session.mode) },
         trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: at },
       });
     };

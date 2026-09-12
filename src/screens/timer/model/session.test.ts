@@ -65,6 +65,40 @@ jest.mock('expo-keep-awake', () => ({
 }));
 let mockPlayRejects = false;
 
+// `StopTimerIntent`가 저장한 `endsAt`. 읽으면 제거되는 `consumeStoppedEndsAt` 동작을 모의
+let mockStoppedEndsAt: number | null = null;
+// Android처럼 네이티브 모듈이 없는 빌드
+let mockHasLiveActivityModule = true;
+// `StopTimerIntent`가 값을 저장했을 때 네이티브가 보내는 이벤트를 테스트가 직접 발생시킴
+const mockStoppedListeners: (() => void)[] = [];
+
+jest.mock('@modules/live-activity', () => ({
+  get liveActivity() {
+    if (!mockHasLiveActivityModule) return null;
+
+    return {
+      consumeStoppedEndsAt: () => {
+        const endsAt = mockStoppedEndsAt;
+
+        mockStoppedEndsAt = null;
+
+        return endsAt;
+      },
+      addListener: (_event: string, listener: () => void) => {
+        mockStoppedListeners.push(listener);
+
+        return {
+          remove: () => {
+            const index = mockStoppedListeners.indexOf(listener);
+
+            if (index !== -1) mockStoppedListeners.splice(index, 1);
+          },
+        };
+      },
+    };
+  },
+}));
+
 jest.mock('@modules/haptic-pattern', () => ({
   hapticPattern: {
     playAsync: async (events: HapticEvent[]) => {
@@ -147,6 +181,9 @@ beforeEach(() => {
   mockRemovedCount = 0;
   mockPatterns.length = 0;
   mockPlayRejects = false;
+  mockStoppedEndsAt = null;
+  mockHasLiveActivityModule = true;
+  mockStoppedListeners.length = 0;
   mockFallbackCount = 0;
   mockPending = null;
   mockAppState = 'active';
@@ -157,7 +194,13 @@ beforeEach(() => {
   jest.mocked(AppState.addEventListener).mockImplementation((_type, listener) => {
     mockAppStateListeners.push(listener);
 
-    return { remove: () => {} };
+    return {
+      remove: () => {
+        const index = mockAppStateListeners.indexOf(listener);
+
+        if (index !== -1) mockAppStateListeners.splice(index, 1);
+      },
+    };
   });
   // 남겨 두면 이번 화면이 등록에 실패했을 때 지난 화면의 콜백을 부름
   mockOnFrame = null;
@@ -206,6 +249,121 @@ describe('저장값 읽은 뒤 맞추기', () => {
 
     expect(result.current.session).toEqual(READY_SESSION);
     expect(mockRemovedCount).toBe(1);
+  });
+});
+
+describe('잠금화면 정지 버튼', () => {
+  const storedRunning = (endsAt: number) => JSON.stringify({ phase: 'running', mode: 'focus', startedAt: endsAt - 25 * MINUTE_IN_MS, endsAt });
+
+  const renderRunning = async () => {
+    const { result } = await renderBeforeRead();
+
+    await act(async () => mockRelease(null));
+    await act(async () => result.current.play());
+
+    const { session } = result.current;
+
+    if (session.phase !== 'running') throw new Error('재생 뒤 진행이 아님');
+
+    return { result, endsAt: session.endsAt };
+  };
+
+  const returnToForeground = async () => {
+    await act(async () => {
+      for (const listener of mockAppStateListeners) listener('active');
+    });
+  };
+
+  it('앱 밖에서 정지한 뒤 재실행하면 저장된 진행을 버리고 집중 타이머 대기가 된다', async () => {
+    const endsAt = Date.now() + 25 * MINUTE_IN_MS;
+
+    mockStoppedEndsAt = endsAt;
+
+    const { result } = await renderBeforeRead();
+
+    await act(async () => mockRelease(storedRunning(endsAt)));
+
+    expect(result.current.session).toEqual(READY_SESSION);
+    expect(mockRemovedCount).toBe(1);
+  });
+
+  it('진행 중 백그라운드에서 정지하고 돌아오면 집중 타이머 대기가 된다', async () => {
+    const { result, endsAt } = await renderRunning();
+
+    mockStoppedEndsAt = endsAt;
+
+    await returnToForeground();
+
+    expect(result.current.session).toEqual(READY_SESSION);
+  });
+
+  it('정지 값 저장 이벤트가 오면 포그라운드 전환 없이 집중 타이머 대기가 된다', async () => {
+    const { result, endsAt } = await renderRunning();
+
+    mockStoppedEndsAt = endsAt;
+
+    await act(async () => {
+      for (const listener of mockStoppedListeners) listener();
+    });
+
+    expect(result.current.session).toEqual(READY_SESSION);
+  });
+
+  it('활성 전환과 저장 이벤트가 한 배치로 겹쳐도 대기를 유지한다', async () => {
+    const { result, endsAt } = await renderRunning();
+
+    mockStoppedEndsAt = endsAt;
+
+    // 한쪽이 정지 값을 먼저 읽고 지우면 다른 쪽은 `null`을 읽는다. 나중 호출이 낡은 세션으로 진행을 되돌리면 안 됨
+    await act(async () => {
+      for (const listener of mockStoppedListeners) listener();
+      for (const listener of mockAppStateListeners) listener('active');
+    });
+
+    expect(result.current.session).toEqual(READY_SESSION);
+  });
+
+  it('정지하지 않고 돌아오면 진행이 이어진다', async () => {
+    const { result } = await renderRunning();
+
+    await returnToForeground();
+
+    expect(result.current.session.phase).toBe('running');
+  });
+
+  it('지난 타이머의 정지 값이 남아 있어도 새 진행은 이어진다', async () => {
+    const { result, endsAt } = await renderRunning();
+
+    mockStoppedEndsAt = endsAt - MINUTE_IN_MS;
+
+    await returnToForeground();
+
+    expect(result.current.session.phase).toBe('running');
+    // 한 번 읽은 값은 지워져 다음 복귀에서 다시 읽지 않음
+    expect(mockStoppedEndsAt).toBeNull();
+  });
+
+  it('저장값을 읽기 전에 재생하면 남은 정지 값이 그 진행을 되돌리지 않는다', async () => {
+    // 시각이 멈춘 테스트라 25분 뒤로 두면 새 진행의 끝날 시각과 같아짐
+    mockStoppedEndsAt = Date.now() + 10 * MINUTE_IN_MS;
+
+    const { result } = await renderBeforeRead();
+
+    await act(async () => result.current.play());
+    await act(async () => mockRelease(null));
+    await returnToForeground();
+
+    expect(result.current.session.phase).toBe('running');
+  });
+
+  it('네이티브 모듈이 없으면 저장된 진행을 그대로 잇는다', async () => {
+    mockHasLiveActivityModule = false;
+
+    const { result } = await renderBeforeRead();
+
+    await act(async () => mockRelease(storedRunning(Date.now() + 25 * MINUTE_IN_MS)));
+
+    expect(result.current.session.phase).toBe('running');
   });
 });
 

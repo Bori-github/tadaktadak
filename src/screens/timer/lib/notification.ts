@@ -14,12 +14,12 @@ type ScheduleInput = {
 };
 
 /**
- * 타이머가 끝났을 때 띄울 알림 제목
+ * 타이머가 끝났을 때 띄울 알림 본문. 제목은 앱 이름
  *
  * @param mode - 끝난 타이머
- * @returns 알림 제목. 본문은 없음
+ * @returns 알림 본문
  */
-export const notificationTitle = (mode: TimerMode): string => {
+export const notificationBody = (mode: TimerMode): string => {
   return TITLES[mode];
 };
 

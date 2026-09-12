@@ -5,6 +5,7 @@ import { useFrameCallback, useSharedValue, type SharedValue } from 'react-native
 import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 
 import { hapticPattern } from '@modules/haptic-pattern';
+import { liveActivity } from '@modules/live-activity';
 
 import { millisecondsToMinutes } from '../lib/minutes';
 import { millisecondsToSeconds } from '../lib/seconds';
@@ -31,6 +32,14 @@ import {
 
 /** 기기 가동 시간을 첫 프레임에서 채우기 전 값 */
 const NOT_STARTED = -1;
+
+// `StopTimerIntent`가 저장한 `endsAt`이 현재 세션과 일치할 때만 정지. 일치하지 않는 경우, 이전 세션 값이라 판단함
+const isStoppedOnLockScreen = (stored: TimerSession | null): boolean => {
+  // 네이티브 모듈이 없는 빌드에서 `null`. 잠금화면 정지 버튼도 없으므로 정지되지 않은 것으로 봄
+  const stoppedEndsAt = liveActivity?.consumeStoppedEndsAt() ?? null;
+
+  return stoppedEndsAt !== null && stored?.phase === 'running' && stored.endsAt === stoppedEndsAt;
+};
 
 const vibrateCompletion = (mode: TimerMode): void => {
   // 네이티브 모듈이 없는 빌드에서 `null`. 재생만 건너뛰고 타이머 완료는 그대로 진행
@@ -75,6 +84,9 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   const settled = useRef(false);
   // `settled`는 참조라 바뀌어도 리렌더가 없음. 밖에서 이 값을 이펙트 의존성으로 쓰려면 상태가 따로 필요
   const [isSettled, setIsSettled] = useState(false);
+
+  // `consumeStoppedEndsAt`이 읽고 지운 값을 기억. `AppState` active와 `onStopped`가 겹쳐 나중 호출이 `null`을 읽어도 정지를 유지
+  const stoppedEndsAt = useRef<number | null>(null);
 
   const remainingAtStart = useSharedValue(0);
   const startedAtUptime = useSharedValue(NOT_STARTED);
@@ -222,7 +234,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
         settled.current = true;
         setIsSettled(true);
 
-        const next = restoreSession({ stored, now, stopped: false });
+        const next = restoreSession({ stored, now, stopped: isStoppedOnLockScreen(stored) });
 
         applySession(next, now);
         // 초기값 READY_SESSION과 같은 객체면 리렌더가 없어 [session] 이펙트가 돌지 않으므로 여기서 한 번 저장
@@ -300,19 +312,38 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     if (session.phase === 'completed') applySession(advanceTimer({ session, now, restMs, focusMs }), now);
   }, [session, settingMinutes, restMs, focusMs, startCounting, stopCounting, applySession, running]);
 
+  // 진행 세션을 지금 시각과 정지 값에 맞춤. `AppState` active와 `onStopped`가 겹쳐도 한 번 읽은 정지 값을 유지
+  const restoreRunningSession = useCallback(() => {
+    const consumed = liveActivity?.consumeStoppedEndsAt() ?? null;
+
+    if (consumed !== null) stoppedEndsAt.current = consumed;
+
+    const now = Date.now();
+    const stopped = session.phase === 'running' && session.endsAt === stoppedEndsAt.current;
+
+    applySession(restoreSession({ stored: session, now, stopped }), now);
+  }, [session, applySession]);
+
   useEffect(() => {
     if (session.phase !== 'running') return;
 
     // 백그라운드에서는 프레임이 돌지 않아 카운트다운이 멈춤. `SPEC.md` 남은 시간
-    const subscription = AppState.addEventListener('change', (next) => {
+    const appState = AppState.addEventListener('change', (next) => {
       if (next !== 'active') return;
 
-      const now = Date.now();
-      applySession(restoreSession({ stored: session, now, stopped: false }), now);
+      restoreRunningSession();
     });
 
-    return () => subscription.remove();
-  }, [session, applySession]);
+    // 앱이 열리며 정지될 때 `AppState` active가 `StopTimerIntent`의 저장보다 먼저 올 수 있어, `onStopped`에서도 세션을 맞춤
+    const stopped = liveActivity?.addListener('onStopped', () => {
+      restoreRunningSession();
+    });
+
+    return () => {
+      appState.remove();
+      stopped?.remove();
+    };
+  }, [session.phase, restoreRunningSession]);
 
   const stop = useCallback(() => {
     settled.current = true;

@@ -80,7 +80,7 @@
   - [x] 개체 규격 — `DESIGN.md` §4 표의 폭·높이, 7도트가 9도트에서 위 두 줄을 뺀 것인가, 격자에 색 없는 글자가 없는가 (단위)
     - 기준 표식이 불 뒤에 그려지는지와 도트 가장자리는 Jest가 보지 못한다. 화면으로 확인한다
   - [x] 단계 전이 — 재생·일시정지·재개·정지·완료 (단위)
-  - [x] 앱 재실행 — `SPEC.md` 앱 재실행 표 4행, 끝날 시각이 지금과 같은 경계, 정지됨 플래그 (단위)
+  - [x] 앱 재실행 — `SPEC.md` 앱 재실행 표 4행, 끝날 시각이 지금과 같은 경계, 정지 값 (단위)
   - [x] 저장값 읽기 — 깨진 값, 빈 값, 단계에 안 맞는 값, 범위 밖 분 (단위)
   - [x] 저장값 쓰기 — 단계마다 담는 키와 대기에서 저장할 것이 없는 자리 (단위)
     - 기기 저장소 읽고 쓰기와 앱 재실행 배선은 아래 「진행 중 종료 → 재실행」이 잡는다. Maestro를 깔기 전까지는 실기기로 확인한다
@@ -122,12 +122,14 @@
 - [x] 개발 빌드 전환 (서명). 120Hz 설정 (`app.json` `ios.infoPlist`의 `CADisableMinimumFrameDurationOnPhone`)
 - [x] Widget Extension 타겟 추가와 앱 연결 (`@bacons/apple-targets`)
   - 실시간 현황 스위치는 `ActivityAuthorizationInfo().areActivitiesEnabled`를 호출 시점에 읽어 확인한다
-- [x] 정지됨 플래그를 앱에 전달하는 방식을 정한다. `LiveActivityIntent`가 앱 프로세스에서 실행돼 `UserDefaults.standard`를 쓰므로 App Group을 쓰지 않는다. 근거는 `.claude/docs/live-activity.md`
-- [ ] ActivityKit 브리지 모듈 (Expo 로컬 모듈, Swift와 TypeScript). 시작·종료, 정지됨 플래그 읽기
-- [ ] Live Activity 화면 (SwiftUI. 아이콘, 남은 시간, 진행 막대, 정지 버튼)
-- [ ] 정지 버튼 App Intent (Swift). 알림 취소, Live Activity 종료, 정지됨 플래그 쓰기
+- [x] 정지 값을 앱에 전달하는 방식을 정한다. `LiveActivityIntent`가 앱 프로세스에서 실행돼 `UserDefaults.standard`를 쓰므로 App Group을 쓰지 않는다. 근거는 `.claude/docs/live-activity.md`
+- [x] ActivityKit 브리지 모듈 (Expo 로컬 모듈, Swift와 TypeScript). 시작·종료, 정지 값 읽기
+- [x] Live Activity 화면 (SwiftUI. 아이콘, 남은 시간, 진행 막대, 정지 버튼, 닫기 버튼). 버튼·모닥불은 피그마에서 내보낸 PNG(`targets/widget/images/`)
+- [x] 정지 버튼 App Intent (Swift). 알림 취소, Live Activity 종료, 정지 값 쓰기
 - [x] 상태 전달과 시작·일시정지·종료 연동
-- [ ] 실기기 검증 (Live Activity 표시, 정지 버튼 → 앱 재실행 시 대기, 스와이프 해제)
+- [ ] 실기기 검증 (Live Activity 표시, 정지 버튼 → 잠금 해제 뒤 앱이 열리며 대기, 스와이프 해제)
+  - 시뮬레이터에서 확인한 것: 앱이 백그라운드일 때 정지 버튼 → 앱이 열리며 집중 타이머 대기. 끝날 시각에 카드가 사라짐. 종료 상태 카드에서도 정지·닫기 버튼 동작
+  - 실기기에서 확인할 것: 앱을 종료한 상태에서 정지 버튼을 눌렀을 때. Intent가 앱 프로세스를 새로 띄운다
 
 ## 개발 환경
 
@@ -149,17 +151,17 @@
 
 Expo SDK 57 기준. `npx expo install`이 SDK에 맞는 버전을 고른다.
 
-| 패키지                                      | 버전    | 역할                                   | Expo Go               |
-| ------------------------------------------- | ------- | -------------------------------------- | --------------------- |
-| `expo`                                      | 57.0.15 | SDK                                    | —                     |
-| `@shopify/react-native-skia`                | 2.6.2   | 렌더링                                 | 포함됨                |
-| `react-native-reanimated`                   | 4.5.1   | 애니메이션                             | 포함됨                |
-| `react-native-gesture-handler`              | 2.32.0  | 제스처                                 | 포함됨                |
-| `expo-keep-awake`                           | 57.0.1  | 화면 꺼짐 방지                         | 포함됨                |
-| `@react-native-async-storage/async-storage` | 2.2.0   | 영속 저장                              | 포함됨                |
-| `expo-notifications` 로컬 알림              | 57.0.13 | 종료 알림                              | 사용 가능             |
-| Widget Extension (SwiftUI)                  | —       | Live Activity                          | **불가능. 개발 빌드** |
-| ActivityKit 브리지 (Expo 로컬 모듈)         | —       | Live Activity 시작·종료, 정지됨 플래그 | **불가능. 개발 빌드** |
+| 패키지                                      | 버전    | 역할                             | Expo Go               |
+| ------------------------------------------- | ------- | -------------------------------- | --------------------- |
+| `expo`                                      | 57.0.15 | SDK                              | —                     |
+| `@shopify/react-native-skia`                | 2.6.2   | 렌더링                           | 포함됨                |
+| `react-native-reanimated`                   | 4.5.1   | 애니메이션                       | 포함됨                |
+| `react-native-gesture-handler`              | 2.32.0  | 제스처                           | 포함됨                |
+| `expo-keep-awake`                           | 57.0.1  | 화면 꺼짐 방지                   | 포함됨                |
+| `@react-native-async-storage/async-storage` | 2.2.0   | 영속 저장                        | 포함됨                |
+| `expo-notifications` 로컬 알림              | 57.0.13 | 종료 알림                        | 사용 가능             |
+| Widget Extension (SwiftUI)                  | —       | Live Activity                    | **불가능. 개발 빌드** |
+| ActivityKit 브리지 (Expo 로컬 모듈)         | —       | Live Activity 시작·종료, 정지 값 | **불가능. 개발 빌드** |
 
 ### 개발 빌드
 
