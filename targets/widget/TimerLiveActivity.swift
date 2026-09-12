@@ -76,6 +76,32 @@ private struct LockScreenView: View {
         }
         .padding(EdgeInsets(top: 13, leading: 16, bottom: 14, trailing: 16))
         .frame(maxWidth: .infinity, alignment: .leading)
+        .overlay(alignment: .topTrailing) {
+            Button(intent: DismissLiveActivityIntent()) {
+                CloseMark()
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 7)
+            .padding(.trailing, 8)
+        }
+    }
+}
+
+/// 잠금화면 닫기 버튼
+private struct CloseMark: View {
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Palette.closeCircle)
+
+            ForEach([45.0, -45.0], id: \.self) { degrees in
+                RoundedRectangle(cornerRadius: 0.75)
+                    .fill(Palette.closeMark)
+                    .frame(width: 10, height: 1.5)
+                    .rotationEffect(.degrees(degrees))
+            }
+        }
+        .frame(width: 28, height: 28)
     }
 }
 

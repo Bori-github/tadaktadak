@@ -3,6 +3,8 @@ import SwiftUI
 enum Palette {
     static let canvas = Color(hex: 0x141021)
     static let appName = Color(hex: 0x7A6EA8)
+    static let closeCircle = Color(hex: 0xF4EAD6).opacity(0.12)
+    static let closeMark = Color(hex: 0xF4EAD6).opacity(0.8)
 
     static func text(_ mode: TimerActivityMode) -> Color {
         mode == .focus ? Color(hex: 0xF4EAD6) : Color(hex: 0x8FDBE4)
