@@ -11,7 +11,12 @@ export type LiveActivityContent = {
   endsAt: number;
 };
 
-declare class LiveActivityModule extends NativeModule {
+type LiveActivityEvents = {
+  /** `StopTimerIntent`가 `UserDefaults`에 `endsAt`을 저장한 직후에 발생 */
+  onStopped: (payload: { endsAt: number }) => void;
+};
+
+declare class LiveActivityModule extends NativeModule<LiveActivityEvents> {
   /** 위젯 타겟 배포 버전인 iOS 18 이상인지 */
   isSupported: boolean;
   /** 설정 › 앱 › 타닥 › 실시간 현황 스위치 */

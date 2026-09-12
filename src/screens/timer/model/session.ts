@@ -309,6 +309,13 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     if (session.phase === 'completed') applySession(advanceTimer({ session, now, restMs, focusMs }), now);
   }, [session, settingMinutes, restMs, focusMs, startCounting, stopCounting, applySession, running]);
 
+  // 진행 중인 세션을 지금 시각과 잠금화면 정지 값에 맞춤
+  const restoreRunningSession = useCallback(() => {
+    const now = Date.now();
+
+    applySession(restoreSession({ stored: session, now, stopped: isStoppedOnLockScreen(session) }), now);
+  }, [session, applySession]);
+
   useEffect(() => {
     if (session.phase !== 'running') return;
 
@@ -316,12 +323,22 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     const subscription = AppState.addEventListener('change', (next) => {
       if (next !== 'active') return;
 
-      const now = Date.now();
-      applySession(restoreSession({ stored: session, now, stopped: isStoppedOnLockScreen(session) }), now);
+      restoreRunningSession();
     });
 
     return () => subscription.remove();
-  }, [session, applySession]);
+  }, [session, restoreRunningSession]);
+
+  useEffect(() => {
+    if (session.phase !== 'running') return;
+
+    // 앱이 열리며 정지될 때 활성 전환이 `StopTimerIntent`의 저장보다 먼저 올 수 있어, 저장 이벤트에서도 세션을 맞춤
+    const subscription = liveActivity?.addListener('onStopped', () => {
+      restoreRunningSession();
+    });
+
+    return () => subscription?.remove();
+  }, [session.phase, restoreRunningSession]);
 
   const stop = useCallback(() => {
     settled.current = true;

@@ -10,6 +10,8 @@ struct StopTimerIntent: LiveActivityIntent {
     // 타이머 실행 중 단축어 앱, Siri를 통해 실행되면 예약된 알림이 삭제될 수 있음. 앱은 이 동작을 인지하지 못함
     // 단축어 앱, Siri를 통해 실행되는 것을 방지하기 위해 `isDiscoverable`을 `false`로 설정하여 잠금화면의 정지 버튼으로만 동작하도록 처리
     static let isDiscoverable = false
+    // iOS가 앱을 포그라운드로 올린 뒤 `perform()`을 실행. 잠금 상태면 잠금 해제를 거치고, 해제를 취소하면 실행되지 않음
+    static let openAppWhenRun = true
 
     func perform() async throws -> some IntentResult {
         // `LiveActivityIntent`는 위젯이 아니라 앱 프로세스에서 실행되므로 App Group 없이 `UserDefaults.standard`로 앱과 공유

@@ -19,8 +19,34 @@ struct LiveActivityContentRecord: Record {
 }
 
 public class LiveActivityModule: Module {
+  private var stoppedObserver: NSObjectProtocol?
+
   public func definition() -> ModuleDefinition {
     Name("LiveActivity")
+
+    Events("onStopped")
+
+    // `StopTimerIntent`가 앱 프로세스에서 값을 쓰는 순간 JavaScript에 이벤트를 보냄
+    // 앱이 열릴 때 `AppState` 활성 전환이 이 저장보다 먼저 오면 전환 처리가 값을 읽지 못함
+    OnStartObserving {
+      self.stoppedObserver = NotificationCenter.default.addObserver(
+        forName: UserDefaults.didChangeNotification,
+        object: UserDefaults.standard,
+        queue: .main
+      ) { [weak self] _ in
+        guard let endsAt = UserDefaults.standard.object(forKey: TimerStoppedFlag.key) as? Int else { return }
+
+        self?.sendEvent("onStopped", ["endsAt": endsAt])
+      }
+    }
+
+    OnStopObserving {
+      if let observer = self.stoppedObserver {
+        NotificationCenter.default.removeObserver(observer)
+      }
+
+      self.stoppedObserver = nil
+    }
 
     Property("isSupported") {
       if #available(iOS 18.0, *) { return true }

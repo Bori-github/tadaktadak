@@ -69,6 +69,8 @@ let mockPlayRejects = false;
 let mockStoppedEndsAt: number | null = null;
 // Android처럼 네이티브 모듈이 없는 빌드
 let mockHasLiveActivityModule = true;
+// `StopTimerIntent`가 값을 저장했을 때 네이티브가 보내는 이벤트를 테스트가 직접 발생시킴
+const mockStoppedListeners: (() => void)[] = [];
 
 jest.mock('@modules/live-activity', () => ({
   get liveActivity() {
@@ -81,6 +83,11 @@ jest.mock('@modules/live-activity', () => ({
         mockStoppedEndsAt = null;
 
         return endsAt;
+      },
+      addListener: (_event: string, listener: () => void) => {
+        mockStoppedListeners.push(listener);
+
+        return { remove: () => {} };
       },
     };
   },
@@ -170,6 +177,7 @@ beforeEach(() => {
   mockPlayRejects = false;
   mockStoppedEndsAt = null;
   mockHasLiveActivityModule = true;
+  mockStoppedListeners.length = 0;
   mockFallbackCount = 0;
   mockPending = null;
   mockAppState = 'active';
@@ -273,6 +281,18 @@ describe('잠금화면 정지 버튼', () => {
     mockStoppedEndsAt = endsAt;
 
     await returnToForeground();
+
+    expect(result.current.session).toEqual(READY_SESSION);
+  });
+
+  it('정지 값 저장 이벤트가 오면 포그라운드 전환 없이 집중 타이머 대기가 된다', async () => {
+    const { result, endsAt } = await renderRunning();
+
+    mockStoppedEndsAt = endsAt;
+
+    await act(async () => {
+      for (const listener of mockStoppedListeners) listener();
+    });
 
     expect(result.current.session).toEqual(READY_SESSION);
   });
