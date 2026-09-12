@@ -87,7 +87,13 @@ jest.mock('@modules/live-activity', () => ({
       addListener: (_event: string, listener: () => void) => {
         mockStoppedListeners.push(listener);
 
-        return { remove: () => {} };
+        return {
+          remove: () => {
+            const index = mockStoppedListeners.indexOf(listener);
+
+            if (index !== -1) mockStoppedListeners.splice(index, 1);
+          },
+        };
       },
     };
   },
@@ -188,7 +194,13 @@ beforeEach(() => {
   jest.mocked(AppState.addEventListener).mockImplementation((_type, listener) => {
     mockAppStateListeners.push(listener);
 
-    return { remove: () => {} };
+    return {
+      remove: () => {
+        const index = mockAppStateListeners.indexOf(listener);
+
+        if (index !== -1) mockAppStateListeners.splice(index, 1);
+      },
+    };
   });
   // 남겨 두면 이번 화면이 등록에 실패했을 때 지난 화면의 콜백을 부름
   mockOnFrame = null;
