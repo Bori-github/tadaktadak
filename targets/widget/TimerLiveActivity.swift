@@ -62,7 +62,7 @@ private struct LockScreenView: View {
             .padding(.top, 11)
 
             HStack(spacing: 12) {
-                ProgressView(timerInterval: state.progressStartsAt...state.endsAt, countsDown: mode == .focus) {
+                ProgressView(timerInterval: state.progressStartsAt...state.endsAt, countsDown: false) {
                     EmptyView()
                 } currentValueLabel: {
                     EmptyView()
