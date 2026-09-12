@@ -297,6 +297,20 @@ describe('잠금화면 정지 버튼', () => {
     expect(result.current.session).toEqual(READY_SESSION);
   });
 
+  it('활성 전환과 저장 이벤트가 한 배치로 겹쳐도 대기를 유지한다', async () => {
+    const { result, endsAt } = await renderRunning();
+
+    mockStoppedEndsAt = endsAt;
+
+    // 한쪽이 정지 값을 먼저 읽고 지우면 다른 쪽은 `null`을 읽는다. 나중 호출이 낡은 세션으로 진행을 되돌리면 안 됨
+    await act(async () => {
+      for (const listener of mockStoppedListeners) listener();
+      for (const listener of mockAppStateListeners) listener('active');
+    });
+
+    expect(result.current.session).toEqual(READY_SESSION);
+  });
+
   it('정지하지 않고 돌아오면 진행이 이어진다', async () => {
     const { result } = await renderRunning();
 

@@ -85,6 +85,9 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   // `settled`는 참조라 바뀌어도 리렌더가 없음. 밖에서 이 값을 이펙트 의존성으로 쓰려면 상태가 따로 필요
   const [isSettled, setIsSettled] = useState(false);
 
+  // `consumeStoppedEndsAt`이 읽고 지운 값을 기억. `AppState` active와 `onStopped`가 겹쳐 나중 호출이 `null`을 읽어도 정지를 유지
+  const stoppedEndsAt = useRef<number | null>(null);
+
   const remainingAtStart = useSharedValue(0);
   const startedAtUptime = useSharedValue(NOT_STARTED);
   const shownSeconds = useSharedValue(0);
@@ -309,11 +312,16 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     if (session.phase === 'completed') applySession(advanceTimer({ session, now, restMs, focusMs }), now);
   }, [session, settingMinutes, restMs, focusMs, startCounting, stopCounting, applySession, running]);
 
-  // 진행 중인 세션을 지금 시각과 잠금화면 정지 값에 맞춤
+  // 진행 세션을 지금 시각과 정지 값에 맞춤. `AppState` active와 `onStopped`가 겹쳐도 한 번 읽은 정지 값을 유지
   const restoreRunningSession = useCallback(() => {
-    const now = Date.now();
+    const consumed = liveActivity?.consumeStoppedEndsAt() ?? null;
 
-    applySession(restoreSession({ stored: session, now, stopped: isStoppedOnLockScreen(session) }), now);
+    if (consumed !== null) stoppedEndsAt.current = consumed;
+
+    const now = Date.now();
+    const stopped = session.phase === 'running' && session.endsAt === stoppedEndsAt.current;
+
+    applySession(restoreSession({ stored: session, now, stopped }), now);
   }, [session, applySession]);
 
   useEffect(() => {
@@ -327,12 +335,12 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     });
 
     return () => subscription.remove();
-  }, [session, restoreRunningSession]);
+  }, [session.phase, restoreRunningSession]);
 
   useEffect(() => {
     if (session.phase !== 'running') return;
 
-    // 앱이 열리며 정지될 때 활성 전환이 `StopTimerIntent`의 저장보다 먼저 올 수 있어, 저장 이벤트에서도 세션을 맞춤
+    // 앱이 열리며 정지될 때 `AppState` active가 `StopTimerIntent`의 저장보다 먼저 올 수 있어, `onStopped`에서도 세션을 맞춤
     const subscription = liveActivity?.addListener('onStopped', () => {
       restoreRunningSession();
     });
