@@ -20,6 +20,8 @@ struct LiveActivityContentRecord: Record {
 
 public class LiveActivityModule: Module {
   private var stoppedObserver: NSObjectProtocol?
+  // 이미 보낸 정지 값. 무관한 `UserDefaults` 변경이나 같은 값에 다시 보내지 않기 위함
+  private var emittedStoppedEndsAt: Int?
 
   public func definition() -> ModuleDefinition {
     Name("LiveActivity")
@@ -27,16 +29,27 @@ public class LiveActivityModule: Module {
     Events("onStopped")
 
     // `StopTimerIntent`가 앱 프로세스에서 값을 쓰는 순간 JavaScript에 이벤트를 보냄
-    // 앱이 열릴 때 `AppState` 활성 전환이 이 저장보다 먼저 오면 전환 처리가 값을 읽지 못함
+    // 앱이 열릴 때 `AppState` active가 이 저장보다 먼저 오면 전환 처리가 값을 읽지 못함
     OnStartObserving {
+      self.emittedStoppedEndsAt = nil
+      // `didChangeNotification`은 `UserDefaults.standard`의 모든 변경에 오므로, 정지 값이 새로 써진 때만 골라 보냄
       self.stoppedObserver = NotificationCenter.default.addObserver(
         forName: UserDefaults.didChangeNotification,
         object: UserDefaults.standard,
         queue: .main
       ) { [weak self] _ in
-        guard let endsAt = UserDefaults.standard.object(forKey: TimerStoppedFlag.key) as? Int else { return }
+        guard let self else { return }
 
-        self?.sendEvent("onStopped", ["endsAt": endsAt])
+        // 값이 없으면 읽고 지워진 것. 다음 저장을 새 이벤트로 보게 초기화
+        guard let endsAt = UserDefaults.standard.object(forKey: TimerStoppedFlag.key) as? Int else {
+          self.emittedStoppedEndsAt = nil
+          return
+        }
+
+        guard endsAt != self.emittedStoppedEndsAt else { return }
+
+        self.emittedStoppedEndsAt = endsAt
+        self.sendEvent("onStopped", ["endsAt": endsAt])
       }
     }
 
