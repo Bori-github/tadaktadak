@@ -12,8 +12,8 @@ export type LiveActivityContent = {
 };
 
 type LiveActivityEvents = {
-  /** `StopTimerIntent`가 `UserDefaults`에 `endsAt`을 저장한 직후에 발생 */
-  onStopped: (payload: { endsAt: number }) => void;
+  /** `StopTimerIntent`가 `UserDefaults`에 정지 값을 저장한 직후에 발생 */
+  onStopped: () => void;
 };
 
 declare class LiveActivityModule extends NativeModule<LiveActivityEvents> {

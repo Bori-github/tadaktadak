@@ -48,8 +48,9 @@ public class LiveActivityModule: Module {
 
         guard endsAt != self.emittedStoppedEndsAt else { return }
 
+        // 정지 값은 `consumeStoppedEndsAt`으로 읽으므로 이벤트엔 싣지 않고 신호만 보냄
         self.emittedStoppedEndsAt = endsAt
-        self.sendEvent("onStopped", ["endsAt": endsAt])
+        self.sendEvent("onStopped")
       }
     }
 
