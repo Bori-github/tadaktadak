@@ -328,24 +328,21 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     if (session.phase !== 'running') return;
 
     // 백그라운드에서는 프레임이 돌지 않아 카운트다운이 멈춤. `SPEC.md` 남은 시간
-    const subscription = AppState.addEventListener('change', (next) => {
+    const appState = AppState.addEventListener('change', (next) => {
       if (next !== 'active') return;
 
       restoreRunningSession();
     });
 
-    return () => subscription.remove();
-  }, [session.phase, restoreRunningSession]);
-
-  useEffect(() => {
-    if (session.phase !== 'running') return;
-
     // 앱이 열리며 정지될 때 `AppState` active가 `StopTimerIntent`의 저장보다 먼저 올 수 있어, `onStopped`에서도 세션을 맞춤
-    const subscription = liveActivity?.addListener('onStopped', () => {
+    const stopped = liveActivity?.addListener('onStopped', () => {
       restoreRunningSession();
     });
 
-    return () => subscription?.remove();
+    return () => {
+      appState.remove();
+      stopped?.remove();
+    };
   }, [session.phase, restoreRunningSession]);
 
   const stop = useCallback(() => {
