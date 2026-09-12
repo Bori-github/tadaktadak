@@ -7,7 +7,7 @@ export type LiveActivityContent = {
   mode: LiveActivityMode;
   /** 진행 막대가 0%인 시각. `endsAt - 타이머 시간` (밀리초) */
   progressStartsAt: number;
-  /** 타이머가 끝날 시각(밀리초). 이 시각이 지나면 iOS가 Live Activity를 흐리게 그림 */
+  /** 타이머가 끝날 시각(밀리초). 이 시각에 iOS가 Live Activity를 잠금화면에서 제거 */
   endsAt: number;
 };
 

@@ -64,24 +64,24 @@ public class LiveActivityModule: Module {
 
       let state = content.state
 
-      if let activity = Activity<TimerActivityAttributes>.activities.first {
-        // 타이머 모드를 갱신으로 바꾸지 못해 기존 Live Activity를 끝내고 새로 시작
-        if activity.attributes.mode != content.activityMode {
-          await activity.end(nil, dismissalPolicy: .immediate)
-        } else {
-          // 같은 값으로 다시 요청하면 잠금화면이 깜빡임
-          guard activity.content.state != state else { return }
-
-          await activity.update(ActivityContent(state: state, staleDate: state.endsAt))
-          return
-        }
+      // 같은 값으로 다시 요청하면 잠금화면이 깜빡임
+      if let activity = Activity<TimerActivityAttributes>.activities.first,
+         activity.attributes.mode == content.activityMode, activity.content.state == state {
+        return
       }
 
-      _ = try Activity.request(
+      // 종료된 Activity는 `update`가 불가하므로 값이 바뀌면 `end` 뒤 `request`
+      await TimerActivityAttributes.endAllActivities()
+
+      let activity = try Activity.request(
         attributes: TimerActivityAttributes(mode: content.activityMode),
-        content: ActivityContent(state: state, staleDate: state.endsAt),
+        content: ActivityContent(state: state, staleDate: nil),
         pushType: nil
       )
+
+      // `.after(endsAt)` 종료 정책으로 끝날 시각에 iOS가 잠금화면에서 제거. 앱 프로세스가 없어도 iOS가 처리
+      // 종료된 Live Activity는 Dynamic Island에서 바로 사라짐
+      await activity.end(ActivityContent(state: state, staleDate: nil), dismissalPolicy: .after(state.endsAt))
     }
 
     AsyncFunction("endAsync") {

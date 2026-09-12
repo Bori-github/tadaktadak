@@ -8,18 +8,18 @@ struct TimerLiveActivity: Widget {
             LockScreenView(mode: context.attributes.mode, state: context.state)
                 .activityBackgroundTint(Palette.canvas)
                 .activitySystemActionForegroundColor(Palette.text(context.attributes.mode))
-        } dynamicIsland: { context in
+        } dynamicIsland: { _ in
+            // 시작 직후 `end`로 종료 상태가 되어 Dynamic Island에 표시되지 않음. `ActivityConfiguration`이 `dynamicIsland`를 요구해 빈 뷰로 채움
             DynamicIsland {
                 DynamicIslandExpandedRegion(.center) {
-                    RemainingTimeText(mode: context.attributes.mode, state: context.state)
-                        .font(.system(size: 28, weight: .medium))
+                    EmptyView()
                 }
             } compactLeading: {
                 EmptyView()
             } compactTrailing: {
-                RemainingTimeText(mode: context.attributes.mode, state: context.state)
+                EmptyView()
             } minimal: {
-                RemainingTimeText(mode: context.attributes.mode, state: context.state)
+                EmptyView()
             }
         }
         // Live Activity 자체 여백 제거
