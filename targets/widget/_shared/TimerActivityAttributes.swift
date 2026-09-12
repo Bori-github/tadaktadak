@@ -11,7 +11,7 @@ enum TimerActivityMode: String, Codable, Hashable {
 
 struct TimerActivityAttributes: ActivityAttributes {
     struct ContentState: Codable, Hashable {
-        // (endsAt - 타이머 시간) = progressStartsAt
+        /// (endsAt - 타이머 시간) = progressStartsAt
         var progressStartsAt: Date
         var endsAt: Date
 
