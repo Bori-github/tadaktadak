@@ -67,6 +67,41 @@ eas build --profile <이름>
 
 `eas submit`이 쓰는 설정
 
+- 제출 대상은 `production` 프로필 빌드. `internal` 빌드는 서명이 달라 제출 불가
+- `production`이 비어 있으면 `eas submit`이 업로드 전에 순서대로 물음
+  1. Apple ID 입력
+  2. App Store Connect 앱 확인. Apple에 로그인해 번들 식별자로 앱을 찾고, 없으면 이름을 물어 만듦. 이름 기본값은 `app.json`의 `name`
+  3. 업로드 인증. 처음에 Apple 로그인으로 App Store Connect API 키를 만들어 EAS 서버에 보관하고 다음부터 재사용
+- 1번과 2번을 건너뛰려면 앱을 만든 뒤 아래를 적음. `ascAppId`는 App Store Connect 앱 페이지 주소의 `apps/` 뒤 숫자
+
+```json
+"submit": {
+  "production": {
+    "ios": {
+      "appleId": "<Apple ID>",
+      "ascAppId": "<App Store Connect 앱 번호>",
+      "appleTeamId": "<Apple 팀 ID>"
+    }
+  }
+}
+```
+
+```bash
+eas build --platform ios --profile production
+eas submit --platform ios --latest
+```
+
+### 제출 후 App Store Connect
+
+`eas submit`은 빌드를 App Store Connect에 넣는 것까지 진행하고, 심사 제출은 App Store Connect을 통해 웹에서 진행
+
+1. 빌드 처리 대기. 10~15분 뒤 TestFlight 탭에 나타남
+2. TestFlight로 아이폰에 설치해 확인. 스토어 서명이 붙은 실제 제출본
+3. 앱 정보 입력. 이름, 부제, 카테고리, 개인정보 처리방침 주소, 연령 등급, 가격
+4. 버전 페이지 작성. 스크린샷(6.9인치 한 세트 필수), 설명, 키워드, 지원 주소, 처리된 빌드 선택
+5. 개인정보 수집 신고
+6. 심사 제출
+
 ## 참고
 
 - [eas.json 레퍼런스](https://docs.expo.dev/eas/json/)
