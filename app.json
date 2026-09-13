@@ -13,7 +13,8 @@
       "requireFullScreen": true,
       "infoPlist": {
         "NSSupportsLiveActivities": true,
-        "CADisableMinimumFrameDurationOnPhone": true
+        "CADisableMinimumFrameDurationOnPhone": true,
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
