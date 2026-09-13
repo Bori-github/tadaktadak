@@ -2,7 +2,7 @@
 id: tadaktadak
 name: "타닥타닥"
 figma: "https://www.figma.com/design/qmtzKbnYAsTAXvn0CBbfo2/tadaktadak"
-updated: 2026-09-12
+updated: 2026-09-13
 category: personal-tool
 bundle_id: "com.boriguri.tadaktadak"
 primary_color: "#ffb43c"
@@ -376,7 +376,7 @@ hHHHHHh     .hHHHh.     kKKKKKk
 
 ## 7. Responsive Behavior
 
-브레이크포인트가 없다. **정수 배율만 쓴다.** 배율 상한은 3이다 — 짧은 변 1014부터 large 하나로 묶는다. 화면은 세로 전용이다 — iPad도 `requireFullScreen`으로 가로와 Split View를 열지 않는다.
+브레이크포인트가 없다. **정수 배율만 쓴다.** 배율 상한은 3이다 — 짧은 변 1014부터 large 하나로 묶는다. 화면은 세로 전용이다. iPad는 설치 대상이 아니다 (`supportsTablet: false`).
 
 ### 확정값 네 개
 
