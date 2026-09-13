@@ -21,6 +21,14 @@ pnpm ios               # iOS 시뮬레이터 개발 빌드
 pnpm android           # Android 에뮬레이터 개발 빌드
 ```
 
+```bash
+pnpm build:preview -p ios         # 등록된 기기에 설치하는 빌드
+pnpm build:production -p ios      # 스토어 제출용 빌드
+pnpm submit -p ios                # App Store Connect 제출
+pnpm build:preview -p android
+pnpm build:production -p android
+```
+
 ## 스택
 
 | 항목       | 값                                                             |
