@@ -9,7 +9,7 @@
     "backgroundColor": "#141021",
     "ios": {
       "bundleIdentifier": "com.boriguri.tadaktadak",
-      "supportsTablet": true,
+      "supportsTablet": false,
       "requireFullScreen": true,
       "infoPlist": {
         "NSSupportsLiveActivities": true,
