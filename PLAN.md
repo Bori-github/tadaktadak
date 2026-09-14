@@ -127,9 +127,7 @@
 - [x] Live Activity 화면 (SwiftUI. 아이콘, 남은 시간, 진행 막대, 정지 버튼, 닫기 버튼). 버튼·모닥불은 피그마에서 내보낸 PNG(`targets/widget/images/`)
 - [x] 정지 버튼 App Intent (Swift). 알림 취소, Live Activity 종료, 정지 값 쓰기
 - [x] 상태 전달과 시작·일시정지·종료 연동
-- [ ] 실기기 검증 (Live Activity 표시, 정지 버튼 → 잠금 해제 뒤 앱이 열리며 대기, 스와이프 해제)
-  - 시뮬레이터에서 확인한 것: 앱이 백그라운드일 때 정지 버튼 → 앱이 열리며 집중 타이머 대기. 끝날 시각에 카드가 사라짐. 종료 상태 카드에서도 정지·닫기 버튼 동작
-  - 실기기에서 확인할 것: 앱을 종료한 상태에서 정지 버튼을 눌렀을 때. Intent가 앱 프로세스를 새로 띄운다
+- [x] 실기기 검증 (Live Activity 표시, 정지 버튼 → 잠금 해제 뒤 앱이 열리며 대기, 스와이프 해제)
 
 ## 개발 환경
 
@@ -153,13 +151,13 @@ Expo SDK 57 기준. `npx expo install`이 SDK에 맞는 버전을 고른다.
 
 | 패키지                                      | 버전    | 역할                             | Expo Go               |
 | ------------------------------------------- | ------- | -------------------------------- | --------------------- |
-| `expo`                                      | 57.0.15 | SDK                              | —                     |
+| `expo`                                      | 57.0.16 | SDK                              | —                     |
 | `@shopify/react-native-skia`                | 2.6.2   | 렌더링                           | 포함됨                |
 | `react-native-reanimated`                   | 4.5.1   | 애니메이션                       | 포함됨                |
 | `react-native-gesture-handler`              | 2.32.0  | 제스처                           | 포함됨                |
 | `expo-keep-awake`                           | 57.0.1  | 화면 꺼짐 방지                   | 포함됨                |
 | `@react-native-async-storage/async-storage` | 2.2.0   | 영속 저장                        | 포함됨                |
-| `expo-notifications` 로컬 알림              | 57.0.13 | 종료 알림                        | 사용 가능             |
+| `expo-notifications` 로컬 알림              | 57.0.14 | 종료 알림                        | 사용 가능             |
 | Widget Extension (SwiftUI)                  | —       | Live Activity                    | **불가능. 개발 빌드** |
 | ActivityKit 브리지 (Expo 로컬 모듈)         | —       | Live Activity 시작·종료, 정지 값 | **불가능. 개발 빌드** |
 

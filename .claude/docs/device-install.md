@@ -13,18 +13,11 @@
 
 ```sh
 pnpm ios --device <UDID>
-
-# iPhone 12 mini 예시
-pnpm ios --device 00008101-001A65D03446001E
 ```
 
 빌드, 설치, Metro 기동, 앱 실행까지 한 번에 한다.
 
-`<UDID>` 자리에는 기기의 UDID를 넣는다. 지금 쓰는 기기는
-
-- iPhone 12 mini: `00008101-001A65D03446001E`
-
-UDID는 `xcrun xctrace list devices`의 `== Devices ==` 아래 괄호 안 값이다. `xcrun devicectl list devices`의 Identifier 열은 CoreDevice 식별자라 이 자리에 넣으면 동작하지 않는다. 기종은 그쪽 Model 열로 본다.
+`<UDID>` 자리에는 기기의 UDID를 넣는다. UDID는 `xcrun xctrace list devices`의 `== Devices ==` 아래 괄호 안 값이다.
 
 ## 인증서 신뢰
 
