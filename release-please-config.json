@@ -17,13 +17,6 @@
         { "type": "test", "section": "Tests" },
         { "type": "chore", "section": "Miscellaneous Chores" },
         { "type": "style", "section": "Styles" }
-      ],
-      "extra-files": [
-        {
-          "type": "json",
-          "path": "app.json",
-          "jsonpath": "$.expo.version"
-        }
       ]
     }
   }
