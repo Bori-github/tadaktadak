@@ -6,6 +6,12 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#141021",
+    "updates": {
+      "url": "https://u.expo.dev/ff7f54e7-e23a-4120-872c-9caf84f25bb7"
+    },
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
     "ios": {
       "bundleIdentifier": "com.boriguri.tadaktadak",
       "supportsTablet": false,
