@@ -13,6 +13,11 @@ replacers:
     replace: '* '
 
 categories:
+  - title: Breaking Changes
+    exclusive: true
+    when:
+      conventional:
+        breaking: true
   - title: Features
     when:
       conventional:
