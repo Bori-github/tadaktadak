@@ -1,0 +1,59 @@
+tag-template: 'next'
+name-template: '다음 배포'
+
+template: |
+  $CHANGES
+
+category-template: '### $TITLE'
+change-template: '* $TITLE (#$NUMBER)'
+no-changes-template: '변경 없음'
+
+replacers:
+  - search: '/^\* \w+(\([^)]*\))?!?: /gm'
+    replace: '* '
+
+categories:
+  - title: Features
+    when:
+      conventional:
+        types: [feat]
+  - title: Bug Fixes
+    when:
+      conventional:
+        types: [fix]
+  - title: Performance Improvements
+    when:
+      conventional:
+        types: [perf]
+  - title: Reverts
+    when:
+      conventional:
+        types: [revert]
+  - title: Code Refactoring
+    when:
+      conventional:
+        types: [refactor]
+  - title: Documentation
+    when:
+      conventional:
+        types: [docs]
+  - title: Build System
+    when:
+      conventional:
+        types: [build]
+  - title: Continuous Integration
+    when:
+      conventional:
+        types: [ci]
+  - title: Tests
+    when:
+      conventional:
+        types: [test]
+  - title: Miscellaneous Chores
+    when:
+      conventional:
+        types: [chore]
+  - title: Styles
+    when:
+      conventional:
+        types: [style]
