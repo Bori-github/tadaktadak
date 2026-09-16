@@ -41,6 +41,10 @@ jobs:
           fi
 
           version=$(jq -r .version package.json)
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::package.json의 version이 X.Y.Z 형식이 아님: $version"
+            exit 1
+          fi
 
           # 이전 릴리즈 목록 조회 및 버전 형식 검사(예: v1.2.3, v1.2.3.4 외 허용하지 않음)
           지난릴리즈() {
