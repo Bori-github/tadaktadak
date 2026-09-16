@@ -14,6 +14,8 @@ jobs:
     params:
       platform: ios
       profile: production
+      distribution: store
+      channel: production
       fingerprint_hash: ${{ needs.fingerprint.outputs.ios_fingerprint_hash }}
 
   update_ios:
