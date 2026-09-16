@@ -55,10 +55,10 @@ jobs:
             expected="v$version"
             name="v$version"
           else
-            previous=$(지난릴리즈 | grep -E "\.[0-9]+$" | head -1 || true)
+            previous=$(지난릴리즈 | grep -E "^v${version//./\\.}\.[0-9]+$" | head -1 || true)
             number=1
             if [ -n "$previous" ]; then
-              number=$(( ${previous##*.} + 1 ))
+              number=$(( 10#${previous##*.} + 1 ))
             fi
             expected="v$version.$number"
             name="$version 업데이트 $number"
