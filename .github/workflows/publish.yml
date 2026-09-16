@@ -23,8 +23,16 @@ jobs:
         id: plan
         env:
           PUSHED: ${{ github.ref_name }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
+
+          # Release Drafter는 발행된 릴리즈가 없으면 변경을 못 찾아 빈 노트를 낸다
+          if [ -z "$(gh release list --limit 1 --json tagName --jq '.[].tagName')" ]; then
+            echo "::error::발행된 릴리즈가 없음. 첫 릴리즈는 gh release create로 직접 만든다"
+            exit 1
+          fi
+
           version=$(jq -r .version package.json)
 
           # 트리거가 된 태그는 직전 릴리즈 계산에서 제외
