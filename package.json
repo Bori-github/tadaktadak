@@ -48,7 +48,7 @@
     "build:preview": "eas build --profile preview",
     "build:production": "eas build --profile production",
     "submit": "eas submit --latest",
-    "release:ios": "eas workflow:run .eas/workflows/release-ios.yml --ref release-please--branches--main--components--tadaktadak",
+    "deploy:ios": "eas workflow:run .eas/workflows/deploy-ios.yml --ref main",
     "test": "jest",
     "e2e": "maestro test .maestro",
     "check": "run-p -c lint typecheck format:check",
