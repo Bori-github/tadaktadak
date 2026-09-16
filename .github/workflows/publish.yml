@@ -35,18 +35,20 @@ jobs:
 
           version=$(jq -r .version package.json)
 
-          # 트리거가 된 태그는 직전 릴리즈 계산에서 제외
+          # 순번 자리가 숫자 아닌 태그는 산술에서 bash 오류를 내므로 정규식으로 걸러냄
           지난태그() {
-            git tag --list "$@" --sort=-v:refname | grep -vx "$PUSHED" | head -1 || true
+            git tag --list "v$version" "v$version.*" --sort=-v:refname |
+              grep -E "^v${version//./\\.}(\.[0-9]+)?$" |
+              grep -vx "$PUSHED" || true
           }
-          published=$(지난태그 "v$version" "v$version.*")
+          published=$(지난태그 | head -1)
 
           # v{version} 계열 태그 부재는 해당 버전 스토어 릴리즈 미발행
           if [ -z "$published" ]; then
             expected="v$version"
             name="v$version"
           else
-            previous=$(지난태그 "v$version.*")
+            previous=$(지난태그 | grep -E "\.[0-9]+$" | head -1 || true)
             number=1
             if [ -n "$previous" ]; then
               number=$(( ${previous##*.} + 1 ))
