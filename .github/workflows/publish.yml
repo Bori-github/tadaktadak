@@ -1,0 +1,68 @@
+name: publish
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: publish
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: 태그 대조
+        id: plan
+        env:
+          PUSHED: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          version=$(jq -r .version package.json)
+
+          # 트리거가 된 태그는 직전 릴리즈 계산에서 제외
+          지난태그() {
+            git tag --list "$@" --sort=-v:refname | grep -vx "$PUSHED" | head -1 || true
+          }
+          published=$(지난태그 "v$version" "v$version.*")
+
+          # v{version} 계열 태그 부재는 해당 버전 스토어 릴리즈 미발행
+          if [ -z "$published" ]; then
+            expected="v$version"
+            name="v$version"
+          else
+            previous=$(지난태그 "v$version.*")
+            number=1
+            if [ -n "$previous" ]; then
+              number=$(( ${previous##*.} + 1 ))
+            fi
+            expected="v$version.$number"
+            name="$version 업데이트 $number"
+          fi
+
+          if [ "$PUSHED" != "$expected" ]; then
+            echo "::error::푸시된 태그가 $PUSHED. 다음 태그는 ${expected}여야 함"
+            exit 1
+          fi
+
+          if [ -n "$published" ] && [ -z "$(git log "$published..HEAD" --oneline)" ]; then
+            echo "::error::$published 이후 변경 없음"
+            exit 1
+          fi
+
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+      - uses: release-drafter/release-drafter@v7
+        with:
+          publish: true
+          tag: ${{ github.ref_name }}
+          name: ${{ steps.plan.outputs.name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
