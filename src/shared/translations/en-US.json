@@ -1,0 +1,9 @@
+{
+  "app": {
+    "name": "Tadak Tadak"
+  },
+  "timer": {
+    "focus": "Boom, done!",
+    "rest": "Break’s over!"
+  }
+}
