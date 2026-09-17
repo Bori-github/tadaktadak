@@ -13,10 +13,13 @@ export type Language = (typeof SUPPORTED_LANGUAGES)[number];
 
 const DEFAULT_LANGUAGE: Language = 'en-US';
 
-const LANGUAGE_BY_CODE: Record<string, Language> = {
-  en: 'en-US',
-  ko: 'ko-KR',
-};
+const LANGUAGE_BY_CODE: Record<string, Language> = Object.fromEntries(SUPPORTED_LANGUAGES.map((language) => [language.replace(/-.*$/, ''), language]));
+
+type KeyPath<TResource> = {
+  [Key in keyof TResource & string]: TResource[Key] extends string ? Key : `${Key}.${KeyPath<TResource[Key]>}`;
+}[keyof TResource & string];
+
+type TranslationKey = KeyPath<typeof enUS>;
 
 const RESOURCES = {
   'en-US': { translation: enUS },
@@ -65,4 +68,4 @@ export const useLanguage = (): Language => {
  * @param key - 번역 파일의 점으로 이은 키 경로
  * @returns 키 값에 대응하는 문구
  */
-export const translate = (key: string, language: Language): string => t(key, { lng: language });
+export const translate = (key: TranslationKey, language: Language): string => t(key, { lng: language });
