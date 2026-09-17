@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from '@jest/globals';
 
 import appConfig from '../../../app.json';
@@ -6,6 +9,8 @@ import koAppMetadata from '../../../languages/ko.json';
 import { pickLanguage, translate } from './localization';
 
 const toLocales = (...codes: (string | null)[]) => codes.map((languageCode) => ({ languageCode }));
+
+const readWidgetFile = (name: string): string => readFileSync(join(__dirname, '../../../targets/widget', name), 'utf8');
 
 describe('기기 선호 언어에서 지원 언어 고르기', () => {
   it('첫 항목이 지원 목록에 있으면 그 언어를 반환한다', () => {
@@ -40,5 +45,21 @@ describe('앱 이름 동기화', () => {
 
   it('한국어 이름이 iOS와 Android에서 같다', () => {
     expect(koAppMetadata.android.app_name).toBe(koAppMetadata.ios.CFBundleDisplayName);
+  });
+
+  it('Localizable.xcstrings가 영어 이름을 키로 두고 한국어 이름을 값으로 둔다', () => {
+    const catalog: unknown = JSON.parse(readWidgetFile('Localizable.xcstrings'));
+
+    expect(catalog).toMatchObject({
+      strings: {
+        [translate('app.name', 'en-US')]: {
+          localizations: { ko: { stringUnit: { value: translate('app.name', 'ko-KR') } } },
+        },
+      },
+    });
+  });
+
+  it('TimerLiveActivity.swift의 문구가 Localizable.xcstrings의 키와 같다', () => {
+    expect(readWidgetFile('TimerLiveActivity.swift')).toContain(`Text("${translate('app.name', 'en-US')}")`);
   });
 });
