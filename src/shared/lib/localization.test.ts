@@ -1,5 +1,8 @@
 import { describe, expect, it } from '@jest/globals';
 
+import appConfig from '../../../app.json';
+import koAppMetadata from '../../../languages/ko.json';
+
 import { pickLanguage, translate } from './localization';
 
 const toLocales = (...codes: (string | null)[]) => codes.map((languageCode) => ({ languageCode }));
@@ -26,5 +29,16 @@ describe('언어별 문구 조회', () => {
   it('같은 키를 언어마다 다른 문구로 반환한다', () => {
     expect(translate('timer.focus', 'ko-KR')).toBe('집중 끝!');
     expect(translate('timer.focus', 'en-US')).toBe('Boom, done!');
+  });
+});
+
+describe('앱 이름 동기화', () => {
+  it('번역 리소스와 빌드 설정의 이름이 같다', () => {
+    expect(translate('app.name', 'en-US')).toBe(appConfig.expo.name);
+    expect(translate('app.name', 'ko-KR')).toBe(koAppMetadata.ios.CFBundleDisplayName);
+  });
+
+  it('한국어 이름이 iOS와 Android에서 같다', () => {
+    expect(koAppMetadata.android.app_name).toBe(koAppMetadata.ios.CFBundleDisplayName);
   });
 });
