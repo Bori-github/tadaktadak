@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { notificationBody, scheduleAt } from '../lib/notification';
 
 import { type TimerSession } from '@/entities/timer';
+import { translate, useLanguage } from '@/shared/lib';
 
 type NotificationScheduleInput = {
   session: TimerSession;
@@ -21,6 +22,8 @@ type NotificationScheduleInput = {
  * @returns 없음
  */
 export const useNotificationSchedule = ({ session, status, isSettled }: NotificationScheduleInput): void => {
+  const language = useLanguage();
+
   useEffect(() => {
     let live = true;
 
@@ -37,7 +40,7 @@ export const useNotificationSchedule = ({ session, status, isSettled }: Notifica
       if (!live || at === null) return;
 
       await Notifications.scheduleNotificationAsync({
-        content: { title: '타닥타닥', body: notificationBody(session.mode) },
+        content: { title: translate('app.name', language), body: notificationBody(session.mode, language) },
         trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: at },
       });
     };
@@ -50,5 +53,5 @@ export const useNotificationSchedule = ({ session, status, isSettled }: Notifica
     return () => {
       live = false;
     };
-  }, [session, status, isSettled]);
+  }, [session, status, isSettled, language]);
 };
