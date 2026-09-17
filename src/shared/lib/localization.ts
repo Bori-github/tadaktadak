@@ -65,7 +65,6 @@ export const useLanguage = (): Language => {
 /**
  * 전역 로케일 대신 호출마다 언어를 받음
  *
- * @param key - 번역 파일의 점으로 이은 키 경로
  * @returns 키 값에 대응하는 문구
  */
 export const translate = (key: TranslationKey, language: Language): string => t(key, { lng: language });

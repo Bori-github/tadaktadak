@@ -13,9 +13,10 @@
 
 `app.name`을 수정할 때 다음 표의 파일을 함께 수정한다.
 
-| 파일                                   | 키                                                        |
-| -------------------------------------- | --------------------------------------------------------- |
-| `app.json`                             | `expo.name`. 지원 목록에 없는 기기 언어가 사용하는 기준값 |
-| `languages/ko.json`                    | `ios.CFBundleDisplayName`, `android.app_name`             |
-| `en-US.json`, `ko-KR.json`             | `app.name`. 알림 제목                                     |
-| `targets/widget/Localizable.xcstrings` | Live Activity 잠금화면                                    |
+| 파일                                     | 키                                                        |
+| ---------------------------------------- | --------------------------------------------------------- |
+| `app.json`                               | `expo.name`. 지원 목록에 없는 기기 언어가 사용하는 기준값 |
+| `languages/ko.json`                      | `ios.CFBundleDisplayName`, `android.app_name`             |
+| `en-US.json`, `ko-KR.json`               | `app.name`. 알림 제목                                     |
+| `targets/widget/Localizable.xcstrings`   | Live Activity 잠금화면                                    |
+| `targets/widget/TimerLiveActivity.swift` | `Text` 리터럴. `Localizable.xcstrings`의 키               |
