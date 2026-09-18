@@ -1,11 +1,7 @@
 import { PermissionStatus } from 'expo';
 
 import { type TimerMode, type TimerSession } from '@/entities/timer';
-
-const TITLES: Record<TimerMode, string> = {
-  focus: '집중 끝!',
-  rest: '휴식 끝!',
-};
+import { translate, type Language } from '@/shared/lib';
 
 type ScheduleInput = {
   session: TimerSession;
@@ -19,8 +15,8 @@ type ScheduleInput = {
  * @param mode - 끝난 타이머
  * @returns 알림 본문
  */
-export const notificationBody = (mode: TimerMode): string => {
-  return TITLES[mode];
+export const notificationBody = (mode: TimerMode, language: Language): string => {
+  return translate(`timer.${mode}`, language);
 };
 
 /**

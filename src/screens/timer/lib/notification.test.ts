@@ -1,7 +1,7 @@
 import { PermissionStatus } from 'expo';
 import { describe, expect, it } from '@jest/globals';
 
-import { isNotificationBlocked, scheduleAt } from './notification';
+import { isNotificationBlocked, notificationBody, scheduleAt } from './notification';
 
 import { NOW, type TimerSession } from '@/entities/timer';
 
@@ -51,5 +51,12 @@ describe('알림이 막힌 상태', () => {
     { situation: '거부', status: PermissionStatus.DENIED, blocked: true },
   ])('$situation이면 $blocked', ({ status, blocked }) => {
     expect(isNotificationBlocked(status)).toBe(blocked);
+  });
+});
+
+describe('알림 본문', () => {
+  it('한국어는 다국어 적용 전과 같은 문구를 반환한다', () => {
+    expect(notificationBody('focus', 'ko-KR')).toBe('집중 끝!');
+    expect(notificationBody('rest', 'ko-KR')).toBe('휴식 끝!');
   });
 });

@@ -45,7 +45,7 @@ private struct LockScreenView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("타닥타닥")
+            Text("Tadak Tadak")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(Palette.appName)
 

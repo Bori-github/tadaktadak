@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "타닥타닥",
+    "name": "Tadak Tadak",
     "slug": "tadaktadak",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -19,7 +19,8 @@
       "infoPlist": {
         "NSSupportsLiveActivities": true,
         "CADisableMinimumFrameDurationOnPhone": true,
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleAllowMixedLocalizations": true
       }
     },
     "android": {
@@ -34,7 +35,15 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-asset", "@bacons/apple-targets", "./plugins/withoutPushEntitlement"],
+    "locales": {
+      "ko": "./languages/ko.json"
+    },
+    "plugins": [
+      "expo-asset",
+      "@bacons/apple-targets",
+      "./plugins/withoutPushEntitlement",
+      ["expo-localization", { "supportedLocales": { "ios": ["en", "ko"], "android": ["en", "ko"] } }]
+    ],
     "extra": {
       "eas": {
         "build": {
