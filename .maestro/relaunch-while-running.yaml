@@ -1,7 +1,7 @@
 appId: com.boriguri.tadaktadak
 name: 타이머 진행 중 앱을 닫고 다시 켜면 남은 시간이 이어지는지 테스트
 ---
-# 전제: 앱 설정이 집중 60초 (이 플로우에서 설정하지 않음)
+# 전제: 앱 설정이 집중 60초. `pnpm e2e`가 실행 전에 맞춤
 - launchApp
 
 - runFlow:

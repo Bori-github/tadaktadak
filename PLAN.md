@@ -190,6 +190,7 @@ E2E는 시뮬레이터 개발 빌드를 대상으로 한다. Expo Go는 `appId`�
 
 - 설치는 `curl -fsSL https://get.maestro.mobile.dev | bash`
 - `pnpm ios`로 앱을 올리고 알림 권한 창을 한 번 허용한 뒤 `pnpm e2e`를 실행한다
+- 플로우가 전제하는 타이머 시간(집중 1분, 휴식 1분)은 `scripts/set-e2e-timer-minutes.mjs`가 맞춘다. 앱을 종료하고 AsyncStorage 저장 파일에 직접 쓰므로 시뮬레이터에서만 동작한다
 - 플로우에 `clearState`를 사용하지 않는다. 알림 권한까지 지워져 매 실행 권한 창이 뜬다
 - `testID`는 `<슬라이스>-<대상>` 형태로 작성한다. `controls-play`, `readout-focus`
 - 시계판 드래그는 `GestureDetector`가 화면 전체를 덮어 `testID` 없이 좌표 스와이프로 짚는다
