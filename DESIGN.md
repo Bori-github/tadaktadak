@@ -1,8 +1,8 @@
 ---
 id: tadaktadak
-name: "타닥타닥"
+name: "Tadak Tadak"
 figma: "https://www.figma.com/design/qmtzKbnYAsTAXvn0CBbfo2/tadaktadak"
-updated: 2026-09-13
+updated: 2026-09-18
 category: personal-tool
 bundle_id: "com.boriguri.tadaktadak"
 primary_color: "#ffb43c"
