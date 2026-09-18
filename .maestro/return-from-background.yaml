@@ -11,19 +11,22 @@ name: 백그라운드에서 집중 타이머가 끝난 뒤 돌아오면 휴식 �
     id: 'controls-play'
 # 아래 t는 모두 이 탭 시각(t=0) 기준
 
-# [마감 t=30s] 집중 타이머 남은 시간이 50이 될 때까지
+# [마감 t=30s] 집중 타이머 남은 시간이 45에서 50 사이가 될 때까지
 # `controls-play` 탭은 화면이 안정될 때까지 대기한 뒤 종료되므로, 탭 시각 대신 이 자리에서 `markedAt`을 기록
 - extendedWaitUntil:
     visible:
       id: 'remaining-seconds'
-      text: '^50$'
+      text: '^(4[5-9]|50)$'
     timeout: 30000
+- copyTextFrom:
+    id: 'remaining-seconds'
+- evalScript: ${output.markedSeconds = Number(maestro.copiedText)}
 - evalScript: ${output.markedAt = Date.now()}
 
 - pressKey: 'Home'
 
 # 대기 명령이 없어, 화면에 없는 `never-shown`을 조회하게 두고 백그라운드에서 65초 대기
-# 집중 타이머가 `markedAt` +50s에 끝나므로, 복귀 시점은 휴식 타이머가 15초 지난 자리
+# 집중 타이머가 `markedAt` +50s 안에 끝나므로, 복귀 시점은 휴식 타이머가 15초 넘게 지난 자리
 - extendedWaitUntil:
     visible:
       id: 'never-shown'
@@ -38,12 +41,17 @@ name: 백그라운드에서 집중 타이머가 끝난 뒤 돌아오면 휴식 �
     visible:
       id: 'remaining-seconds'
     timeout: 20000
-- copyTextFrom:
-    id: 'remaining-seconds'
 
-# 휴식 타이머는 `completedAt`부터 계산하므로, 110초에서 `markedAt` 이후로 흐른 시간을 빼면 남은 시간
-# 오차 2초는 표시 올림 1초와 값을 읽은 뒤 판정까지의 간격 1초
-- assertTrue: ${Math.abs(110 - (Date.now() - output.markedAt) / 1000 - Number(maestro.copiedText)) <= 2}
+# 복귀 직후에는 `restoreRunningSession`이 값을 바꾸기 전이라 집중 타이머의 남은 시간이 남아 있음
+# 갱신 전 값을 읽으면 판정이 어긋나므로 다시 읽음
+- retry:
+    maxRetries: 2
+    commands:
+      - copyTextFrom:
+          id: 'remaining-seconds'
+      # 휴식 타이머는 `completedAt`부터 계산하므로, `markedSeconds`에 휴식 60초를 더하고 `markedAt` 이후로 흐른 시간을 뺌
+      # 오차 2초는 표시 올림 1초와 값을 읽은 뒤 판정까지의 간격 1초
+      - assertTrue: ${Math.abs(output.markedSeconds + 60 - (Date.now() - output.markedAt) / 1000 - Number(maestro.copiedText)) <= 2}
 
 - assertVisible:
     id: 'controls-stop'
