@@ -53,7 +53,7 @@
     "submit": "eas submit --latest",
     "deploy:ios": "eas workflow:run .eas/workflows/deploy-ios.yml --ref main",
     "test": "jest",
-    "e2e": "maestro test .maestro",
+    "e2e": "node scripts/set-e2e-timer-minutes.mjs && maestro test .maestro",
     "check": "run-p -c lint typecheck format:check",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
