@@ -1,0 +1,42 @@
+appId: com.boriguri.tadaktadak
+name: 타이머 진행 중 앱을 닫고 다시 켜면 남은 시간이 이어지는지 테스트
+---
+# 전제: 앱 설정이 집중 60초 (이 플로우에서 설정하지 않음)
+- launchApp
+
+- runFlow:
+    file: subflows/clear-session.yaml
+
+- tapOn:
+    id: 'controls-play'
+# 아래 t는 모두 이 탭 시각(t=0) 기준
+
+# [마감 t=30s] 집중 타이머 남은 시간이 50이 될 때까지
+# 예상 통과: t=10s
+- extendedWaitUntil:
+    visible:
+      id: 'remaining-seconds'
+      text: '^50$'
+    timeout: 30000
+- evalScript: ${output.killedAt = Date.now()}
+
+# 프로세스가 종료되어 메모리의 남은 시간이 사라짐. 재실행한 화면은 저장값에서만 계산
+- stopApp
+- launchApp
+
+# [마감 재실행 +20s] 저장값을 읽어 진행 세션이 살아날 때까지
+# 예상 통과: 재실행 +7s / 조건: 재실행이 t=60s 전에 끝나야 집중 타이머가 끝나기 전에 판정함
+- extendedWaitUntil:
+    visible:
+      id: 'remaining-seconds'
+    timeout: 20000
+- copyTextFrom:
+    id: 'remaining-seconds'
+
+# 재실행에 걸린 시간과 무관하게 판정하기 위해 실제로 흐른 시간으로 계산
+# 오차 2초는 표시 올림 1초와 값을 읽은 뒤 판정까지의 간격 1초
+- assertTrue: ${Math.abs(50 - (Date.now() - output.killedAt) / 1000 - Number(maestro.copiedText)) <= 2}
+
+# 다음 플로우가 대기에서 시작하게 세션 정리
+- tapOn:
+    id: 'controls-stop'
