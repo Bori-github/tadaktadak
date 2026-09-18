@@ -5,7 +5,7 @@ import { Linking } from 'react-native';
 import { NotificationSettingsButton } from './NotificationSettingsButton';
 
 /** 기준 화면에서 알림 설정 버튼 중심. `DESIGN.md` §5 */
-const CENTER_X = 358;
+const CENTER_X = 32;
 const CENTER_Y = 79;
 
 type Rect = { position: string; left: number; top: number; width: number; height: number };
@@ -38,7 +38,7 @@ const rect = ({ props }: { props: Record<string, unknown> }): Rect => {
 
 describe('터치 영역', () => {
   it('기준 화면에서 56 × 56이고 버튼 중심에 놓인다', async () => {
-    expect(rect(await button())).toEqual({ position: 'absolute', left: 330, top: 51, width: 56, height: 56 });
+    expect(rect(await button())).toEqual({ position: 'absolute', left: 4, top: 51, width: 56, height: 56 });
   });
 
   it('도트 4에서 한 변이 104다', async () => {
