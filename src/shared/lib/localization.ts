@@ -1,4 +1,3 @@
-import 'intl-pluralrules';
 import { useMemo } from 'react';
 import { useLocales, type Locale } from 'expo-localization';
 import { init, t, use as registerPlugin } from 'i18next';
