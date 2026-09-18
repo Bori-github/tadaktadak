@@ -61,7 +61,7 @@ export const DotButton = ({ centerX, centerY, dotSize, icon, enabled = true, pre
     );
   }
 
-  // 그림자는 하이라이트보다 나중에 그림. 겹치는 도트 두 칸 (1, size-2)·(size-2, 1)은 시안이 그림자 색
+  // 그림자는 하이라이트보다 나중에 그림. 겹치는 도트 두 칸 (1, size-2)·(size-2, 1)은 그림자 색
   cells.push(
     { key: 'shadow-bottom', x: 1, y: size - 2, width: size - 2, height: 1, color: shadow },
     { key: 'shadow-right', x: size - 2, y: 1, width: 1, height: size - 2, color: shadow },
