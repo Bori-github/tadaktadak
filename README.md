@@ -29,6 +29,23 @@ pnpm build:preview -p android
 pnpm build:production -p android
 ```
 
+## 시뮬레이터 언어
+
+시스템 언어를 바꿔 현지화를 확인한다.
+
+```bash
+# 켜져 있는 시뮬레이터의 UDID
+UDID=$(xcrun simctl list devices booted | grep -oE '[0-9A-F-]{36}')
+
+# 언어 변경
+xcrun simctl spawn $UDID defaults write -g AppleLanguages -array en-US ko-KR
+xcrun simctl spawn $UDID defaults write -g AppleLocale -string en_US
+xcrun simctl shutdown $UDID && xcrun simctl boot $UDID
+```
+
+- 한국어: AppleLanguages `ko-KR en-US`, AppleLocale `ko_KR`로 적용
+- 시뮬레이터 재부팅 필요
+
 ## 스택
 
 | 항목       | 값                                                             |
