@@ -7,6 +7,7 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: chore
+    labels: [dependencies, chore]
     ignore:
       - dependency-name: expo
         update-types:
@@ -61,3 +62,4 @@ updates:
       interval: monthly
     commit-message:
       prefix: ci
+    labels: [dependencies, ci]
