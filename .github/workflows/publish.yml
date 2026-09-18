@@ -20,7 +20,6 @@ jobs:
           fetch-depth: 0
 
       - name: 태그 판정
-        id: plan
         env:
           PUSHED: ${{ github.ref_name }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -64,7 +63,6 @@ jobs:
           # v{version} 형식의 릴리즈가 없으면 릴리즈 미발행으로 판단
           if [ -z "$published" ]; then
             expected="v$version"
-            name="v$version"
           else
             previous=$(지난릴리즈 | grep -E "^v${version//./\\.}\.[0-9]+$" | head -1 || true)
             number=1
@@ -72,7 +70,6 @@ jobs:
               number=$(( 10#${previous##*.} + 1 ))
             fi
             expected="v$version.$number"
-            name="$version 업데이트 $number"
           fi
 
           if [ "$PUSHED" != "$expected" ]; then
@@ -91,12 +88,10 @@ jobs:
             fi
           fi
 
-          echo "name=$name" >> "$GITHUB_OUTPUT"
-
       - uses: release-drafter/release-drafter@v7
         with:
           publish: true
           tag: ${{ github.ref_name }}
-          name: ${{ steps.plan.outputs.name }}
+          name: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
