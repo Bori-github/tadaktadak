@@ -21,6 +21,28 @@ pnpm ios               # iOS 시뮬레이터 개발 빌드
 pnpm android           # Android 에뮬레이터 개발 빌드
 ```
 
+## 배포
+
+스토어 배포 시 `package.json`의 `version`을 직접 수정 후 `main`을 기준으로 다음 스크립트를 실행한다.
+
+```bash
+pnpm deploy:ios                   # fingerprint로 OTA와 스토어 배포를 구분해 실행
+```
+
+- fingerprint가 직전 빌드와 같으면 OTA로, 다르면 빌드해서 App Store Connect에 업로드
+
+배포 후 태그 푸시를 통해 릴리즈 노트를 발행한다.
+
+- OTA: 배포 직후
+- 스토어: 승인·출시 후
+
+```bash
+git tag v1.0.1.1 && git push origin v1.0.1.1   # OTA
+git tag v1.0.1 && git push origin v1.0.1       # 스토어
+```
+
+직접 빌드 시:
+
 ```bash
 pnpm build:preview -p ios         # 등록된 기기에 설치하는 빌드
 pnpm build:production -p ios      # 스토어 제출용 빌드
@@ -54,4 +76,4 @@ xcrun simctl shutdown $UDID && xcrun simctl boot $UDID
 | 렌더링     | `@shopify/react-native-skia`, `react-native-reanimated`        |
 | 위젯       | SwiftUI Widget Extension (`targets/`), `@bacons/apple-targets` |
 | 아키텍처   | Feature-Sliced Design                                          |
-| 빌드·배포  | EAS Build, EAS Submit                                          |
+| 빌드·배포  | EAS Build, EAS Submit, EAS Update                              |
