@@ -3,6 +3,8 @@
 집중할 땐 은은하게 밝아지고, 쉴 땐 차분하게 어두워져요.
 집중할 시간과 휴식할 시간을 설정하고, 타이머를 시작하면 돼요.
 
+[App Store에서 받기](https://apps.apple.com/app/id6811381445)
+
 <p>
   <img src="store/ios/screenshots/ko/01-timer-setting.png" width="200">
   <img src="store/ios/screenshots/ko/02-focus-running.png" width="200">
