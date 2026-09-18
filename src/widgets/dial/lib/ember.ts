@@ -60,7 +60,7 @@ const DAMPING = { rise: 0.994, drift: 0.985 };
 /** 속도의 기준이 되는 프레임 길이 (밀리초). `DESIGN.md` §9 */
 const FRAME_MS = 16;
 
-/** 불티가 노출되는 위치. 개체 중심 반지름에 곱함 */
+/** 불티가 노출되는 위치. 개체 중심 반지름에 곱함. `DESIGN.md` §9 */
 const SPAWN_BAND: Spread = { min: 0.86, max: 1.04 };
 
 const withSpread = (random: () => number, { min, max }: Spread): number => min + random() * (max - min);

@@ -20,7 +20,7 @@
 
 ## 예외
 
-시안의 도트 격자를 옮기는 것처럼 나눌 수 없는 변경은 그 커밋·푸시에만 `LEFTHOOK_EXCLUDE=work-scope`를 붙인다. `--no-verify`는 쓰지 않는다.
+큰 파일 하나를 지우는 것처럼 나눌 수 없는 변경은 그 커밋·푸시에만 `LEFTHOOK_EXCLUDE=work-scope`를 붙인다. `--no-verify`는 쓰지 않는다.
 
 ## 규칙과 강제
 
