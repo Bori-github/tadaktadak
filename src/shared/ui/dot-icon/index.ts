@@ -1,3 +1,5 @@
+export { CHEVRON_ICON } from './chevron';
+export { LANGUAGE_ICON } from './language';
 export { NOTIFICATION_OFF_ICON } from './notificationOff';
 export { PAUSE_ICON } from './pause';
 export { PLAY_ICON } from './play';

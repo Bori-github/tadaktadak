@@ -41,5 +41,19 @@ export const COLORS = {
   icon: {
     default: '#f4ead6',
     disabled: '#6f6688',
+    secondary: '#c9bb98',
+  },
+
+  modal: {
+    dim: '#141021b8',
+    edge: '#2b2638',
+    face: '#3f3550',
+    highlight: '#4a4360',
+    shadow: '#332a42',
+  },
+
+  iconButton: {
+    background: '#f4ead61f',
+    icon: '#f4ead6cc',
   },
 } as const;
