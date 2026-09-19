@@ -74,6 +74,9 @@ export const TimerScreen = (): JSX.Element => {
   const paintedMode = colorMode({ editing, editTarget });
   const selected = minutes[shownMode];
 
+  // 앱 재실행 때 세션 복원 전에 연 모달이 진행 중에도 남아서 대기 상태를 벗어나면 여기서 닫음
+  if (!editing && settingsShown) setSettingsShown(false);
+
   const resting = !editing && session.mode === 'rest';
 
   const twinkling = isThumbTwinkling({ isResting: resting, phase: session.phase });
