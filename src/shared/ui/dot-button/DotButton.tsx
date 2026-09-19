@@ -65,10 +65,10 @@ type DotButtonFaceProps = {
   pressed: boolean;
 };
 
-// onPress 참조가 바뀌어도 Canvas가 리렌더링되지 않도록 memo로 분리
 const DotButtonFace = memo(({ dotSize, icon, disabled, pressed }: DotButtonFaceProps) => {
   const size = BUTTON_SIZE_IN_DOTS * dotSize;
-  const offsetY = pressed ? dotSize : 0;
+  // press 도중 disabled로 전환되면 active 상태를 그리지 않음
+  const offsetY = pressed && !disabled ? dotSize : 0;
 
   return (
     // active 상태의 y 오프셋만큼 캔버스 높이를 늘려 하단 클리핑 방지
@@ -106,6 +106,7 @@ export const DotButton = memo(({ dotSize, icon, disabled = false, onPress, style
       style={[style, { width: size, height: size }]}
       hitSlop={BUTTON_TOUCH_PADDING / 2}
       disabled={disabled}
+      android_disableSound={disabled}
       onPressIn={() => playVibration()}
       onPress={() => {
         if (disabled) return;
