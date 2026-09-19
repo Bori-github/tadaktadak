@@ -33,8 +33,12 @@ describe('누르면 해당 조작을 넘긴다', () => {
     expect(pressed).toEqual(['play']);
   });
 
-  it('진행 상태에서 정지 버튼', async () => {
-    const { stop } = await buttons('running');
+  it.each<{ label: string; phase: TimerPhase }>([
+    { label: '진행 상태', phase: 'running' },
+    { label: '일시정지 상태', phase: 'paused' },
+    { label: '완료 상태', phase: 'completed' },
+  ])('$label에서 정지 버튼', async ({ phase }) => {
+    const { stop } = await buttons(phase);
     await fireEvent.press(stop);
 
     expect(pressed).toEqual(['stop']);
