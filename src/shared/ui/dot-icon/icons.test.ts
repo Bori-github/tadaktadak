@@ -30,7 +30,7 @@ describe('아이콘 격자', () => {
 
 describe('알림 끔 아이콘', () => {
   it('상자 한 변이 24다', () => {
-    // 12 도트 × 도트 한 변 2. `DESIGN.md` §4
+    // 12 도트 × 도트 한 변 2. 피그마 `icon-notification-off`
     expect(NOTIFICATION_OFF_ICON.boxSize).toBe(24);
   });
 
