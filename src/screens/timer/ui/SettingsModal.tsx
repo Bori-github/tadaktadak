@@ -1,4 +1,4 @@
-import { type JSX } from 'react';
+import { memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 
@@ -28,7 +28,7 @@ type SettingsModalProps = {
   onClose: () => void;
 };
 
-export const SettingsModal = ({ visible, dotSize, onClose }: SettingsModalProps): JSX.Element => {
+export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalProps) => {
   const language = useLanguage();
   const scale = dotSize / DOT_SIZE;
 
@@ -52,7 +52,9 @@ export const SettingsModal = ({ visible, dotSize, onClose }: SettingsModalProps)
       </View>
     </DotModal>
   );
-};
+});
+
+SettingsModal.displayName = 'SettingsModal';
 
 const styles = StyleSheet.create({
   row: {
