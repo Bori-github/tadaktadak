@@ -126,7 +126,7 @@ export const TimerScreen = (): JSX.Element => {
     dotSize: layout.dotSize,
     minutes: minutes[editTarget],
     mode: editTarget,
-    enabled: editing,
+    enabled: editing && !settingsShown,
     onChange: handleChange,
     onChangeEnd: handleChangeEnd,
   });
