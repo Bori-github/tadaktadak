@@ -1,12 +1,22 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { describe, expect, it } from '@jest/globals';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { act, renderHook } from '@testing-library/react-native';
 
 import appConfig from '../../../app.json';
 import koAppMetadata from '../../../languages/ko.json';
 
-import { parseLanguage, pickLanguage, translate } from './localization';
+import { parseLanguage, pickLanguage, restoreLanguage, selectLanguage, translate, useLanguage } from './localization';
+
+import { loadLanguage, saveLanguage } from '@/shared/api';
+
+const mockDeviceLocales = [{ languageCode: 'en' }];
+
+jest.mock('expo-localization', () => ({
+  useLocales: () => mockDeviceLocales,
+}));
 
 const toLocales = (...codes: (string | null)[]) => codes.map((languageCode) => ({ languageCode }));
 
@@ -41,6 +51,57 @@ describe('저장된 언어 태그 검증', () => {
 
   it('지원 목록에 없는 언어 태그면 null을 반환한다', () => {
     expect(parseLanguage('ja-JP')).toBeNull();
+  });
+});
+
+describe('선택한 언어', () => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+  });
+
+  it('저장된 언어가 없으면 기기 언어를 반환한다', async () => {
+    const { result } = await renderHook(() => useLanguage());
+
+    await act(async () => {
+      await restoreLanguage();
+    });
+
+    expect(result.current).toBe('en-US');
+  });
+
+  it('저장된 언어가 있으면 기기 언어 대신 그 언어를 반환한다', async () => {
+    await saveLanguage('ko-KR');
+    const { result } = await renderHook(() => useLanguage());
+
+    await act(async () => {
+      await restoreLanguage();
+    });
+
+    expect(result.current).toBe('ko-KR');
+  });
+
+  it('언어를 선택하면 바로 반환하고 기기에 저장한다', async () => {
+    const { result } = await renderHook(() => useLanguage());
+
+    await act(async () => {
+      selectLanguage('ko-KR');
+    });
+
+    expect(result.current).toBe('ko-KR');
+    expect(await loadLanguage()).toBe('ko-KR');
+  });
+
+  it('저장값을 읽는 동안 선택하면 선택한 언어를 유지한다', async () => {
+    await saveLanguage('ko-KR');
+    const { result } = await renderHook(() => useLanguage());
+
+    await act(async () => {
+      const restoring = restoreLanguage();
+      selectLanguage('en-US');
+      await restoring;
+    });
+
+    expect(result.current).toBe('en-US');
   });
 });
 

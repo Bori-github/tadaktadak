@@ -9,12 +9,13 @@ import { hapticPattern } from '@modules/haptic-pattern';
 
 import { TimerScreen } from '@/screens/timer';
 import { TAP_PATTERN } from '@/shared/constants';
-import { prepareVibration } from '@/shared/lib';
+import { prepareVibration, restoreLanguage } from '@/shared/lib';
 
 // 진동 지원 여부. 진동을 지원하지 않는 경우 배너로 타이머 완료를 알림
 const showsBanner = hapticPattern?.supportsHaptics !== true;
 
 prepareVibration(TAP_PATTERN);
+restoreLanguage();
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
