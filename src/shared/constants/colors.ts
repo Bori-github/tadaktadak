@@ -33,10 +33,27 @@ export const COLORS = {
     face: '#6b6280',
     highlight: '#8f86a8',
     shadow: '#4a4360',
-    icon: '#f4ead6',
-    lockedEdge: '#2b2032',
-    lockedFace: '#3f3550',
-    lockedShadow: '#332a42',
-    lockedIcon: '#6f6688',
+    disabledEdge: '#2b2032',
+    disabledFace: '#3f3550',
+    disabledShadow: '#332a42',
+  },
+
+  icon: {
+    default: '#f4ead6',
+    disabled: '#6f6688',
+    secondary: '#c9bb98',
+  },
+
+  modal: {
+    dim: '#141021b8',
+    edge: '#2b2638',
+    face: '#3f3550',
+    highlight: '#4a4360',
+    shadow: '#332a42',
+  },
+
+  iconButton: {
+    background: '#f4ead61f',
+    icon: '#f4ead6cc',
   },
 } as const;

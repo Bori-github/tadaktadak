@@ -5,5 +5,8 @@
   "timer": {
     "focus": "Boom, done!",
     "rest": "Break’s over!"
+  },
+  "language": {
+    "name": "English"
   }
 }

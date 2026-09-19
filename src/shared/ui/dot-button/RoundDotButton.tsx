@@ -5,25 +5,12 @@ import { Canvas, Group, Rect } from '@shopify/react-native-skia';
 import { BUTTON_TOUCH_PADDING, COLORS, DOT_SIZE, ROUND_BUTTON_DIAMETER_IN_DOTS } from '@/shared/constants';
 import { playVibration } from '@/shared/lib';
 
-import { type RectIcon } from '@/shared/ui/dot-icon';
+import { RectIconShape, type RectIcon } from '@/shared/ui/dot-icon';
 
 import { circleCells, type DotRole } from './circle';
+import { DISABLED_ROLE_COLORS, ROLE_COLORS } from './roleColors';
 
 const CELLS = circleCells(ROUND_BUTTON_DIAMETER_IN_DOTS);
-
-const ROLE_COLORS: Record<DotRole, string> = {
-  edge: COLORS.button.edge,
-  face: COLORS.button.face,
-  highlight: COLORS.button.highlight,
-  shadow: COLORS.button.shadow,
-};
-
-const DISABLED_ROLE_COLORS: Record<DotRole, string> = {
-  edge: COLORS.button.lockedEdge,
-  face: COLORS.button.lockedFace,
-  highlight: COLORS.button.lockedFace,
-  shadow: COLORS.button.lockedShadow,
-};
 
 type RoundDotButtonProps = {
   /** 도트 한 변 (px) */
@@ -40,7 +27,7 @@ export const RoundDotButton = memo(({ dotSize, icon, disabled = false, onPress, 
   const size = ROUND_BUTTON_DIAMETER_IN_DOTS * dotSize;
 
   const colors = disabled ? DISABLED_ROLE_COLORS : ROLE_COLORS;
-  const iconColor = disabled ? COLORS.button.lockedIcon : COLORS.button.icon;
+  const iconColor = disabled ? COLORS.icon.disabled : COLORS.icon.default;
 
   // 아이콘 좌표가 배율 1 기준. 지금 도트 크기가 배율 1의 몇 배인지가 곱할 값
   const scale = dotSize / DOT_SIZE;
@@ -80,16 +67,7 @@ export const RoundDotButton = memo(({ dotSize, icon, disabled = false, onPress, 
                   color={roleColor(cell.role)}
                 />
               ))}
-              {icon.rects.map(([x, y, width, height]) => (
-                <Rect
-                  key={`${x}-${y}-${width}-${height}`}
-                  x={iconOffset + x * scale}
-                  y={offsetY + iconOffset + y * scale}
-                  width={width * scale}
-                  height={height * scale}
-                  color={iconColor}
-                />
-              ))}
+              <RectIconShape icon={icon} left={iconOffset} top={offsetY + iconOffset} dotSize={dotSize} color={iconColor} />
             </Group>
           </Canvas>
         );

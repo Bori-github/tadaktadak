@@ -5,5 +5,8 @@
   "timer": {
     "focus": "집중 끝!",
     "rest": "휴식 끝!"
+  },
+  "language": {
+    "name": "한국어"
   }
 }

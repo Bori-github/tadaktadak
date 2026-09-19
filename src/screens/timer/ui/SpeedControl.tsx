@@ -13,7 +13,7 @@ type SpeedControlProps = {
 };
 
 export const SpeedControl = ({ speed, enabled, onSelect }: SpeedControlProps): JSX.Element => (
-  <View style={[styles.row, enabled ? null : styles.locked]} pointerEvents={enabled ? 'auto' : 'none'}>
+  <View style={[styles.row, enabled ? null : styles.disabled]} pointerEvents={enabled ? 'auto' : 'none'}>
     {TIMER_SPEEDS.map((option) => (
       <Pressable key={option} testID={`speed-${option}x`} style={[styles.item, option === speed && styles.selected]} onPress={() => onSelect(option)}>
         <Text style={styles.label}>{option}×</Text>
@@ -31,12 +31,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 4,
-    backgroundColor: COLORS.button.lockedFace,
+    backgroundColor: COLORS.button.disabledFace,
   },
   selected: {
     backgroundColor: COLORS.focus.arc,
   },
-  locked: {
+  disabled: {
     opacity: 0.4,
   },
   label: {

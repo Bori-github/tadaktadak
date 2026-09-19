@@ -16,6 +16,7 @@ import { useTimerSpeed } from '../model/speed';
 
 import { DevPanel } from './DevPanel';
 import { NotificationSettingsButton } from './NotificationSettingsButton';
+import { SettingsModal } from './SettingsModal';
 
 import { ControlButtons } from '@/widgets/controls';
 import {
@@ -44,6 +45,7 @@ export const TimerScreen = (): JSX.Element => {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
+  const [settingsShown, setSettingsShown] = useState(false);
   const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
   const { speed, setSpeed, realSettingMinutes, toSeconds, toMinutes } = useTimerSpeed(minutes);
   const { session, isSettled, remainingSeconds, remainingMinutes, countingMode, play, stop } = useTimerSession({
@@ -71,6 +73,9 @@ export const TimerScreen = (): JSX.Element => {
   const shownMode = editing ? editTarget : session.mode;
   const paintedMode = colorMode({ editing, editTarget });
   const selected = minutes[shownMode];
+
+  // 앱 재실행 때 세션 복원 전에 연 모달이 진행 중에도 남아서 대기 상태를 벗어나면 여기서 닫음
+  if (!editing && settingsShown) setSettingsShown(false);
 
   const resting = !editing && session.mode === 'rest';
 
@@ -111,7 +116,8 @@ export const TimerScreen = (): JSX.Element => {
   const settingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, right: layout.edgeMargin }], [roundButtonTop, layout.edgeMargin]);
   const controlButtonsTop = layout.buttonCenterY - (BUTTON_SIZE_IN_DOTS * layout.dotSize) / 2;
   const controlButtonsStyle = useMemo(() => [styles.controlButtons, { top: controlButtonsTop }], [controlButtonsTop]);
-  const handleSettingsPress = useCallback(() => {}, []);
+  const handleSettingsPress = useCallback(() => setSettingsShown(true), []);
+  const handleSettingsClose = useCallback(() => setSettingsShown(false), []);
 
   const drag = useDialDrag({
     centerX,
@@ -120,7 +126,7 @@ export const TimerScreen = (): JSX.Element => {
     dotSize: layout.dotSize,
     minutes: minutes[editTarget],
     mode: editTarget,
-    enabled: editing,
+    enabled: editing && !settingsShown,
     onChange: handleChange,
     onChangeEnd: handleChangeEnd,
   });
@@ -159,6 +165,7 @@ export const TimerScreen = (): JSX.Element => {
         <ControlButtons dotSize={layout.dotSize} phase={session.phase} onPlay={handlePlay} onStop={stop} style={controlButtonsStyle} />
         {notificationSettingsShown ? <NotificationSettingsButton dotSize={layout.dotSize} style={notificationSettingsStyle} /> : null}
         <RoundDotButton testID="settings" dotSize={layout.dotSize} icon={SETTINGS_ICON} disabled={!editing} style={settingsStyle} onPress={handleSettingsPress} />
+        <SettingsModal visible={settingsShown} dotSize={layout.dotSize} onClose={handleSettingsClose} />
         {__DEV__ ? <DevPanel seconds={remainingSeconds} speed={speed} isSpeedEnabled={editing} onSelectSpeed={setSpeed} /> : null}
       </View>
     </GestureDetector>
