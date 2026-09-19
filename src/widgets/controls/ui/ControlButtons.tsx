@@ -1,9 +1,9 @@
 import { memo } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { isStopEnabled, playIcon } from '../lib/state';
+import { playIcon } from '../lib/state';
 
-import { type TimerPhase } from '@/entities/timer';
+import { isReadyPhase, type TimerPhase } from '@/entities/timer';
 import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
 import { DotButton } from '@/shared/ui/dot-button';
 import { STOP_ICON } from '@/shared/ui/dot-icon';
@@ -24,7 +24,7 @@ type ControlButtonsProps = {
 export const ControlButtons = memo(({ dotSize, phase, onPlay, onStop, style }: ControlButtonsProps) => (
   <View style={[styles.row, { gap: (CENTER_DISTANCE_IN_DOTS - BUTTON_SIZE_IN_DOTS) * dotSize }, style]}>
     <DotButton testID="controls-play" dotSize={dotSize} icon={playIcon(phase)} onPress={onPlay} />
-    <DotButton testID="controls-stop" dotSize={dotSize} icon={STOP_ICON} disabled={!isStopEnabled(phase)} onPress={onStop} />
+    <DotButton testID="controls-stop" dotSize={dotSize} icon={STOP_ICON} disabled={isReadyPhase(phase)} onPress={onStop} />
   </View>
 ));
 
