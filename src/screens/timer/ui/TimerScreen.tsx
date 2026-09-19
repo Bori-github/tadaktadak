@@ -1,11 +1,12 @@
 import { Canvas, Fill } from '@shopify/react-native-skia';
-import { useCallback, useState, type JSX } from 'react';
+import { useCallback, useMemo, useState, type JSX } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { useDerivedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { isNotificationBlocked } from '../lib/notification';
+import { isSettingsDisabled } from '../lib/settings';
 
 import { useLiveActivity } from '../model/liveActivity';
 import { useStoredMinutes } from '../model/minutes';
@@ -34,9 +35,9 @@ import {
 } from '@/widgets/dial';
 import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
-import { RoundDotButton } from '@/shared/ui/dot-button';
-import { NOTIFICATION_OFF_ICON } from '@/shared/ui/dot-icon';
 import { resolveLayout } from '@/shared/lib';
+import { RoundDotButton } from '@/shared/ui/dot-button';
+import { SETTINGS_ICON } from '@/shared/ui/dot-icon';
 
 const SECONDS_IN_MINUTE = 60;
 
@@ -46,7 +47,6 @@ export const TimerScreen = (): JSX.Element => {
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
   const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
   const [pressed, setPressed] = useState<ControlButton | null>(null);
-  const [notificationSettingsPressed, setNotificationSettingsPressed] = useState(false);
   const { speed, setSpeed, realSettingMinutes, toSeconds, toMinutes } = useTimerSpeed(minutes);
   const { session, isSettled, remainingSeconds, remainingMinutes, countingMode, play, stop } = useTimerSession({
     settingMinutes: realSettingMinutes,
@@ -108,6 +108,11 @@ export const TimerScreen = (): JSX.Element => {
   const handleChange = useCallback((value: number) => changeMinutes(editTarget, value), [changeMinutes, editTarget]);
   const handleChangeEnd = useCallback((value: number) => storeMinutes(editTarget, value), [storeMinutes, editTarget]);
 
+  const roundButtonTop = insets.top + layout.edgeMargin;
+  const notificationSettingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, left: layout.edgeMargin }], [roundButtonTop, layout.edgeMargin]);
+  const settingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, right: layout.edgeMargin }], [roundButtonTop, layout.edgeMargin]);
+  const handleSettingsPress = useCallback(() => {}, []);
+
   const drag = useDialDrag({
     centerX,
     centerY,
@@ -150,15 +155,6 @@ export const TimerScreen = (): JSX.Element => {
             remainingSeconds={remainingSeconds}
           />
           <Controls centerX={centerX} centerY={layout.buttonCenterY} dotSize={layout.dotSize} phase={session.phase} pressed={pressed} />
-          {notificationSettingsShown ? (
-            <RoundDotButton
-              centerX={layout.notificationSettingsCenterX}
-              centerY={layout.notificationSettingsCenterY}
-              dotSize={layout.dotSize}
-              icon={NOTIFICATION_OFF_ICON}
-              pressed={notificationSettingsPressed}
-            />
-          ) : null}
         </Canvas>
         {editing ? <ReadoutButtons centerX={centerX} centerY={centerY} dotSize={layout.dotSize} onSelect={setEditTarget} /> : null}
         <ControlButtons
@@ -170,14 +166,15 @@ export const TimerScreen = (): JSX.Element => {
           onStop={stop}
           onPressedChange={setPressed}
         />
-        {notificationSettingsShown ? (
-          <NotificationSettingsButton
-            centerX={layout.notificationSettingsCenterX}
-            centerY={layout.notificationSettingsCenterY}
-            dotSize={layout.dotSize}
-            onPressedChange={setNotificationSettingsPressed}
-          />
-        ) : null}
+        {notificationSettingsShown ? <NotificationSettingsButton dotSize={layout.dotSize} style={notificationSettingsStyle} /> : null}
+        <RoundDotButton
+          testID="settings"
+          dotSize={layout.dotSize}
+          icon={SETTINGS_ICON}
+          disabled={isSettingsDisabled(session.phase)}
+          style={settingsStyle}
+          onPress={handleSettingsPress}
+        />
         {__DEV__ ? <DevPanel seconds={remainingSeconds} speed={speed} isSpeedEnabled={editing} onSelectSpeed={setSpeed} /> : null}
       </View>
     </GestureDetector>
@@ -188,5 +185,8 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: COLORS.canvas,
+  },
+  roundButton: {
+    position: 'absolute',
   },
 });

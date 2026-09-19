@@ -1,11 +1,11 @@
-/** 도트 하나가 맡는 색 역할. `DESIGN.md` §4 조작 버튼 */
+/** 도트 하나가 맡는 색 역할. 피그마 `button-settings`의 레이어 */
 export type DotRole = 'edge' | 'highlight' | 'shadow' | 'face';
 
 /** 한 줄에서 같은 역할이 이어지는 구간 */
 export type CircleCell = { column: number; row: number; widthInDots: number; role: DotRole };
 
 /**
- * 도트로 그리는 원. `DESIGN.md` §4 알림 설정 버튼
+ * 도트로 그리는 원. 피그마 `button-settings`
  *
  * @param diameterInDots - 지름 (dot)
  * @returns 줄마다 같은 역할이 이어지는 구간과 색 역할
