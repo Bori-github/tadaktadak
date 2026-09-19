@@ -208,3 +208,15 @@ describe('알림 설정 버튼 자리', () => {
     }).toEqual({ fromLeft: 32 * scale, fromTop: 32 * scale });
   });
 });
+
+describe('화면 가장자리 여백', () => {
+  it('기준 화면에서 화면 가장자리 여백은 8이다', () => {
+    expect(layout(390).edgeMargin).toBe(8);
+  });
+
+  it.each(DEVICE_NAMES)('%s에서 화면 가장자리 여백은 8 × 배율이다', (name) => {
+    const { edgeMargin, scale } = onDevice(name);
+
+    expect(edgeMargin).toBe(8 * scale);
+  });
+});

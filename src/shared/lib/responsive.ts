@@ -23,6 +23,8 @@ type LayoutInput = {
 type Layout = {
   scale: number;
   dotSize: number;
+  /** 화면 가장자리 여백 (px). `DESIGN.md` §5 배치 순서 */
+  edgeMargin: number;
   /** compact 등급 여부. `DESIGN.md` §7 구간별 처리 */
   isCompact: boolean;
   itemRadius: number;
@@ -68,6 +70,7 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }
   return {
     scale,
     dotSize: DOT_SIZE * scale,
+    edgeMargin: EDGE_MARGIN * scale,
     isCompact,
     itemRadius: itemRadius * scale,
     arcRadius: arcRadius * scale,
