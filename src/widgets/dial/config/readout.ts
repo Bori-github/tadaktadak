@@ -6,7 +6,7 @@ export const FOCUS_GLYPH_SCALE = 3;
 /** 두 숫자 사이 (dot). `DESIGN.md` §5 */
 const GAP_IN_DOTS = 10;
 
-/** 글자 상자 바깥 터치 여백 (논리 픽셀). `DESIGN.md` §4 조작 버튼과 같은 값 */
+/** 글자 상자 상하좌우에 더하는 터치 여백 (논리 픽셀) */
 export const TOUCH_MARGIN = 8;
 
 const CLOCK_SAMPLE = '00:00';
