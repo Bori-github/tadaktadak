@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 4,
-    backgroundColor: COLORS.button.lockedFace,
+    backgroundColor: COLORS.button.disabledFace,
   },
   selected: {
     backgroundColor: COLORS.focus.arc,

@@ -10,8 +10,8 @@ export const ROLE_COLORS: Record<DotRole, string> = {
 };
 
 export const DISABLED_ROLE_COLORS: Record<DotRole, string> = {
-  edge: COLORS.button.lockedEdge,
-  face: COLORS.button.lockedFace,
-  highlight: COLORS.button.lockedFace,
-  shadow: COLORS.button.lockedShadow,
+  edge: COLORS.button.disabledEdge,
+  face: COLORS.button.disabledFace,
+  highlight: COLORS.button.disabledFace,
+  shadow: COLORS.button.disabledShadow,
 };
