@@ -34,8 +34,6 @@ import {
 } from '@/widgets/dial';
 import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
-import { RoundDotButton } from '@/shared/ui/dot-button';
-import { NOTIFICATION_OFF_ICON } from '@/shared/ui/dot-icon';
 import { resolveLayout } from '@/shared/lib';
 
 const SECONDS_IN_MINUTE = 60;
@@ -46,7 +44,6 @@ export const TimerScreen = (): JSX.Element => {
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
   const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
   const [pressed, setPressed] = useState<ControlButton | null>(null);
-  const [notificationSettingsPressed, setNotificationSettingsPressed] = useState(false);
   const { speed, setSpeed, realSettingMinutes, toSeconds, toMinutes } = useTimerSpeed(minutes);
   const { session, isSettled, remainingSeconds, remainingMinutes, countingMode, play, stop } = useTimerSession({
     settingMinutes: realSettingMinutes,
@@ -150,15 +147,6 @@ export const TimerScreen = (): JSX.Element => {
             remainingSeconds={remainingSeconds}
           />
           <Controls centerX={centerX} centerY={layout.buttonCenterY} dotSize={layout.dotSize} phase={session.phase} pressed={pressed} />
-          {notificationSettingsShown ? (
-            <RoundDotButton
-              centerX={layout.notificationSettingsCenterX}
-              centerY={layout.notificationSettingsCenterY}
-              dotSize={layout.dotSize}
-              icon={NOTIFICATION_OFF_ICON}
-              pressed={notificationSettingsPressed}
-            />
-          ) : null}
         </Canvas>
         {editing ? <ReadoutButtons centerX={centerX} centerY={centerY} dotSize={layout.dotSize} onSelect={setEditTarget} /> : null}
         <ControlButtons
@@ -171,12 +159,7 @@ export const TimerScreen = (): JSX.Element => {
           onPressedChange={setPressed}
         />
         {notificationSettingsShown ? (
-          <NotificationSettingsButton
-            centerX={layout.notificationSettingsCenterX}
-            centerY={layout.notificationSettingsCenterY}
-            dotSize={layout.dotSize}
-            onPressedChange={setNotificationSettingsPressed}
-          />
+          <NotificationSettingsButton dotSize={layout.dotSize} style={[styles.roundButton, { top: insets.top + layout.edgeMargin, left: layout.edgeMargin }]} />
         ) : null}
         {__DEV__ ? <DevPanel seconds={remainingSeconds} speed={speed} isSpeedEnabled={editing} onSelectSpeed={setSpeed} /> : null}
       </View>
@@ -188,5 +171,8 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: COLORS.canvas,
+  },
+  roundButton: {
+    position: 'absolute',
   },
 });

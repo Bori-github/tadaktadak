@@ -1,4 +1,4 @@
-import { BUTTON_SIZE_IN_DOTS, DOT_SIZE, MEDIUM_MIN_SHORT_SIDE, MIN_SHORT_SIDE, ROUND_BUTTON_DIAMETER_IN_DOTS } from '@/shared/constants';
+import { BUTTON_SIZE_IN_DOTS, DOT_SIZE, MEDIUM_MIN_SHORT_SIDE, MIN_SHORT_SIDE } from '@/shared/constants';
 
 const MAX_SCALE = 3;
 
@@ -32,9 +32,6 @@ type Layout = {
   numeralRadius: number;
   buttonCenterY: number;
   dialCenterY: number;
-  /** 알림 설정 버튼 중심 (px). `DESIGN.md` §5 배치 순서 */
-  notificationSettingsCenterX: number;
-  notificationSettingsCenterY: number;
 };
 
 // TODO: isCompact 대신 등급 반환
@@ -63,10 +60,6 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }
   const buttonOffset = Math.min(BUTTON_OFFSET_FROM_SAFE_AREA, Math.max(buttonOffsetMin, safeAreaHeight - stackHeight));
   const buttonCenterY = safeAreaBottomEdge - buttonOffset;
 
-  const notificationSettingsSize = ROUND_BUTTON_DIAMETER_IN_DOTS * DOT_SIZE * scale;
-  // 가장자리 여백은 배율 1 기준 값이라 시계판과 같이 배율을 곱함
-  const notificationSettingsMargin = EDGE_MARGIN * scale;
-
   return {
     scale,
     dotSize: DOT_SIZE * scale,
@@ -77,7 +70,5 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }
     numeralRadius: numeralRadius * scale,
     buttonCenterY,
     dialCenterY: buttonCenterY - dialToButton,
-    notificationSettingsCenterX: notificationSettingsMargin + notificationSettingsSize / 2,
-    notificationSettingsCenterY: safeAreaTopEdge + notificationSettingsMargin + notificationSettingsSize / 2,
   };
 };

@@ -191,24 +191,6 @@ describe('시계판 위 끝이 safe area 위 끝을 넘지 않는다', () => {
   });
 });
 
-describe('알림 설정 버튼 자리', () => {
-  it('기준 화면에서 알림 설정 버튼 중심은 x 32, y 79다', () => {
-    const { notificationSettingsCenterX, notificationSettingsCenterY } = layout(390);
-
-    expect({ notificationSettingsCenterX, notificationSettingsCenterY }).toEqual({ notificationSettingsCenterX: 32, notificationSettingsCenterY: 79 });
-  });
-
-  // 32는 가장자리 여백 8 + 반지름 24. `DESIGN.md` §4
-  it.each(DEVICE_NAMES)('%s에서 알림 설정 버튼과 왼쪽 끝·safe area 위 끝 사이 거리가 배율만큼 커진다', (name) => {
-    const { notificationSettingsCenterX, notificationSettingsCenterY, scale } = onDevice(name);
-
-    expect({
-      fromLeft: notificationSettingsCenterX,
-      fromTop: notificationSettingsCenterY - DEVICES[name].topEdge,
-    }).toEqual({ fromLeft: 32 * scale, fromTop: 32 * scale });
-  });
-});
-
 describe('화면 가장자리 여백', () => {
   it('기준 화면에서 화면 가장자리 여백은 8이다', () => {
     expect(layout(390).edgeMargin).toBe(8);
