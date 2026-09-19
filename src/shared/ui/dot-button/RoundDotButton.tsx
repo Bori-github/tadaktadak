@@ -53,6 +53,7 @@ export const RoundDotButton = memo(({ dotSize, icon, disabled = false, onPress, 
       style={[style, { width: size, height: size }]}
       hitSlop={BUTTON_TOUCH_PADDING / 2}
       disabled={disabled}
+      android_disableSound={disabled}
       onPressIn={() => playVibration()}
       onPress={() => {
         if (disabled) return;
@@ -60,8 +61,10 @@ export const RoundDotButton = memo(({ dotSize, icon, disabled = false, onPress, 
       }}
     >
       {({ pressed }) => {
-        const offsetY = pressed ? dotSize : 0;
-        const roleColor = (role: DotRole) => (pressed && role === 'highlight' ? colors.face : colors[role]);
+        // press 도중 disabled로 전환되면 active 상태를 그리지 않음
+        const active = pressed && !disabled;
+        const offsetY = active ? dotSize : 0;
+        const roleColor = (role: DotRole) => (active && role === 'highlight' ? colors.face : colors[role]);
 
         return (
           // active 상태의 y 오프셋만큼 캔버스 높이를 늘려 하단 클리핑 방지

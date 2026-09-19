@@ -6,7 +6,6 @@ import { useDerivedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { isNotificationBlocked } from '../lib/notification';
-import { isSettingsDisabled } from '../lib/settings';
 
 import { useLiveActivity } from '../model/liveActivity';
 import { useStoredMinutes } from '../model/minutes';
@@ -18,7 +17,7 @@ import { useTimerSpeed } from '../model/speed';
 import { DevPanel } from './DevPanel';
 import { NotificationSettingsButton } from './NotificationSettingsButton';
 
-import { ControlButtons, Controls, type ControlButton } from '@/widgets/controls';
+import { ControlButtons } from '@/widgets/controls';
 import {
   colorMode,
   useCompletedEffectStartedAt,
@@ -33,8 +32,8 @@ import {
   Numerals,
   useDialDrag,
 } from '@/widgets/dial';
-import { type TimerMode } from '@/entities/timer';
-import { COLORS } from '@/shared/constants';
+import { isReadyPhase, type TimerMode } from '@/entities/timer';
+import { BUTTON_SIZE_IN_DOTS, COLORS } from '@/shared/constants';
 import { resolveLayout } from '@/shared/lib';
 import { RoundDotButton } from '@/shared/ui/dot-button';
 import { SETTINGS_ICON } from '@/shared/ui/dot-icon';
@@ -46,7 +45,6 @@ export const TimerScreen = (): JSX.Element => {
   const insets = useSafeAreaInsets();
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
   const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
-  const [pressed, setPressed] = useState<ControlButton | null>(null);
   const { speed, setSpeed, realSettingMinutes, toSeconds, toMinutes } = useTimerSpeed(minutes);
   const { session, isSettled, remainingSeconds, remainingMinutes, countingMode, play, stop } = useTimerSession({
     settingMinutes: realSettingMinutes,
@@ -69,7 +67,7 @@ export const TimerScreen = (): JSX.Element => {
 
   const centerX = width / 2;
   const centerY = layout.dialCenterY;
-  const editing = session.phase === 'ready';
+  const editing = isReadyPhase(session.phase);
   const shownMode = editing ? editTarget : session.mode;
   const paintedMode = colorMode({ editing, editTarget });
   const selected = minutes[shownMode];
@@ -111,6 +109,8 @@ export const TimerScreen = (): JSX.Element => {
   const roundButtonTop = insets.top + layout.edgeMargin;
   const notificationSettingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, left: layout.edgeMargin }], [roundButtonTop, layout.edgeMargin]);
   const settingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, right: layout.edgeMargin }], [roundButtonTop, layout.edgeMargin]);
+  const controlButtonsTop = layout.buttonCenterY - (BUTTON_SIZE_IN_DOTS * layout.dotSize) / 2;
+  const controlButtonsStyle = useMemo(() => [styles.controlButtons, { top: controlButtonsTop }], [controlButtonsTop]);
   const handleSettingsPress = useCallback(() => {}, []);
 
   const drag = useDialDrag({
@@ -140,7 +140,7 @@ export const TimerScreen = (): JSX.Element => {
             remainingMinutes={litMinutes}
             settingMinutes={itemMinutes}
             isPaused={session.phase === 'paused'}
-            isReady={session.phase === 'ready'}
+            isReady={editing}
           />
           <Embers centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} effectStartedAt={effectStartedAt} />
           <Thumb centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} isTwinkling={twinkling} />
@@ -154,27 +154,11 @@ export const TimerScreen = (): JSX.Element => {
             active={shownMode}
             remainingSeconds={remainingSeconds}
           />
-          <Controls centerX={centerX} centerY={layout.buttonCenterY} dotSize={layout.dotSize} phase={session.phase} pressed={pressed} />
         </Canvas>
         {editing ? <ReadoutButtons centerX={centerX} centerY={centerY} dotSize={layout.dotSize} onSelect={setEditTarget} /> : null}
-        <ControlButtons
-          centerX={centerX}
-          centerY={layout.buttonCenterY}
-          dotSize={layout.dotSize}
-          phase={session.phase}
-          onPlay={handlePlay}
-          onStop={stop}
-          onPressedChange={setPressed}
-        />
+        <ControlButtons dotSize={layout.dotSize} phase={session.phase} onPlay={handlePlay} onStop={stop} style={controlButtonsStyle} />
         {notificationSettingsShown ? <NotificationSettingsButton dotSize={layout.dotSize} style={notificationSettingsStyle} /> : null}
-        <RoundDotButton
-          testID="settings"
-          dotSize={layout.dotSize}
-          icon={SETTINGS_ICON}
-          disabled={isSettingsDisabled(session.phase)}
-          style={settingsStyle}
-          onPress={handleSettingsPress}
-        />
+        <RoundDotButton testID="settings" dotSize={layout.dotSize} icon={SETTINGS_ICON} disabled={!editing} style={settingsStyle} onPress={handleSettingsPress} />
         {__DEV__ ? <DevPanel seconds={remainingSeconds} speed={speed} isSpeedEnabled={editing} onSelectSpeed={setSpeed} /> : null}
       </View>
     </GestureDetector>
@@ -188,5 +172,10 @@ const styles = StyleSheet.create({
   },
   roundButton: {
     position: 'absolute',
+  },
+  controlButtons: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
   },
 });

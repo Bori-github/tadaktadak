@@ -5,6 +5,8 @@ export const TIMER_PHASES = ['ready', 'running', 'paused', 'completed'] as const
 
 export type TimerPhase = (typeof TIMER_PHASES)[number];
 
+export const isReadyPhase = (phase: TimerPhase): boolean => phase === 'ready';
+
 /** 진행 중. 남은 시간의 기준은 끝날 시각 */
 export type RunningSession = { phase: 'running'; mode: TimerMode; startedAt: number; endsAt: number };
 
