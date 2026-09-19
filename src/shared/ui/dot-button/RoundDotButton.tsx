@@ -5,7 +5,7 @@ import { Canvas, Group, Rect } from '@shopify/react-native-skia';
 import { BUTTON_TOUCH_PADDING, COLORS, DOT_SIZE, ROUND_BUTTON_DIAMETER_IN_DOTS } from '@/shared/constants';
 import { playVibration } from '@/shared/lib';
 
-import { type RectIcon } from '@/shared/ui/dot-icon';
+import { RectIconShape, type RectIcon } from '@/shared/ui/dot-icon';
 
 import { circleCells, type DotRole } from './circle';
 import { DISABLED_ROLE_COLORS, ROLE_COLORS } from './roleColors';
@@ -67,16 +67,7 @@ export const RoundDotButton = memo(({ dotSize, icon, disabled = false, onPress, 
                   color={roleColor(cell.role)}
                 />
               ))}
-              {icon.rects.map(([x, y, width, height]) => (
-                <Rect
-                  key={`${x}-${y}-${width}-${height}`}
-                  x={iconOffset + x * scale}
-                  y={offsetY + iconOffset + y * scale}
-                  width={width * scale}
-                  height={height * scale}
-                  color={iconColor}
-                />
-              ))}
+              <RectIconShape icon={icon} left={iconOffset} top={offsetY + iconOffset} dotSize={dotSize} color={iconColor} />
             </Group>
           </Canvas>
         );
