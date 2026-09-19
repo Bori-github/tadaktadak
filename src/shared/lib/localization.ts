@@ -51,6 +51,12 @@ export const pickLanguage = (locales: Pick<Locale, 'languageCode'>[]): Language 
 };
 
 /**
+ * @param saved - 기기에 저장된 언어 태그
+ * @returns 지원 언어면 그 언어. 저장값이 없거나 지원 목록에 없으면 `null`
+ */
+export const parseLanguage = (saved: string | null): Language | null => SUPPORTED_LANGUAGES.find((language) => language === saved) ?? null;
+
+/**
  * OS 언어 설정이 바뀌면 다시 계산됨
  *
  * @returns 기기 언어에 맞는 지원 언어

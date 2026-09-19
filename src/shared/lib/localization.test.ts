@@ -6,7 +6,7 @@ import { describe, expect, it } from '@jest/globals';
 import appConfig from '../../../app.json';
 import koAppMetadata from '../../../languages/ko.json';
 
-import { pickLanguage, translate } from './localization';
+import { parseLanguage, pickLanguage, translate } from './localization';
 
 const toLocales = (...codes: (string | null)[]) => codes.map((languageCode) => ({ languageCode }));
 
@@ -27,6 +27,20 @@ describe('기기 선호 언어에서 지원 언어 고르기', () => {
 
   it('languageCode가 null인 항목은 건너뛴다', () => {
     expect(pickLanguage(toLocales(null, 'ko'))).toBe('ko-KR');
+  });
+});
+
+describe('저장된 언어 태그 검증', () => {
+  it('지원 언어 태그면 그 언어를 반환한다', () => {
+    expect(parseLanguage('ko-KR')).toBe('ko-KR');
+  });
+
+  it('저장값이 없으면 null을 반환한다', () => {
+    expect(parseLanguage(null)).toBeNull();
+  });
+
+  it('지원 목록에 없는 언어 태그면 null을 반환한다', () => {
+    expect(parseLanguage('ja-JP')).toBeNull();
   });
 });
 
