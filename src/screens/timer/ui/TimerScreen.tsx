@@ -6,6 +6,7 @@ import { useDerivedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { isNotificationBlocked } from '../lib/notification';
+import { isSettingsDisabled } from '../lib/settings';
 
 import { useLiveActivity } from '../model/liveActivity';
 import { useStoredMinutes } from '../model/minutes';
@@ -166,7 +167,14 @@ export const TimerScreen = (): JSX.Element => {
           onPressedChange={setPressed}
         />
         {notificationSettingsShown ? <NotificationSettingsButton dotSize={layout.dotSize} style={notificationSettingsStyle} /> : null}
-        <RoundDotButton testID="settings" dotSize={layout.dotSize} icon={SETTINGS_ICON} disabled={!editing} style={settingsStyle} onPress={handleSettingsPress} />
+        <RoundDotButton
+          testID="settings"
+          dotSize={layout.dotSize}
+          icon={SETTINGS_ICON}
+          disabled={isSettingsDisabled(session.phase)}
+          style={settingsStyle}
+          onPress={handleSettingsPress}
+        />
         {__DEV__ ? <DevPanel seconds={remainingSeconds} speed={speed} isSpeedEnabled={editing} onSelectSpeed={setSpeed} /> : null}
       </View>
     </GestureDetector>
