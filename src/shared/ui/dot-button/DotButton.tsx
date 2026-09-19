@@ -58,6 +58,33 @@ const buttonCells = (disabled: boolean, pressed: boolean): Cell[] => {
   return cells;
 };
 
+type DotButtonFaceProps = {
+  dotSize: number;
+  icon: GridIcon;
+  disabled: boolean;
+  pressed: boolean;
+};
+
+// onPress 참조가 바뀌어도 Canvas가 리렌더링되지 않도록 memo로 분리
+const DotButtonFace = memo(({ dotSize, icon, disabled, pressed }: DotButtonFaceProps) => {
+  const size = BUTTON_SIZE_IN_DOTS * dotSize;
+  const offsetY = pressed ? dotSize : 0;
+
+  return (
+    // active 상태의 y 오프셋만큼 캔버스 높이를 늘려 하단 클리핑 방지
+    <Canvas style={[styles.canvas, { width: size, height: size + dotSize }]} pointerEvents="none">
+      <Group antiAlias={false}>
+        {buttonCells(disabled, pressed).map((cell) => (
+          <Rect key={cell.key} x={cell.x * dotSize} y={offsetY + cell.y * dotSize} width={cell.width * dotSize} height={cell.height * dotSize} color={cell.color} />
+        ))}
+        <DotSprite grid={icon} centerX={size / 2} centerY={offsetY + size / 2} dotSize={dotSize} colors={disabled ? DISABLED_ICON_COLORS : ICON_COLORS} />
+      </Group>
+    </Canvas>
+  );
+});
+
+DotButtonFace.displayName = 'DotButtonFace';
+
 type DotButtonProps = {
   /** 도트 한 변 (px) */
   dotSize: number;
@@ -85,21 +112,7 @@ export const DotButton = memo(({ dotSize, icon, disabled = false, onPress, style
         onPress();
       }}
     >
-      {({ pressed }) => {
-        const offsetY = pressed ? dotSize : 0;
-
-        return (
-          // active 상태의 y 오프셋만큼 캔버스 높이를 늘려 하단 클리핑 방지
-          <Canvas style={[styles.canvas, { width: size, height: size + dotSize }]} pointerEvents="none">
-            <Group antiAlias={false}>
-              {buttonCells(disabled, pressed).map((cell) => (
-                <Rect key={cell.key} x={cell.x * dotSize} y={offsetY + cell.y * dotSize} width={cell.width * dotSize} height={cell.height * dotSize} color={cell.color} />
-              ))}
-              <DotSprite grid={icon} centerX={size / 2} centerY={offsetY + size / 2} dotSize={dotSize} colors={disabled ? DISABLED_ICON_COLORS : ICON_COLORS} />
-            </Group>
-          </Canvas>
-        );
-      }}
+      {({ pressed }) => <DotButtonFace dotSize={dotSize} icon={icon} disabled={disabled} pressed={pressed} />}
     </Pressable>
   );
 });
