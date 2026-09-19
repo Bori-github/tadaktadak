@@ -14,8 +14,8 @@ import { DISABLED_ROLE_COLORS, ROLE_COLORS } from './roleColors';
 
 const CELLS = rectangleCells({ widthInDots: BUTTON_SIZE_IN_DOTS, heightInDots: BUTTON_SIZE_IN_DOTS });
 
-const ICON_COLORS = { I: COLORS.button.icon };
-const DISABLED_ICON_COLORS = { I: COLORS.button.lockedIcon };
+const ICON_COLORS = { I: COLORS.icon.default };
+const DISABLED_ICON_COLORS = { I: COLORS.icon.disabled };
 
 type DotButtonFaceProps = {
   dotSize: number;

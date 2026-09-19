@@ -33,10 +33,13 @@ export const COLORS = {
     face: '#6b6280',
     highlight: '#8f86a8',
     shadow: '#4a4360',
-    icon: '#f4ead6',
     lockedEdge: '#2b2032',
     lockedFace: '#3f3550',
     lockedShadow: '#332a42',
-    lockedIcon: '#6f6688',
+  },
+
+  icon: {
+    default: '#f4ead6',
+    disabled: '#6f6688',
   },
 } as const;

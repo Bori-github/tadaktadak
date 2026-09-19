@@ -27,7 +27,7 @@ export const RoundDotButton = memo(({ dotSize, icon, disabled = false, onPress, 
   const size = ROUND_BUTTON_DIAMETER_IN_DOTS * dotSize;
 
   const colors = disabled ? DISABLED_ROLE_COLORS : ROLE_COLORS;
-  const iconColor = disabled ? COLORS.button.lockedIcon : COLORS.button.icon;
+  const iconColor = disabled ? COLORS.icon.disabled : COLORS.icon.default;
 
   // 아이콘 좌표가 배율 1 기준. 지금 도트 크기가 배율 1의 몇 배인지가 곱할 값
   const scale = dotSize / DOT_SIZE;
