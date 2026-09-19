@@ -35,6 +35,8 @@ import {
 import { type TimerMode } from '@/entities/timer';
 import { COLORS } from '@/shared/constants';
 import { resolveLayout } from '@/shared/lib';
+import { RoundDotButton } from '@/shared/ui/dot-button';
+import { SETTINGS_ICON } from '@/shared/ui/dot-icon';
 
 const SECONDS_IN_MINUTE = 60;
 
@@ -161,6 +163,14 @@ export const TimerScreen = (): JSX.Element => {
         {notificationSettingsShown ? (
           <NotificationSettingsButton dotSize={layout.dotSize} style={[styles.roundButton, { top: insets.top + layout.edgeMargin, left: layout.edgeMargin }]} />
         ) : null}
+        <RoundDotButton
+          testID="settings"
+          dotSize={layout.dotSize}
+          icon={SETTINGS_ICON}
+          disabled={!editing}
+          style={[styles.roundButton, { top: insets.top + layout.edgeMargin, right: layout.edgeMargin }]}
+          onPress={() => {}}
+        />
         {__DEV__ ? <DevPanel seconds={remainingSeconds} speed={speed} isSpeedEnabled={editing} onSelectSpeed={setSpeed} /> : null}
       </View>
     </GestureDetector>
