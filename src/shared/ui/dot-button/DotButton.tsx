@@ -8,55 +8,14 @@ import { playVibration } from '@/shared/lib';
 import { type GridIcon } from '@/shared/ui/dot-icon';
 import { DotSprite } from '@/shared/ui/dot-sprite';
 
-/** 리벳이 놓이는 모서리 안쪽 거리 (dot) */
-const RIVET_INSET = 3;
+import { type DotRole } from './circle';
+import { rectangleCells } from './rectangle';
+import { DISABLED_ROLE_COLORS, ROLE_COLORS } from './roleColors';
 
-const RIVETS: readonly (readonly [number, number])[] = [
-  [RIVET_INSET, RIVET_INSET],
-  [BUTTON_SIZE_IN_DOTS - 1 - RIVET_INSET, RIVET_INSET],
-  [RIVET_INSET, BUTTON_SIZE_IN_DOTS - 1 - RIVET_INSET],
-  [BUTTON_SIZE_IN_DOTS - 1 - RIVET_INSET, BUTTON_SIZE_IN_DOTS - 1 - RIVET_INSET],
-];
+const CELLS = rectangleCells({ widthInDots: BUTTON_SIZE_IN_DOTS, heightInDots: BUTTON_SIZE_IN_DOTS });
 
 const ICON_COLORS = { I: COLORS.button.icon };
 const DISABLED_ICON_COLORS = { I: COLORS.button.lockedIcon };
-
-type Cell = { key: string; x: number; y: number; width: number; height: number; color: string };
-
-const buttonCells = (disabled: boolean, pressed: boolean): Cell[] => {
-  const size = BUTTON_SIZE_IN_DOTS;
-  const { highlight } = COLORS.button;
-  const edge = disabled ? COLORS.button.lockedEdge : COLORS.button.edge;
-  const face = disabled ? COLORS.button.lockedFace : COLORS.button.face;
-  const shadow = disabled ? COLORS.button.lockedShadow : COLORS.button.shadow;
-
-  const cells: Cell[] = [
-    { key: 'face', x: 0, y: 0, width: size, height: size, color: face },
-    { key: 'edge-top', x: 0, y: 0, width: size, height: 1, color: edge },
-    { key: 'edge-bottom', x: 0, y: size - 1, width: size, height: 1, color: edge },
-    { key: 'edge-left', x: 0, y: 0, width: 1, height: size, color: edge },
-    { key: 'edge-right', x: size - 1, y: 0, width: 1, height: size, color: edge },
-  ];
-
-  if (!disabled && !pressed) {
-    cells.push(
-      { key: 'highlight-top', x: 1, y: 1, width: size - 2, height: 1, color: highlight },
-      { key: 'highlight-left', x: 1, y: 1, width: 1, height: size - 2, color: highlight },
-    );
-  }
-
-  // 그림자는 하이라이트보다 나중에 그림. 겹치는 도트 두 칸 (1, size-2)·(size-2, 1)은 그림자 색
-  cells.push(
-    { key: 'shadow-bottom', x: 1, y: size - 2, width: size - 2, height: 1, color: shadow },
-    { key: 'shadow-right', x: size - 2, y: 1, width: 1, height: size - 2, color: shadow },
-  );
-
-  for (const [x, y] of RIVETS) {
-    cells.push({ key: `rivet-${x}-${y}`, x, y, width: 1, height: 1, color: edge });
-  }
-
-  return cells;
-};
 
 type DotButtonFaceProps = {
   dotSize: number;
@@ -68,14 +27,25 @@ type DotButtonFaceProps = {
 const DotButtonFace = memo(({ dotSize, icon, disabled, pressed }: DotButtonFaceProps) => {
   const size = BUTTON_SIZE_IN_DOTS * dotSize;
   // press 도중 disabled로 전환되면 active 상태를 그리지 않음
-  const offsetY = pressed && !disabled ? dotSize : 0;
+  const active = pressed && !disabled;
+  const offsetY = active ? dotSize : 0;
+
+  const colors = disabled ? DISABLED_ROLE_COLORS : ROLE_COLORS;
+  const roleColor = (role: DotRole) => (active && role === 'highlight' ? colors.face : colors[role]);
 
   return (
     // active 상태의 y 오프셋만큼 캔버스 높이를 늘려 하단 클리핑 방지
     <Canvas style={[styles.canvas, { width: size, height: size + dotSize }]} pointerEvents="none">
       <Group antiAlias={false}>
-        {buttonCells(disabled, pressed).map((cell) => (
-          <Rect key={cell.key} x={cell.x * dotSize} y={offsetY + cell.y * dotSize} width={cell.width * dotSize} height={cell.height * dotSize} color={cell.color} />
+        {CELLS.map((cell) => (
+          <Rect
+            key={cell.key}
+            x={cell.column * dotSize}
+            y={offsetY + cell.row * dotSize}
+            width={cell.widthInDots * dotSize}
+            height={cell.heightInDots * dotSize}
+            color={roleColor(cell.role)}
+          />
         ))}
         <DotSprite grid={icon} centerX={size / 2} centerY={offsetY + size / 2} dotSize={dotSize} colors={disabled ? DISABLED_ICON_COLORS : ICON_COLORS} />
       </Group>

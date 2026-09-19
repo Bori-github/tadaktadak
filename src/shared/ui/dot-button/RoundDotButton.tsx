@@ -8,22 +8,9 @@ import { playVibration } from '@/shared/lib';
 import { type RectIcon } from '@/shared/ui/dot-icon';
 
 import { circleCells, type DotRole } from './circle';
+import { DISABLED_ROLE_COLORS, ROLE_COLORS } from './roleColors';
 
 const CELLS = circleCells(ROUND_BUTTON_DIAMETER_IN_DOTS);
-
-const ROLE_COLORS: Record<DotRole, string> = {
-  edge: COLORS.button.edge,
-  face: COLORS.button.face,
-  highlight: COLORS.button.highlight,
-  shadow: COLORS.button.shadow,
-};
-
-const DISABLED_ROLE_COLORS: Record<DotRole, string> = {
-  edge: COLORS.button.lockedEdge,
-  face: COLORS.button.lockedFace,
-  highlight: COLORS.button.lockedFace,
-  shadow: COLORS.button.lockedShadow,
-};
 
 type RoundDotButtonProps = {
   /** 도트 한 변 (px) */
