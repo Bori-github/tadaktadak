@@ -18,7 +18,7 @@ const RIVETS: readonly (readonly [number, number])[] = [
 ];
 
 const ICON_COLORS = { I: COLORS.button.icon };
-const LOCKED_ICON_COLORS = { I: COLORS.button.lockedIcon };
+const DISABLED_ICON_COLORS = { I: COLORS.button.lockedIcon };
 
 type Cell = { key: string; x: number; y: number; width: number; height: number; color: string };
 
@@ -29,12 +29,11 @@ type DotButtonProps = {
   /** 도트 한 변 (px) */
   dotSize: number;
   icon: GridIcon;
-  /** 잠긴 버튼은 면과 아이콘이 어두워지고 하이라이트 없음 */
-  enabled?: boolean;
+  disabled?: boolean;
   pressed?: boolean;
 };
 
-export const DotButton = ({ centerX, centerY, dotSize, icon, enabled = true, pressed = false }: DotButtonProps): JSX.Element => {
+export const DotButton = ({ centerX, centerY, dotSize, icon, disabled = false, pressed = false }: DotButtonProps): JSX.Element => {
   const size = BUTTON_SIZE_IN_DOTS;
   const corner = topLeftOnGrid({ centerX, centerY, widthInDots: size, heightInDots: size, dotSize });
   const left = corner.left;
@@ -42,9 +41,9 @@ export const DotButton = ({ centerX, centerY, dotSize, icon, enabled = true, pre
   const top = corner.top + (pressed ? 1 : 0);
 
   const { highlight } = COLORS.button;
-  const edge = enabled ? COLORS.button.edge : COLORS.button.lockedEdge;
-  const face = enabled ? COLORS.button.face : COLORS.button.lockedFace;
-  const shadow = enabled ? COLORS.button.shadow : COLORS.button.lockedShadow;
+  const edge = disabled ? COLORS.button.lockedEdge : COLORS.button.edge;
+  const face = disabled ? COLORS.button.lockedFace : COLORS.button.face;
+  const shadow = disabled ? COLORS.button.lockedShadow : COLORS.button.shadow;
 
   const cells: Cell[] = [
     { key: 'face', x: 0, y: 0, width: size, height: size, color: face },
@@ -54,7 +53,7 @@ export const DotButton = ({ centerX, centerY, dotSize, icon, enabled = true, pre
     { key: 'edge-right', x: size - 1, y: 0, width: 1, height: size, color: edge },
   ];
 
-  if (enabled && !pressed) {
+  if (!disabled && !pressed) {
     cells.push(
       { key: 'highlight-top', x: 1, y: 1, width: size - 2, height: 1, color: highlight },
       { key: 'highlight-left', x: 1, y: 1, width: 1, height: size - 2, color: highlight },
@@ -76,7 +75,7 @@ export const DotButton = ({ centerX, centerY, dotSize, icon, enabled = true, pre
       {cells.map((cell) => (
         <Rect key={cell.key} x={(left + cell.x) * dotSize} y={(top + cell.y) * dotSize} width={cell.width * dotSize} height={cell.height * dotSize} color={cell.color} />
       ))}
-      <DotSprite grid={icon} centerX={(left + size / 2) * dotSize} centerY={(top + size / 2) * dotSize} dotSize={dotSize} colors={enabled ? ICON_COLORS : LOCKED_ICON_COLORS} />
+      <DotSprite grid={icon} centerX={(left + size / 2) * dotSize} centerY={(top + size / 2) * dotSize} dotSize={dotSize} colors={disabled ? DISABLED_ICON_COLORS : ICON_COLORS} />
     </Group>
   );
 };

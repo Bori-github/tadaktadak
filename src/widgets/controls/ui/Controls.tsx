@@ -22,7 +22,7 @@ export const Controls = memo(({ centerX, centerY, dotSize, phase, pressed }: Con
   return (
     <>
       <DotButton centerX={centers.play} centerY={centerY} dotSize={dotSize} icon={playIcon(phase)} pressed={pressed === 'play'} />
-      <DotButton centerX={centers.stop} centerY={centerY} dotSize={dotSize} icon={STOP_ICON} enabled={isStopEnabled(phase)} pressed={pressed === 'stop'} />
+      <DotButton centerX={centers.stop} centerY={centerY} dotSize={dotSize} icon={STOP_ICON} disabled={!isStopEnabled(phase)} pressed={pressed === 'stop'} />
     </>
   );
 });
