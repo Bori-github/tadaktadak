@@ -22,7 +22,7 @@ type ControlButtonsProps = {
 };
 
 export const ControlButtons = memo(({ dotSize, phase, onPlay, onStop, style }: ControlButtonsProps) => (
-  <View style={[styles.row, { gap: (CENTER_DISTANCE_IN_DOTS - BUTTON_SIZE_IN_DOTS) * dotSize }, style]}>
+  <View style={[styles.row, { gap: (CENTER_DISTANCE_IN_DOTS - BUTTON_SIZE_IN_DOTS) * dotSize }, style]} pointerEvents="box-none">
     <DotButton testID="controls-play" dotSize={dotSize} icon={playIcon(phase)} onPress={onPlay} />
     <DotButton testID="controls-stop" dotSize={dotSize} icon={STOP_ICON} disabled={isReadyPhase(phase)} onPress={onStop} />
   </View>
