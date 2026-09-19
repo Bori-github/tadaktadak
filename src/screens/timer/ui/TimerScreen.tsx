@@ -1,5 +1,5 @@
 import { Canvas, Fill } from '@shopify/react-native-skia';
-import { useCallback, useState, type JSX } from 'react';
+import { useCallback, useMemo, useState, type JSX } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { useDerivedValue } from 'react-native-reanimated';
@@ -107,6 +107,11 @@ export const TimerScreen = (): JSX.Element => {
   const handleChange = useCallback((value: number) => changeMinutes(editTarget, value), [changeMinutes, editTarget]);
   const handleChangeEnd = useCallback((value: number) => storeMinutes(editTarget, value), [storeMinutes, editTarget]);
 
+  const roundButtonTop = insets.top + layout.edgeMargin;
+  const notificationSettingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, left: layout.edgeMargin }], [roundButtonTop, layout.edgeMargin]);
+  const settingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, right: layout.edgeMargin }], [roundButtonTop, layout.edgeMargin]);
+  const handleSettingsPress = useCallback(() => {}, []);
+
   const drag = useDialDrag({
     centerX,
     centerY,
@@ -160,17 +165,8 @@ export const TimerScreen = (): JSX.Element => {
           onStop={stop}
           onPressedChange={setPressed}
         />
-        {notificationSettingsShown ? (
-          <NotificationSettingsButton dotSize={layout.dotSize} style={[styles.roundButton, { top: insets.top + layout.edgeMargin, left: layout.edgeMargin }]} />
-        ) : null}
-        <RoundDotButton
-          testID="settings"
-          dotSize={layout.dotSize}
-          icon={SETTINGS_ICON}
-          disabled={!editing}
-          style={[styles.roundButton, { top: insets.top + layout.edgeMargin, right: layout.edgeMargin }]}
-          onPress={() => {}}
-        />
+        {notificationSettingsShown ? <NotificationSettingsButton dotSize={layout.dotSize} style={notificationSettingsStyle} /> : null}
+        <RoundDotButton testID="settings" dotSize={layout.dotSize} icon={SETTINGS_ICON} disabled={!editing} style={settingsStyle} onPress={handleSettingsPress} />
         {__DEV__ ? <DevPanel seconds={remainingSeconds} speed={speed} isSpeedEnabled={editing} onSelectSpeed={setSpeed} /> : null}
       </View>
     </GestureDetector>
