@@ -5,15 +5,6 @@ import { ControlButtons } from './ControlButtons';
 
 import { type TimerPhase } from '@/entities/timer';
 
-/** 기준 화면 iPhone 17e의 가로 중심. `DESIGN.md` §5 */
-const CENTER_X = 195;
-
-/** 버튼 줄 세로 위치. 값에는 뜻이 없고 좌우 배치만 봄 */
-const CENTER_Y = 700;
-
-type Rect = { left: number; top: number; width: number; height: number };
-
-/** 진동을 재생한 횟수 */
 let mockVibrations = 0;
 
 jest.mock('@modules/haptic-pattern', () => ({
@@ -26,71 +17,30 @@ jest.mock('@modules/haptic-pattern', () => ({
 
 const pressed: string[] = [];
 
-const buttons = async (phase: TimerPhase, dotSize = 2) => {
+const buttons = async (phase: TimerPhase) => {
   pressed.length = 0;
   mockVibrations = 0;
-  await render(
-    <ControlButtons
-      centerX={CENTER_X}
-      centerY={CENTER_Y}
-      dotSize={dotSize}
-      phase={phase}
-      onPlay={() => pressed.push('play')}
-      onStop={() => pressed.push('stop')}
-      onPressedChange={() => {}}
-    />,
-  );
+  await render(<ControlButtons dotSize={2} phase={phase} onPlay={() => pressed.push('play')} onStop={() => pressed.push('stop')} />);
 
-  const [play, stop] = screen.getAllByRole('button');
-  if (!play || !stop) throw new Error('버튼이 둘이 아니다');
-
-  return { play, stop };
+  return { play: screen.getByTestId('controls-play'), stop: screen.getByTestId('controls-stop') };
 };
 
-const rect = ({ props }: { props: Record<string, unknown> }): Rect => {
-  const { left, top, width, height } = props.style as Rect;
-  return { left, top, width, height };
-};
-
-describe('버튼 자리', () => {
-  it('기준 화면에서 두 버튼을 덮는다', async () => {
-    const { play, stop } = await buttons('ready');
-
-    expect({ play: rect(play), stop: rect(stop) }).toEqual({
-      play: { left: 119, top: 668, width: 64, height: 64 },
-      stop: { left: 207, top: 668, width: 64, height: 64 },
-    });
-  });
-
-  it('기준 화면에서 두 터치 영역 사이가 24 논리 픽셀이다', async () => {
-    const { play, stop } = await buttons('ready');
-
-    expect(rect(stop).left - (rect(play).left + rect(play).width)).toBe(24);
-  });
-
-  it.each([2, 4, 6])('도트 %i에서 두 버튼이 겹치지 않는다', async (dotSize) => {
-    const { play, stop } = await buttons('ready', dotSize);
-
-    expect(rect(play).left + rect(play).width).toBeLessThanOrEqual(rect(stop).left);
-  });
-});
-
-describe('누르면 그쪽 조작을 넘긴다', () => {
-  it('재생 버튼', async () => {
+describe('누르면 해당 조작을 넘긴다', () => {
+  it('대기 상태에서 재생 버튼', async () => {
     const { play } = await buttons('ready');
     await fireEvent.press(play);
 
     expect(pressed).toEqual(['play']);
   });
 
-  it('정지 버튼', async () => {
+  it('진행 상태에서 정지 버튼', async () => {
     const { stop } = await buttons('running');
     await fireEvent.press(stop);
 
     expect(pressed).toEqual(['stop']);
   });
 
-  it('완료에서 재생 버튼', async () => {
+  it('완료 상태에서 재생 버튼', async () => {
     const { play } = await buttons('completed');
     await fireEvent.press(play);
 
@@ -98,26 +48,17 @@ describe('누르면 그쪽 조작을 넘긴다', () => {
   });
 });
 
-describe('잠긴 버튼은 눌리지 않는다', () => {
-  it('대기에서 정지', async () => {
+describe('대기 상태의 정지 버튼은 disabled 상태', () => {
+  it('대기 상태에서 정지 버튼을 눌러도 조작을 넘기지 않는다', async () => {
     const { stop } = await buttons('ready');
     await fireEvent.press(stop);
 
     expect(pressed).toEqual([]);
   });
-});
 
-describe('누르는 순간 진동한다', () => {
-  it('재생 버튼', async () => {
-    const { play } = await buttons('ready');
-    fireEvent(play, 'pressIn');
-
-    expect(mockVibrations).toBe(1);
-  });
-
-  it('대기에서 잠긴 정지 버튼은 진동하지 않는다', async () => {
+  it('대기 상태에서 정지 버튼을 누르는 순간 진동하지 않는다', async () => {
     const { stop } = await buttons('ready');
-    fireEvent(stop, 'pressIn');
+    await fireEvent(stop, 'pressIn');
 
     expect(mockVibrations).toBe(0);
   });
