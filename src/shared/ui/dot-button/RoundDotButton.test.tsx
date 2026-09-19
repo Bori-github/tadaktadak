@@ -1,5 +1,5 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { NOTIFICATION_OFF_ICON } from '@/shared/ui/dot-icon';
 
@@ -80,5 +80,29 @@ describe('disabled 상태', () => {
     await fireEvent(await button({ disabled: true }), 'pressIn');
 
     expect(mockVibrations).toBe(0);
+  });
+});
+
+describe('누르는 중에 disabled 상태가 됨', () => {
+  const touch = () => ({
+    persist: () => {},
+    currentTarget: 1,
+    nativeEvent: { locationX: 0, locationY: 0, pageX: 0, pageY: 0, timestamp: 0, touches: [], changedTouches: [], identifier: 0, target: 1 },
+  });
+
+  // RNTL의 fireEvent는 disabled 요소에 이벤트를 보내지 않아 핸들러를 직접 호출함
+  it('누르는 중에 disabled 상태가 된 원 버튼은 손을 떼도 onPress가 불리지 않는다', async () => {
+    presses = 0;
+    const onPress = () => {
+      presses += 1;
+    };
+    const { rerender } = await render(<RoundDotButton dotSize={2} icon={NOTIFICATION_OFF_ICON} onPress={onPress} />);
+    await fireEvent(screen.getByRole('button'), 'responderGrant', touch());
+    await rerender(<RoundDotButton dotSize={2} icon={NOTIFICATION_OFF_ICON} disabled onPress={onPress} />);
+
+    const release = screen.getByRole('button').props.onResponderRelease as (event: ReturnType<typeof touch>) => void;
+    await act(() => release(touch()));
+
+    expect(presses).toBe(0);
   });
 });

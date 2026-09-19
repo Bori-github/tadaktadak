@@ -54,7 +54,10 @@ export const RoundDotButton = memo(({ dotSize, icon, disabled = false, onPress, 
       hitSlop={BUTTON_TOUCH_PADDING / 2}
       disabled={disabled}
       onPressIn={() => playVibration()}
-      onPress={onPress}
+      onPress={() => {
+        if (disabled) return;
+        onPress();
+      }}
     >
       {({ pressed }) => {
         const offsetY = pressed ? dotSize : 0;
