@@ -55,8 +55,10 @@ describe('저장된 언어 태그 검증', () => {
 });
 
 describe('선택한 언어', () => {
+  // 저장소와 모듈이 기억하는 선택을 함께 비워 앱을 처음 켠 상태에서 시작
   beforeEach(async () => {
     await AsyncStorage.clear();
+    await restoreLanguage();
   });
 
   it('저장된 언어가 없으면 기기 언어를 반환한다', async () => {
