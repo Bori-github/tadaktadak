@@ -5,7 +5,7 @@ import { Canvas } from '@shopify/react-native-skia';
 import { LanguageList } from './LanguageList';
 import { SettingsRow } from './SettingsRow';
 
-import { translate, useLanguage } from '@/entities/language';
+import { translate, useLanguage, useSelectedLanguage } from '@/entities/language';
 
 import { COLORS, DOT_SIZE } from '@/shared/constants';
 
@@ -23,6 +23,7 @@ type SettingsModalProps = {
 
 export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalProps) => {
   const language = useLanguage();
+  const selected = useSelectedLanguage();
   const scale = dotSize / DOT_SIZE;
 
   const iconSize = LANGUAGE_ICON.boxSize * scale;
@@ -38,7 +39,7 @@ export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalP
           <Canvas style={{ width: iconSize, height: iconSize }}>
             <RectIconShape icon={LANGUAGE_ICON} left={0} top={0} dotSize={dotSize} color={COLORS.icon.default} />
           </Canvas>
-          <Text style={[styles.value, valueStyle]}>{translate('language.name', language)}</Text>
+          <Text style={[styles.value, valueStyle]}>{selected === null ? translate('language.system', language) : translate('language.name', selected)}</Text>
           <Canvas style={{ width: chevronWidth, height: chevronHeight }}>
             <DotSprite grid={CHEVRON_ICON} centerX={chevronWidth / 2} centerY={chevronHeight / 2} dotSize={dotSize} colors={{ I: COLORS.icon.secondary }} />
           </Canvas>
