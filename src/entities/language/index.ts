@@ -1,2 +1,2 @@
 export { initLocalization, translate, type Language } from './model/language';
-export { restoreLanguage, selectLanguage, useLanguage } from './model/store';
+export { restoreLanguage, selectLanguage, useLanguage, useSelectedLanguage } from './model/store';

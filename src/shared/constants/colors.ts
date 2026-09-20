@@ -39,6 +39,7 @@ export const COLORS = {
   },
 
   icon: {
+    check: '#ffb43c',
     default: '#f4ead6',
     disabled: '#6f6688',
     secondary: '#c9bb98',

@@ -1,0 +1,47 @@
+import { memo } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { Canvas } from '@shopify/react-native-skia';
+
+import { SettingsRow } from './SettingsRow';
+
+import { COLORS, DOT_SIZE } from '@/shared/constants';
+
+import { CHECK_ICON } from '@/shared/ui/dot-icon';
+import { DotSprite } from '@/shared/ui/dot-sprite';
+
+type LanguageRowProps = {
+  index: number;
+  dotSize: number;
+  name: string;
+  checked: boolean;
+  onPress: () => void;
+  testID: string;
+};
+
+export const LanguageRow = memo(({ index, dotSize, name, checked, onPress, testID }: LanguageRowProps) => {
+  const scale = dotSize / DOT_SIZE;
+
+  const checkWidth = (CHECK_ICON[0]?.length ?? 0) * dotSize;
+  const checkHeight = CHECK_ICON.length * dotSize;
+
+  return (
+    <SettingsRow index={index} dotSize={dotSize} testID={testID} onPress={onPress}>
+      <View style={{ width: checkWidth, height: checkHeight, marginRight: 12 * scale }}>
+        {!checked ? null : (
+          <Canvas style={StyleSheet.absoluteFill}>
+            <DotSprite grid={CHECK_ICON} centerX={checkWidth / 2} centerY={checkHeight / 2} dotSize={dotSize} colors={{ I: COLORS.icon.check }} />
+          </Canvas>
+        )}
+      </View>
+      <Text style={[styles.name, { fontSize: 16 * scale, color: checked ? COLORS.icon.default : COLORS.icon.secondary }]}>{name}</Text>
+    </SettingsRow>
+  );
+});
+
+LanguageRow.displayName = 'LanguageRow';
+
+const styles = StyleSheet.create({
+  name: {
+    flex: 1,
+  },
+});

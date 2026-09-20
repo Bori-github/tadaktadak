@@ -31,7 +31,7 @@ const setSelectedLanguage = (language: Language | null): void => {
  */
 export const restoreLanguage = async (): Promise<void> => {
   const before = selectedLanguage;
-  // 읽지 못하면 기기 언어를 따름
+  // 읽지 못하면 시스템 언어를 따름
   const saved = await loadLanguage().catch(() => null);
 
   // 읽는 동안 사용자가 선택했으면 선택한 언어를 유지
@@ -41,7 +41,7 @@ export const restoreLanguage = async (): Promise<void> => {
 };
 
 /**
- * 선택한 언어를 적용하고 기기에 저장. `null`이면 기기 언어를 따름
+ * 선택한 언어를 적용하고 기기에 저장. `null`이면 시스템 언어를 따름
  *
  * @returns 없음
  */
@@ -56,7 +56,7 @@ export const selectLanguage = (language: Language | null): void => {
 /**
  * OS 언어 설정이 바뀌면 다시 계산됨
  *
- * @returns 선택한 언어. 없으면 기기 언어에 맞는 지원 언어
+ * @returns 선택한 언어. 없으면 시스템 언어에 맞는 지원 언어
  */
 export const useLanguage = (): Language => {
   const locales = useLocales();
@@ -64,3 +64,8 @@ export const useLanguage = (): Language => {
 
   return selected ?? pickLanguage(locales);
 };
+
+/**
+ * @returns 선택한 언어. 선택한 적이 없으면 `null`
+ */
+export const useSelectedLanguage = (): Language | null => useSyncExternalStore(subscribeSelectedLanguage, getSelectedLanguage);
