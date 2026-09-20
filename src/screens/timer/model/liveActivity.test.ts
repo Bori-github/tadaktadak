@@ -9,6 +9,10 @@ import { MINUTE_IN_MS, type RunningSession, type TimerMode, type TimerSession } 
 const mockStarted: LiveActivityContent[] = [];
 let mockEndCount = 0;
 
+jest.mock('expo-localization', () => ({
+  useLocales: () => [{ languageCode: 'ko' }],
+}));
+
 jest.mock('@modules/live-activity', () => ({
   liveActivity: {
     startAsync: async (content: LiveActivityContent) => {
@@ -54,7 +58,7 @@ describe('Live Activity 수명', () => {
 
     await render(session);
 
-    expect(mockStarted).toEqual([{ mode: 'focus', progressStartsAt: session.endsAt - FOCUS_MS, endsAt: session.endsAt }]);
+    expect(mockStarted).toEqual([{ mode: 'focus', progressStartsAt: session.endsAt - FOCUS_MS, endsAt: session.endsAt, language: 'ko-KR' }]);
   });
 
   it('진행이 아니면 끝낸다', async () => {

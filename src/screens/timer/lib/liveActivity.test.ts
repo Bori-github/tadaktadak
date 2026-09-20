@@ -16,7 +16,7 @@ const NOT_RUNNING: { situation: string; session: TimerSession }[] = [
   { situation: '완료', session: { phase: 'completed', mode: 'focus', completedAt: NOW } },
 ];
 
-const contentAt = (session: TimerSession, now: number) => activityContent({ session, settingMinutes: SETTING_MINUTES, now });
+const contentAt = (session: TimerSession, now: number) => activityContent({ session, settingMinutes: SETTING_MINUTES, language: 'ko-KR', now });
 
 describe('잠금화면에 표시할 내용', () => {
   it('일시정지했다 재개해도 진행 막대가 타이머 시간만큼만 찬다', () => {
