@@ -5,6 +5,7 @@ struct LiveActivityContentRecord: Record {
   @Field var mode: String = "focus"
   @Field var progressStartsAt: Double = 0
   @Field var endsAt: Double = 0
+  @Field var language: String? = nil
 
   var activityMode: TimerActivityMode {
     TimerActivityMode(rawValue: mode) ?? .focus
@@ -80,7 +81,8 @@ public class LiveActivityModule: Module {
 
       // 같은 값으로 다시 요청하면 잠금화면이 깜빡임
       if let activity = Activity<TimerActivityAttributes>.activities.first,
-         activity.attributes.mode == content.activityMode, activity.content.state == state {
+         activity.attributes.mode == content.activityMode, activity.attributes.language == content.language,
+         activity.content.state == state {
         return
       }
 
@@ -88,7 +90,8 @@ public class LiveActivityModule: Module {
       await TimerActivityAttributes.endAllActivities()
 
       // 휴식 타이머 시작은 앱이 다시 열리는 활성화 직후라 `request`가 거부될 수 있어 재시도로 감쌈
-      guard let activity = try await requestWithForegroundRetry(mode: content.activityMode, state: state) else { return }
+      guard let activity = try await requestWithForegroundRetry(mode: content.activityMode, language: content.language, state: state)
+      else { return }
 
       // `.after(끝날 시각)` 종료 정책으로 마지막 타이머가 끝날 때 iOS가 잠금화면에서 제거. 앱 프로세스가 없어도 iOS가 처리
       // 종료된 Live Activity는 Dynamic Island에서 바로 사라짐
@@ -114,14 +117,15 @@ public class LiveActivityModule: Module {
   // 집중 타이머 완료로 앱이 다시 열리며 휴식 타이머를 시작할 때, 포그라운드 전환 직후엔 `request`가 `visibility`로 거부됨
   // 곧 포그라운드가 되므로 200밀리초 간격으로 최대 25회(약 5초) 재시도. 그래도 안 되면 `nil`
   @available(iOS 18.0, *)
-  private func requestWithForegroundRetry(mode: TimerActivityMode, state: TimerActivityAttributes.ContentState) async throws
-    -> Activity<TimerActivityAttributes>?
+  private func requestWithForegroundRetry(mode: TimerActivityMode, language: String?, state: TimerActivityAttributes.ContentState)
+    async throws -> Activity<TimerActivityAttributes>?
   {
     let content = ActivityContent(state: state, staleDate: nil)
+    let attributes = TimerActivityAttributes(mode: mode, language: language)
 
     for attempt in 0..<25 {
       do {
-        return try Activity.request(attributes: TimerActivityAttributes(mode: mode), content: content, pushType: nil)
+        return try Activity.request(attributes: attributes, content: content, pushType: nil)
       } catch ActivityAuthorizationError.visibility {
         if attempt == 24 { return nil }
         // 취소되면 `CancellationError`를 던져 루프를 멈춤. `try?`는 이걸 삼켜 딜레이 없이 25회를 연달아 요청함

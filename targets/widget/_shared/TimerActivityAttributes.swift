@@ -24,6 +24,9 @@ struct TimerActivityAttributes: ActivityAttributes {
 
     let mode: TimerActivityMode
 
+    /// 선택한 언어 태그. `nil`이면 위젯이 시스템 언어를 따름
+    let language: String?
+
     static func endAllActivities() async {
         for activity in Activity<TimerActivityAttributes>.activities {
             await activity.end(nil, dismissalPolicy: .immediate)
