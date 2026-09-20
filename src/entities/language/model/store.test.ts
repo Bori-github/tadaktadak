@@ -95,6 +95,19 @@ describe('선택한 언어', () => {
     expect(result.current).toBe('ko-KR');
   });
 
+  it('시스템 언어 따르기를 선택하면 저장값을 지우고 기기 언어인 한국어를 반환한다', async () => {
+    await saveLanguage('en-US');
+    const { result } = await renderHook(() => useLanguage());
+
+    await act(async () => {
+      await restoreLanguage();
+      selectLanguage(null);
+    });
+
+    expect(result.current).toBe('ko-KR');
+    expect(await loadLanguage()).toBeNull();
+  });
+
   it('저장값을 읽는 동안 선택하면 선택한 언어를 유지한다', async () => {
     await saveLanguage('ko-KR');
     const { result } = await renderHook(() => useLanguage());

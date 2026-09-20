@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { useLocales } from 'expo-localization';
 
-import { loadLanguage, saveLanguage } from '../api/storage';
+import { clearLanguage, loadLanguage, saveLanguage } from '../api/storage';
 
 import { pickLanguage, type Language } from './language';
 
@@ -41,14 +41,16 @@ export const restoreLanguage = async (): Promise<void> => {
 };
 
 /**
- * 선택한 언어를 적용하고 기기에 저장
+ * 선택한 언어를 적용하고 기기에 저장. `null`이면 기기 언어를 따름
  *
  * @returns 없음
  */
-export const selectLanguage = (language: Language): void => {
+export const selectLanguage = (language: Language | null): void => {
   setSelectedLanguage(language);
+
   // 실패하면 다음 실행에서 기기에 남은 값으로 시작함
-  saveLanguage(language).catch(() => {});
+  const stored = language === null ? clearLanguage() : saveLanguage(language);
+  stored.catch(() => {});
 };
 
 /**
