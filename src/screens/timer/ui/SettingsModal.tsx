@@ -1,9 +1,9 @@
 import { memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
+import { translate, useLanguage } from '@/entities/language';
 
 import { COLORS, DOT_SIZE } from '@/shared/constants';
-import { translate, useLanguage } from '@/shared/lib';
 
 import { CHEVRON_ICON, LANGUAGE_ICON, RectIconShape } from '@/shared/ui/dot-icon';
 import { DotModal } from '@/shared/ui/dot-modal';

@@ -5,12 +5,12 @@ import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { act, renderHook } from '@testing-library/react-native';
 
-import appConfig from '../../../app.json';
-import koAppMetadata from '../../../languages/ko.json';
+import appConfig from '../../../../app.json';
+import koAppMetadata from '../../../../languages/ko.json';
 
-import { parseLanguage, pickLanguage, restoreLanguage, selectLanguage, translate, useLanguage } from './localization';
+import { parseLanguage, pickLanguage, restoreLanguage, selectLanguage, translate, useLanguage } from './language';
 
-import { loadLanguage, saveLanguage } from '@/shared/api';
+import { loadLanguage, saveLanguage } from '../api/storage';
 
 const mockDeviceLocales = [{ languageCode: 'ko' }];
 
@@ -20,7 +20,7 @@ jest.mock('expo-localization', () => ({
 
 const toLocales = (...codes: (string | null)[]) => codes.map((languageCode) => ({ languageCode }));
 
-const readWidgetFile = (name: string): string => readFileSync(join(__dirname, '../../../targets/widget', name), 'utf8');
+const readWidgetFile = (name: string): string => readFileSync(join(__dirname, '../../../../targets/widget', name), 'utf8');
 
 describe('기기 선호 언어에서 지원 언어 고르기', () => {
   it('첫 항목이 지원 목록에 있으면 그 항목의 언어를 반환한다', () => {

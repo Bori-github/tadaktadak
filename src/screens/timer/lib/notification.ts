@@ -1,7 +1,7 @@
 import { PermissionStatus } from 'expo';
 
 import { type TimerMode, type TimerSession } from '@/entities/timer';
-import { translate, type Language } from '@/shared/lib';
+import { translate, type Language } from '@/entities/language';
 
 type ScheduleInput = {
   session: TimerSession;

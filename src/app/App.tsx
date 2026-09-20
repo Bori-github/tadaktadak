@@ -8,8 +8,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { hapticPattern } from '@modules/haptic-pattern';
 
 import { TimerScreen } from '@/screens/timer';
+import { restoreLanguage } from '@/entities/language';
 import { TAP_PATTERN } from '@/shared/constants';
-import { prepareVibration, restoreLanguage } from '@/shared/lib';
+import { prepareVibration } from '@/shared/lib';
 
 // 진동 지원 여부. 진동을 지원하지 않는 경우 배너로 타이머 완료를 알림
 const showsBanner = hapticPattern?.supportsHaptics !== true;

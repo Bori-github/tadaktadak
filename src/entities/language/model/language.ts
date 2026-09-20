@@ -3,10 +3,10 @@ import { useLocales, type Locale } from 'expo-localization';
 import { init, t, use as registerPlugin } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-import { loadLanguage, saveLanguage } from '@/shared/api';
+import { loadLanguage, saveLanguage } from '../api/storage';
 
-import enUS from '../translations/en-US.json';
-import koKR from '../translations/ko-KR.json';
+import enUS from '../config/translations/en-US.json';
+import koKR from '../config/translations/ko-KR.json';
 
 const SUPPORTED_LANGUAGES = ['en-US', 'ko-KR'] as const;
 
