@@ -3,7 +3,7 @@ import { useLocales } from 'expo-localization';
 
 import { loadLanguage, saveLanguage } from '../api/storage';
 
-import { parseLanguage, pickLanguage, type Language } from './language';
+import { pickLanguage, type Language } from './language';
 
 let selectedLanguage: Language | null = null;
 const listeners = new Set<() => void>();
@@ -32,7 +32,7 @@ const setSelectedLanguage = (language: Language | null): void => {
 export const restoreLanguage = async (): Promise<void> => {
   const before = selectedLanguage;
   // 읽지 못하면 기기 언어를 따름
-  const saved = parseLanguage(await loadLanguage().catch(() => null));
+  const saved = await loadLanguage().catch(() => null);
 
   // 읽는 동안 사용자가 선택했으면 선택한 언어를 유지
   if (selectedLanguage !== before) return;
