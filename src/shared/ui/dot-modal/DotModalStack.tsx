@@ -4,7 +4,6 @@ import { DotModal } from './DotModal';
 
 type ModalNavigation<TView extends string> = {
   open: (view: TView) => void;
-  back: () => void;
 };
 
 export type DotModalScreen<TView extends string> = {
@@ -49,7 +48,7 @@ export const DotModalStack = <TView extends string>({ visible, dotSize, initial,
 
   return (
     <DotModal visible={visible} dotSize={dotSize} heightInDots={screen.heightInDots} onClose={onClose} onBack={views.length > 1 ? back : undefined}>
-      {screen.render({ open, back })}
+      {screen.render({ open })}
     </DotModal>
   );
 };
