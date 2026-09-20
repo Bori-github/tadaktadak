@@ -18,6 +18,7 @@ type DotModalProps = {
   dotSize: number;
   heightInDots: number;
   onClose: () => void;
+  /** Android 뒤로 버튼도 이 핸들러로 연결 */
   onBack?: () => void;
   children?: ReactNode;
 };
@@ -35,7 +36,7 @@ export const DotModal = ({ visible, dotSize, heightInDots, onClose, onBack, chil
   const backButtonStyle = { top: BUTTON_INSET * scale, left: BUTTON_INSET * scale };
 
   return (
-    <Modal visible={visible} transparent animationType="none" statusBarTranslucent navigationBarTranslucent onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="none" statusBarTranslucent navigationBarTranslucent onRequestClose={onBack ?? onClose}>
       <View style={styles.dim}>
         <View style={[styles.panel, panelStyle]}>
           <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
