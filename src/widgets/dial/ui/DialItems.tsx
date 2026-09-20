@@ -8,6 +8,7 @@ import { BLOOM_ALPHA, BLOOM_GRADIENT, BLOOM_RADIUS, CENTER_BLOOM_ALPHA, CENTER_B
 import { pointOnDial } from '../lib/geometry';
 import { useFlickerStep } from '../model/flicker';
 import { ignitionProgress } from '@/entities/timer';
+import { SCREEN_GRADES, type BonfireHeightInDots, type ScreenGrade } from '@/shared/constants';
 import { topLeftOnGrid } from '@/shared/lib';
 import {
   BONFIRE_COLD_7,
@@ -23,6 +24,11 @@ import {
   SPRITE_COLORS,
 } from '@/shared/ui/dot-sprite';
 
+const BONFIRE_SPRITES: Record<BonfireHeightInDots, { cold: string[]; hotA: string[]; hotB: string[] }> = {
+  7: { cold: BONFIRE_COLD_7, hotA: BONFIRE_HOT_A_7, hotB: BONFIRE_HOT_B_7 },
+  9: { cold: BONFIRE_COLD_9, hotA: BONFIRE_HOT_A_9, hotB: BONFIRE_HOT_B_9 },
+};
+
 /** 이미지에 담은 순서 */
 const LOG = 0;
 const BONFIRE = 1;
@@ -37,7 +43,7 @@ type DialItemsProps = {
   centerY: number;
   radius: number;
   dotSize: number;
-  isCompact: boolean;
+  screenGrade: ScreenGrade;
   /** 남은 시간(분). 대기에서는 설정 시간이라 아무 눈금도 붙지 않음 */
   remainingMinutes: number;
   settingMinutes: number;
@@ -129,19 +135,12 @@ const drawBloom = (): SkImage | null => {
   return surface.makeImageSnapshot();
 };
 
-export const DialItems = memo(({ centerX, centerY, radius, dotSize, isCompact, remainingMinutes, settingMinutes, isPaused, isReady }: DialItemsProps) => {
-  const grids = useMemo(
-    () => [
-      LOG_COLD,
-      isCompact ? BONFIRE_COLD_7 : BONFIRE_COLD_9,
-      MARKER,
-      LOG_HOT_A,
-      LOG_HOT_B,
-      isCompact ? BONFIRE_HOT_A_7 : BONFIRE_HOT_A_9,
-      isCompact ? BONFIRE_HOT_B_7 : BONFIRE_HOT_B_9,
-    ],
-    [isCompact],
-  );
+export const DialItems = memo(({ centerX, centerY, radius, dotSize, screenGrade, remainingMinutes, settingMinutes, isPaused, isReady }: DialItemsProps) => {
+  const { bonfireHeightInDots } = SCREEN_GRADES[screenGrade];
+  const grids = useMemo(() => {
+    const bonfire = BONFIRE_SPRITES[bonfireHeightInDots];
+    return [LOG_COLD, bonfire.cold, MARKER, LOG_HOT_A, LOG_HOT_B, bonfire.hotA, bonfire.hotB];
+  }, [bonfireHeightInDots]);
 
   const packed = useMemo(() => packSprites(grids), [grids]);
   const image = useMemo(() => drawAtlas(grids, packed), [grids, packed]);
