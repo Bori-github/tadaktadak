@@ -7,6 +7,8 @@
     "rest": "Break’s over!"
   },
   "language": {
-    "name": "English"
+    "name": "English",
+    "system": "System (default)",
+    "systemDescription": "If unsupported, English will be used"
   }
 }

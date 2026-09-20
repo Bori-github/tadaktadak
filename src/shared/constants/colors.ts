@@ -39,6 +39,7 @@ export const COLORS = {
   },
 
   icon: {
+    check: '#ffb43c',
     default: '#f4ead6',
     disabled: '#6f6688',
     secondary: '#c9bb98',
@@ -50,10 +51,5 @@ export const COLORS = {
     face: '#3f3550',
     highlight: '#4a4360',
     shadow: '#332a42',
-  },
-
-  iconButton: {
-    background: '#f4ead61f',
-    icon: '#f4ead6cc',
   },
 } as const;

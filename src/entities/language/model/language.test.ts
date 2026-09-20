@@ -8,10 +8,10 @@ import koAppMetadata from '../../../../languages/ko.json';
 
 import { initLocalization, parseLanguage, pickLanguage, translate } from './language';
 
-const mockDeviceLocales = [{ languageCode: 'ko' }];
+const mockSystemLocales = [{ languageCode: 'ko' }];
 
 jest.mock('expo-localization', () => ({
-  useLocales: () => mockDeviceLocales,
+  useLocales: () => mockSystemLocales,
 }));
 
 const toLocales = (...codes: (string | null)[]) => codes.map((languageCode) => ({ languageCode }));
@@ -22,7 +22,7 @@ beforeAll(() => {
   initLocalization();
 });
 
-describe('기기 선호 언어에서 지원 언어 고르기', () => {
+describe('시스템 선호 언어에서 지원 언어 고르기', () => {
   it('첫 항목이 지원 목록에 있으면 그 항목의 언어를 반환한다', () => {
     expect(pickLanguage(toLocales('ko'))).toBe('ko-KR');
   });
