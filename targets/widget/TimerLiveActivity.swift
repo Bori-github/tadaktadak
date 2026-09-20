@@ -6,6 +6,7 @@ struct TimerLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: TimerActivityAttributes.self) { context in
             LockScreenView(mode: context.attributes.mode, state: context.state)
+                .environment(\.locale, context.attributes.language.map(Locale.init(identifier:)) ?? .current)
                 .activityBackgroundTint(Palette.canvas)
                 .activitySystemActionForegroundColor(Palette.text(context.attributes.mode))
         } dynamicIsland: { _ in
@@ -111,13 +112,13 @@ extension TimerActivityAttributes.ContentState {
     }
 }
 
-#Preview("집중", as: .content, using: TimerActivityAttributes(mode: .focus)) {
+#Preview("집중", as: .content, using: TimerActivityAttributes(mode: .focus, language: nil)) {
     TimerLiveActivity()
 } contentStates: {
     TimerActivityAttributes.ContentState.running(minutes: 25)
 }
 
-#Preview("휴식", as: .content, using: TimerActivityAttributes(mode: .rest)) {
+#Preview("휴식", as: .content, using: TimerActivityAttributes(mode: .rest, language: nil)) {
     TimerLiveActivity()
 } contentStates: {
     TimerActivityAttributes.ContentState.running(minutes: 5)
