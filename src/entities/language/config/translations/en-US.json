@@ -8,6 +8,7 @@
   },
   "language": {
     "name": "English",
-    "system": "System (default)"
+    "system": "System (default)",
+    "systemDescription": "If unsupported, English will be used"
   }
 }

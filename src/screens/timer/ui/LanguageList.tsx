@@ -23,6 +23,7 @@ export const LanguageList = memo(({ dotSize }: LanguageListProps) => {
           index={index}
           dotSize={dotSize}
           name={option === null ? translate('language.system', language) : translate('language.name', option)}
+          description={option === null ? translate('language.systemDescription', language) : undefined}
           checked={option === selected}
           testID={`language-${option ?? 'system'}`}
           onPress={() => selectLanguage(option)}
