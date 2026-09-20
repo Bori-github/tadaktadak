@@ -100,7 +100,7 @@ export const restoreLanguage = async (): Promise<void> => {
  */
 export const selectLanguage = (language: Language): void => {
   setSelectedLanguage(language);
-  // 저장에 실패해도 이번 실행에는 적용됨. 다음 실행은 기기 언어를 따름
+  // 실패하면 다음 실행에서 기기에 남은 값으로 시작함
   saveLanguage(language).catch(() => {});
 };
 
