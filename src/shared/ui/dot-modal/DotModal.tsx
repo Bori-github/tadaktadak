@@ -5,7 +5,7 @@ import { Canvas, Group, Rect } from '@shopify/react-native-skia';
 import { COLORS, DOT_SIZE } from '@/shared/constants';
 
 import { rectangleCells } from '@/shared/ui/dot-button';
-import { CLOSE_ICON, IconButton } from '@/shared/ui/icon-button';
+import { BACK_ICON, CLOSE_ICON, IconButton } from '@/shared/ui/icon-button';
 
 /** 배율 1의 논리 픽셀. 피그마 `모달 · 설정` */
 const SIDE_MARGIN = 24;
@@ -18,10 +18,11 @@ type DotModalProps = {
   dotSize: number;
   heightInDots: number;
   onClose: () => void;
+  onBack?: () => void;
   children?: ReactNode;
 };
 
-export const DotModal = ({ visible, dotSize, heightInDots, onClose, children }: DotModalProps): JSX.Element => {
+export const DotModal = ({ visible, dotSize, heightInDots, onClose, onBack, children }: DotModalProps): JSX.Element => {
   const { width } = useWindowDimensions();
   const scale = dotSize / DOT_SIZE;
 
@@ -31,6 +32,7 @@ export const DotModal = ({ visible, dotSize, heightInDots, onClose, children }: 
 
   const panelStyle = { left: SIDE_MARGIN * scale, top: TOP * scale, width: widthInDots * dotSize, height: heightInDots * dotSize };
   const closeButtonStyle = { top: BUTTON_INSET * scale, right: BUTTON_INSET * scale };
+  const backButtonStyle = { top: BUTTON_INSET * scale, left: BUTTON_INSET * scale };
 
   return (
     <Modal visible={visible} transparent animationType="none" statusBarTranslucent navigationBarTranslucent onRequestClose={onClose}>
@@ -51,6 +53,7 @@ export const DotModal = ({ visible, dotSize, heightInDots, onClose, children }: 
             </Group>
           </Canvas>
           {children}
+          {onBack === undefined ? null : <IconButton testID="modal-back" dotSize={dotSize} icon={BACK_ICON} style={[styles.button, backButtonStyle]} onPress={onBack} />}
           <IconButton testID="modal-close" dotSize={dotSize} icon={CLOSE_ICON} style={[styles.button, closeButtonStyle]} onPress={onClose} />
         </View>
       </View>
