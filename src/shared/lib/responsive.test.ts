@@ -42,20 +42,16 @@ describe('배율', () => {
 });
 
 describe('화면 등급', () => {
-  it('지원 최소 짧은 변에서 compact다', () => {
-    expect(layout(338).isCompact).toBe(true);
-  });
-
   it('medium 최소 바로 아래에서 compact다', () => {
-    expect(layout(359).isCompact).toBe(true);
+    expect(layout(359).screenGrade).toBe('compact');
   });
 
-  it('medium 최소에서 compact를 벗어난다', () => {
-    expect(layout(360).isCompact).toBe(false);
+  it('배율이 그대로여도 medium 최소에서 medium이 된다', () => {
+    expect(layout(360).screenGrade).toBe('medium');
   });
 
-  it('배율이 올라도 짧은 변이 넓으면 compact가 아니다', () => {
-    expect(layout(676).isCompact).toBe(false);
+  it('지원 최소보다 좁은 320도 compact다', () => {
+    expect(layout(320).screenGrade).toBe('compact');
   });
 });
 

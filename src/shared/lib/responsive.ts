@@ -1,6 +1,4 @@
-import { BUTTON_SIZE_IN_DOTS, DOT_SIZE, MEDIUM_MIN_SHORT_SIDE, MIN_SHORT_SIDE } from '@/shared/constants';
-
-const MAX_SCALE = 3;
+import { BUTTON_SIZE_IN_DOTS, DOT_SIZE, SCREEN_GRADES, type ScreenGrade } from '@/shared/constants';
 
 const EDGE_MARGIN = 8;
 const NUMERAL_MARGIN = 20;
@@ -14,6 +12,13 @@ const BUTTON_OFFSET_FROM_SAFE_AREA = 150;
 const BUTTON_BOTTOM_MARGIN_MIN = 16;
 const DIAL_TO_BUTTON_GAP = 90;
 
+const resolveScreenGrade = (shortSide: number): ScreenGrade => {
+  if (shortSide >= SCREEN_GRADES.large.minShortSide) return 'large';
+  if (shortSide >= SCREEN_GRADES.expanded.minShortSide) return 'expanded';
+  if (shortSide >= SCREEN_GRADES.medium.minShortSide) return 'medium';
+  return 'compact';
+};
+
 type LayoutInput = {
   shortSide: number;
   safeAreaTopEdge: number;
@@ -25,8 +30,7 @@ type Layout = {
   dotSize: number;
   /** 화면 가장자리 여백 (px). `DESIGN.md` §5 배치 순서 */
   edgeMargin: number;
-  /** compact 등급 여부. `DESIGN.md` §7 구간별 처리 */
-  isCompact: boolean;
+  screenGrade: ScreenGrade;
   itemRadius: number;
   arcRadius: number;
   numeralRadius: number;
@@ -34,14 +38,12 @@ type Layout = {
   dialCenterY: number;
 };
 
-// TODO: isCompact 대신 등급 반환
 export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }: LayoutInput): Layout => {
-  const scale = Math.min(MAX_SCALE, Math.max(1, Math.floor(shortSide / MIN_SHORT_SIDE)));
+  const screenGrade = resolveScreenGrade(shortSide);
+  const { scale, bonfireHeightInDots } = SCREEN_GRADES[screenGrade];
   const width = shortSide / scale;
 
-  const isCompact = shortSide < MEDIUM_MIN_SHORT_SIDE;
-  const bonfireDots = isCompact ? 7 : 9;
-  const bonfireHalfHeight = (bonfireDots * DOT_SIZE) / 2;
+  const bonfireHalfHeight = (bonfireHeightInDots * DOT_SIZE) / 2;
 
   const itemRadius = Math.min(width / 2 - EDGE_MARGIN - NUMERAL_MARGIN - bonfireHalfHeight, MAX_ITEM_RADIUS);
   const arcRadius = itemRadius - bonfireHalfHeight - ARC_GAP;
@@ -64,7 +66,7 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }
     scale,
     dotSize: DOT_SIZE * scale,
     edgeMargin: EDGE_MARGIN * scale,
-    isCompact,
+    screenGrade,
     itemRadius: itemRadius * scale,
     arcRadius: arcRadius * scale,
     numeralRadius: numeralRadius * scale,
