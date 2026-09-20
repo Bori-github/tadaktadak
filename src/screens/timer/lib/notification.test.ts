@@ -1,9 +1,14 @@
 import { PermissionStatus } from 'expo';
-import { describe, expect, it } from '@jest/globals';
+import { beforeAll, describe, expect, it } from '@jest/globals';
 
 import { isNotificationBlocked, notificationBody, scheduleAt } from './notification';
 
+import { initLocalization } from '@/entities/language';
 import { NOW, type TimerSession } from '@/entities/timer';
+
+beforeAll(() => {
+  initLocalization();
+});
 
 const MINUTE_MS = 60_000;
 

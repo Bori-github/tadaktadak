@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { describe, expect, it, jest } from '@jest/globals';
+import { beforeAll, describe, expect, it, jest } from '@jest/globals';
 
 import appConfig from '../../../../app.json';
 import koAppMetadata from '../../../../languages/ko.json';
 
-import { parseLanguage, pickLanguage, translate } from './language';
+import { initLocalization, parseLanguage, pickLanguage, translate } from './language';
 
 const mockDeviceLocales = [{ languageCode: 'ko' }];
 
@@ -17,6 +17,10 @@ jest.mock('expo-localization', () => ({
 const toLocales = (...codes: (string | null)[]) => codes.map((languageCode) => ({ languageCode }));
 
 const readWidgetFile = (name: string): string => readFileSync(join(__dirname, '../../../../targets/widget', name), 'utf8');
+
+beforeAll(() => {
+  initLocalization();
+});
 
 describe('기기 선호 언어에서 지원 언어 고르기', () => {
   it('첫 항목이 지원 목록에 있으면 그 항목의 언어를 반환한다', () => {

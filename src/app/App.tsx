@@ -8,7 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { hapticPattern } from '@modules/haptic-pattern';
 
 import { TimerScreen } from '@/screens/timer';
-import { restoreLanguage } from '@/entities/language';
+import { initLocalization, restoreLanguage } from '@/entities/language';
 import { TAP_PATTERN } from '@/shared/constants';
 import { prepareVibration } from '@/shared/lib';
 
@@ -16,6 +16,7 @@ import { prepareVibration } from '@/shared/lib';
 const showsBanner = hapticPattern?.supportsHaptics !== true;
 
 prepareVibration(TAP_PATTERN);
+initLocalization();
 restoreLanguage();
 
 Notifications.setNotificationHandler({
