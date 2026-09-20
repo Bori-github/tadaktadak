@@ -1,4 +1,4 @@
-import { useMemo, useSyncExternalStore } from 'react';
+import { useSyncExternalStore } from 'react';
 import { useLocales, type Locale } from 'expo-localization';
 import { init, t, use as registerPlugin } from 'i18next';
 import { initReactI18next } from 'react-i18next';
@@ -113,7 +113,7 @@ export const useLanguage = (): Language => {
   const locales = useLocales();
   const selected = useSyncExternalStore(subscribeSelectedLanguage, getSelectedLanguage);
 
-  return useMemo(() => selected ?? pickLanguage(locales), [selected, locales]);
+  return selected ?? pickLanguage(locales);
 };
 
 /**
