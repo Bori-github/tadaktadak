@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { useMemo, type JSX } from 'react';
 import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import { Canvas, ImageSVG, Skia } from '@shopify/react-native-skia';
 
@@ -17,7 +17,7 @@ type IconButtonProps = {
   testID?: string;
 };
 
-export const IconButton = memo(({ dotSize, icon, onPress, style, testID }: IconButtonProps) => {
+export const IconButton = ({ dotSize, icon, onPress, style, testID }: IconButtonProps): JSX.Element => {
   const svg = useMemo(() => Skia.SVG.MakeFromString(icon), [icon]);
   const size = (DIAMETER * dotSize) / DOT_SIZE;
 
@@ -28,6 +28,4 @@ export const IconButton = memo(({ dotSize, icon, onPress, style, testID }: IconB
       </Canvas>
     </Pressable>
   );
-});
-
-IconButton.displayName = 'IconButton';
+};

@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { type JSX } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 
@@ -19,7 +19,7 @@ type LanguageRowProps = {
   testID: string;
 };
 
-export const LanguageRow = memo(({ index, dotSize, name, description, checked, onPress, testID }: LanguageRowProps) => {
+export const LanguageRow = ({ index, dotSize, name, description, checked, onPress, testID }: LanguageRowProps): JSX.Element => {
   const scale = dotSize / DOT_SIZE;
 
   const checkWidth = (CHECK_ICON[0]?.length ?? 0) * dotSize;
@@ -45,9 +45,7 @@ export const LanguageRow = memo(({ index, dotSize, name, description, checked, o
       </View>
     </SettingsRow>
   );
-});
-
-LanguageRow.displayName = 'LanguageRow';
+};
 
 const styles = StyleSheet.create({
   column: {
