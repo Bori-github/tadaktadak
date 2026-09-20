@@ -19,7 +19,7 @@ export const loadLanguage = async (): Promise<Language | null> => parseLanguage(
 export const saveLanguage = async (language: Language): Promise<void> => AsyncStorage.setItem(LANGUAGE_KEY, language);
 
 /**
- * 선택한 언어를 기기에서 지움. 기기 언어를 따르는 상태로 되돌림
+ * 선택한 언어를 기기에서 지움. 시스템 언어를 따르는 상태로 되돌림
  *
  * @returns 지우기가 끝나면 이행하는 프로미스
  */

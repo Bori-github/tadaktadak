@@ -42,7 +42,7 @@ export const initLocalization = (): void => {
 };
 
 /**
- * @param locales - 기기 설정의 선호 순서대로 전달되는 언어 목록
+ * @param locales - 시스템 설정의 선호 순서대로 전달되는 언어 목록
  * @returns 지원 목록과 처음 일치하는 언어. 없으면 `en-US`
  */
 export const pickLanguage = (locales: Pick<Locale, 'languageCode'>[]): Language => {

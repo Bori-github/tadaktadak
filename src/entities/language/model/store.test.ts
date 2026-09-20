@@ -6,10 +6,10 @@ import { loadLanguage, saveLanguage } from '../api/storage';
 
 import { restoreLanguage, selectLanguage, useLanguage } from './store';
 
-const mockDeviceLocales = [{ languageCode: 'ko' }];
+const mockSystemLocales = [{ languageCode: 'ko' }];
 
 jest.mock('expo-localization', () => ({
-  useLocales: () => mockDeviceLocales,
+  useLocales: () => mockSystemLocales,
 }));
 
 let storageSpy: ReturnType<typeof jest.spyOn> | null = null;
@@ -26,7 +26,7 @@ describe('선택한 언어', () => {
     storageSpy = null;
   });
 
-  it('저장된 언어가 없으면 기기 언어인 한국어를 반환한다', async () => {
+  it('저장된 언어가 없으면 시스템 언어인 한국어를 반환한다', async () => {
     const { result } = await renderHook(() => useLanguage());
 
     await act(async () => {
@@ -36,7 +36,7 @@ describe('선택한 언어', () => {
     expect(result.current).toBe('ko-KR');
   });
 
-  it('저장된 언어가 영어면 기기 언어가 한국어여도 영어를 반환한다', async () => {
+  it('저장된 언어가 영어면 시스템 언어가 한국어여도 영어를 반환한다', async () => {
     await saveLanguage('en-US');
     const { result } = await renderHook(() => useLanguage());
 
@@ -82,7 +82,7 @@ describe('선택한 언어', () => {
     expect(result.current).toBe('en-US');
   });
 
-  it('저장값을 읽지 못하면 기기 언어인 한국어를 반환한다', async () => {
+  it('저장값을 읽지 못하면 시스템 언어인 한국어를 반환한다', async () => {
     storageSpy = jest.spyOn(AsyncStorage, 'getItem').mockImplementation(async () => {
       throw new Error('기기 저장소 오류');
     });
@@ -95,7 +95,7 @@ describe('선택한 언어', () => {
     expect(result.current).toBe('ko-KR');
   });
 
-  it('시스템 언어 따르기를 선택하면 저장값을 지우고 기기 언어인 한국어를 반환한다', async () => {
+  it('시스템 언어를 선택하면 저장값을 지우고 시스템 언어인 한국어를 반환한다', async () => {
     await saveLanguage('en-US');
     const { result } = await renderHook(() => useLanguage());
 
