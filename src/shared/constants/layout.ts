@@ -1,9 +1,6 @@
 /** 지원 최소 짧은 변, 배율 계산 단위 (px) */
 export const MIN_SHORT_SIDE = 338;
 
-/** 시계판 기준 지름. 논리 픽셀 */
-export const BASE_DIAMETER = 306;
-
 /** medium 등급이 시작하는 짧은 변(px) */
 export const MEDIUM_MIN_SHORT_SIDE = 360;
 
