@@ -51,9 +51,4 @@ export const COLORS = {
     highlight: '#4a4360',
     shadow: '#332a42',
   },
-
-  iconButton: {
-    background: '#f4ead61f',
-    icon: '#f4ead6cc',
-  },
 } as const;

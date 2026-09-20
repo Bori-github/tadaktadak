@@ -5,7 +5,7 @@ import { Canvas, Group, Rect } from '@shopify/react-native-skia';
 import { COLORS, DOT_SIZE } from '@/shared/constants';
 
 import { rectangleCells } from '@/shared/ui/dot-button';
-import { CLOSE_STROKES, IconButton } from '@/shared/ui/icon-button';
+import { CLOSE_ICON, IconButton } from '@/shared/ui/icon-button';
 
 /** 배율 1의 논리 픽셀. 피그마 `모달 · 설정` */
 const SIDE_MARGIN = 24;
@@ -51,7 +51,7 @@ export const DotModal = ({ visible, dotSize, heightInDots, onClose, children }: 
             </Group>
           </Canvas>
           {children}
-          <IconButton testID="modal-close" dotSize={dotSize} strokes={CLOSE_STROKES} style={[styles.button, closeButtonStyle]} onPress={onClose} />
+          <IconButton testID="modal-close" dotSize={dotSize} icon={CLOSE_ICON} style={[styles.button, closeButtonStyle]} onPress={onClose} />
         </View>
       </View>
     </Modal>
