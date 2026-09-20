@@ -1,3 +1,4 @@
+export { CHECK_ICON } from './check';
 export { CHEVRON_ICON } from './chevron';
 export { LANGUAGE_ICON } from './language';
 export { NOTIFICATION_OFF_ICON } from './notificationOff';
