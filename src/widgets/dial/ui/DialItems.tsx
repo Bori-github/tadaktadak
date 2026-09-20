@@ -136,10 +136,11 @@ const drawBloom = (): SkImage | null => {
 };
 
 export const DialItems = memo(({ centerX, centerY, radius, dotSize, screenGrade, remainingMinutes, settingMinutes, isPaused, isReady }: DialItemsProps) => {
+  const { bonfireHeightInDots } = SCREEN_GRADES[screenGrade];
   const grids = useMemo(() => {
-    const bonfire = BONFIRE_SPRITES[SCREEN_GRADES[screenGrade].bonfireHeightInDots];
+    const bonfire = BONFIRE_SPRITES[bonfireHeightInDots];
     return [LOG_COLD, bonfire.cold, MARKER, LOG_HOT_A, LOG_HOT_B, bonfire.hotA, bonfire.hotB];
-  }, [screenGrade]);
+  }, [bonfireHeightInDots]);
 
   const packed = useMemo(() => packSprites(grids), [grids]);
   const image = useMemo(() => drawAtlas(grids, packed), [grids, packed]);
