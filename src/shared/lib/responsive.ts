@@ -12,12 +12,9 @@ const BUTTON_OFFSET_FROM_SAFE_AREA = 150;
 const BUTTON_BOTTOM_MARGIN_MIN = 16;
 const DIAL_TO_BUTTON_GAP = 90;
 
-const resolveScreenGrade = (shortSide: number): ScreenGrade => {
-  if (shortSide >= SCREEN_GRADES.large.minShortSide) return 'large';
-  if (shortSide >= SCREEN_GRADES.expanded.minShortSide) return 'expanded';
-  if (shortSide >= SCREEN_GRADES.medium.minShortSide) return 'medium';
-  return 'compact';
-};
+const GRADES_FROM_LARGEST = (Object.keys(SCREEN_GRADES) as ScreenGrade[]).sort((a, b) => SCREEN_GRADES[b].minShortSide - SCREEN_GRADES[a].minShortSide);
+
+const resolveScreenGrade = (shortSide: number): ScreenGrade => GRADES_FROM_LARGEST.find((grade) => shortSide >= SCREEN_GRADES[grade].minShortSide) ?? 'compact';
 
 type LayoutInput = {
   shortSide: number;
