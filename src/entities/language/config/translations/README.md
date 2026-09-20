@@ -1,6 +1,6 @@
 # 번역 리소스
 
-로케일별 문구를 정의한다. 파일명은 `en-US`처럼 언어 코드와 지역 코드를 이은 IETF BCP 47 언어 태그이고, `src/shared/lib/localization.ts`가 i18next 리소스로 등록한다.
+로케일별 문구를 정의한다. 파일명은 `en-US`처럼 언어 코드와 지역 코드를 이은 IETF BCP 47 언어 태그이고, `src/entities/language/model/language.ts`가 i18next 리소스로 등록한다.
 
 ## 편집 규칙
 

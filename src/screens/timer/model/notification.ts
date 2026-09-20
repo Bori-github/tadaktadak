@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { notificationBody, scheduleAt } from '../lib/notification';
 
 import { type TimerSession } from '@/entities/timer';
-import { translate, useLanguage } from '@/shared/lib';
+import { translate, useLanguage } from '@/entities/language';
 
 type NotificationScheduleInput = {
   session: TimerSession;
