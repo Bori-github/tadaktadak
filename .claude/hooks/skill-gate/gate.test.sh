@@ -1,7 +1,7 @@
 #!/bin/sh
-# typescript-style-guide 게이트 회귀 검사.
+# skill-gate 회귀 검사.
 #
-# 실행: sh .claude/hooks/typescript-style-guide/gate.test.sh
+# 실행: sh .claude/hooks/skill-gate/gate.test.sh
 
 gate="$(dirname "$0")/gate.sh"
 # 게이트 파일이 없으면 출력이 비고, 빈 출력은 통과와 구분되지 않음.
@@ -9,10 +9,14 @@ gate="$(dirname "$0")/gate.sh"
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
-jq -nc --arg n "typescript-style-guide" \
-  '{type:"assistant",message:{content:[{type:"tool_use",name:"Skill",input:{skill:$n}}]}}' > "$work/called.jsonl"
-jq -nc --arg n "ko-dev-doc" \
-  '{type:"assistant",message:{content:[{type:"tool_use",name:"Skill",input:{skill:$n}}]}}' > "$work/not-called.jsonl"
+skill_call() {
+  jq -nc --arg n "$1" \
+    '{type:"assistant",message:{content:[{type:"tool_use",name:"Skill",input:{skill:$n}}]}}'
+}
+
+{ skill_call typescript-style-guide; skill_call code-quality; } > "$work/called.jsonl"
+skill_call typescript-style-guide > "$work/style-guide-only.jsonl"
+skill_call ko-dev-doc > "$work/not-called.jsonl"
 
 pass=0
 fail=0
@@ -42,6 +46,12 @@ run_write() {
     | sh "$gate" | decision
 }
 
+deny_reason() {
+  jq -nc --arg t "$1" --arg f "$2" \
+    '{tool_name:"Write",transcript_path:$t,tool_input:{file_path:$f,content:"x"}}' \
+    | sh "$gate" | jq -r '.hookSpecificOutput.permissionDecisionReason'
+}
+
 run_bash() {
   jq -nc --arg t "$1" --arg c "$2" \
     '{tool_name:"Bash",transcript_path:$t,tool_input:{command:$c}}' \
@@ -57,6 +67,17 @@ check deny "$(run_write "$work/not-called.jsonl" "/x/A$X")"   "미호출 .tsx �
 check pass "$(run_write "$work/not-called.jsonl" /x/a.md)"    ".md 는 통과"
 check pass "$(run_write "$work/called.jsonl" "/x/a$E")"       "호출했으면 통과"
 check pass "$(run_write "" "/x/a$E")"                         "기록 없으면 통과"
+
+echo "필수 스킬 일부만 호출"
+check deny "$(run_write "$work/style-guide-only.jsonl" "/x/a$E")" "typescript-style-guide 만 호출했으면 거부"
+reason=$(deny_reason "$work/style-guide-only.jsonl" "/x/a$E")
+case "$reason" in *code-quality*) named=yes ;; *) named=no ;; esac
+check yes "$named" "거부 사유에 호출하지 않은 code-quality 표시"
+case "$reason" in *typescript-style-guide*) named=yes ;; *) named=no ;; esac
+check no "$named" "거부 사유에 호출한 typescript-style-guide 는 표시하지 않음"
+reason=$(deny_reason "$work/not-called.jsonl" "/x/a$E")
+case "$reason" in *"typescript-style-guide, code-quality"*) named=yes ;; *) named=no ;; esac
+check yes "$named" "둘 다 호출하지 않았으면 거부 사유에 두 이름을 쉼표로 구분"
 
 echo "Bash: 막아야 하는 것"
 for c in "cat > src/a$E <<EOF" "cat > src/T$X <<EOF" "printf x > src/a$E" \

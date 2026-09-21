@@ -96,8 +96,10 @@ export const TimerScreen = (): JSX.Element => {
 
   const countedMinutes = resting ? restDialMinutes({ focusMinutes: minutes.focus, restMinutes: minutes.rest, remainingMinutes: shownMinutes }) : shownMinutes;
 
+  const sessionLitMinutes = effectShown ? 0 : countedMinutes;
+
   // 대기에서 설정 시간을 넘기면 아무 눈금도 붙지 않음
-  const litMinutes = editing ? selected : effectShown ? 0 : countedMinutes;
+  const litMinutes = editing ? selected : sessionLitMinutes;
 
   // 휴식 타이머 시간을 넣으면 집중이 점화한 개체가 꺼짐
   const itemMinutes = resting ? minutes.focus : selected;

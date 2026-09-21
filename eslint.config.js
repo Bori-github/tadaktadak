@@ -25,6 +25,7 @@ const typescriptRules = {
   'func-style': ['error', 'expression', { allowArrowFunctions: true }],
   'prefer-arrow-callback': 'error',
   eqeqeq: ['error', 'smart'],
+  'no-nested-ternary': 'error',
 
   'unicorn/no-abusive-eslint-disable': 'error',
 };
