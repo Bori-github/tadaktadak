@@ -73,12 +73,12 @@ esac
 missing=""
 for skill in typescript-style-guide code-quality; do
   # 패턴 원문에 [[:space:]] 가 들어가 자기 자신에는 매칭되지 않음.
-  grep -qE "\"skill\"[[:space:]]*:[[:space:]]*\"$skill\"" "$transcript" || missing="$missing $skill"
+  grep -qE "\"skill\"[[:space:]]*:[[:space:]]*\"$skill\"" "$transcript" || missing="$missing, $skill"
 done
 
 [ -z "$missing" ] && exit 0
 
-jq -n --arg path "$file_path" --arg missing "${missing# }" '{
+jq -n --arg path "$file_path" --arg missing "${missing#, }" '{
   hookSpecificOutput: {
     hookEventName: "PreToolUse",
     permissionDecision: "deny",
