@@ -32,6 +32,12 @@
 - `.claude/rules/architecture/feature-sliced-design.md`
 - `.claude/rules/workflow/work-scope.md`
 
+## 검증
+
+- `pnpm check`: lint, typecheck, format:check
+- `pnpm test`: Jest
+- `pnpm e2e`: Maestro
+
 ## 작업 순서
 
 - 디자인 결정을 바꿀 때: 피그마와 `DESIGN.md` 중 한쪽을 고치면 다른 쪽도 같은 작업에서 맞춘다
