@@ -75,6 +75,9 @@ case "$reason" in *code-quality*) named=yes ;; *) named=no ;; esac
 check yes "$named" "거부 사유에 호출하지 않은 code-quality 표시"
 case "$reason" in *typescript-style-guide*) named=yes ;; *) named=no ;; esac
 check no "$named" "거부 사유에 호출한 typescript-style-guide 는 표시하지 않음"
+reason=$(deny_reason "$work/not-called.jsonl" "/x/a$E")
+case "$reason" in *"typescript-style-guide, code-quality"*) named=yes ;; *) named=no ;; esac
+check yes "$named" "둘 다 호출하지 않았으면 거부 사유에 두 이름을 쉼표로 구분"
 
 echo "Bash: 막아야 하는 것"
 for c in "cat > src/a$E <<EOF" "cat > src/T$X <<EOF" "printf x > src/a$E" \
