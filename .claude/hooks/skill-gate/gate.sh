@@ -1,7 +1,7 @@
 #!/bin/sh
-# typescript-style-guide PreToolUse 게이트.
+# 필수 스킬 PreToolUse 게이트.
 #
-# .ts/.tsx 를 쓰기 전에 스킬을 불렀는지 대화 기록에서 확인. 부르지 않았으면 거부.
+# .ts/.tsx 를 쓰기 전에 필수 스킬의 호출 기록을 대화 기록에서 확인. 호출 기록이 없는 스킬이 있으면 거부.
 #
 # 대상을 찾는 곳: > >> &> tee sed -i perl -i 와 cp mv 의 마지막 인자
 # node -e, python3 -c, pnpm codegen 은 명령 문자열만으로 대상을 알 수 없음.
@@ -70,15 +70,18 @@ esac
 
 [ -r "$transcript" ] || exit 0
 
-# 패턴 원문에 [[:space:]] 가 들어가 자기 자신에는 매칭되지 않음.
-if grep -qE '"skill"[[:space:]]*:[[:space:]]*"typescript-style-guide"' "$transcript"; then
-  exit 0
-fi
+missing=""
+for skill in typescript-style-guide code-quality; do
+  # 패턴 원문에 [[:space:]] 가 들어가 자기 자신에는 매칭되지 않음.
+  grep -qE "\"skill\"[[:space:]]*:[[:space:]]*\"$skill\"" "$transcript" || missing="$missing $skill"
+done
 
-jq -n --arg path "$file_path" '{
+[ -z "$missing" ] && exit 0
+
+jq -n --arg path "$file_path" --arg missing "${missing# }" '{
   hookSpecificOutput: {
     hookEventName: "PreToolUse",
     permissionDecision: "deny",
-    permissionDecisionReason: ($path + " 는 .ts/.tsx 라 스타일 가이드를 먼저 읽어야 한다. Skill 도구로 typescript-style-guide 를 호출한 뒤 같은 작업을 다시 시도한다.")
+    permissionDecisionReason: ($path + " 는 .ts/.tsx 라 쓰기 전에 필수 스킬을 호출해야 한다. Skill 도구로 " + $missing + " 를 호출한 뒤 같은 작업을 다시 시도한다.")
   }
 }'
