@@ -45,7 +45,7 @@ if [ -z "$file_path" ] && [ -n "$command" ]; then
         if (t[i] == ">" || t[i] == "tee" || t[i] == "-a")
           if (t[i+1] ~ /\.tsx?$/) print t[i+1]
       }
-      # cp 와 mv 는 마지막 인자가 목적지. 명령 구분자로 끊어 각 구간의 첫 낱말과 끝 낱말만 본다
+      # cp 와 mv 는 마지막 인자가 목적지. 명령 구분자로 분리해 각 구간의 첫 토큰과 마지막 토큰만 검사
       gsub(/&&|\|\||;|\|/, "\n", line)
       m = split(line, seg, /\n/)
       for (s = 1; s <= m; s++) {
