@@ -1,7 +1,7 @@
 #!/bin/sh
 # typescript-style-guide 게이트 회귀 검사.
 #
-# 실행: sh .claude/hooks/typescript-style-guide/gate.test.sh
+# 실행: sh .claude/hooks/skill-gate/gate.test.sh
 
 gate="$(dirname "$0")/gate.sh"
 # 게이트 파일이 없으면 출력이 비고, 빈 출력은 통과와 구분되지 않음.
