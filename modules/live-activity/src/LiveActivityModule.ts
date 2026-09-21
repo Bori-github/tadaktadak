@@ -9,6 +9,7 @@ export type LiveActivityContent = {
   progressStartsAt: number;
   /** 타이머가 끝날 시각(밀리초). 이 시각에 iOS가 Live Activity를 잠금화면에서 제거 */
   endsAt: number;
+  language?: string;
 };
 
 type LiveActivityEvents = {
