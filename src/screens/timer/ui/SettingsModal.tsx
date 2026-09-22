@@ -82,6 +82,6 @@ const styles = StyleSheet.create({
   value: {
     flex: 1,
     textAlign: 'right',
-    color: COLORS.icon.secondary,
+    color: COLORS.text.secondary,
   },
 });
