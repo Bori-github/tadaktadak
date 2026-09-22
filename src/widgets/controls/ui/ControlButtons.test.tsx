@@ -59,6 +59,13 @@ describe('진동', () => {
 
     expect(mockVibrations).toBe(1);
   });
+
+  it('진행 상태에서 정지 버튼을 누르는 순간 진동한다', async () => {
+    const { stop } = await buttons('running');
+    await fireEvent(stop, 'pressIn');
+
+    expect(mockVibrations).toBe(1);
+  });
 });
 
 describe('대기 상태의 정지 버튼은 disabled 상태', () => {
