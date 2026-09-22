@@ -1,6 +1,6 @@
 import { Canvas, Fill } from '@shopify/react-native-skia';
 import { useCallback, useMemo, useState, type JSX } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Linking, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { useDerivedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,7 +15,6 @@ import { useTimerSession } from '../model/session';
 import { useTimerSpeed } from '../model/speed';
 
 import { DevPanel } from './DevPanel';
-import { NotificationSettingsButton } from './NotificationSettingsButton';
 import { SettingsModal } from './SettingsModal';
 
 import { ControlButtons } from '@/widgets/controls';
@@ -37,7 +36,7 @@ import { isReadyPhase, type TimerMode } from '@/entities/timer';
 import { BUTTON_SIZE_IN_DOTS, COLORS } from '@/shared/constants';
 import { resolveLayout } from '@/shared/lib';
 import { RoundDotButton } from '@/shared/ui/dot-button';
-import { SETTINGS_ICON } from '@/shared/ui/dot-icon';
+import { NOTIFICATION_OFF_ICON, SETTINGS_ICON } from '@/shared/ui/dot-icon';
 
 const SECONDS_IN_MINUTE = 60;
 
@@ -120,6 +119,8 @@ export const TimerScreen = (): JSX.Element => {
   const controlButtonsStyle = useMemo(() => [styles.controlButtons, { top: controlButtonsTop }], [controlButtonsTop]);
   const handleSettingsPress = useCallback(() => setSettingsShown(true), []);
   const handleSettingsClose = useCallback(() => setSettingsShown(false), []);
+  // 설정 앱 열기 실패 시 화면 변화 없음
+  const handleNotificationSettingsPress = useCallback(() => Linking.openSettings().catch(() => {}), []);
 
   const drag = useDialDrag({
     centerX,
@@ -165,7 +166,15 @@ export const TimerScreen = (): JSX.Element => {
         </Canvas>
         {editing ? <ReadoutButtons centerX={centerX} centerY={centerY} dotSize={layout.dotSize} onSelect={setEditTarget} /> : null}
         <ControlButtons dotSize={layout.dotSize} phase={session.phase} onPlay={handlePlay} onStop={stop} style={controlButtonsStyle} />
-        {notificationSettingsShown ? <NotificationSettingsButton dotSize={layout.dotSize} style={notificationSettingsStyle} /> : null}
+        {notificationSettingsShown ? (
+          <RoundDotButton
+            testID="notification-settings"
+            dotSize={layout.dotSize}
+            icon={NOTIFICATION_OFF_ICON}
+            style={notificationSettingsStyle}
+            onPress={handleNotificationSettingsPress}
+          />
+        ) : null}
         <RoundDotButton testID="settings" dotSize={layout.dotSize} icon={SETTINGS_ICON} disabled={!editing} style={settingsStyle} onPress={handleSettingsPress} />
         <SettingsModal visible={settingsShown} dotSize={layout.dotSize} onClose={handleSettingsClose} />
         {__DEV__ ? <DevPanel seconds={remainingSeconds} speed={speed} isSpeedEnabled={editing} onSelectSpeed={setSpeed} /> : null}
