@@ -1,8 +1,8 @@
 /** 도트 하나가 맡는 색 역할. 피그마 `button-settings`의 레이어 */
 export type DotRole = 'edge' | 'highlight' | 'shadow' | 'face';
 
-/** 한 줄에서 같은 역할이 이어지는 구간 */
-export type CircleCell = { column: number; row: number; widthInDots: number; role: DotRole };
+/** 같은 색 역할로 칠하는 사각형 하나 (dot) */
+export type DotCell = { key: string; column: number; row: number; widthInDots: number; heightInDots: number; role: DotRole };
 
 /**
  * 도트로 그리는 원. 피그마 `button-settings`
@@ -10,7 +10,7 @@ export type CircleCell = { column: number; row: number; widthInDots: number; rol
  * @param diameterInDots - 지름 (dot)
  * @returns 줄마다 같은 역할이 이어지는 구간과 색 역할
  */
-export const circleCells = (diameterInDots: number): CircleCell[] => {
+export const circleCells = (diameterInDots: number): DotCell[] => {
   const radius = diameterInDots / 2;
 
   const isFilled = (column: number, row: number): boolean => {
@@ -37,10 +37,10 @@ export const circleCells = (diameterInDots: number): CircleCell[] => {
     return 'face';
   };
 
-  const cells: CircleCell[] = [];
+  const cells: DotCell[] = [];
 
   for (let row = 0; row < diameterInDots; row += 1) {
-    let run: CircleCell | null = null;
+    let run: DotCell | null = null;
 
     for (let column = 0; column < diameterInDots; column += 1) {
       if (!isFilled(column, row)) continue;
@@ -53,7 +53,7 @@ export const circleCells = (diameterInDots: number): CircleCell[] => {
         continue;
       }
 
-      run = { column, row, widthInDots: 1, role };
+      run = { key: `${column}-${row}`, column, row, widthInDots: 1, heightInDots: 1, role };
       cells.push(run);
     }
   }

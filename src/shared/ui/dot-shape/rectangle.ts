@@ -1,9 +1,7 @@
-import { type DotRole } from './circle';
+import { type DotCell } from './circle';
 
 /** 리벳이 놓이는 모서리 안쪽 거리 (dot) */
 const RIVET_INSET = 3;
-
-export type RectangleCell = { key: string; column: number; row: number; widthInDots: number; heightInDots: number; role: DotRole };
 
 type RectangleSize = {
   widthInDots: number;
@@ -15,11 +13,11 @@ type RectangleSize = {
  *
  * @returns 그리는 순서대로 놓인 사각형과 색 역할
  */
-export const rectangleCells = ({ widthInDots, heightInDots }: RectangleSize): RectangleCell[] => {
+export const rectangleCells = ({ widthInDots, heightInDots }: RectangleSize): DotCell[] => {
   const right = widthInDots - 1;
   const bottom = heightInDots - 1;
 
-  const cells: RectangleCell[] = [
+  const cells: DotCell[] = [
     { key: 'face', column: 0, row: 0, widthInDots, heightInDots, role: 'face' },
     { key: 'edge-top', column: 0, row: 0, widthInDots, heightInDots: 1, role: 'edge' },
     { key: 'edge-bottom', column: 0, row: bottom, widthInDots, heightInDots: 1, role: 'edge' },

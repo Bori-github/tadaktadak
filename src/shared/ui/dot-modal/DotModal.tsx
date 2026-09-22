@@ -1,10 +1,10 @@
 import { useMemo, type JSX, type ReactNode } from 'react';
 import { Modal, StyleSheet, useWindowDimensions, View } from 'react-native';
-import { Canvas, Group, Rect } from '@shopify/react-native-skia';
+import { Canvas } from '@shopify/react-native-skia';
 
 import { COLORS, DOT_SIZE } from '@/shared/constants';
 
-import { rectangleCells } from '@/shared/ui/dot-shape';
+import { DotCells, rectangleCells } from '@/shared/ui/dot-shape';
 import { BACK_ICON, CLOSE_ICON, IconButton } from '@/shared/ui/icon-button';
 
 /** 배율 1의 논리 픽셀. 피그마 `모달 · 설정` */
@@ -40,18 +40,7 @@ export const DotModal = ({ visible, dotSize, heightInDots, onClose, onBack, chil
       <View style={styles.dim}>
         <View style={[styles.panel, panelStyle]}>
           <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
-            <Group antiAlias={false}>
-              {cells.map((cell) => (
-                <Rect
-                  key={cell.key}
-                  x={cell.column * dotSize}
-                  y={cell.row * dotSize}
-                  width={cell.widthInDots * dotSize}
-                  height={cell.heightInDots * dotSize}
-                  color={COLORS.modal[cell.role]}
-                />
-              ))}
-            </Group>
+            <DotCells cells={cells} dotSize={dotSize} colors={COLORS.modal} />
           </Canvas>
           {children}
           {onBack === undefined ? null : <IconButton testID="modal-back" dotSize={dotSize} icon={BACK_ICON} style={[styles.button, backButtonStyle]} onPress={onBack} />}

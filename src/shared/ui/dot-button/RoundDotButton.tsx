@@ -1,12 +1,12 @@
 import { memo } from 'react';
 import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
-import { Canvas, Group, Rect } from '@shopify/react-native-skia';
+import { Canvas } from '@shopify/react-native-skia';
 
 import { BUTTON_TOUCH_PADDING, COLORS, DOT_SIZE, ROUND_BUTTON_DIAMETER_IN_DOTS } from '@/shared/constants';
 import { playVibration } from '@/shared/lib';
 
 import { RectIconShape, type RectIcon } from '@/shared/ui/dot-icon';
-import { circleCells, type DotRole } from '@/shared/ui/dot-shape';
+import { circleCells, DotCells } from '@/shared/ui/dot-shape';
 
 import { DISABLED_ROLE_COLORS, ROLE_COLORS } from './roleColors';
 
@@ -51,24 +51,13 @@ export const RoundDotButton = memo(({ dotSize, icon, disabled = false, onPress, 
         // press 도중 disabled로 전환되면 active 상태를 그리지 않음
         const active = pressed && !disabled;
         const offsetY = active ? dotSize : 0;
-        const roleColor = (role: DotRole) => (active && role === 'highlight' ? colors.face : colors[role]);
+        const cellColors = active ? { ...colors, highlight: colors.face } : colors;
 
         return (
           // active 상태의 y 오프셋만큼 캔버스 높이를 늘려 하단 클리핑 방지
           <Canvas style={[styles.canvas, { width: size, height: size + dotSize }]} pointerEvents="none">
-            <Group antiAlias={false}>
-              {CELLS.map((cell) => (
-                <Rect
-                  key={`${cell.column}-${cell.row}`}
-                  x={cell.column * dotSize}
-                  y={offsetY + cell.row * dotSize}
-                  width={cell.widthInDots * dotSize}
-                  height={dotSize}
-                  color={roleColor(cell.role)}
-                />
-              ))}
-              <RectIconShape icon={icon} left={iconOffset} top={offsetY + iconOffset} dotSize={dotSize} color={iconColor} />
-            </Group>
+            <DotCells cells={CELLS} dotSize={dotSize} colors={cellColors} offsetY={offsetY} />
+            <RectIconShape icon={icon} left={iconOffset} top={offsetY + iconOffset} dotSize={dotSize} color={iconColor} />
           </Canvas>
         );
       }}

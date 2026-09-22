@@ -1,12 +1,12 @@
 import { memo } from 'react';
 import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
-import { Canvas, Group, Rect } from '@shopify/react-native-skia';
+import { Canvas } from '@shopify/react-native-skia';
 
 import { BUTTON_SIZE_IN_DOTS, BUTTON_TOUCH_PADDING, COLORS } from '@/shared/constants';
 import { playVibration } from '@/shared/lib';
 
 import { type GridIcon } from '@/shared/ui/dot-icon';
-import { rectangleCells, type DotRole } from '@/shared/ui/dot-shape';
+import { DotCells, rectangleCells } from '@/shared/ui/dot-shape';
 import { DotSprite } from '@/shared/ui/dot-sprite';
 
 import { DISABLED_ROLE_COLORS, ROLE_COLORS } from './roleColors';
@@ -30,24 +30,13 @@ const DotButtonFace = memo(({ dotSize, icon, disabled, pressed }: DotButtonFaceP
   const offsetY = active ? dotSize : 0;
 
   const colors = disabled ? DISABLED_ROLE_COLORS : ROLE_COLORS;
-  const roleColor = (role: DotRole) => (active && role === 'highlight' ? colors.face : colors[role]);
+  const cellColors = active ? { ...colors, highlight: colors.face } : colors;
 
   return (
     // active 상태의 y 오프셋만큼 캔버스 높이를 늘려 하단 클리핑 방지
     <Canvas style={[styles.canvas, { width: size, height: size + dotSize }]} pointerEvents="none">
-      <Group antiAlias={false}>
-        {CELLS.map((cell) => (
-          <Rect
-            key={cell.key}
-            x={cell.column * dotSize}
-            y={offsetY + cell.row * dotSize}
-            width={cell.widthInDots * dotSize}
-            height={cell.heightInDots * dotSize}
-            color={roleColor(cell.role)}
-          />
-        ))}
-        <DotSprite grid={icon} centerX={size / 2} centerY={offsetY + size / 2} dotSize={dotSize} colors={disabled ? DISABLED_ICON_COLORS : ICON_COLORS} />
-      </Group>
+      <DotCells cells={CELLS} dotSize={dotSize} colors={cellColors} offsetY={offsetY} />
+      <DotSprite grid={icon} centerX={size / 2} centerY={offsetY + size / 2} dotSize={dotSize} colors={disabled ? DISABLED_ICON_COLORS : ICON_COLORS} />
     </Canvas>
   );
 });
