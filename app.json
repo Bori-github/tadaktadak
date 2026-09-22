@@ -2,6 +2,7 @@
   "expo": {
     "name": "Tadak Tadak",
     "slug": "tadaktadak",
+    "platforms": ["ios", "android"],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
