@@ -1,6 +1,6 @@
 import { COLORS } from '@/shared/constants';
 
-import { type DotRole } from './circle';
+import { type DotRole } from '@/shared/ui/dot-shape';
 
 export const ROLE_COLORS: Record<DotRole, string> = {
   edge: COLORS.button.edge,

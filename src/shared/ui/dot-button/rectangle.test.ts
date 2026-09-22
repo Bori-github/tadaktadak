@@ -1,6 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { type DotRole } from './circle';
+import { type DotRole } from '@/shared/ui/dot-shape';
+
 import { rectangleCells } from './rectangle';
 
 // 너비와 높이가 뒤바뀌면 드러나도록 다른 값

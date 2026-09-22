@@ -6,8 +6,8 @@ import { BUTTON_TOUCH_PADDING, COLORS, DOT_SIZE, ROUND_BUTTON_DIAMETER_IN_DOTS }
 import { playVibration } from '@/shared/lib';
 
 import { RectIconShape, type RectIcon } from '@/shared/ui/dot-icon';
+import { circleCells, type DotRole } from '@/shared/ui/dot-shape';
 
-import { circleCells, type DotRole } from './circle';
 import { DISABLED_ROLE_COLORS, ROLE_COLORS } from './roleColors';
 
 const CELLS = circleCells(ROUND_BUTTON_DIAMETER_IN_DOTS);
