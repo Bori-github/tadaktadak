@@ -10,9 +10,8 @@ import { previewVibration, setVibrationEnabled, TOGGLE_PATTERN, useVibrationEnab
 
 import { COLORS, DOT_SIZE } from '@/shared/constants';
 
-import { CHEVRON_ICON, LANGUAGE_ICON, RectIconShape, VIBRATION_ICON } from '@/shared/ui/dot-icon';
+import { ChevronIcon, LANGUAGE_ICON, RectIconShape, VIBRATION_ICON } from '@/shared/ui/dot-icon';
 import { DotModalStack, type DotModalScreen } from '@/shared/ui/dot-modal';
-import { DotSprite } from '@/shared/ui/dot-sprite';
 import { DotToggle } from '@/shared/ui/dot-toggle';
 
 type SettingsView = 'settings' | 'language';
@@ -30,8 +29,6 @@ export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalP
   const scale = dotSize / DOT_SIZE;
 
   const iconSize = LANGUAGE_ICON.boxSize * scale;
-  const chevronWidth = (CHEVRON_ICON[0]?.length ?? 0) * dotSize;
-  const chevronHeight = CHEVRON_ICON.length * dotSize;
   const valueStyle = { fontSize: 16 * scale, marginRight: 13 * scale };
 
   const screens: Record<SettingsView, DotModalScreen<SettingsView>> = {
@@ -44,9 +41,7 @@ export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalP
               <RectIconShape icon={LANGUAGE_ICON} left={0} top={0} dotSize={dotSize} color={COLORS.icon.default} />
             </Canvas>
             <Text style={[styles.value, valueStyle]}>{selected === null ? translate('language.system', language) : translate('language.name', selected)}</Text>
-            <Canvas style={{ width: chevronWidth, height: chevronHeight }}>
-              <DotSprite grid={CHEVRON_ICON} centerX={chevronWidth / 2} centerY={chevronHeight / 2} dotSize={dotSize} colors={{ I: COLORS.icon.secondary }} />
-            </Canvas>
+            <ChevronIcon dotSize={dotSize} />
           </SettingsRow>
           <SettingsRow index={1} dotSize={dotSize}>
             <Canvas style={{ width: iconSize, height: iconSize }}>
