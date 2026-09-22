@@ -33,9 +33,6 @@
       },
       "predictiveBackGestureEnabled": false
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
     "locales": {
       "ko": "./languages/ko.json"
     },
