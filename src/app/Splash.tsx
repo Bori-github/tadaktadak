@@ -31,14 +31,20 @@ export const Splash = ({ onHidden }: SplashProps): JSX.Element => {
     manifest: require('../../assets/bootsplash/manifest.json'),
     logo: require('../../assets/bootsplash/logo.png'),
     animate: () => {
-      playing.setActive(true);
-      opacity.value = withDelay(
-        FADE_DELAY_MS,
-        withTiming(0, { duration: FADE_MS }, (finished) => {
-          'worklet';
-          if (finished) scheduleOnRN(onHidden);
-        }),
-      );
+      try {
+        playing.setActive(true);
+        // withTiming이 취소돼도(finished false) 스플래시가 남지 않게 onHidden 호출
+        opacity.value = withDelay(
+          FADE_DELAY_MS,
+          withTiming(0, { duration: FADE_MS }, () => {
+            'worklet';
+            scheduleOnRN(onHidden);
+          }),
+        );
+      } catch {
+        // react-native-bootsplash가 animate 예외를 catch로 무시해서 여기서 onHidden 호출
+        onHidden();
+      }
     },
   });
 
