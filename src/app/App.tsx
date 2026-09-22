@@ -5,14 +5,12 @@ import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { hapticPattern } from '@modules/haptic-pattern';
-
 import { TimerScreen } from '@/screens/timer';
 import { initLocalization, restoreLanguage } from '@/entities/language';
-import { prepareVibration, TAP_PATTERN } from '@/entities/vibration';
+import { canVibrate, prepareVibration, TAP_PATTERN } from '@/entities/vibration';
 
-// 진동 지원 여부. 진동을 지원하지 않는 경우 배너로 타이머 완료를 알림
-const showsBanner = hapticPattern?.supportsHaptics !== true;
+// 햅틱 미지원 기기는 완료 진동이 없어 포그라운드에서도 완료 배너 표시
+const showsBanner = !canVibrate();
 
 prepareVibration(TAP_PATTERN);
 initLocalization();
