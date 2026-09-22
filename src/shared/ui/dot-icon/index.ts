@@ -8,3 +8,4 @@ export { RectIconShape } from './RectIconShape';
 export { SETTINGS_ICON } from './settings';
 export { STOP_ICON } from './stop';
 export { type GridIcon, type RectIcon } from './types';
+export { VIBRATION_ICON } from './vibration';
