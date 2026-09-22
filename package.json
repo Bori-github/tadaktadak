@@ -34,7 +34,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-boundaries": "^7.2.0",
     "eslint-plugin-fsd-lint": "^1.2.1",
-    "eslint-plugin-unicorn": "^74.0.0",
+    "eslint-plugin-unicorn": "^76.0.0",
     "expo-doctor": "^1.20.2",
     "jest": "~29.7.0",
     "jest-expo": "~57.0.5",
