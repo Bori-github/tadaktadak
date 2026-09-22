@@ -3,7 +3,7 @@ import { StyleSheet, Text } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 
 import { LANGUAGE_OPTIONS, LanguageList } from './LanguageList';
-import { MoreList } from './MoreList';
+import { MORE_ROW_COUNT, MoreList } from './MoreList';
 import { getPanelHeightInDots, SettingsRow } from './SettingsRow';
 
 import { translate, useLanguage, useSelectedLanguage } from '@/entities/language';
@@ -71,7 +71,7 @@ export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalP
       render: () => <LanguageList dotSize={dotSize} />,
     },
     more: {
-      heightInDots: getPanelHeightInDots(2),
+      heightInDots: getPanelHeightInDots(MORE_ROW_COUNT),
       render: () => <MoreList dotSize={dotSize} />,
     },
   };

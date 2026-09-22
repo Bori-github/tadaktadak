@@ -12,6 +12,8 @@ import { ChevronIcon } from '@/shared/ui/dot-icon';
 
 const PRIVACY_POLICY_URL = 'https://qhflrnfl4324.notion.site/tadaktadak';
 
+export const MORE_ROW_COUNT = 2;
+
 const openPrivacyPolicy = (): void => {
   // https 주소를 여는 앱이 없을 때만 실패해 알림 없이 무시함
   Linking.openURL(PRIVACY_POLICY_URL).catch(() => {});
