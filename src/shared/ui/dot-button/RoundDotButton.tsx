@@ -1,14 +1,14 @@
 import { memo } from 'react';
-import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
-import { Canvas, Group, Rect } from '@shopify/react-native-skia';
+import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { Canvas } from '@shopify/react-native-skia';
 
-import { BUTTON_TOUCH_PADDING, COLORS, DOT_SIZE, ROUND_BUTTON_DIAMETER_IN_DOTS } from '@/shared/constants';
-import { playVibration } from '@/shared/lib';
+import { COLORS, DOT_SIZE, ROUND_BUTTON_DIAMETER_IN_DOTS } from '@/shared/constants';
 
 import { RectIconShape, type RectIcon } from '@/shared/ui/dot-icon';
+import { circleCells, DotCells } from '@/shared/ui/dot-shape';
 
-import { circleCells, type DotRole } from './circle';
-import { DISABLED_ROLE_COLORS, ROLE_COLORS } from './roleColors';
+import { DotPressable } from './DotPressable';
+import { getRoleColors } from './roleColors';
 
 const CELLS = circleCells(ROUND_BUTTON_DIAMETER_IN_DOTS);
 
@@ -26,7 +26,6 @@ type RoundDotButtonProps = {
 export const RoundDotButton = memo(({ dotSize, icon, disabled = false, onPress, style, testID }: RoundDotButtonProps) => {
   const size = ROUND_BUTTON_DIAMETER_IN_DOTS * dotSize;
 
-  const colors = disabled ? DISABLED_ROLE_COLORS : ROLE_COLORS;
   const iconColor = disabled ? COLORS.icon.disabled : COLORS.icon.default;
 
   // 아이콘 좌표가 배율 1 기준. 지금 도트 크기가 배율 1의 몇 배인지가 곱할 값
@@ -34,45 +33,19 @@ export const RoundDotButton = memo(({ dotSize, icon, disabled = false, onPress, 
   const iconOffset = (size - icon.boxSize * scale) / 2;
 
   return (
-    <Pressable
-      testID={testID}
-      accessibilityRole="button"
-      style={[style, { width: size, height: size }]}
-      hitSlop={BUTTON_TOUCH_PADDING / 2}
-      disabled={disabled}
-      android_disableSound={disabled}
-      onPressIn={() => playVibration()}
-      onPress={() => {
-        if (disabled) return;
-        onPress();
-      }}
-    >
-      {({ pressed }) => {
-        // press 도중 disabled로 전환되면 active 상태를 그리지 않음
-        const active = pressed && !disabled;
+    <DotPressable size={size} disabled={disabled} style={style} testID={testID} onPress={onPress}>
+      {(active) => {
         const offsetY = active ? dotSize : 0;
-        const roleColor = (role: DotRole) => (active && role === 'highlight' ? colors.face : colors[role]);
 
         return (
           // active 상태의 y 오프셋만큼 캔버스 높이를 늘려 하단 클리핑 방지
           <Canvas style={[styles.canvas, { width: size, height: size + dotSize }]} pointerEvents="none">
-            <Group antiAlias={false}>
-              {CELLS.map((cell) => (
-                <Rect
-                  key={`${cell.column}-${cell.row}`}
-                  x={cell.column * dotSize}
-                  y={offsetY + cell.row * dotSize}
-                  width={cell.widthInDots * dotSize}
-                  height={dotSize}
-                  color={roleColor(cell.role)}
-                />
-              ))}
-              <RectIconShape icon={icon} left={iconOffset} top={offsetY + iconOffset} dotSize={dotSize} color={iconColor} />
-            </Group>
+            <DotCells cells={CELLS} dotSize={dotSize} colors={getRoleColors({ disabled, active })} offsetY={offsetY} />
+            <RectIconShape icon={icon} left={iconOffset} top={offsetY + iconOffset} dotSize={dotSize} color={iconColor} />
           </Canvas>
         );
       }}
-    </Pressable>
+    </DotPressable>
   );
 });
 
