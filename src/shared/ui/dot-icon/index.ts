@@ -1,5 +1,4 @@
 export { CHECK_ICON } from './check';
-export { CHEVRON_ICON } from './chevron';
 export { ChevronIcon } from './ChevronIcon';
 export { LANGUAGE_ICON } from './language';
 export { MORE_ICON } from './more';
