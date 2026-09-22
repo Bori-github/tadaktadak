@@ -1,6 +1,12 @@
 appId: com.boriguri.tadaktadak
 name: 이전 실행이 남긴 세션 정리
 ---
+# 스플래시가 떠 있는 동안에는 아래 탭이 스플래시에 막혀서 사라질 때까지 기다림
+- extendedWaitUntil:
+    notVisible:
+      id: 'splash'
+    timeout: 10000
+
 # 이전 실행이 남긴 세션이 있으면 정지 버튼이 활성화됨
 # 세션 복원이 늦게 반영될 수 있어 최대 10초 기다림
 # 정리할 세션이 없으면 10초를 모두 기다린 뒤 실패 없이 넘어감

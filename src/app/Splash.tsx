@@ -53,7 +53,7 @@ export const Splash = ({ onHidden }: SplashProps): JSX.Element => {
   const fadeStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
   return (
-    <Animated.View {...container} style={[container.style, fadeStyle]}>
+    <Animated.View {...container} style={[container.style, fadeStyle]} testID="splash">
       <Image {...logo} />
       {animation === null ? null : (
         <View style={styles.stage} pointerEvents="none">
