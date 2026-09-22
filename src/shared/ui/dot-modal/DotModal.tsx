@@ -4,7 +4,7 @@ import { Canvas, Group, Rect } from '@shopify/react-native-skia';
 
 import { COLORS, DOT_SIZE } from '@/shared/constants';
 
-import { rectangleCells } from '@/shared/ui/dot-button';
+import { rectangleCells } from '@/shared/ui/dot-shape';
 import { BACK_ICON, CLOSE_ICON, IconButton } from '@/shared/ui/icon-button';
 
 /** 배율 1의 논리 픽셀. 피그마 `모달 · 설정` */

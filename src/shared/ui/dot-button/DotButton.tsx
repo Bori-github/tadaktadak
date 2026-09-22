@@ -6,10 +6,9 @@ import { BUTTON_SIZE_IN_DOTS, BUTTON_TOUCH_PADDING, COLORS } from '@/shared/cons
 import { playVibration } from '@/shared/lib';
 
 import { type GridIcon } from '@/shared/ui/dot-icon';
-import { type DotRole } from '@/shared/ui/dot-shape';
+import { rectangleCells, type DotRole } from '@/shared/ui/dot-shape';
 import { DotSprite } from '@/shared/ui/dot-sprite';
 
-import { rectangleCells } from './rectangle';
 import { DISABLED_ROLE_COLORS, ROLE_COLORS } from './roleColors';
 
 const CELLS = rectangleCells({ widthInDots: BUTTON_SIZE_IN_DOTS, heightInDots: BUTTON_SIZE_IN_DOTS });
