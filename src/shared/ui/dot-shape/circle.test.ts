@@ -1,6 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { circleCells, type DotRole } from './circle';
+import { type DotRole } from './cell';
+import { circleCells } from './circle';
 
 const DIAMETER = 24;
 

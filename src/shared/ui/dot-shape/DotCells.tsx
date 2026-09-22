@@ -1,7 +1,7 @@
 import { type JSX } from 'react';
 import { Group, Rect } from '@shopify/react-native-skia';
 
-import { type DotCell, type DotRole } from './circle';
+import { type DotCell, type DotRole } from './cell';
 
 type DotCellsProps = {
   cells: readonly DotCell[];

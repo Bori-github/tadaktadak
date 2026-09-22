@@ -1,4 +1,4 @@
-import { type DotCell } from './circle';
+import { type DotCell } from './cell';
 
 /** 리벳이 놓이는 모서리 안쪽 거리 (dot) */
 const RIVET_INSET = 3;
