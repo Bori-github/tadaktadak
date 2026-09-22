@@ -2,8 +2,8 @@ import { memo } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 
-import { LanguageList } from './LanguageList';
-import { SettingsRow } from './SettingsRow';
+import { LANGUAGE_OPTIONS, LanguageList } from './LanguageList';
+import { getPanelHeightInDots, SettingsRow } from './SettingsRow';
 
 import { translate, useLanguage, useSelectedLanguage } from '@/entities/language';
 import { previewVibration, setVibrationEnabled, TOGGLE_PATTERN, useVibrationEnabled } from '@/entities/vibration';
@@ -36,7 +36,7 @@ export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalP
 
   const screens: Record<SettingsView, DotModalScreen<SettingsView>> = {
     settings: {
-      heightInDots: 240 / DOT_SIZE,
+      heightInDots: getPanelHeightInDots(3),
       render: ({ open }) => (
         <>
           <SettingsRow index={0} dotSize={dotSize} testID="settings-language" onPress={() => open('language')}>
@@ -65,7 +65,7 @@ export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalP
       ),
     },
     language: {
-      heightInDots: 240 / DOT_SIZE,
+      heightInDots: getPanelHeightInDots(LANGUAGE_OPTIONS.length),
       render: () => <LanguageList dotSize={dotSize} />,
     },
   };

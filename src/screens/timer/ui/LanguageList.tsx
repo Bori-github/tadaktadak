@@ -5,7 +5,7 @@ import { LanguageRow } from './LanguageRow';
 import { selectLanguage, translate, useLanguage, useSelectedLanguage, type Language } from '@/entities/language';
 
 /** `null`: 시스템 언어 */
-const LANGUAGE_OPTIONS: readonly (Language | null)[] = [null, 'ko-KR', 'en-US'];
+export const LANGUAGE_OPTIONS: readonly (Language | null)[] = [null, 'ko-KR', 'en-US'];
 
 type LanguageListProps = {
   dotSize: number;
