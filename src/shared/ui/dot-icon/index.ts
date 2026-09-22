@@ -1,6 +1,7 @@
 export { CHECK_ICON } from './check';
 export { CHEVRON_ICON } from './chevron';
 export { LANGUAGE_ICON } from './language';
+export { MORE_ICON } from './more';
 export { NOTIFICATION_OFF_ICON } from './notificationOff';
 export { PAUSE_ICON } from './pause';
 export { PLAY_ICON } from './play';
