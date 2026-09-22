@@ -1,4 +1,4 @@
-import { type JSX } from 'react';
+import { type JSX, useMemo } from 'react';
 import { Canvas, Skia, type SkSkottieAnimation, Skottie } from '@shopify/react-native-skia';
 import { Image, StyleSheet, View } from 'react-native';
 import BootSplash from 'react-native-bootsplash';
@@ -6,9 +6,6 @@ import Animated, { useAnimatedStyle, useFrameCallback, useSharedValue, withDelay
 import { scheduleOnRN } from 'react-native-worklets';
 
 import splash from './splash.json';
-
-// Skottie.Make는 JSON 파싱 실패 시 null을 반환하는데 반환 타입에 빠져 있어서 null 포함으로 선언
-const animation: SkSkottieAnimation | null = Skia.Skottie.Make(JSON.stringify(splash));
 
 const LAST_FRAME = splash.op - 1;
 
@@ -21,6 +18,9 @@ interface SplashProps {
 }
 
 export const Splash = ({ onHidden }: SplashProps): JSX.Element => {
+  // 언마운트 뒤 GC 대상이 되도록 컴포넌트 안에서 생성
+  // Skottie.Make는 JSON 파싱 실패 시 null을 반환하는데 반환 타입에 빠져 있어서 null 포함으로 선언
+  const animation = useMemo<SkSkottieAnimation | null>(() => Skia.Skottie.Make(JSON.stringify(splash)), []);
   const frame = useSharedValue(0);
   const opacity = useSharedValue(1);
 
