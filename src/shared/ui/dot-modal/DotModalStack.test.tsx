@@ -1,6 +1,6 @@
-import { describe, expect, it } from '@jest/globals';
-import { Pressable, Text } from 'react-native';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { BackHandler, Pressable, Text, type HardwareBackPressEvent } from 'react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { DotModalStack, type DotModalScreen } from './DotModalStack';
 
@@ -30,7 +30,34 @@ const stackScreens: Record<StackView, DotModalScreen<StackView>> = {
   },
 };
 
-const stack = (visible: boolean) => <DotModalStack visible={visible} dotSize={2} initial="first" screens={stackScreens} onClose={() => {}} />;
+const stack = (visible: boolean, onClose = () => {}) => <DotModalStack visible={visible} dotSize={2} initial="first" screens={stackScreens} onClose={onClose} />;
+
+type BackPressHandler = (event: HardwareBackPressEvent) => boolean | null | undefined;
+
+const backPressHandlers = new Set<BackPressHandler>();
+
+const pressBack = async () => {
+  await act(() => {
+    backPressHandlers.forEach((handler) => handler({ type: 'hardwareBackPress', timeStamp: 0 }));
+  });
+};
+
+beforeEach(() => {
+  jest.spyOn(BackHandler, 'addEventListener').mockImplementation((_eventName, handler) => {
+    backPressHandlers.add(handler);
+
+    return {
+      remove: () => {
+        backPressHandlers.delete(handler);
+      },
+    };
+  });
+});
+
+afterEach(() => {
+  backPressHandlers.clear();
+  jest.restoreAllMocks();
+});
 
 describe('DotModalStack', () => {
   it('닫았다 다시 열면 첫 화면을 보여준다', async () => {
@@ -51,5 +78,29 @@ describe('DotModalStack', () => {
     await fireEvent.press(screen.getByTestId('modal-back'));
 
     expect(screen.queryByText('첫 화면')).not.toBeNull();
+  });
+
+  it('두번째 화면에서 Android 뒤로 버튼을 누르면 첫 화면으로 돌아간다', async () => {
+    await render(stack(true));
+    await fireEvent.press(screen.getByTestId('to-second'));
+    await pressBack();
+
+    expect(screen.queryByText('첫 화면')).not.toBeNull();
+  });
+
+  it('첫 화면에서 Android 뒤로 버튼을 누르면 모달을 닫는다', async () => {
+    const onClose = jest.fn();
+    await render(stack(true, onClose));
+    await pressBack();
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('닫힌 모달은 Android 뒤로 버튼을 처리하지 않는다', async () => {
+    const onClose = jest.fn();
+    await render(stack(false, onClose));
+    await pressBack();
+
+    expect(onClose).not.toHaveBeenCalled();
   });
 });
