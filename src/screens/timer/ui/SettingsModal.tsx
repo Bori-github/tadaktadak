@@ -3,6 +3,7 @@ import { StyleSheet, Text } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 
 import { LANGUAGE_OPTIONS, LanguageList } from './LanguageList';
+import { MoreList } from './MoreList';
 import { getPanelHeightInDots, SettingsRow } from './SettingsRow';
 
 import { translate, useLanguage, useSelectedLanguage } from '@/entities/language';
@@ -10,11 +11,11 @@ import { previewVibration, setVibrationEnabled, TOGGLE_PATTERN, useVibrationEnab
 
 import { COLORS, DOT_SIZE } from '@/shared/constants';
 
-import { ChevronIcon, LANGUAGE_ICON, RectIconShape, VIBRATION_ICON } from '@/shared/ui/dot-icon';
+import { ChevronIcon, LANGUAGE_ICON, MORE_ICON, RectIconShape, VIBRATION_ICON } from '@/shared/ui/dot-icon';
 import { DotModalStack, type DotModalScreen } from '@/shared/ui/dot-modal';
 import { DotToggle } from '@/shared/ui/dot-toggle';
 
-type SettingsView = 'settings' | 'language';
+type SettingsView = 'settings' | 'language' | 'more';
 
 type SettingsModalProps = {
   visible: boolean;
@@ -51,10 +52,16 @@ export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalP
               testID="settings-vibration"
               dotSize={dotSize}
               value={isVibrationEnabled}
-              style={styles.toggle}
+              style={styles.trailing}
               onPressIn={() => previewVibration(TOGGLE_PATTERN)}
               onValueChange={setVibrationEnabled}
             />
+          </SettingsRow>
+          <SettingsRow index={2} dotSize={dotSize} testID="settings-more" onPress={() => open('more')}>
+            <Canvas style={{ width: iconSize, height: iconSize }}>
+              <RectIconShape icon={MORE_ICON} left={0} top={0} dotSize={dotSize} color={COLORS.icon.default} />
+            </Canvas>
+            <ChevronIcon dotSize={dotSize} style={styles.trailing} />
           </SettingsRow>
         </>
       ),
@@ -62,6 +69,10 @@ export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalP
     language: {
       heightInDots: getPanelHeightInDots(LANGUAGE_OPTIONS.length),
       render: () => <LanguageList dotSize={dotSize} />,
+    },
+    more: {
+      heightInDots: getPanelHeightInDots(2),
+      render: () => <MoreList dotSize={dotSize} />,
     },
   };
 
@@ -71,7 +82,7 @@ export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalP
 SettingsModal.displayName = 'SettingsModal';
 
 const styles = StyleSheet.create({
-  toggle: {
+  trailing: {
     marginLeft: 'auto',
   },
   value: {
