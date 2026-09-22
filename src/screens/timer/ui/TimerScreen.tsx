@@ -186,8 +186,8 @@ export const TimerScreen = (): JSX.Element => {
           onPress={handleSettingsPress}
           onPressIn={() => playVibration()}
         />
-        <SettingsModal visible={settingsShown} dotSize={layout.dotSize} onClose={handleSettingsClose} />
         {__DEV__ ? <DevPanel seconds={remainingSeconds} speed={speed} isSpeedEnabled={editing} onSelectSpeed={setSpeed} /> : null}
+        <SettingsModal visible={settingsShown} dotSize={layout.dotSize} onClose={handleSettingsClose} />
       </View>
     </GestureDetector>
   );

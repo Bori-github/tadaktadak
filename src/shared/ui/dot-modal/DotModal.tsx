@@ -1,5 +1,5 @@
-import { useMemo, type JSX, type ReactNode } from 'react';
-import { Modal, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { useEffect, useMemo, type JSX, type ReactNode } from 'react';
+import { BackHandler, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 
 import { COLORS, DOT_SIZE } from '@/shared/constants';
@@ -35,26 +35,39 @@ export const DotModal = ({ visible, dotSize, heightInDots, onClose, onBack, chil
   const closeButtonStyle = { top: BUTTON_INSET * scale, right: BUTTON_INSET * scale };
   const backButtonStyle = { top: BUTTON_INSET * scale, left: BUTTON_INSET * scale };
 
+  useEffect(() => {
+    if (!visible) return;
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      (onBack ?? onClose)();
+      return true;
+    });
+
+    return () => subscription.remove();
+  }, [visible, onBack, onClose]);
+
+  // Modal은 visible false 시 자식 언마운트로 Canvas 첫 페인트 지연. 상시 마운트 후 opacity 0으로 처리
   return (
-    <Modal visible={visible} transparent animationType="none" statusBarTranslucent navigationBarTranslucent onRequestClose={onBack ?? onClose}>
-      <View style={styles.dim}>
-        <View style={[styles.panel, panelStyle]}>
-          <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
-            <DotCells cells={cells} dotSize={dotSize} colors={COLORS.modal} />
-          </Canvas>
-          {children}
-          {onBack === undefined ? null : <IconButton testID="modal-back" dotSize={dotSize} icon={BACK_ICON} style={[styles.button, backButtonStyle]} onPress={onBack} />}
-          <IconButton testID="modal-close" dotSize={dotSize} icon={CLOSE_ICON} style={[styles.button, closeButtonStyle]} onPress={onClose} />
-        </View>
+    <View style={[StyleSheet.absoluteFill, styles.dim, !visible && styles.hidden]} pointerEvents={visible ? 'auto' : 'none'}>
+      {/* view flattening 시 표시 전환마다 Canvas 재페인트 지연. flattening 비활성화 */}
+      <View collapsable={false} style={[styles.panel, panelStyle]}>
+        <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
+          <DotCells cells={cells} dotSize={dotSize} colors={COLORS.modal} />
+        </Canvas>
+        {children}
+        {onBack === undefined ? null : <IconButton testID="modal-back" dotSize={dotSize} icon={BACK_ICON} style={[styles.button, backButtonStyle]} onPress={onBack} />}
+        <IconButton testID="modal-close" dotSize={dotSize} icon={CLOSE_ICON} style={[styles.button, closeButtonStyle]} onPress={onClose} />
       </View>
-    </Modal>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   dim: {
-    flex: 1,
     backgroundColor: COLORS.modal.dim,
+  },
+  hidden: {
+    opacity: 0,
   },
   panel: {
     position: 'absolute',
