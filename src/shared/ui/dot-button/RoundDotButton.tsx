@@ -18,12 +18,13 @@ type RoundDotButtonProps = {
   icon: RectIcon;
   disabled?: boolean;
   onPress: () => void;
+  onPressIn?: () => void;
   /** 버튼 위치를 지정하는 스타일 */
   style?: StyleProp<ViewStyle>;
   testID?: string;
 };
 
-export const RoundDotButton = memo(({ dotSize, icon, disabled = false, onPress, style, testID }: RoundDotButtonProps) => {
+export const RoundDotButton = memo(({ dotSize, icon, disabled = false, onPress, onPressIn, style, testID }: RoundDotButtonProps) => {
   const size = ROUND_BUTTON_DIAMETER_IN_DOTS * dotSize;
 
   const iconColor = disabled ? COLORS.icon.disabled : COLORS.icon.default;
@@ -33,7 +34,7 @@ export const RoundDotButton = memo(({ dotSize, icon, disabled = false, onPress, 
   const iconOffset = (size - icon.boxSize * scale) / 2;
 
   return (
-    <DotPressable size={size} disabled={disabled} style={style} testID={testID} onPress={onPress}>
+    <DotPressable size={size} disabled={disabled} style={style} testID={testID} onPress={onPress} onPressIn={onPressIn}>
       {(active) => {
         const offsetY = active ? dotSize : 0;
 

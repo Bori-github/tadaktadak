@@ -1,26 +1,16 @@
-import { describe, expect, it, jest } from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { NOTIFICATION_OFF_ICON } from '@/shared/ui/dot-icon';
 
 import { RoundDotButton } from './RoundDotButton';
 
-/** 진동을 재생한 횟수 */
-let mockVibrations = 0;
-
-jest.mock('@modules/haptic-pattern', () => ({
-  hapticPattern: {
-    play: () => {
-      mockVibrations += 1;
-    },
-  },
-}));
-
 let presses = 0;
+let pressIns = 0;
 
 const button = async ({ disabled = false, dotSize = 2 } = {}) => {
   presses = 0;
-  mockVibrations = 0;
+  pressIns = 0;
   await render(
     <RoundDotButton
       dotSize={dotSize}
@@ -28,6 +18,9 @@ const button = async ({ disabled = false, dotSize = 2 } = {}) => {
       disabled={disabled}
       onPress={() => {
         presses += 1;
+      }}
+      onPressIn={() => {
+        pressIns += 1;
       }}
     />,
   );
@@ -62,10 +55,10 @@ describe('누름', () => {
     expect(presses).toBe(1);
   });
 
-  it('원 버튼을 누르는 순간 진동한다', async () => {
+  it('원 버튼을 누르는 순간 onPressIn이 불린다', async () => {
     await fireEvent(await button(), 'pressIn');
 
-    expect(mockVibrations).toBe(1);
+    expect(pressIns).toBe(1);
   });
 });
 
@@ -76,10 +69,10 @@ describe('disabled 상태', () => {
     expect(presses).toBe(0);
   });
 
-  it('disabled 상태의 원 버튼은 누르는 순간 진동하지 않는다', async () => {
+  it('disabled 상태의 원 버튼은 누르는 순간 onPressIn이 불리지 않는다', async () => {
     await fireEvent(await button({ disabled: true }), 'pressIn');
 
-    expect(mockVibrations).toBe(0);
+    expect(pressIns).toBe(0);
   });
 });
 

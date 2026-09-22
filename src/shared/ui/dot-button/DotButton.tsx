@@ -44,16 +44,17 @@ type DotButtonProps = {
   icon: GridIcon;
   disabled?: boolean;
   onPress: () => void;
+  onPressIn?: () => void;
   /** 버튼 위치를 지정하는 스타일 */
   style?: StyleProp<ViewStyle>;
   testID?: string;
 };
 
-export const DotButton = memo(({ dotSize, icon, disabled = false, onPress, style, testID }: DotButtonProps) => {
+export const DotButton = memo(({ dotSize, icon, disabled = false, onPress, onPressIn, style, testID }: DotButtonProps) => {
   const size = BUTTON_SIZE_IN_DOTS * dotSize;
 
   return (
-    <DotPressable size={size} disabled={disabled} style={style} testID={testID} onPress={onPress}>
+    <DotPressable size={size} disabled={disabled} style={style} testID={testID} onPress={onPress} onPressIn={onPressIn}>
       {(active) => <DotButtonFace dotSize={dotSize} icon={icon} disabled={disabled} active={active} />}
     </DotPressable>
   );

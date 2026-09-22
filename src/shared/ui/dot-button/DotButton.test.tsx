@@ -1,21 +1,12 @@
-import { describe, expect, it, jest } from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { PLAY_ICON } from '@/shared/ui/dot-icon';
 
 import { DotButton } from './DotButton';
 
-let mockVibrations = 0;
-
-jest.mock('@modules/haptic-pattern', () => ({
-  hapticPattern: {
-    play: () => {
-      mockVibrations += 1;
-    },
-  },
-}));
-
 let presses = 0;
+let pressIns = 0;
 
 const onPress = () => {
   presses += 1;
@@ -23,8 +14,18 @@ const onPress = () => {
 
 const button = async ({ disabled = false, dotSize = 2 } = {}) => {
   presses = 0;
-  mockVibrations = 0;
-  await render(<DotButton dotSize={dotSize} icon={PLAY_ICON} disabled={disabled} onPress={onPress} />);
+  pressIns = 0;
+  await render(
+    <DotButton
+      dotSize={dotSize}
+      icon={PLAY_ICON}
+      disabled={disabled}
+      onPress={onPress}
+      onPressIn={() => {
+        pressIns += 1;
+      }}
+    />,
+  );
 
   return screen.getByRole('button');
 };
@@ -55,10 +56,10 @@ describe('누름', () => {
     expect(presses).toBe(1);
   });
 
-  it('조작 버튼을 누르는 순간 진동한다', async () => {
+  it('조작 버튼을 누르는 순간 onPressIn이 불린다', async () => {
     await fireEvent(await button(), 'pressIn');
 
-    expect(mockVibrations).toBe(1);
+    expect(pressIns).toBe(1);
   });
 });
 
@@ -69,10 +70,10 @@ describe('disabled 상태', () => {
     expect(presses).toBe(0);
   });
 
-  it('disabled 상태의 조작 버튼은 누르는 순간 진동하지 않는다', async () => {
+  it('disabled 상태의 조작 버튼은 누르는 순간 onPressIn이 불리지 않는다', async () => {
     await fireEvent(await button({ disabled: true }), 'pressIn');
 
-    expect(mockVibrations).toBe(0);
+    expect(pressIns).toBe(0);
   });
 });
 

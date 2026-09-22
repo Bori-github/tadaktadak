@@ -5,6 +5,7 @@ import { playIcon } from '../lib/state';
 
 import { isReadyPhase, type TimerPhase } from '@/entities/timer';
 import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
+import { playVibration } from '@/shared/lib';
 import { DotButton } from '@/shared/ui/dot-button';
 import { STOP_ICON } from '@/shared/ui/dot-icon';
 
@@ -23,8 +24,8 @@ type ControlButtonsProps = {
 
 export const ControlButtons = memo(({ dotSize, phase, onPlay, onStop, style }: ControlButtonsProps) => (
   <View style={[styles.row, { gap: (CENTER_DISTANCE_IN_DOTS - BUTTON_SIZE_IN_DOTS) * dotSize }, style]} pointerEvents="box-none">
-    <DotButton testID="controls-play" dotSize={dotSize} icon={playIcon(phase)} onPress={onPlay} />
-    <DotButton testID="controls-stop" dotSize={dotSize} icon={STOP_ICON} disabled={isReadyPhase(phase)} onPress={onStop} />
+    <DotButton testID="controls-play" dotSize={dotSize} icon={playIcon(phase)} onPress={onPlay} onPressIn={() => playVibration()} />
+    <DotButton testID="controls-stop" dotSize={dotSize} icon={STOP_ICON} disabled={isReadyPhase(phase)} onPress={onStop} onPressIn={() => playVibration()} />
   </View>
 ));
 
