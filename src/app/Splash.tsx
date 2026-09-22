@@ -12,8 +12,9 @@ const animation: SkSkottieAnimation | null = Skia.Skottie.Make(JSON.stringify(sp
 
 const LAST_FRAME = splash.op - 1;
 
-const FADE_DELAY_MS = 2900;
 const FADE_MS = 300;
+// Lottie 마지막 프레임에서 페이드아웃이 끝나도록 Lottie 길이에서 계산
+const FADE_DELAY_MS = (splash.op / splash.fr) * 1000 - FADE_MS;
 
 interface SplashProps {
   onHidden: () => void;
