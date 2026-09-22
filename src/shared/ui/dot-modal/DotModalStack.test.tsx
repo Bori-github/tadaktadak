@@ -70,7 +70,7 @@ afterEach(() => {
 });
 
 describe('DotModalStack', () => {
-  it('닫았다 다시 열면 첫 화면을 보여준다', async () => {
+  it('닫은 뒤 다시 표시하면 스택이 첫 화면으로 초기화된다', async () => {
     await render(stack(true));
     await fireEvent.press(screen.getByTestId('to-second'));
 
@@ -82,7 +82,7 @@ describe('DotModalStack', () => {
     expect(screen.queryByText('첫 화면')).not.toBeNull();
   });
 
-  it('같은 화면을 연달아 열어도 뒤로 한 번에 첫 화면으로 돌아간다', async () => {
+  it('같은 화면 연속 push 시 스택에 한 번만 쌓인다', async () => {
     await render(stack(true));
     await fireEvent.press(screen.getByTestId('to-second-twice'));
     await fireEvent.press(screen.getByTestId('modal-back'));
