@@ -1,11 +1,13 @@
 import { type JSX, useMemo } from 'react';
 import { Canvas, Skia, type SkSkottieAnimation, Skottie } from '@shopify/react-native-skia';
 import { Image, StyleSheet, View } from 'react-native';
-import BootSplash from 'react-native-bootsplash';
+import BootSplash, { type Manifest } from 'react-native-bootsplash';
 import Animated, { useAnimatedStyle, useFrameCallback, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
 import splash from './splash.json';
+
+const manifest: Manifest = require('../../assets/bootsplash/manifest.json');
 
 const LAST_FRAME = splash.op - 1;
 
@@ -30,7 +32,7 @@ export const Splash = ({ onHidden }: SplashProps): JSX.Element => {
   }, false);
 
   const { container, logo } = BootSplash.useHideAnimation({
-    manifest: require('../../assets/bootsplash/manifest.json'),
+    manifest,
     logo: require('../../assets/bootsplash/logo.png'),
     animate: () => {
       try {
@@ -51,12 +53,14 @@ export const Splash = ({ onHidden }: SplashProps): JSX.Element => {
   });
 
   const fadeStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  // react-native-bootsplash가 Samsung One UI 4에서 logoSizeRatio 0.5로 logo.style.width를 줄여서 같은 비율로 Lottie 크기 조정
+  const logoScale = typeof logo.style?.width === 'number' ? logo.style.width / manifest.logo.width : 1;
 
   return (
     <Animated.View {...container} style={[container.style, fadeStyle]} testID="splash">
       <Image {...logo} />
       {animation === null ? null : (
-        <View style={styles.stage} pointerEvents="none">
+        <View style={[styles.stage, { transform: [{ scale: logoScale }] }]} pointerEvents="none">
           <Canvas style={styles.canvas}>
             <Skottie animation={animation} frame={frame} />
           </Canvas>
