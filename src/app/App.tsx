@@ -1,9 +1,11 @@
-import { type JSX } from 'react';
+import { type JSX, useState } from 'react';
 import * as Notifications from 'expo-notifications';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { Splash } from './Splash';
 
 import { TimerScreen } from '@/screens/timer';
 import { initLocalization, restoreLanguage } from '@/entities/language';
@@ -29,11 +31,14 @@ Notifications.setNotificationHandler({
 });
 
 export const App = (): JSX.Element => {
+  const [isSplashVisible, setIsSplashVisible] = useState(true);
+
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <StatusBar style="light" />
         <TimerScreen />
+        {isSplashVisible ? <Splash onHidden={() => setIsSplashVisible(false)} /> : null}
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

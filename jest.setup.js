@@ -3,6 +3,13 @@ const { jest } = require('@jest/globals');
 // AsyncStorage는 네이티브 모듈을 찾지 못하면 import 시점에 던짐. 패키지가 함께 내는 테스트용 구현으로 바꿈
 jest.mock('@react-native-async-storage/async-storage', () => require('@react-native-async-storage/async-storage/jest/async-storage-mock'));
 
+// react-native-bootsplash는 import 시점에 TurboModuleRegistry.getEnforcing으로 네이티브 모듈을 요구해 던짐. 패키지 README의 jest 목으로 교체
+jest.mock('react-native-bootsplash', () => ({
+  hide: jest.fn().mockResolvedValue(),
+  isVisible: jest.fn(),
+  useHideAnimation: jest.fn().mockReturnValue({ container: {}, logo: { source: 0 }, brand: { source: 0 } }),
+}));
+
 // Skia의 jest 목에서 MakeFromString이 DOMParser를 참조해 ReferenceError. null 반환 스텁으로 교체
 const skipSvgParsing = () => null;
 require('@shopify/react-native-skia').Skia.SVG.MakeFromString = skipSvgParsing;
