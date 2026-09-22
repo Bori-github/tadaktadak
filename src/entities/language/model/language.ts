@@ -5,7 +5,7 @@ import { initReactI18next } from 'react-i18next';
 import enUS from '../config/translations/en-US.json';
 import koKR from '../config/translations/ko-KR.json';
 
-const SUPPORTED_LANGUAGES = ['en-US', 'ko-KR'] as const;
+export const SUPPORTED_LANGUAGES = ['ko-KR', 'en-US'] as const;
 
 export type Language = (typeof SUPPORTED_LANGUAGES)[number];
 
