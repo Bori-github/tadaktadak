@@ -2,19 +2,19 @@ import { type JSX, type ReactNode } from 'react';
 import { Pressable, type StyleProp, type ViewStyle } from 'react-native';
 
 import { BUTTON_TOUCH_PADDING } from '@/shared/constants';
-import { playVibration } from '@/shared/lib';
 
 type DotPressableProps = {
   /** 버튼 한 변 (px) */
   size: number;
   disabled: boolean;
   onPress: () => void;
+  onPressIn?: () => void;
   style?: StyleProp<ViewStyle>;
   testID?: string;
   children: (active: boolean) => ReactNode;
 };
 
-export const DotPressable = ({ size, disabled, onPress, style, testID, children }: DotPressableProps): JSX.Element => (
+export const DotPressable = ({ size, disabled, onPress, onPressIn, style, testID, children }: DotPressableProps): JSX.Element => (
   <Pressable
     testID={testID}
     accessibilityRole="button"
@@ -22,7 +22,7 @@ export const DotPressable = ({ size, disabled, onPress, style, testID, children 
     hitSlop={BUTTON_TOUCH_PADDING / 2}
     disabled={disabled}
     android_disableSound={disabled}
-    onPressIn={() => playVibration()}
+    onPressIn={onPressIn}
     onPress={() => {
       if (disabled) return;
       onPress();

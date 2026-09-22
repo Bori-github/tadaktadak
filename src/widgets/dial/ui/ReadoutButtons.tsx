@@ -4,7 +4,7 @@ import { Pressable } from 'react-native';
 import { FOCUS_SIZE, REST_OFFSET_IN_DOTS, REST_SIZE, TOUCH_MARGIN } from '../config/readout';
 
 import { type TimerMode } from '@/entities/timer';
-import { playVibration } from '@/shared/lib';
+import { playVibration } from '@/entities/vibration';
 
 type Size = { widthInDots: number; heightInDots: number };
 

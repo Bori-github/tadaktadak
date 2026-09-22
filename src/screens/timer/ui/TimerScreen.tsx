@@ -33,6 +33,7 @@ import {
   useDialDrag,
 } from '@/widgets/dial';
 import { isReadyPhase, type TimerMode } from '@/entities/timer';
+import { playVibration } from '@/entities/vibration';
 import { BUTTON_SIZE_IN_DOTS, COLORS } from '@/shared/constants';
 import { resolveLayout } from '@/shared/lib';
 import { RoundDotButton } from '@/shared/ui/dot-button';
@@ -173,9 +174,18 @@ export const TimerScreen = (): JSX.Element => {
             icon={NOTIFICATION_OFF_ICON}
             style={notificationSettingsStyle}
             onPress={handleNotificationSettingsPress}
+            onPressIn={() => playVibration()}
           />
         ) : null}
-        <RoundDotButton testID="settings" dotSize={layout.dotSize} icon={SETTINGS_ICON} disabled={!editing} style={settingsStyle} onPress={handleSettingsPress} />
+        <RoundDotButton
+          testID="settings"
+          dotSize={layout.dotSize}
+          icon={SETTINGS_ICON}
+          disabled={!editing}
+          style={settingsStyle}
+          onPress={handleSettingsPress}
+          onPressIn={() => playVibration()}
+        />
         <SettingsModal visible={settingsShown} dotSize={layout.dotSize} onClose={handleSettingsClose} />
         {__DEV__ ? <DevPanel seconds={remainingSeconds} speed={speed} isSpeedEnabled={editing} onSelectSpeed={setSpeed} /> : null}
       </View>
