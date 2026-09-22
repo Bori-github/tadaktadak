@@ -43,7 +43,8 @@
       "expo-asset",
       "@bacons/apple-targets",
       "./plugins/withoutPushEntitlement",
-      ["expo-localization", { "supportedLocales": { "ios": ["en", "ko"], "android": ["en", "ko"] } }]
+      ["expo-localization", { "supportedLocales": { "ios": ["en", "ko"], "android": ["en", "ko"] } }],
+      ["react-native-bootsplash", { "logo": "./assets/splash-logo.svg", "background": "#141021", "logoWidth": 22, "assetsOutput": "./assets/bootsplash" }]
     ],
     "extra": {
       "eas": {
