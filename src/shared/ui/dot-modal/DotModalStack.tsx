@@ -36,7 +36,7 @@ export const DotModalStack = <TView extends string>({ visible, dotSize, initial,
   }
 
   const open = useCallback((view: TView) => {
-    setViews((previous) => [...previous, view]);
+    setViews((previous) => (previous[previous.length - 1] === view ? previous : [...previous, view]));
   }, []);
 
   const back = useCallback(() => {
