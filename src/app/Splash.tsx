@@ -1,6 +1,6 @@
 import { type JSX, useMemo } from 'react';
 import { Canvas, Skia, type SkSkottieAnimation, Skottie } from '@shopify/react-native-skia';
-import { Image, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import BootSplash, { type Manifest } from 'react-native-bootsplash';
 import Animated, { useAnimatedStyle, useFrameCallback, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
@@ -25,6 +25,7 @@ export const Splash = ({ onHidden }: SplashProps): JSX.Element => {
   const animation = useMemo<SkSkottieAnimation | null>(() => Skia.Skottie.Make(JSON.stringify(splash)), []);
   const frame = useSharedValue(0);
   const opacity = useSharedValue(1);
+  const logoOpacity = useSharedValue(1);
 
   const playing = useFrameCallback((info) => {
     'worklet';
@@ -36,6 +37,8 @@ export const Splash = ({ onHidden }: SplashProps): JSX.Element => {
     logo: require('../../assets/bootsplash/logo.png'),
     animate: () => {
       try {
+        // Canvas가 로고 Image와 같은 그림인 0프레임부터 이어 그려서 재생 시작 시 Image 불투명도를 0으로 설정
+        if (animation !== null) logoOpacity.value = 0;
         playing.setActive(true);
         // withTiming이 취소돼도(finished false) 스플래시가 남지 않게 onHidden 호출
         opacity.value = withDelay(
@@ -53,12 +56,13 @@ export const Splash = ({ onHidden }: SplashProps): JSX.Element => {
   });
 
   const fadeStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  const logoStyle = useAnimatedStyle(() => ({ opacity: logoOpacity.value }));
   // react-native-bootsplash가 Samsung One UI 4에서 logoSizeRatio 0.5로 logo.style.width를 줄여서 같은 비율로 Lottie 크기 조정
   const logoScale = typeof logo.style?.width === 'number' ? logo.style.width / manifest.logo.width : 1;
 
   return (
     <Animated.View {...container} style={[container.style, fadeStyle]} testID="splash">
-      <Image {...logo} />
+      <Animated.Image {...logo} style={[logo.style, logoStyle]} />
       {animation === null ? null : (
         <View style={[styles.stage, { transform: [{ scale: logoScale }] }]} pointerEvents="none">
           <Canvas style={styles.canvas}>

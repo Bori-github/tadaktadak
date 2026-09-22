@@ -10,11 +10,11 @@ const mockSetActive = jest.fn();
 
 // withDelay·withTiming을 즉시 완료로 대체해 완료 콜백을 동기 호출
 jest.mock('react-native-reanimated', () => {
-  const { View } = jest.requireActual<typeof ReactNative>('react-native');
+  const { Image, View } = jest.requireActual<typeof ReactNative>('react-native');
 
   return {
     __esModule: true,
-    default: { View },
+    default: { Image, View },
     useSharedValue: (initial: unknown) => ({ value: initial }),
     useAnimatedStyle: (compute: () => unknown) => compute(),
     useFrameCallback: () => ({ setActive: mockSetActive }),
