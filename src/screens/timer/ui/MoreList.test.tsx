@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, it, jest } from '@jest/globals';
 import { Linking } from 'react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
@@ -10,8 +10,12 @@ beforeAll(() => {
   initLocalization();
 });
 
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
 describe('MoreList', () => {
-  it('개인정보처리방침 행을 누르면 개인정보 처리방침 페이지를 연다', async () => {
+  it('개인정보처리방침 행을 누르면 개인정보처리방침 페이지를 연다', async () => {
     const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
     await render(<MoreList dotSize={2} />);
 
