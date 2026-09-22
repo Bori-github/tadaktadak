@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { type HapticEvent } from '@modules/haptic-pattern';
 
-import { holdVibration, playVibration, prepareVibration, releaseVibration } from './vibration';
+import { canVibrate, holdVibration, playVibration, playVibrationPattern, prepareVibration, releaseVibration, restoreVibrationEnabled, setVibrationEnabled } from './vibration';
 
 const PATTERN: HapticEvent[] = [{ type: 'transient', timeMs: 0, intensity: 0.4, sharpness: 0.5 }];
 
@@ -10,6 +11,7 @@ type PreparedCall = { name: string; events: HapticEvent[] };
 
 const mockPrepared: PreparedCall[] = [];
 const mockPlayedNames: string[] = [];
+const mockPlayedPatterns: HapticEvent[][] = [];
 let mockModule: unknown;
 
 jest.mock('@modules/haptic-pattern', () => ({
@@ -22,12 +24,17 @@ jest.mock('@modules/haptic-pattern', () => ({
 beforeEach(() => {
   mockPrepared.length = 0;
   mockPlayedNames.length = 0;
+  mockPlayedPatterns.length = 0;
   mockModule = {
+    supportsHaptics: true,
     prepareAsync: async (name: string, events: HapticEvent[]) => {
       mockPrepared.push({ name, events });
     },
     play: (name: string) => {
       mockPlayedNames.push(name);
+    },
+    playAsync: async (events: HapticEvent[]) => {
+      mockPlayedPatterns.push(events);
     },
     holdAsync: async () => {},
     release: () => {},
@@ -52,5 +59,39 @@ describe('조작 진동', () => {
       holdVibration();
       releaseVibration();
     }).not.toThrow();
+  });
+});
+
+describe('진동 사용 여부', () => {
+  // 저장소와 모듈의 진동 사용 여부를 함께 초기화해 첫 실행 상태에서 시작
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+    await restoreVibrationEnabled();
+    prepareVibration(PATTERN);
+  });
+
+  it('저장된 진동 사용 여부가 없으면 켜져 있다', () => {
+    expect(canVibrate()).toBe(true);
+  });
+
+  it('끄면 조작 진동을 재생하지 않는다', () => {
+    setVibrationEnabled(false);
+    playVibration();
+
+    expect(mockPlayedNames).toEqual([]);
+  });
+
+  it('끄면 완료 진동을 재생하지 않는다', () => {
+    setVibrationEnabled(false);
+    playVibrationPattern(PATTERN);
+
+    expect(mockPlayedPatterns).toEqual([]);
+  });
+
+  it('끈 진동 사용 여부는 다음 실행에서도 꺼져 있다', async () => {
+    setVibrationEnabled(false);
+    await restoreVibrationEnabled();
+
+    expect(canVibrate()).toBe(false);
   });
 });
