@@ -33,8 +33,9 @@ import {
   useDialDrag,
 } from '@/widgets/dial';
 import { isReadyPhase, type TimerMode } from '@/entities/timer';
+import { playVibration } from '@/entities/vibration';
 import { BUTTON_SIZE_IN_DOTS, COLORS } from '@/shared/constants';
-import { playVibration, resolveLayout } from '@/shared/lib';
+import { resolveLayout } from '@/shared/lib';
 import { RoundDotButton } from '@/shared/ui/dot-button';
 import { NOTIFICATION_OFF_ICON, SETTINGS_ICON } from '@/shared/ui/dot-icon';
 

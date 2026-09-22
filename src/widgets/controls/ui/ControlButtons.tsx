@@ -4,8 +4,8 @@ import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { playIcon } from '../lib/state';
 
 import { isReadyPhase, type TimerPhase } from '@/entities/timer';
+import { playVibration } from '@/entities/vibration';
 import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
-import { playVibration } from '@/shared/lib';
 import { DotButton } from '@/shared/ui/dot-button';
 import { STOP_ICON } from '@/shared/ui/dot-icon';
 
