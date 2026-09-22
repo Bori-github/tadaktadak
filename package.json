@@ -40,7 +40,7 @@
     "jest-expo": "~57.0.5",
     "lefthook": "^2.1.14",
     "npm-run-all2": "^9.0.3",
-    "prettier": "^3.9.6",
+    "prettier": "^3.9.8",
     "test-renderer": "^1.2.0",
     "typescript": "~6.0.3"
   },
