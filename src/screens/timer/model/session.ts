@@ -1,10 +1,9 @@
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AppState, Vibration } from 'react-native';
+import { AppState } from 'react-native';
 import { useFrameCallback, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 
-import { hapticPattern } from '@modules/haptic-pattern';
 import { liveActivity } from '@modules/live-activity';
 
 import { millisecondsToMinutes } from '../lib/minutes';
@@ -29,6 +28,7 @@ import {
   type TimerMode,
   type TimerSession,
 } from '@/entities/timer';
+import { playVibrationPattern } from '@/entities/vibration';
 
 /** 기기 가동 시간을 첫 프레임에서 채우기 전 값 */
 const NOT_STARTED = -1;
@@ -39,12 +39,6 @@ const isStoppedOnLockScreen = (stored: TimerSession | null): boolean => {
   const stoppedEndsAt = liveActivity?.consumeStoppedEndsAt() ?? null;
 
   return stoppedEndsAt !== null && stored?.phase === 'running' && stored.endsAt === stoppedEndsAt;
-};
-
-const vibrateCompletion = (mode: TimerMode): void => {
-  // 네이티브 모듈이 없는 빌드에서 `null`. 재생만 건너뛰고 타이머 완료는 그대로 진행
-  // JS 값을 Swift 타입으로 변환하다 실패하는 경우, 네이티브 대체 진동이 실행되지 않으므로 시스템 진동으로 대체
-  hapticPattern?.playAsync(COMPLETION_PATTERN[mode]).catch(() => Vibration.vibrate());
 };
 
 type TimerSessionInput = {
@@ -125,7 +119,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     // `inactive`는 제어센터·전화 배너처럼 화면이 보이는 상태라 여기 넣지 않음
     if (AppState.currentState === 'background') return;
 
-    vibrateCompletion(mode);
+    playVibrationPattern(COMPLETION_PATTERN[mode]);
   }, [session]);
 
   const counting = useFrameCallback((frame) => {
