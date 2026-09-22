@@ -10,9 +10,18 @@ const stackScreens: Record<StackView, DotModalScreen<StackView>> = {
   first: {
     heightInDots: 120,
     render: ({ open }) => (
-      <Pressable testID="to-second" onPress={() => open('second')}>
-        <Text>첫 화면</Text>
-      </Pressable>
+      <>
+        <Pressable testID="to-second" onPress={() => open('second')}>
+          <Text>첫 화면</Text>
+        </Pressable>
+        <Pressable
+          testID="to-second-twice"
+          onPress={() => {
+            open('second');
+            open('second');
+          }}
+        />
+      </>
     ),
   },
   second: {
@@ -32,6 +41,14 @@ describe('DotModalStack', () => {
 
     await screen.rerender(stack(false));
     await screen.rerender(stack(true));
+
+    expect(screen.queryByText('첫 화면')).not.toBeNull();
+  });
+
+  it('같은 화면을 연달아 열어도 뒤로 한 번에 첫 화면으로 돌아간다', async () => {
+    await render(stack(true));
+    await fireEvent.press(screen.getByTestId('to-second-twice'));
+    await fireEvent.press(screen.getByTestId('modal-back'));
 
     expect(screen.queryByText('첫 화면')).not.toBeNull();
   });

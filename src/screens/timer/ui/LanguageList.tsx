@@ -2,10 +2,10 @@ import { memo } from 'react';
 
 import { LanguageRow } from './LanguageRow';
 
-import { selectLanguage, translate, useLanguage, useSelectedLanguage, type Language } from '@/entities/language';
+import { selectLanguage, SUPPORTED_LANGUAGES, translate, useLanguage, useSelectedLanguage, type Language } from '@/entities/language';
 
 /** `null`: 시스템 언어 */
-const LANGUAGE_OPTIONS: readonly (Language | null)[] = [null, 'ko-KR', 'en-US'];
+export const LANGUAGE_OPTIONS: readonly (Language | null)[] = [null, ...SUPPORTED_LANGUAGES];
 
 type LanguageListProps = {
   dotSize: number;

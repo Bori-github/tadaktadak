@@ -45,6 +45,12 @@ export const COLORS = {
     secondary: '#c9bb98',
   },
 
+  text: {
+    primary: '#f4ead6',
+    secondary: '#c9bb98',
+    tertiary: '#6f6688',
+  },
+
   modal: {
     dim: '#141021b8',
     edge: '#2b2638',

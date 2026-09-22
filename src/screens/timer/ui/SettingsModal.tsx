@@ -2,20 +2,20 @@ import { memo } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 
-import { LanguageList } from './LanguageList';
-import { SettingsRow } from './SettingsRow';
+import { LANGUAGE_OPTIONS, LanguageList } from './LanguageList';
+import { MORE_ROW_COUNT, MoreList } from './MoreList';
+import { getPanelHeightInDots, SettingsRow } from './SettingsRow';
 
 import { translate, useLanguage, useSelectedLanguage } from '@/entities/language';
 import { previewVibration, setVibrationEnabled, TOGGLE_PATTERN, useVibrationEnabled } from '@/entities/vibration';
 
 import { COLORS, DOT_SIZE } from '@/shared/constants';
 
-import { CHEVRON_ICON, LANGUAGE_ICON, RectIconShape, VIBRATION_ICON } from '@/shared/ui/dot-icon';
+import { ChevronIcon, LANGUAGE_ICON, MORE_ICON, RectIconShape, VIBRATION_ICON } from '@/shared/ui/dot-icon';
 import { DotModalStack, type DotModalScreen } from '@/shared/ui/dot-modal';
-import { DotSprite } from '@/shared/ui/dot-sprite';
 import { DotToggle } from '@/shared/ui/dot-toggle';
 
-type SettingsView = 'settings' | 'language';
+type SettingsView = 'settings' | 'language' | 'more';
 
 type SettingsModalProps = {
   visible: boolean;
@@ -30,13 +30,11 @@ export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalP
   const scale = dotSize / DOT_SIZE;
 
   const iconSize = LANGUAGE_ICON.boxSize * scale;
-  const chevronWidth = (CHEVRON_ICON[0]?.length ?? 0) * dotSize;
-  const chevronHeight = CHEVRON_ICON.length * dotSize;
   const valueStyle = { fontSize: 16 * scale, marginRight: 13 * scale };
 
   const screens: Record<SettingsView, DotModalScreen<SettingsView>> = {
     settings: {
-      heightInDots: 240 / DOT_SIZE,
+      heightInDots: getPanelHeightInDots(3),
       render: ({ open }) => (
         <>
           <SettingsRow index={0} dotSize={dotSize} testID="settings-language" onPress={() => open('language')}>
@@ -44,9 +42,7 @@ export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalP
               <RectIconShape icon={LANGUAGE_ICON} left={0} top={0} dotSize={dotSize} color={COLORS.icon.default} />
             </Canvas>
             <Text style={[styles.value, valueStyle]}>{selected === null ? translate('language.system', language) : translate('language.name', selected)}</Text>
-            <Canvas style={{ width: chevronWidth, height: chevronHeight }}>
-              <DotSprite grid={CHEVRON_ICON} centerX={chevronWidth / 2} centerY={chevronHeight / 2} dotSize={dotSize} colors={{ I: COLORS.icon.secondary }} />
-            </Canvas>
+            <ChevronIcon dotSize={dotSize} />
           </SettingsRow>
           <SettingsRow index={1} dotSize={dotSize}>
             <Canvas style={{ width: iconSize, height: iconSize }}>
@@ -56,17 +52,27 @@ export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalP
               testID="settings-vibration"
               dotSize={dotSize}
               value={isVibrationEnabled}
-              style={styles.toggle}
+              style={styles.trailing}
               onPressIn={() => previewVibration(TOGGLE_PATTERN)}
               onValueChange={setVibrationEnabled}
             />
+          </SettingsRow>
+          <SettingsRow index={2} dotSize={dotSize} testID="settings-more" onPress={() => open('more')}>
+            <Canvas style={{ width: iconSize, height: iconSize }}>
+              <RectIconShape icon={MORE_ICON} left={0} top={0} dotSize={dotSize} color={COLORS.icon.default} />
+            </Canvas>
+            <ChevronIcon dotSize={dotSize} style={styles.trailing} />
           </SettingsRow>
         </>
       ),
     },
     language: {
-      heightInDots: 240 / DOT_SIZE,
+      heightInDots: getPanelHeightInDots(LANGUAGE_OPTIONS.length),
       render: () => <LanguageList dotSize={dotSize} />,
+    },
+    more: {
+      heightInDots: getPanelHeightInDots(MORE_ROW_COUNT),
+      render: () => <MoreList dotSize={dotSize} />,
     },
   };
 
@@ -76,12 +82,12 @@ export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalP
 SettingsModal.displayName = 'SettingsModal';
 
 const styles = StyleSheet.create({
-  toggle: {
+  trailing: {
     marginLeft: 'auto',
   },
   value: {
     flex: 1,
     textAlign: 'right',
-    color: COLORS.icon.secondary,
+    color: COLORS.text.secondary,
   },
 });

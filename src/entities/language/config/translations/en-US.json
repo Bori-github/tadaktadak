@@ -10,5 +10,9 @@
     "name": "English",
     "system": "System (default)",
     "systemDescription": "If unsupported, English will be used"
+  },
+  "more": {
+    "appVersion": "Version",
+    "privacyPolicy": "Privacy Policy"
   }
 }

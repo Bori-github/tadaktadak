@@ -37,7 +37,7 @@ export const LanguageRow = ({ index, dotSize, name, description, checked, onPres
               </Canvas>
             )}
           </View>
-          <Text style={[styles.name, { fontSize: 16 * scale, color: checked ? COLORS.icon.default : COLORS.icon.secondary }]}>{name}</Text>
+          <Text style={[styles.name, { fontSize: 16 * scale, color: checked ? COLORS.text.primary : COLORS.text.secondary }]}>{name}</Text>
         </View>
         {description === undefined ? null : (
           <Text style={[styles.description, { fontSize: 13 * scale, marginTop: 4 * scale, marginLeft: checkWidth + checkToName }]}>{description}</Text>
@@ -59,6 +59,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   description: {
-    color: COLORS.icon.disabled,
+    color: COLORS.text.tertiary,
   },
 });
