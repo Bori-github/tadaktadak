@@ -64,12 +64,13 @@ type DotToggleProps = {
   dotSize: number;
   value: boolean;
   onValueChange: (value: boolean) => void;
+  onPressIn?: () => void;
   /** 토글 위치를 지정하는 스타일 */
   style?: StyleProp<ViewStyle>;
   testID?: string;
 };
 
-export const DotToggle = memo(({ dotSize, value, onValueChange, style, testID }: DotToggleProps) => {
+export const DotToggle = memo(({ dotSize, value, onValueChange, onPressIn, style, testID }: DotToggleProps) => {
   const knobColumn = useSharedValue(value ? KNOB_TRAVEL_IN_DOTS : 0);
   const isTurningOn = useSharedValue(value);
   // 첫 렌더링은 전 구간 종료 상태로 시작해 불티 미표시
@@ -99,7 +100,7 @@ export const DotToggle = memo(({ dotSize, value, onValueChange, style, testID }:
   const riseHeight = EMBER_RISE_IN_DOTS * dotSize;
 
   return (
-    <Pressable testID={testID} style={[style, size]} onPress={() => onValueChange(!value)}>
+    <Pressable testID={testID} style={[style, size]} onPressIn={onPressIn} onPress={() => onValueChange(!value)}>
       {/* 불티가 토글 위로 벗어나 캔버스를 위쪽으로 확장 */}
       <Canvas style={[styles.canvas, { top: -riseHeight, width: size.width, height: size.height + riseHeight }]} pointerEvents="none">
         {[

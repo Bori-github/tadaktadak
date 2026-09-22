@@ -76,6 +76,12 @@ export const playVibration = (): void => {
   hapticPattern?.play(PATTERN_NAME);
 };
 
+/** 진동 사용 여부와 관계없이 `events` 패턴 1회 재생 */
+export const previewVibration = (events: HapticEvent[]): void => {
+  // 재생 실패 시 피드백 진동만 생략
+  hapticPattern?.playAsync(events).catch(() => {});
+};
+
 /** 진동이 잇따르는 동안 자동 종료를 막음 */
 export const holdVibration = (): void => {
   if (!isEnabled) return;

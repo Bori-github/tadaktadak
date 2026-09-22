@@ -3,7 +3,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { type HapticEvent } from '@modules/haptic-pattern';
 
-import { canVibrate, holdVibration, playVibration, playVibrationPattern, prepareVibration, releaseVibration, restoreVibrationEnabled, setVibrationEnabled } from './vibration';
+import {
+  canVibrate,
+  holdVibration,
+  playVibration,
+  playVibrationPattern,
+  prepareVibration,
+  previewVibration,
+  releaseVibration,
+  restoreVibrationEnabled,
+  setVibrationEnabled,
+} from './vibration';
 
 const PATTERN: HapticEvent[] = [{ type: 'transient', timeMs: 0, intensity: 0.4, sharpness: 0.5 }];
 
@@ -79,6 +89,13 @@ describe('진동 사용 여부', () => {
     playVibration();
 
     expect(mockPlayedNames).toEqual([]);
+  });
+
+  it('꺼져 있어도 토글 피드백 진동은 재생한다', () => {
+    setVibrationEnabled(false);
+    previewVibration(PATTERN);
+
+    expect(mockPlayedPatterns).toEqual([PATTERN]);
   });
 
   it('끄면 완료 진동을 재생하지 않는다', () => {

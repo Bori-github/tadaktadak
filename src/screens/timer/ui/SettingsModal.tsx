@@ -6,7 +6,7 @@ import { LanguageList } from './LanguageList';
 import { SettingsRow } from './SettingsRow';
 
 import { translate, useLanguage, useSelectedLanguage } from '@/entities/language';
-import { playVibration, setVibrationEnabled, useVibrationEnabled } from '@/entities/vibration';
+import { previewVibration, setVibrationEnabled, TOGGLE_PATTERN, useVibrationEnabled } from '@/entities/vibration';
 
 import { COLORS, DOT_SIZE } from '@/shared/constants';
 
@@ -34,12 +34,6 @@ export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalP
   const chevronHeight = CHEVRON_ICON.length * dotSize;
   const valueStyle = { fontSize: 16 * scale, marginRight: 13 * scale };
 
-  const handleVibrationChange = (enabled: boolean) => {
-    setVibrationEnabled(enabled);
-    // 진동 사용 여부가 꺼져 있으면 `playVibration`이 재생하지 않아 켤 때만 울림
-    playVibration();
-  };
-
   const screens: Record<SettingsView, DotModalScreen<SettingsView>> = {
     settings: {
       heightInDots: 240 / DOT_SIZE,
@@ -58,7 +52,14 @@ export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalP
             <Canvas style={{ width: iconSize, height: iconSize }}>
               <RectIconShape icon={VIBRATION_ICON} left={0} top={0} dotSize={dotSize} color={COLORS.icon.default} />
             </Canvas>
-            <DotToggle testID="settings-vibration" dotSize={dotSize} value={isVibrationEnabled} style={styles.toggle} onValueChange={handleVibrationChange} />
+            <DotToggle
+              testID="settings-vibration"
+              dotSize={dotSize}
+              value={isVibrationEnabled}
+              style={styles.toggle}
+              onPressIn={() => previewVibration(TOGGLE_PATTERN)}
+              onValueChange={setVibrationEnabled}
+            />
           </SettingsRow>
         </>
       ),
