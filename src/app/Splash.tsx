@@ -1,5 +1,5 @@
 import { type JSX } from 'react';
-import { Canvas, Skia, Skottie } from '@shopify/react-native-skia';
+import { Canvas, Skia, type SkSkottieAnimation, Skottie } from '@shopify/react-native-skia';
 import { Image, StyleSheet, View } from 'react-native';
 import BootSplash from 'react-native-bootsplash';
 import Animated, { useAnimatedStyle, useFrameCallback, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
@@ -7,7 +7,8 @@ import { scheduleOnRN } from 'react-native-worklets';
 
 import splash from './splash.json';
 
-const animation = Skia.Skottie.Make(JSON.stringify(splash));
+// Skottie.Make는 JSON 파싱 실패 시 null을 반환하는데 반환 타입에 빠져 있어서 null 포함으로 선언
+const animation: SkSkottieAnimation | null = Skia.Skottie.Make(JSON.stringify(splash));
 
 const LAST_FRAME = splash.op - 1;
 
@@ -53,11 +54,13 @@ export const Splash = ({ onHidden }: SplashProps): JSX.Element => {
   return (
     <Animated.View {...container} style={[container.style, fadeStyle]}>
       <Image {...logo} />
-      <View style={styles.stage} pointerEvents="none">
-        <Canvas style={styles.canvas}>
-          <Skottie animation={animation} frame={frame} />
-        </Canvas>
-      </View>
+      {animation === null ? null : (
+        <View style={styles.stage} pointerEvents="none">
+          <Canvas style={styles.canvas}>
+            <Skottie animation={animation} frame={frame} />
+          </Canvas>
+        </View>
+      )}
     </Animated.View>
   );
 };
