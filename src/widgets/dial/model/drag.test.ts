@@ -76,7 +76,7 @@ const renderDrag = async () => {
   );
 
   // `fireGestureHandler`가 터치 이벤트를 내보내지 못해 제스처의 콜백을 직접 부름
-  const handlers = result.current.handlers as unknown as TouchHandlers;
+  const handlers = result.current.gesture.handlers as unknown as TouchHandlers;
   const manager = { activate: jest.fn(), fail: jest.fn() };
 
   return { handlers, manager, unmount, onChange, onChangeEnd };
@@ -91,7 +91,9 @@ const drag = async ({ grabAt, through }: DragInput) => {
     const point = buildTouch(getDialPoint(minutes));
     handlers.onTouchesMove({ changedTouches: [point], allTouches: [point] }, manager);
   }
-  handlers.onFinalize();
+  await act(async () => {
+    handlers.onFinalize();
+  });
 
   return { onChange, onChangeEnd, manager };
 };
@@ -156,7 +158,9 @@ describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
 
     handlers.onTouchesDown({ changedTouches: [grab], allTouches: [grab] }, manager);
     handlers.onTouchesDown({ changedTouches: [second], allTouches: [grab, second] }, manager);
-    handlers.onFinalize();
+    await act(async () => {
+      handlers.onFinalize();
+    });
 
     expect(mockAutoShutdown).toEqual(['hold', 'release']);
   });

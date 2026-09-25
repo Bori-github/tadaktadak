@@ -1,6 +1,6 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Gesture } from 'react-native-gesture-handler';
-import { useSharedValue } from 'react-native-reanimated';
+import { useSharedValue, type SharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { isWithinThumb, minutesFromPoint, pointOnDial } from '../lib/geometry';
@@ -25,18 +25,34 @@ type DialDragInput = {
   onChangeEnd: (minutes: number) => void;
 };
 
+type DialDrag = {
+  gesture: ReturnType<typeof Gesture.Pan>;
+  /** 터치 위치의 스냅된 시간(분). UI 스레드에서 터치 이벤트마다 갱신 */
+  draggedMinutes: SharedValue<number>;
+  /** `true`면 시계판이 `draggedMinutes`를 렌더링. 드래그 종료 후 JS 스레드가 드래그 결과를 커밋할 때까지 유지 */
+  isShowingDragged: SharedValue<boolean>;
+};
+
 /**
  * 손잡이를 끌어 타이머 시간을 바꾸는 제스처.
  *
  * @param input.onChange - 스냅된 타이머 시간이 바뀔 때 호출
  * @param input.onChangeEnd - 손을 뗄 때 호출. 끌면서 시간이 한 번이라도 바뀐 경우만
- * @returns `GestureDetector`에 넘길 제스처
+ * @returns 제스처와 드래그 공유 값
  */
-export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, enabled, onChange, onChangeEnd }: DialDragInput): ReturnType<typeof Gesture.Pan> => {
+export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, enabled, onChange, onChangeEnd }: DialDragInput): DialDrag => {
   const dragged = useSharedValue(minutes);
   const grabbed = useSharedValue(false);
   const pointerId = useSharedValue(-1);
   const changed = useSharedValue(false);
+  const isShowingDragged = useSharedValue(false);
+  // `minutes`의 UI 스레드 사본. 워클릿이 클로저 대신 읽어 `minutes` 변경 시 `Gesture` 재생성 방지
+  const committed = useSharedValue(minutes);
+  // 드래그 종료 신호. `scheduleOnRN` 큐에서 `onChange`·`onChangeEnd` 뒤에 실행되어 그 커밋 이후 `isShowingDragged` 해제
+  const [settledCount, setSettledCount] = useState(0);
+  const settle = useCallback(() => {
+    setSettledCount((count) => count + 1);
+  }, []);
 
   // 끌기 도중 제스처가 버려지면 `onFinalize`가 호출되지 않아, 언마운트 시 자동 종료를 되돌림
   useEffect(
@@ -46,9 +62,8 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
     [],
   );
 
-  return useMemo(() => {
+  const gesture = useMemo(() => {
     const { min, max } = TIMER_RANGE[mode];
-    const thumb = pointOnDial(centerX, centerY, radius, minutes * 6);
 
     return (
       Gesture.Pan()
@@ -62,11 +77,18 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
           const touch = event.changedTouches[0];
           if (!touch) return;
 
+          // `isShowingDragged`면 렌더링 중인 `draggedMinutes` 좌표로 히트 테스트
+          const start = isShowingDragged.value ? dragged.value : committed.value;
+          const thumb = pointOnDial(centerX, centerY, radius, start * 6);
+
           grabbed.value = isWithinThumb({ thumbX: thumb.x, thumbY: thumb.y, x: touch.x, y: touch.y, dotSize });
-          dragged.value = minutes;
+          dragged.value = start;
           changed.value = false;
           pointerId.value = touch.id;
-          if (grabbed.value) scheduleOnRN(holdVibration);
+          if (grabbed.value) {
+            isShowingDragged.value = true;
+            scheduleOnRN(holdVibration);
+          }
           if (!grabbed.value) manager.fail();
         })
         .onTouchesMove((event, manager) => {
@@ -87,6 +109,7 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
         .onFinalize(() => {
           if (grabbed.value) scheduleOnRN(releaseVibration);
           if (changed.value) scheduleOnRN(onChangeEnd, dragged.value);
+          if (grabbed.value) scheduleOnRN(settle);
 
           grabbed.value = false;
           changed.value = false;
@@ -95,5 +118,18 @@ export const useDialDrag = ({ centerX, centerY, radius, dotSize, minutes, mode, 
     );
     // `useSharedValue`가 준 값은 고정 참조라 의존성 배열에서 제거. 넣으면 React Compiler 린트가 안에서 쓰는 것을 막음
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [centerX, centerY, radius, dotSize, minutes, mode, enabled, onChange, onChangeEnd]);
+  }, [centerX, centerY, radius, dotSize, mode, enabled, onChange, onChangeEnd, settle]);
+
+  useEffect(() => {
+    committed.value = minutes;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [minutes]);
+
+  // `grabbed`면 이전 드래그의 `settle`이라 해제 생략. 현재 드래그의 `onFinalize`가 `settle`을 다시 전송
+  useEffect(() => {
+    if (!grabbed.value) isShowingDragged.value = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settledCount]);
+
+  return { gesture, draggedMinutes: dragged, isShowingDragged };
 };
