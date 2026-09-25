@@ -84,14 +84,6 @@ export const TimerScreen = (): JSX.Element => {
   const effectStartedAt = useCompletedEffectStartedAt(session);
   const effectShown = effectStartedAt !== null;
 
-  // 층별 동작은 `DESIGN.md` §8
-  const dialMinutes = useDerivedValue(() => {
-    if (editing) return selected;
-    if (countingMode.value === 'rest') return restDialMinutes({ focusMinutes: minutes.focus, restMinutes: minutes.rest, remainingMinutes: remainingMinutes.value });
-
-    return remainingMinutes.value;
-  });
-
   const shownMinutes = (remainingSeconds ?? 0) / SECONDS_IN_MINUTE;
 
   const countedMinutes = resting ? restDialMinutes({ focusMinutes: minutes.focus, restMinutes: minutes.rest, remainingMinutes: shownMinutes }) : shownMinutes;
@@ -123,7 +115,7 @@ export const TimerScreen = (): JSX.Element => {
   // 설정 앱 열기 실패 시 화면 변화 없음
   const handleNotificationSettingsPress = useCallback(() => Linking.openSettings().catch(() => {}), []);
 
-  const drag = useDialDrag({
+  const { gesture, draggedMinutes, isShowingDragged } = useDialDrag({
     centerX,
     centerY,
     radius: layout.arcRadius,
@@ -135,8 +127,15 @@ export const TimerScreen = (): JSX.Element => {
     onChangeEnd: handleChangeEnd,
   });
 
+  const dialMinutes = useDerivedValue(() => {
+    if (editing) return isShowingDragged.value ? draggedMinutes.value : selected;
+    if (countingMode.value === 'rest') return restDialMinutes({ focusMinutes: minutes.focus, restMinutes: minutes.rest, remainingMinutes: remainingMinutes.value });
+
+    return remainingMinutes.value;
+  });
+
   return (
-    <GestureDetector gesture={drag}>
+    <GestureDetector gesture={gesture}>
       <View style={styles.root}>
         <Canvas style={StyleSheet.absoluteFill}>
           <Fill color={COLORS.canvas} />
