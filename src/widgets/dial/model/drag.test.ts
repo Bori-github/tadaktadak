@@ -1,15 +1,25 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { type useState } from 'react';
 import { act, renderHook } from '@testing-library/react-native';
 
 import { useDialDrag } from './drag';
 import { pointOnDial } from '../lib/geometry';
 
+import { type TimerMode } from '@/entities/timer';
+
 // 제스처는 공유 값을 바뀌는 칸으로만 쓰고, 콜백은 UI 스레드를 거치지 않고 바로 부름
 jest.mock('react-native-reanimated', () => ({
-  useSharedValue: (initial: unknown) => ({ value: initial }),
+  // 리렌더링 간 같은 객체를 유지하도록 `useState`로 보관
+  useSharedValue: (initial: unknown) => jest.requireActual<{ useState: typeof useState }>('react').useState(() => ({ value: initial }))[0],
 }));
+/** 배열이면 `scheduleOnRN` 콜백을 즉시 실행하지 않고 적재. JS 스레드 지연 재현용 */
+let mockDeferred: (() => void)[] | null = null;
+
 jest.mock('react-native-worklets', () => ({
-  scheduleOnRN: (callback: (...args: unknown[]) => void, ...args: unknown[]) => callback(...args),
+  scheduleOnRN: (callback: (...args: unknown[]) => void, ...args: unknown[]) => {
+    if (mockDeferred) mockDeferred.push(() => callback(...args));
+    else callback(...args);
+  },
 }));
 
 type AutoShutdownCall = 'hold' | 'release';
@@ -61,25 +71,27 @@ const renderDrag = async () => {
   const onChange = jest.fn<(minutes: number) => void>();
   const onChangeEnd = jest.fn<(minutes: number) => void>();
 
-  const { result, unmount } = await renderHook(() =>
-    useDialDrag({
-      centerX: CENTER_X,
-      centerY: CENTER_Y,
-      radius: RADIUS,
-      dotSize: DOT_SIZE,
-      minutes: START_MINUTES,
-      mode: 'focus',
-      enabled: true,
-      onChange,
-      onChangeEnd,
-    }),
+  const { result, rerender, unmount } = await renderHook(
+    ({ minutes, mode }: { minutes: number; mode: TimerMode }) =>
+      useDialDrag({
+        centerX: CENTER_X,
+        centerY: CENTER_Y,
+        radius: RADIUS,
+        dotSize: DOT_SIZE,
+        minutes,
+        mode,
+        enabled: true,
+        onChange,
+        onChangeEnd,
+      }),
+    { initialProps: { minutes: START_MINUTES, mode: 'focus' as TimerMode } },
   );
 
   // `fireGestureHandler`가 터치 이벤트를 내보내지 못해 제스처의 콜백을 직접 부름
   const handlers = result.current.gesture.handlers as unknown as TouchHandlers;
   const manager = { activate: jest.fn(), fail: jest.fn() };
 
-  return { handlers, manager, unmount, onChange, onChangeEnd };
+  return { handlers, manager, result, rerender, unmount, onChange, onChangeEnd };
 };
 
 /** 한 번의 끌기를 끝까지 재생하고 두 콜백이 받은 것을 돌려줌 */
@@ -99,6 +111,7 @@ const drag = async ({ grabAt, through }: DragInput) => {
 };
 
 beforeEach(() => {
+  mockDeferred = null;
   mockVibrations = 0;
   mockAutoShutdown.length = 0;
 });
@@ -169,5 +182,85 @@ describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
     await drag({ grabAt: getDialPoint(START_MINUTES + 15), through: [26, 27] });
 
     expect(mockAutoShutdown).toEqual([]);
+  });
+});
+
+describe('useDialDrag의 draggedMinutes·isShowingDragged 상태', () => {
+  const grab = buildTouch(getDialPoint(START_MINUTES));
+
+  it('손잡이를 잡으면 isShowingDragged가 true가 되고 draggedMinutes가 터치 위치의 스냅된 시간으로 갱신된다', async () => {
+    const { handlers, manager, result } = await renderDrag();
+    const moved = buildTouch(getDialPoint(28));
+
+    handlers.onTouchesDown({ changedTouches: [grab], allTouches: [grab] }, manager);
+    handlers.onTouchesMove({ changedTouches: [moved], allTouches: [moved] }, manager);
+
+    expect(result.current.isShowingDragged.value).toBe(true);
+    expect(result.current.draggedMinutes.value).toBe(28);
+  });
+
+  it('손잡이 밖을 잡으면 isShowingDragged가 false로 유지된다', async () => {
+    const { handlers, manager, result } = await renderDrag();
+    const outside = buildTouch(getDialPoint(START_MINUTES + 15));
+
+    handlers.onTouchesDown({ changedTouches: [outside], allTouches: [outside] }, manager);
+
+    expect(result.current.isShowingDragged.value).toBe(false);
+  });
+
+  it('onFinalize 후 onChangeEnd 다음 settle이 커밋되면 isShowingDragged를 해제한다', async () => {
+    const { handlers, manager, result, onChangeEnd } = await renderDrag();
+    const moved = buildTouch(getDialPoint(28));
+    mockDeferred = [];
+
+    handlers.onTouchesDown({ changedTouches: [grab], allTouches: [grab] }, manager);
+    handlers.onTouchesMove({ changedTouches: [moved], allTouches: [moved] }, manager);
+    handlers.onFinalize();
+
+    expect(result.current.isShowingDragged.value).toBe(true);
+
+    await act(async () => {
+      mockDeferred?.forEach((run) => {
+        run();
+      });
+    });
+
+    expect(onChangeEnd.mock.calls).toEqual([[28]]);
+    expect(result.current.isShowingDragged.value).toBe(false);
+  });
+
+  it('settle 커밋 전 다시 잡으면 draggedMinutes 좌표로 히트 테스트한다', async () => {
+    const { handlers, manager, result } = await renderDrag();
+    const regrab = buildTouch(getDialPoint(35));
+    mockDeferred = [];
+
+    handlers.onTouchesDown({ changedTouches: [grab], allTouches: [grab] }, manager);
+    for (const minutes of [28, 31, 35]) {
+      const point = buildTouch(getDialPoint(minutes));
+      handlers.onTouchesMove({ changedTouches: [point], allTouches: [point] }, manager);
+    }
+    handlers.onFinalize();
+    handlers.onTouchesDown({ changedTouches: [regrab], allTouches: [regrab] }, manager);
+
+    expect(manager.fail).not.toHaveBeenCalled();
+    expect(result.current.draggedMinutes.value).toBe(35);
+  });
+
+  it('이전 드래그의 settle이 새 드래그 중 커밋되면 isShowingDragged를 유지한다', async () => {
+    const { handlers, manager, result } = await renderDrag();
+    const regrab = buildTouch(getDialPoint(28));
+    mockDeferred = [];
+
+    handlers.onTouchesDown({ changedTouches: [grab], allTouches: [grab] }, manager);
+    handlers.onTouchesMove({ changedTouches: [regrab], allTouches: [regrab] }, manager);
+    handlers.onFinalize();
+    handlers.onTouchesDown({ changedTouches: [regrab], allTouches: [regrab] }, manager);
+    await act(async () => {
+      mockDeferred?.forEach((run) => {
+        run();
+      });
+    });
+
+    expect(result.current.isShowingDragged.value).toBe(true);
   });
 });
