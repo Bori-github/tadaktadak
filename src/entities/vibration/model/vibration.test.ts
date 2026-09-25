@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { Vibration } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { type HapticEvent } from '@modules/haptic-pattern';
@@ -60,15 +61,63 @@ describe('조작 진동', () => {
     expect(mockPlayedNames).toEqual([mockPrepared[0]?.name]);
   });
 
-  it('네이티브 모듈이 없으면 넷 다 아무 일도 하지 않는다', () => {
+  it('네이티브 모듈이 없으면 holdVibration과 releaseVibration이 예외 없이 반환한다', () => {
     mockModule = null;
 
     expect(() => {
-      prepareVibration(PATTERN);
-      playVibration();
       holdVibration();
       releaseVibration();
     }).not.toThrow();
+  });
+});
+
+describe('네이티브 모듈이 없는 빌드의 Vibration.vibrate 대체 재생', () => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+    await restoreVibrationEnabled();
+    mockModule = null;
+    jest.mocked(Vibration.vibrate).mockClear();
+  });
+
+  it('playVibration은 등록한 transient 패턴을 5ms 진동 배열로 변환해 재생한다', () => {
+    prepareVibration(PATTERN);
+    playVibration();
+
+    expect(Vibration.vibrate).toHaveBeenCalledWith([0, 5]);
+  });
+
+  it('timeMs가 같은 이벤트는 최대 진동 시간 하나로 병합해 대기·진동 시간 배열로 변환한다', () => {
+    playVibrationPattern([
+      { type: 'continuous', timeMs: 0, durationMs: 60, intensity: 1, sharpness: 0.3 },
+      { type: 'transient', timeMs: 0, intensity: 1, sharpness: 0.9 },
+      { type: 'continuous', timeMs: 180, durationMs: 60, intensity: 1, sharpness: 0.3 },
+    ]);
+
+    expect(Vibration.vibrate).toHaveBeenCalledWith([0, 60, 120, 60]);
+  });
+
+  it('canVibrate는 진동 사용 여부 설정값을 그대로 반환한다', () => {
+    expect(canVibrate()).toBe(true);
+
+    setVibrationEnabled(false);
+
+    expect(canVibrate()).toBe(false);
+  });
+
+  it('진동 사용 여부가 꺼져 있으면 조작 진동과 완료 진동을 재생하지 않는다', () => {
+    prepareVibration(PATTERN);
+    setVibrationEnabled(false);
+    playVibration();
+    playVibrationPattern(PATTERN);
+
+    expect(Vibration.vibrate).not.toHaveBeenCalled();
+  });
+
+  it('진동 사용 여부가 꺼져 있어도 previewVibration은 토글 피드백 진동을 재생한다', () => {
+    setVibrationEnabled(false);
+    previewVibration(PATTERN);
+
+    expect(Vibration.vibrate).toHaveBeenCalledWith([0, 5]);
   });
 });
 
