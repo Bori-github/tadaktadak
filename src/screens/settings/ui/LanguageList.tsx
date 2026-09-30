@@ -5,7 +5,7 @@ import { LanguageRow } from './LanguageRow';
 import { selectLanguage, SUPPORTED_LANGUAGES, translate, useLanguage, useSelectedLanguage, type Language } from '@/entities/language';
 
 /** `null`: 시스템 언어 */
-export const LANGUAGE_OPTIONS: readonly (Language | null)[] = [null, ...SUPPORTED_LANGUAGES];
+const LANGUAGE_OPTIONS: readonly (Language | null)[] = [null, ...SUPPORTED_LANGUAGES];
 
 type LanguageListProps = {
   dotSize: number;
@@ -17,10 +17,9 @@ export const LanguageList = memo(({ dotSize }: LanguageListProps) => {
 
   return (
     <>
-      {LANGUAGE_OPTIONS.map((option, index) => (
+      {LANGUAGE_OPTIONS.map((option) => (
         <LanguageRow
           key={option ?? 'system'}
-          index={index}
           dotSize={dotSize}
           name={option === null ? translate('language.system', language) : translate('language.name', option)}
           description={option === null ? translate('language.systemDescription', language) : undefined}
