@@ -1,5 +1,7 @@
-import { memo } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { type JSX } from 'react';
+import { StyleSheet, Text, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { type NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Canvas } from '@shopify/react-native-skia';
 
 import { LANGUAGE_OPTIONS, LanguageList } from './LanguageList';
@@ -10,6 +12,7 @@ import { translate, useLanguage, useSelectedLanguage } from '@/entities/language
 import { previewVibration, setVibrationEnabled, TOGGLE_PATTERN, useVibrationEnabled } from '@/entities/vibration';
 
 import { COLORS, DOT_SIZE } from '@/shared/constants';
+import { resolveLayout, type RootStackParamList } from '@/shared/lib';
 
 import { ChevronIcon, LANGUAGE_ICON, MORE_ICON, RectIconShape, VIBRATION_ICON } from '@/shared/ui/dot-icon';
 import { DotModalStack, type DotModalScreen } from '@/shared/ui/dot-modal';
@@ -17,13 +20,16 @@ import { DotToggle } from '@/shared/ui/dot-toggle';
 
 type SettingsView = 'settings' | 'language' | 'more';
 
-type SettingsModalProps = {
-  visible: boolean;
-  dotSize: number;
-  onClose: () => void;
-};
+type SettingsScreenProps = NativeStackScreenProps<RootStackParamList, 'settings'>;
 
-export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalProps) => {
+export const SettingsScreen = ({ navigation }: SettingsScreenProps): JSX.Element | null => {
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const { dotSize } = resolveLayout({
+    shortSide: Math.min(width, height),
+    safeAreaTopEdge: insets.top,
+    safeAreaBottomEdge: height - insets.bottom,
+  });
   const language = useLanguage();
   const selected = useSelectedLanguage();
   const isVibrationEnabled = useVibrationEnabled();
@@ -76,10 +82,8 @@ export const SettingsModal = memo(({ visible, dotSize, onClose }: SettingsModalP
     },
   };
 
-  return <DotModalStack visible={visible} dotSize={dotSize} initial="settings" screens={screens} onClose={onClose} />;
-});
-
-SettingsModal.displayName = 'SettingsModal';
+  return <DotModalStack visible dotSize={dotSize} initial="settings" screens={screens} onClose={() => navigation.goBack()} />;
+};
 
 const styles = StyleSheet.create({
   trailing: {

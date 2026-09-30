@@ -9,9 +9,10 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { Splash } from './Splash';
 
-import { completionNotificationBehavior, TimerScreen } from '@/screens/timer';
+import { completionNotificationBehavior, SettingsScreen, TimerScreen } from '@/screens/timer';
 import { initLocalization, restoreLanguage } from '@/entities/language';
 import { canVibrate, prepareVibration, restoreVibrationEnabled, TAP_PATTERN } from '@/entities/vibration';
+import { COLORS } from '@/shared/constants';
 import { type RootStackParamList } from '@/shared/lib';
 
 prepareVibration(TAP_PATTERN);
@@ -33,8 +34,9 @@ export const App = (): JSX.Element => {
       <SafeAreaProvider>
         <StatusBar style="light" />
         <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.canvas } }}>
             <Stack.Screen name="timer" component={TimerScreen} />
+            <Stack.Screen name="settings" component={SettingsScreen} options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
           </Stack.Navigator>
         </NavigationContainer>
         {isSplashVisible ? <Splash onHidden={() => setIsSplashVisible(false)} /> : null}
