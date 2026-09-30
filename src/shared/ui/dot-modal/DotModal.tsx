@@ -1,5 +1,5 @@
 import { useEffect, type JSX, type ReactNode } from 'react';
-import { BackHandler, ScrollView, StyleSheet, View } from 'react-native';
+import { BackHandler, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { COLORS, DOT_SIZE } from '@/shared/constants';
@@ -23,10 +23,11 @@ type DotModalProps = {
 
 export const DotModal = ({ dotSize, onClose, onBack, children }: DotModalProps): JSX.Element => {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const scale = dotSize / DOT_SIZE;
 
   const scrollStyle = { marginTop: insets.top + FIRST_ROW_TOP * scale, marginBottom: insets.bottom };
-  const contentStyle = { width: CONTENT_WIDTH * scale, paddingBottom: BOTTOM_PADDING * scale };
+  const contentStyle = { width: Math.min(CONTENT_WIDTH * scale, width), paddingBottom: BOTTOM_PADDING * scale };
   const closeButtonStyle = { top: insets.top + BUTTON_INSET * scale, right: insets.right + BUTTON_INSET * scale };
   const backButtonStyle = { top: insets.top + BUTTON_INSET * scale, left: insets.left + BUTTON_INSET * scale };
 
