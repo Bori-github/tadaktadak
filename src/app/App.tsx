@@ -9,7 +9,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { Splash } from './Splash';
 
-import { completionNotificationBehavior, SettingsScreen, TimerScreen } from '@/screens/timer';
+import { SettingsScreen } from '@/screens/settings';
+import { completionNotificationBehavior, TimerScreen } from '@/screens/timer';
 import { initLocalization, restoreLanguage } from '@/entities/language';
 import { canVibrate, prepareVibration, restoreVibrationEnabled, TAP_PATTERN } from '@/entities/vibration';
 import { COLORS } from '@/shared/constants';
