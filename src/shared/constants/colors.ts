@@ -52,7 +52,6 @@ export const COLORS = {
   },
 
   modal: {
-    dim: '#141021b8',
     edge: '#2b2638',
     face: '#3f3550',
     highlight: '#4a4360',

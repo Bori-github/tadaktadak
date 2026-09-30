@@ -82,7 +82,7 @@ export const SettingsScreen = ({ navigation }: SettingsScreenProps): JSX.Element
     },
   };
 
-  return <DotModalStack visible dotSize={dotSize} initial="settings" screens={screens} onClose={() => navigation.goBack()} />;
+  return <DotModalStack dotSize={dotSize} initial="settings" screens={screens} onClose={() => navigation.goBack()} />;
 };
 
 const styles = StyleSheet.create({
