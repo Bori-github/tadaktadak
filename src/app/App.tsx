@@ -1,7 +1,7 @@
 import { type JSX, useState } from 'react';
 import * as Notifications from 'expo-notifications';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -24,7 +24,8 @@ Notifications.setNotificationHandler({
     return {
       shouldShowBanner: showsBanner,
       shouldShowList: showsBanner,
-      shouldPlaySound: false,
+      // `shouldPlaySound: false`면 Android가 무음 알림(`setSilent`)으로 게시해 헤드업 미표시. 채널에 알림음이 없어 재생 없음
+      shouldPlaySound: showsBanner && Platform.OS === 'android',
       shouldSetBadge: false,
     };
   },

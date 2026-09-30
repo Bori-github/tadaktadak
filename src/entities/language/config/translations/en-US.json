@@ -6,6 +6,10 @@
     "focus": "Boom, done!",
     "rest": "Break’s over!"
   },
+  "notification": {
+    "bannerChannel": "Banner alerts",
+    "vibrationChannel": "Vibration alerts"
+  },
   "language": {
     "name": "English",
     "system": "System (default)",
