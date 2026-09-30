@@ -57,6 +57,7 @@ export const useNotificationSchedule = ({ session, status, isSettled }: Notifica
 
   // 앱 시작 시와 언어 변경 시 등록해 설정 화면의 채널 이름을 앱 언어와 일치
   useEffect(() => {
+    // 알림 채널은 Android에만 있어 iOS는 등록 생략
     if (Platform.OS !== 'android') return;
 
     channelsReady = registerNotificationChannelsForAndroid(language);
@@ -78,10 +79,14 @@ export const useNotificationSchedule = ({ session, status, isSettled }: Notifica
       // 예약하는 알림이 하나뿐이라 전부 취소
       await Notifications.cancelAllScheduledNotificationsAsync();
 
+      // 이펙트가 다시 실행되었거나(`live` false) 예약할 시각이 없으면(`at` null) 취소만 하고 종료
       if (!live || at === null) return;
 
       // 존재하지 않는 채널의 알림은 Android가 폐기하므로 예약 전 채널 등록 대기
       if (Platform.OS === 'android') await channelsReady.catch(() => registerNotificationChannelsForAndroid(language));
+
+      // 채널 등록을 기다리는 동안 이펙트가 다시 실행되면 이전 실행의 예약 생략
+      if (!live) return;
 
       const options = completionNotificationOptions({ isVibrationEnabled, platform: Platform.OS });
 
