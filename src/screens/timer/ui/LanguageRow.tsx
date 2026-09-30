@@ -10,7 +10,6 @@ import { CHECK_ICON } from '@/shared/ui/dot-icon';
 import { DotSprite } from '@/shared/ui/dot-sprite';
 
 type LanguageRowProps = {
-  index: number;
   dotSize: number;
   name: string;
   description?: string;
@@ -19,7 +18,7 @@ type LanguageRowProps = {
   testID: string;
 };
 
-export const LanguageRow = ({ index, dotSize, name, description, checked, onPress, testID }: LanguageRowProps): JSX.Element => {
+export const LanguageRow = ({ dotSize, name, description, checked, onPress, testID }: LanguageRowProps): JSX.Element => {
   const scale = dotSize / DOT_SIZE;
 
   const checkWidth = (CHECK_ICON[0]?.length ?? 0) * dotSize;
@@ -27,7 +26,7 @@ export const LanguageRow = ({ index, dotSize, name, description, checked, onPres
   const checkToName = 12 * scale;
 
   return (
-    <SettingsRow index={index} dotSize={dotSize} testID={testID} onPress={onPress}>
+    <SettingsRow dotSize={dotSize} testID={testID} onPress={onPress}>
       <View style={styles.column}>
         <View style={styles.line}>
           <View style={{ width: checkWidth, height: checkHeight, marginRight: checkToName }}>

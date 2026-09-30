@@ -9,7 +9,6 @@ type StackView = 'first' | 'second';
 
 const stackScreens: Record<StackView, DotModalScreen<StackView>> = {
   first: {
-    heightInDots: 120,
     render: ({ open }) => (
       <>
         <Pressable testID="to-second" onPress={() => open('second')}>
@@ -26,7 +25,6 @@ const stackScreens: Record<StackView, DotModalScreen<StackView>> = {
     ),
   },
   second: {
-    heightInDots: 120,
     render: () => <Text>두번째 화면</Text>,
   },
 };

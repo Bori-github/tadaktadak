@@ -7,7 +7,6 @@ type ModalNavigation<TView extends string> = {
 };
 
 export type DotModalScreen<TView extends string> = {
-  heightInDots: number;
   render: (navigation: ModalNavigation<TView>) => ReactNode;
 };
 

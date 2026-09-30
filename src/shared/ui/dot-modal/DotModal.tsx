@@ -1,5 +1,5 @@
 import { useEffect, type JSX, type ReactNode } from 'react';
-import { BackHandler, StyleSheet, View } from 'react-native';
+import { BackHandler, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { COLORS, DOT_SIZE } from '@/shared/constants';
@@ -8,6 +8,8 @@ import { BACK_ICON, CLOSE_ICON, IconButton } from '@/shared/ui/icon-button';
 
 /** 배율 1의 논리 픽셀. 피그마 `설정 화면 · 페이지` */
 const CONTENT_WIDTH = 342;
+const FIRST_ROW_TOP = 52;
+const BOTTOM_PADDING = 20;
 const BUTTON_INSET = 16;
 
 type DotModalProps = {
@@ -23,7 +25,8 @@ export const DotModal = ({ dotSize, onClose, onBack, children }: DotModalProps):
   const insets = useSafeAreaInsets();
   const scale = dotSize / DOT_SIZE;
 
-  const contentStyle = { marginTop: insets.top, width: CONTENT_WIDTH * scale };
+  const scrollStyle = { marginTop: insets.top + FIRST_ROW_TOP * scale, marginBottom: insets.bottom };
+  const contentStyle = { width: CONTENT_WIDTH * scale, paddingBottom: BOTTOM_PADDING * scale };
   const closeButtonStyle = { top: insets.top + BUTTON_INSET * scale, right: insets.right + BUTTON_INSET * scale };
   const backButtonStyle = { top: insets.top + BUTTON_INSET * scale, left: insets.left + BUTTON_INSET * scale };
 
@@ -38,7 +41,9 @@ export const DotModal = ({ dotSize, onClose, onBack, children }: DotModalProps):
 
   return (
     <View style={styles.root}>
-      <View style={[styles.content, contentStyle]}>{children}</View>
+      <ScrollView style={scrollStyle} contentContainerStyle={[styles.content, contentStyle]}>
+        {children}
+      </ScrollView>
       {onBack === undefined ? null : <IconButton testID="modal-back" dotSize={dotSize} icon={BACK_ICON} style={[styles.button, backButtonStyle]} onPress={onBack} />}
       <IconButton testID="modal-close" dotSize={dotSize} icon={CLOSE_ICON} style={[styles.button, closeButtonStyle]} onPress={onClose} />
     </View>
@@ -51,7 +56,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.modal.face,
   },
   content: {
-    flex: 1,
     alignSelf: 'center',
   },
   button: {

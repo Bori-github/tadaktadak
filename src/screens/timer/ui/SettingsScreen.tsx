@@ -4,9 +4,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { type NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Canvas } from '@shopify/react-native-skia';
 
-import { LANGUAGE_OPTIONS, LanguageList } from './LanguageList';
-import { MORE_ROW_COUNT, MoreList } from './MoreList';
-import { getPanelHeightInDots, SettingsRow } from './SettingsRow';
+import { LanguageList } from './LanguageList';
+import { MoreList } from './MoreList';
+import { SettingsRow } from './SettingsRow';
 
 import { translate, useLanguage, useSelectedLanguage } from '@/entities/language';
 import { previewVibration, setVibrationEnabled, TOGGLE_PATTERN, useVibrationEnabled } from '@/entities/vibration';
@@ -40,17 +40,16 @@ export const SettingsScreen = ({ navigation }: SettingsScreenProps): JSX.Element
 
   const screens: Record<SettingsView, DotModalScreen<SettingsView>> = {
     settings: {
-      heightInDots: getPanelHeightInDots(3),
       render: ({ open }) => (
         <>
-          <SettingsRow index={0} dotSize={dotSize} testID="settings-language" onPress={() => open('language')}>
+          <SettingsRow dotSize={dotSize} testID="settings-language" onPress={() => open('language')}>
             <Canvas style={{ width: iconSize, height: iconSize }}>
               <RectIconShape icon={LANGUAGE_ICON} left={0} top={0} dotSize={dotSize} color={COLORS.icon.default} />
             </Canvas>
             <Text style={[styles.value, valueStyle]}>{selected === null ? translate('language.system', language) : translate('language.name', selected)}</Text>
             <ChevronIcon dotSize={dotSize} />
           </SettingsRow>
-          <SettingsRow index={1} dotSize={dotSize}>
+          <SettingsRow dotSize={dotSize}>
             <Canvas style={{ width: iconSize, height: iconSize }}>
               <RectIconShape icon={VIBRATION_ICON} left={0} top={0} dotSize={dotSize} color={COLORS.icon.default} />
             </Canvas>
@@ -63,7 +62,7 @@ export const SettingsScreen = ({ navigation }: SettingsScreenProps): JSX.Element
               onValueChange={setVibrationEnabled}
             />
           </SettingsRow>
-          <SettingsRow index={2} dotSize={dotSize} testID="settings-more" onPress={() => open('more')}>
+          <SettingsRow dotSize={dotSize} testID="settings-more" onPress={() => open('more')}>
             <Canvas style={{ width: iconSize, height: iconSize }}>
               <RectIconShape icon={MORE_ICON} left={0} top={0} dotSize={dotSize} color={COLORS.icon.default} />
             </Canvas>
@@ -73,11 +72,9 @@ export const SettingsScreen = ({ navigation }: SettingsScreenProps): JSX.Element
       ),
     },
     language: {
-      heightInDots: getPanelHeightInDots(LANGUAGE_OPTIONS.length),
       render: () => <LanguageList dotSize={dotSize} />,
     },
     more: {
-      heightInDots: getPanelHeightInDots(MORE_ROW_COUNT),
       render: () => <MoreList dotSize={dotSize} />,
     },
   };
