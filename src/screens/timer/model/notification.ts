@@ -3,7 +3,7 @@ import { type PermissionStatus } from 'expo';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 
-import { BANNER_CHANNEL_ID, FALLBACK_CHANNEL_ID, VIBRATION_CHANNEL_ID } from '../config/notification';
+import { BANNER_CHANNEL_ID, COMPLETION_NOTIFICATION_ID_PREFIX, FALLBACK_CHANNEL_ID, VIBRATION_CHANNEL_ID } from '../config/notification';
 import { completionNotificationOptions, notificationBody, scheduleAt } from '../lib/notification';
 
 import { type TimerSession } from '@/entities/timer';
@@ -36,6 +36,18 @@ const registerNotificationChannelsForAndroid = (language: Language): Promise<unk
     }),
     Notifications.deleteNotificationChannelAsync(FALLBACK_CHANNEL_ID),
   ]);
+
+/**
+ * 표시 중인 완료 알림 삭제
+ *
+ * @returns 삭제 완료 시 이행하는 프로미스
+ */
+const dismissCompletionNotifications = async (): Promise<void> => {
+  const presented = await Notifications.getPresentedNotificationsAsync();
+  const completions = presented.filter((notification) => notification.request.identifier.startsWith(COMPLETION_NOTIFICATION_ID_PREFIX));
+
+  await Promise.all(completions.map((notification) => Notifications.dismissNotificationAsync(notification.request.identifier)));
+};
 
 type NotificationScheduleInput = {
   session: TimerSession;
@@ -82,6 +94,11 @@ export const useNotificationSchedule = ({ session, status, isSettled }: Notifica
       // 이펙트가 다시 실행되었거나(`live` false) 예약할 시각이 없으면(`at` null) 취소만 하고 종료
       if (!live || at === null) return;
 
+      // 앱별 알림 개수 제한으로 새 완료 알림이 누락되므로 표시 중인 완료 알림 삭제
+      // 휴식은 집중 완료 직후 자동 예약되어 방금 표시된 배너가 삭제되므로 집중 예약에서만 실행
+      // 삭제 실패와 무관하게 예약 진행
+      if (session.mode === 'focus') await dismissCompletionNotifications().catch(() => {});
+
       // 존재하지 않는 채널의 알림은 Android가 폐기하므로 예약 전 채널 등록 대기
       if (Platform.OS === 'android') await channelsReady.catch(() => registerNotificationChannelsForAndroid(language));
 
@@ -91,6 +108,7 @@ export const useNotificationSchedule = ({ session, status, isSettled }: Notifica
       const options = completionNotificationOptions({ isVibrationEnabled, platform: Platform.OS });
 
       await Notifications.scheduleNotificationAsync({
+        identifier: `${COMPLETION_NOTIFICATION_ID_PREFIX}${at}`,
         content: { title: translate('app.name', language), body: notificationBody(session.mode, language), ...options.content },
         trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: at, channelId: options.channelId },
       });
