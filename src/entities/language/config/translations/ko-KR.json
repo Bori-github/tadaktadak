@@ -6,6 +6,10 @@
     "focus": "집중 끝!",
     "rest": "휴식 끝!"
   },
+  "notification": {
+    "bannerChannel": "배너 알림",
+    "vibrationChannel": "진동 알림"
+  },
   "language": {
     "name": "한국어",
     "system": "시스템(기본)",

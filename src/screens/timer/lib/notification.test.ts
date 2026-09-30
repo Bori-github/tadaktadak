@@ -1,7 +1,8 @@
 import { PermissionStatus } from 'expo';
 import { beforeAll, describe, expect, it } from '@jest/globals';
 
-import { isNotificationBlocked, notificationBody, scheduleAt } from './notification';
+import { completionNotificationOptions, completionNotificationBehavior, isNotificationBlocked, notificationBody, scheduleAt } from './notification';
+import { BANNER_CHANNEL_ID, VIBRATION_CHANNEL_ID } from '../config/notification';
 
 import { initLocalization } from '@/entities/language';
 import { NOW, type TimerSession } from '@/entities/timer';
@@ -63,5 +64,50 @@ describe('알림 본문', () => {
   it('한국어는 다국어 적용 전과 같은 문구를 반환한다', () => {
     expect(notificationBody('focus', 'ko-KR')).toBe('집중 끝!');
     expect(notificationBody('rest', 'ko-KR')).toBe('휴식 끝!');
+  });
+});
+
+describe('completionNotificationOptions', () => {
+  it.each(['android', 'ios'] as const)('%s: 진동 사용 여부가 켜져 있으면 vibration, 꺼져 있으면 banner 채널 ID를 반환한다', (platform) => {
+    expect(completionNotificationOptions({ isVibrationEnabled: true, platform }).channelId).toBe(VIBRATION_CHANNEL_ID);
+    expect(completionNotificationOptions({ isVibrationEnabled: false, platform }).channelId).toBe(BANNER_CHANNEL_ID);
+  });
+
+  it('iOS는 content.sound에 진동 사용 여부를 지정한다', () => {
+    expect(completionNotificationOptions({ isVibrationEnabled: true, platform: 'ios' }).content).toEqual({ sound: true });
+    expect(completionNotificationOptions({ isVibrationEnabled: false, platform: 'ios' }).content).toEqual({ sound: false });
+  });
+
+  it('Android는 setSilent 판정을 피하도록 content.sound를 지정하지 않는다', () => {
+    expect(completionNotificationOptions({ isVibrationEnabled: false, platform: 'android' }).content).toEqual({});
+  });
+});
+
+describe('completionNotificationBehavior', () => {
+  it.each(['android', 'ios'] as const)('%s: canVibrate가 true면 배너·알림 목록·알림음을 모두 비활성화한다', (platform) => {
+    expect(completionNotificationBehavior({ canVibrate: true, platform })).toEqual({
+      shouldShowBanner: false,
+      shouldShowList: false,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    });
+  });
+
+  it('Android는 canVibrate가 false면 setSilent 판정을 피하도록 shouldPlaySound를 true로 반환한다', () => {
+    expect(completionNotificationBehavior({ canVibrate: false, platform: 'android' })).toEqual({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    });
+  });
+
+  it('iOS는 canVibrate가 false면 shouldPlaySound를 false로 반환한다', () => {
+    expect(completionNotificationBehavior({ canVibrate: false, platform: 'ios' })).toEqual({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    });
   });
 });
