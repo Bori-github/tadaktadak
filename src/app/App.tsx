@@ -7,7 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { Splash } from './Splash';
 
-import { TimerScreen } from '@/screens/timer';
+import { completionNotificationBehavior, TimerScreen } from '@/screens/timer';
 import { initLocalization, restoreLanguage } from '@/entities/language';
 import { canVibrate, prepareVibration, restoreVibrationEnabled, TAP_PATTERN } from '@/entities/vibration';
 
@@ -17,18 +17,7 @@ restoreLanguage();
 restoreVibrationEnabled();
 
 Notifications.setNotificationHandler({
-  handleNotification: async () => {
-    // 햅틱 미지원 기기나 진동 사용 여부가 꺼진 경우 완료 진동이 없어 포그라운드에서도 완료 배너 표시
-    const showsBanner = !canVibrate();
-
-    return {
-      shouldShowBanner: showsBanner,
-      shouldShowList: showsBanner,
-      // `shouldPlaySound: false`면 Android가 무음 알림(`setSilent`)으로 게시해 헤드업 미표시. 채널에 알림음이 없어 재생 없음
-      shouldPlaySound: showsBanner && Platform.OS === 'android',
-      shouldSetBadge: false,
-    };
-  },
+  handleNotification: async () => completionNotificationBehavior({ canVibrate: canVibrate(), platform: Platform.OS }),
 });
 
 export const App = (): JSX.Element => {

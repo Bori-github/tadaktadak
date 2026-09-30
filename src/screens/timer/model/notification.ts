@@ -3,18 +3,12 @@ import { type PermissionStatus } from 'expo';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 
-import { notificationBody, scheduleAt } from '../lib/notification';
+import { BANNER_CHANNEL_ID, FALLBACK_CHANNEL_ID, VIBRATION_CHANNEL_ID } from '../config/notification';
+import { completionNotificationOptions, notificationBody, scheduleAt } from '../lib/notification';
 
 import { type TimerSession } from '@/entities/timer';
 import { translate, useLanguage, type Language } from '@/entities/language';
 import { useVibrationEnabled } from '@/entities/vibration';
-
-/** 진동 사용 여부가 켜졌을 때의 완료 알림 채널. 소리 없음, 진동 있음 */
-const VIBRATION_CHANNEL_ID = 'vibration';
-/** 진동 사용 여부가 꺼졌을 때의 완료 알림 채널. 소리·진동 없음 */
-const BANNER_CHANNEL_ID = 'banner';
-/** 채널을 지정하지 않은 알림에 `expo-notifications`가 만든 채널. `BANNER_CHANNEL_ID`·`VIBRATION_CHANNEL_ID`로 대체해 삭제 */
-const FALLBACK_CHANNEL_ID = 'expo_notifications_fallback_notification_channel';
 
 /** 마지막 채널 등록. 알림 예약 전에 완료를 대기 */
 let channelsReady: Promise<unknown> = Promise.resolve();
@@ -89,12 +83,11 @@ export const useNotificationSchedule = ({ session, status, isSettled }: Notifica
       // 존재하지 않는 채널의 알림은 Android가 폐기하므로 예약 전 채널 등록 대기
       if (Platform.OS === 'android') await channelsReady.catch(() => registerNotificationChannelsForAndroid(language));
 
+      const options = completionNotificationOptions({ isVibrationEnabled, platform: Platform.OS });
+
       await Notifications.scheduleNotificationAsync({
-        // 백그라운드 알림은 `setNotificationHandler`를 거치지 않아 예약 시점의 진동 사용 여부로 채널(Android)·알림음(iOS) 결정
-        // iOS 알림 진동은 알림음에 종속되어 `sound: false`면 진동도 없음
-        // Android는 `sound: false`면 무음 알림(`setSilent`)으로 게시되어 헤드업이 표시되지 않으므로 iOS에만 지정
-        content: { title: translate('app.name', language), body: notificationBody(session.mode, language), ...(Platform.OS === 'ios' && { sound: isVibrationEnabled }) },
-        trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: at, channelId: isVibrationEnabled ? VIBRATION_CHANNEL_ID : BANNER_CHANNEL_ID },
+        content: { title: translate('app.name', language), body: notificationBody(session.mode, language), ...options.content },
+        trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: at, channelId: options.channelId },
       });
     };
 
