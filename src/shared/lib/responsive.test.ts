@@ -13,7 +13,7 @@ const SAFE_AREA_BOTTOM_EDGE = 810;
 const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: SAFE_AREA_TOP_EDGE, safeAreaBottomEdge: Math.max(SAFE_AREA_BOTTOM_EDGE, shortSide * 2) });
 
 // iPad mini 744×1133. safe area 위 24·아래 20
-const ipadMini = () => resolveLayout({ shortSide: 744, safeAreaTopEdge: 24, safeAreaBottomEdge: 1113 });
+const ipadMini = () => resolveLayout({ shortSide: 744, safeAreaTopEdge: 24, safeAreaBottomEdge: 1113, isTablet: true });
 
 // 위 끝을 0으로 두면 safe area 높이가 그대로 아래 끝 좌표가 됨
 const buttonOffset = (safeAreaHeight: number) => safeAreaHeight - resolveLayout({ shortSide: 390, safeAreaTopEdge: 0, safeAreaBottomEdge: safeAreaHeight }).buttonCenterY;
@@ -21,24 +21,12 @@ const buttonOffset = (safeAreaHeight: number) => safeAreaHeight - resolveLayout(
 const dialTopEdge = (safeAreaHeight: number) => resolveLayout({ shortSide: 390, safeAreaTopEdge: 0, safeAreaBottomEdge: safeAreaHeight }).dialCenterY - 182;
 
 describe('배율', () => {
-  it('지원 최소 짧은 변에서 1배다', () => {
-    expect(layout(338).scale).toBe(1);
+  it.each([338, 656])('짧은 변 %d에서 1배다', (shortSide) => {
+    expect(layout(shortSide).scale).toBe(1);
   });
 
-  it('지원 최소 짧은 변의 두 배에 못 미치면 1배에 머문다', () => {
-    expect(layout(675).scale).toBe(1);
-  });
-
-  it('지원 최소 짧은 변의 두 배에서 2배가 된다', () => {
-    expect(layout(676).scale).toBe(2);
-  });
-
-  it('지원 최소 짧은 변의 세 배에서 3배가 된다', () => {
-    expect(layout(1014).scale).toBe(3);
-  });
-
-  it('지원 최소 짧은 변의 네 배에서도 3배에 머문다', () => {
-    expect(layout(1352).scale).toBe(3);
+  it.each([657, 1024])('짧은 변 %d에서 상한 1.5배다', (shortSide) => {
+    expect(layout(shortSide).scale).toBe(1.5);
   });
 });
 
@@ -61,21 +49,8 @@ describe('개체 중심 반지름', () => {
     expect(layout(338).itemRadius).toBeCloseTo(132.6);
   });
 
-  it('배율이 2로 바뀌는 675와 676 사이에서 1 미만 차이다', () => {
-    expect(Math.abs(layout(676).itemRadius - layout(675).itemRadius)).toBeLessThan(1);
-  });
-
-  it('짧은 변 1170에서 459가 되고 그 이상에서 고정된다', () => {
-    expect(layout(1170).itemRadius).toBeCloseTo(459);
-    expect(layout(1400).itemRadius).toBeCloseTo(459);
-  });
-
-  it('기준 화면에서 상한 153에 걸린다', () => {
+  it('기준 화면에서 153이다', () => {
     expect(layout(390).itemRadius).toBe(153);
-  });
-
-  it('iPad mini에서 291.88이다', () => {
-    expect(layout(744).itemRadius).toBeCloseTo(291.88);
   });
 });
 
@@ -86,16 +61,6 @@ describe('기준 화면의 나머지 반지름', () => {
 
   it('눈금 숫자 반지름은 175다', () => {
     expect(layout(390).numeralRadius).toBe(175);
-  });
-});
-
-describe('배율 2에서 반지름 셋에 모두 k가 곱해진다', () => {
-  it('호·손잡이 반지름은 247.88이다', () => {
-    expect(layout(744).arcRadius).toBeCloseTo(247.88);
-  });
-
-  it('눈금 숫자 반지름은 335.88이다', () => {
-    expect(layout(744).numeralRadius).toBeCloseTo(335.88);
   });
 });
 
@@ -112,13 +77,23 @@ describe('지원 밖 화면', () => {
   });
 });
 
-describe('버튼 중심 y에는 k를 곱하지 않고 버튼에서 시계판까지는 k를 탄다', () => {
+describe('태블릿 창', () => {
+  const tablet = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: 0, safeAreaBottomEdge: shortSide * 2, isTablet: true });
+
+  it.each([560, 744, 1024])('짧은 변 %d에서 시계판 지름이 짧은 변의 70%다', (shortSide) => {
+    const { numeralRadius, dotSize } = tablet(shortSide);
+    const numeralHalfHeight = 3.5 * dotSize;
+    expect(((numeralRadius + numeralHalfHeight) * 2) / shortSide).toBeCloseTo(0.7);
+  });
+});
+
+describe('iPad mini 세로 위치', () => {
   it('iPad mini에서 버튼 중심 y는 963이다', () => {
     expect(ipadMini().buttonCenterY).toBe(963);
   });
 
-  it('iPad mini에서 시계판 중심 y는 467.12다', () => {
-    expect(ipadMini().dialCenterY).toBeCloseTo(467.12);
+  it('iPad mini에서 시계판 중심 y는 570.6이다', () => {
+    expect(ipadMini().dialCenterY).toBeCloseTo(570.6);
   });
 });
 

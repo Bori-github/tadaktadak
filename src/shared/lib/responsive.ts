@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 import { BUTTON_SIZE_IN_DOTS, DOT_SIZE, SCREEN_GRADES, type BonfireHeightInDots, type ScreenGrade } from '@/shared/constants';
 
 const EDGE_MARGIN = 8;
@@ -6,10 +8,11 @@ const DIAL_SAFE_AREA_MARGIN = 8;
 
 const REFERENCE_SHORT_SIDE = 390;
 const REFERENCE_ITEM_RADIUS = 153;
-const MAX_SHORT_SIDE = REFERENCE_SHORT_SIDE * 3;
 
-/** 가로 배치에서 줄인 개체 중심 반지름 하한 (배율 1). `DESIGN.md` §5 겹침 검산 */
+/** 축소된 개체 중심 반지름 하한 (배율 1). `DESIGN.md` §5 겹침 검산 */
 const MIN_ITEM_RADIUS = 118.1;
+/** 태블릿 창에서 시계판 지름이 짧은 변에서 차지하는 비율 */
+const TABLET_DIAL_RATIO = 0.7;
 /** 1분 간격이 모닥불 + 장작 필요 간격 6.5 도트가 되는 반지름. 미만이면 모닥불을 7 도트로 그림 (배율 1). `DESIGN.md` §5 겹침 검산 */
 const LARGE_BONFIRE_MIN_ITEM_RADIUS = (6.5 * 60) / Math.PI;
 const SMALL_BONFIRE_HEIGHT_IN_DOTS = 7;
@@ -30,7 +33,9 @@ const resolveScreenGrade = (shortSide: number): ScreenGrade => GRADES_FROM_LARGE
 /** 개체 중심 반지름에서 시계판 위 반높이까지 (배율 1) */
 const dialOuterOffset = (bonfireHeightInDots: number) => (bonfireHeightInDots * DOT_SIZE) / 2 + NUMERAL_GAP + NUMERAL_HALF_HEIGHT * 2;
 
-const proportionalItemRadius = (shortSide: number, scale: number) => (Math.min(shortSide, MAX_SHORT_SIDE) * REFERENCE_ITEM_RADIUS) / REFERENCE_SHORT_SIDE / scale;
+const proportionalItemRadius = (shortSide: number, scale: number) => (shortSide * REFERENCE_ITEM_RADIUS) / REFERENCE_SHORT_SIDE / scale;
+
+export const isTabletWindow = (shortSide: number): boolean => (Platform.OS === 'ios' ? Platform.isPad : shortSide >= 600);
 
 type SafeArea = { top: number; bottom: number; left: number; right: number };
 
@@ -77,6 +82,7 @@ type LayoutInput = {
   safeAreaBottomEdge: number;
   safeAreaLeftEdge?: number;
   safeAreaRightEdge?: number;
+  isTablet?: boolean;
 };
 
 type Layout = {
@@ -98,7 +104,7 @@ type Layout = {
 };
 
 // 좌우 경계를 생략하면 세로 화면으로 보고 너비를 짧은 변으로 사용
-export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge, safeAreaLeftEdge = 0, safeAreaRightEdge = shortSide }: LayoutInput): Layout => {
+export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge, safeAreaLeftEdge = 0, safeAreaRightEdge = shortSide, isTablet = false }: LayoutInput): Layout => {
   const safeArea = { top: safeAreaTopEdge, bottom: safeAreaBottomEdge, left: safeAreaLeftEdge, right: safeAreaRightEdge };
   const safeAreaWidth = safeArea.right - safeArea.left;
   const safeAreaHeight = safeArea.bottom - safeArea.top;
@@ -108,7 +114,7 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge, 
   const buttonHalfHeight = (BUTTON_SIZE_IN_DOTS / 2) * DOT_SIZE * scale;
 
   // 1. 배치 선택. 짧은 변 비례 크기로 세로 배치가 들어가는지 확인
-  const proportionalDialTopHalfHeight = (proportionalItemRadius(shortSide, scale) + dialOuterOffset(gradeBonfireHeight)) * scale;
+  const proportionalDialTopHalfHeight = isTablet ? (shortSide * TABLET_DIAL_RATIO) / 2 : (proportionalItemRadius(shortSide, scale) + dialOuterOffset(gradeBonfireHeight)) * scale;
   const portraitHeight = proportionalDialTopHalfHeight * 2 + DIAL_TO_BUTTON_GAP + buttonHalfHeight * 2 + BUTTON_BOTTOM_MARGIN_MIN;
   const isLandscape = safeAreaHeight < portraitHeight;
 

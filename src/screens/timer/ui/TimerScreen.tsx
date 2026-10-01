@@ -36,7 +36,7 @@ import {
 import { isReadyPhase, type TimerMode } from '@/entities/timer';
 import { playVibration } from '@/entities/vibration';
 import { BUTTON_SIZE_IN_DOTS, COLORS } from '@/shared/constants';
-import { resolveLayout, type RootStackParamList } from '@/shared/lib';
+import { isTabletWindow, resolveLayout, type RootStackParamList } from '@/shared/lib';
 import { RoundDotButton } from '@/shared/ui/dot-button';
 import { NOTIFICATION_OFF_ICON, SETTINGS_ICON } from '@/shared/ui/dot-icon';
 
@@ -66,6 +66,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
 
   const layout = resolveLayout({
     shortSide: Math.min(width, height),
+    isTablet: isTabletWindow(Math.min(width, height)),
     safeAreaTopEdge: insets.top,
     safeAreaBottomEdge: height - insets.bottom,
     safeAreaLeftEdge: insets.left,

@@ -6,7 +6,7 @@ import { DEVICES, type DeviceName } from './devices';
 import { resolveLayout } from './responsive';
 
 /** 최대 투영 (dot). `DESIGN.md` §4 */
-const PROJECTION = { log: 4, bonfire: 9, marker: 5 };
+const PROJECTION = { log: 4, bonfire: 7, marker: 5 };
 
 /** 개체 높이 (dot). `DESIGN.md` §4 */
 const HEIGHT = { bonfire: 9, thumb: 7, numeral: 7, button: BUTTON_SIZE_IN_DOTS };
@@ -31,37 +31,20 @@ describe('1분 간격', () => {
   it('기준 화면 390에서 반지름 153의 원주를 60으로 나눈 8.01 도트다', () => {
     expect(round(minuteGap(390))).toBe(8.01);
   });
-
-  it('짧은 변 676은 계산용 너비가 하한 338이라 6.94 도트로 가장 좁다', () => {
-    expect(round(minuteGap(676))).toBe(6.94);
-  });
-
-  it('짧은 변 1014도 계산용 너비가 338이라 676과 같다', () => {
-    expect(round(minuteGap(1014))).toBe(round(minuteGap(676)));
-  });
-
-  it('짧은 변 744는 계산용 너비가 372라 676보다 넓다', () => {
-    expect(minuteGap(744)).toBeGreaterThan(minuteGap(676));
-  });
 });
 
-describe('짧은 변 676의 원주 방향 겹침', () => {
-  const gap = minuteGap(676);
+describe('개체 중심 반지름 하한 118.1의 원주 방향 겹침', () => {
+  // 가로 배치에서 safe area 높이가 낮아 하한까지 축소된 창
+  const { itemRadius, bonfireHeightInDots } = resolveLayout({ shortSide: 300, safeAreaTopEdge: 0, safeAreaBottomEdge: 300, safeAreaLeftEdge: 0, safeAreaRightEdge: 375 });
+  const gap = (Math.PI * itemRadius) / 60;
 
-  it('장작 + 장작은 간격 6.94에서 필요 4.0을 빼 여유 2.94 도트다', () => {
-    expect(round(gap - needed(PROJECTION.log, PROJECTION.log))).toBe(2.94);
+  it('1분 간격 최솟값은 6.18 도트이고 모닥불은 7 도트다', () => {
+    expect(round(gap)).toBe(6.18);
+    expect(bonfireHeightInDots).toBe(PROJECTION.bonfire);
   });
 
-  it('모닥불 + 장작은 간격 6.94에서 필요 6.5를 빼 여유 0.44 도트다', () => {
-    expect(round(gap - needed(PROJECTION.bonfire, PROJECTION.log))).toBe(0.44);
-  });
-
-  it('모닥불끼리는 눈금 다섯 개 34.71에서 필요 9.0을 빼 여유 25.71 도트다', () => {
-    expect(round(gap * 5 - needed(PROJECTION.bonfire, PROJECTION.bonfire))).toBe(25.71);
-  });
-
-  it('12시 모닥불과 기준 표식은 반 눈금 3.47에서 필요 7.0을 빼 3.53 도트 겹친다', () => {
-    expect(round(gap * 0.5 - needed(PROJECTION.bonfire, PROJECTION.marker))).toBe(-3.53);
+  it('7 도트 모닥불 + 장작 여유는 0.68 도트다 (간격 6.18, 필요 5.5)', () => {
+    expect(round(gap - needed(PROJECTION.bonfire, PROJECTION.log))).toBe(0.68);
   });
 });
 
@@ -107,11 +90,11 @@ describe('시계판 아래 끝과 버튼 위 끝은 배율과 무관하게 90 �
     expect(gapOnDevice('iPhoneSE')).toBe(90);
   });
 
-  it('시계판 위 반높이가 349.88로 커지는 iPad mini에서도 90이다', () => {
+  it('iPad mini에서도 90이다', () => {
     expect(gapOnDevice('iPadMini')).toBe(90);
   });
 
-  it('배율 3인 짧은 변 1014에서도 90이다', () => {
+  it('짧은 변 1014에서도 90이다', () => {
     expect(gapOn(1014, 24, 1300)).toBe(90);
   });
 
