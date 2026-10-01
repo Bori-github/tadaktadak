@@ -13,7 +13,7 @@ export type LiveActivityContent = {
 };
 
 type LiveActivityEvents = {
-  /** `StopTimerIntent`가 `UserDefaults`에 정지 값을 저장한 직후에 발생 */
+  /** 정지 버튼이 정지 값을 저장한 직후 발생 */
   onStopped: () => void;
 };
 
@@ -26,7 +26,7 @@ declare class LiveActivityModule extends NativeModule<LiveActivityEvents> {
   startAsync(content: LiveActivityContent): Promise<void>;
   /** 남아 있는 Live Activity를 모두 즉시 종료 */
   endAsync(): Promise<void>;
-  /** `StopTimerIntent`가 `UserDefaults`에 저장한, 정지한 Live Activity의 `endsAt`(밀리초) */
+  /** 정지 버튼이 저장한 `endsAt`(밀리초). 읽으면 삭제 */
   consumeStoppedEndsAt(): number | null;
 }
 

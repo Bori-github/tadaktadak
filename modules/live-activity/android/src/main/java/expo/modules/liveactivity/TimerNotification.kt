@@ -13,6 +13,8 @@ import androidx.core.app.NotificationManagerCompat
 import java.util.Locale
 import kotlin.math.roundToInt
 
+internal const val EXTRA_STOPPED_ENDS_AT = "expo.modules.liveactivity.STOPPED_ENDS_AT"
+
 private const val CHANNEL_ID = "live-activity"
 private const val NOTIFICATION_ID = 1
 private const val MINUTE_IN_MS = 60_000.0
@@ -50,6 +52,7 @@ internal object TimerNotification {
       .setLargeIcon(largeIcon(context, if (isFocus) R.drawable.bonfire_hot_still_9 else R.drawable.bonfire_cold_9))
       .setContentTitle(localized.getString(R.string.live_activity_title, minutes))
       .setContentIntent(openAppIntent(context))
+      .addAction(0, localized.getString(R.string.live_activity_stop), stopIntent(context, endsAt))
       .setOngoing(true)
       .setOnlyAlertOnce(true)
       .setWhen(endsAt)
@@ -94,5 +97,14 @@ internal object TimerNotification {
     val intent = context.packageManager.getLaunchIntentForPackage(context.packageName) ?: return null
 
     return PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+  }
+
+  // Android 12+ notification trampoline 제한으로 Activity를 직접 실행
+  // extra는 `PendingIntent` 동일성 비교에서 제외돼 requestCode 분리
+  private fun stopIntent(context: Context, endsAt: Long): PendingIntent? {
+    val intent = context.packageManager.getLaunchIntentForPackage(context.packageName) ?: return null
+    intent.putExtra(EXTRA_STOPPED_ENDS_AT, endsAt)
+
+    return PendingIntent.getActivity(context, 1, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
   }
 }

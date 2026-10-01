@@ -1,4 +1,5 @@
 <resources>
   <string name="live_activity_channel">실시간 업데이트 알림</string>
   <string name="live_activity_title">%d분</string>
+  <string name="live_activity_stop">정지</string>
 </resources>
