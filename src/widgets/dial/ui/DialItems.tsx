@@ -8,7 +8,7 @@ import { BLOOM_ALPHA, BLOOM_GRADIENT, BLOOM_RADIUS, CENTER_BLOOM_ALPHA, CENTER_B
 import { pointOnDial } from '../lib/geometry';
 import { useFlickerStep } from '../model/flicker';
 import { ignitionProgress } from '@/entities/timer';
-import { SCREEN_GRADES, type BonfireHeightInDots, type ScreenGrade } from '@/shared/constants';
+import { type BonfireHeightInDots } from '@/shared/constants';
 import { topLeftOnGrid } from '@/shared/lib';
 import {
   BONFIRE_COLD_7,
@@ -43,7 +43,7 @@ type DialItemsProps = {
   centerY: number;
   radius: number;
   dotSize: number;
-  screenGrade: ScreenGrade;
+  bonfireHeightInDots: BonfireHeightInDots;
   /** 남은 시간(분). 대기에서는 설정 시간이라 아무 눈금도 붙지 않음 */
   remainingMinutes: number;
   settingMinutes: number;
@@ -135,8 +135,7 @@ const drawBloom = (): SkImage | null => {
   return surface.makeImageSnapshot();
 };
 
-export const DialItems = memo(({ centerX, centerY, radius, dotSize, screenGrade, remainingMinutes, settingMinutes, isPaused, isReady }: DialItemsProps) => {
-  const { bonfireHeightInDots } = SCREEN_GRADES[screenGrade];
+export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeightInDots, remainingMinutes, settingMinutes, isPaused, isReady }: DialItemsProps) => {
   const grids = useMemo(() => {
     const bonfire = BONFIRE_SPRITES[bonfireHeightInDots];
     return [LOG_COLD, bonfire.cold, MARKER, LOG_HOT_A, LOG_HOT_B, bonfire.hotA, bonfire.hotB];

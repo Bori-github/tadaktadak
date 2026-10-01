@@ -3,15 +3,16 @@ import { describe, expect, it } from '@jest/globals';
 import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
 
 import { DEVICES, type DeviceName } from './devices';
-import { resolveLayout } from './responsive';
+import { resolveLayout, type FormFactor } from './responsive';
 
 /** 최대 투영 (dot). `DESIGN.md` §4 */
-const PROJECTION = { log: 4, bonfire: 9, marker: 5 };
+const PROJECTION = { log: 4, bonfire: 7 };
 
 /** 개체 높이 (dot). `DESIGN.md` §4 */
 const HEIGHT = { bonfire: 9, thumb: 7, numeral: 7, button: BUTTON_SIZE_IN_DOTS };
 
-const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: 47, safeAreaBottomEdge: 810 });
+// 큰 짧은 변에서도 세로 배치를 유지하려고 safe area 아래 끝을 짧은 변의 2배 이상으로 설정
+const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: 47, safeAreaBottomEdge: Math.max(810, shortSide * 2) });
 
 /** 화면 반지름에서 배율을 나눈 값 (px). 도트 수는 배율과 무관하므로 도트 단위 검산은 이 값으로 계산 */
 const baseItemRadius = (shortSide: number) => {
@@ -19,7 +20,7 @@ const baseItemRadius = (shortSide: number) => {
   return itemRadius / scale;
 };
 
-/** 1분 간격 (dot). `DESIGN.md` §7 계산 순서 8 */
+/** 1분 간격 (dot). `DESIGN.md` §7 계산 순서 7 */
 const minuteGap = (shortSide: number) => (Math.PI * baseItemRadius(shortSide)) / 60;
 
 const needed = (a: number, b: number) => (a + b) / 2;
@@ -30,37 +31,20 @@ describe('1분 간격', () => {
   it('기준 화면 390에서 반지름 153의 원주를 60으로 나눈 8.01 도트다', () => {
     expect(round(minuteGap(390))).toBe(8.01);
   });
-
-  it('짧은 변 676은 계산용 너비가 하한 338이라 6.91 도트로 가장 좁다', () => {
-    expect(round(minuteGap(676))).toBe(6.91);
-  });
-
-  it('짧은 변 1014도 계산용 너비가 338이라 676과 같다', () => {
-    expect(round(minuteGap(1014))).toBe(round(minuteGap(676)));
-  });
-
-  it('짧은 변 744는 계산용 너비가 372라 676보다 넓다', () => {
-    expect(minuteGap(744)).toBeGreaterThan(minuteGap(676));
-  });
 });
 
-describe('짧은 변 676의 원주 방향 겹침', () => {
-  const gap = minuteGap(676);
+describe('개체 중심 반지름 하한 118.1의 원주 방향 겹침', () => {
+  // 가로 배치에서 safe area 높이가 낮아 하한까지 축소되고 버튼과는 떨어진 창
+  const { itemRadius, bonfireHeightInDots } = resolveLayout({ shortSide: 300, safeAreaTopEdge: 0, safeAreaBottomEdge: 300, safeAreaLeftEdge: 0, safeAreaRightEdge: 844 });
+  const gap = (Math.PI * itemRadius) / 60;
 
-  it('장작 + 장작은 간격 6.91에서 필요 4.0을 빼 여유 2.91 도트다', () => {
-    expect(round(gap - needed(PROJECTION.log, PROJECTION.log))).toBe(2.91);
+  it('1분 간격 최솟값은 6.18 도트이고 모닥불은 7 도트다', () => {
+    expect(round(gap)).toBe(6.18);
+    expect(bonfireHeightInDots).toBe(7);
   });
 
-  it('모닥불 + 장작은 간격 6.91에서 필요 6.5를 빼 여유 0.41 도트다', () => {
-    expect(round(gap - needed(PROJECTION.bonfire, PROJECTION.log))).toBe(0.41);
-  });
-
-  it('모닥불끼리는 눈금 다섯 개 34.56에서 필요 9.0을 빼 여유 25.56 도트다', () => {
-    expect(round(gap * 5 - needed(PROJECTION.bonfire, PROJECTION.bonfire))).toBe(25.56);
-  });
-
-  it('12시 모닥불과 기준 표식은 반 눈금 3.46에서 필요 7.0을 빼 3.54 도트 겹친다', () => {
-    expect(round(gap * 0.5 - needed(PROJECTION.bonfire, PROJECTION.marker))).toBe(-3.54);
+  it('7 도트 모닥불 + 장작 여유는 0.68 도트다 (간격 6.18, 필요 5.5)', () => {
+    expect(round(gap - needed(PROJECTION.bonfire, PROJECTION.log))).toBe(0.68);
   });
 });
 
@@ -86,16 +70,16 @@ describe('기준 화면의 반지름 방향 간격', () => {
 });
 
 describe('시계판 아래 끝과 버튼 위 끝은 배율과 무관하게 90 떨어진다', () => {
-  const gapOn = (shortSide: number, top: number, bottom: number) => {
-    const l = resolveLayout({ shortSide, safeAreaTopEdge: top, safeAreaBottomEdge: bottom });
+  const gapOn = (shortSide: number, top: number, bottom: number, formFactor: FormFactor = 'phone') => {
+    const l = resolveLayout({ shortSide, safeAreaTopEdge: top, safeAreaBottomEdge: bottom, formFactor });
     const numeralOuter = l.dialCenterY + l.numeralRadius + HEIGHT.numeral * 0.5 * l.dotSize;
     const buttonTop = l.buttonCenterY - (HEIGHT.button * l.dotSize) / 2;
     return buttonTop - numeralOuter;
   };
 
   const gapOnDevice = (name: DeviceName) => {
-    const { shortSide, topEdge, bottomEdge } = DEVICES[name];
-    return gapOn(shortSide, topEdge, bottomEdge);
+    const { shortSide, topEdge, bottomEdge, formFactor } = DEVICES[name];
+    return gapOn(shortSide, topEdge, bottomEdge, formFactor);
   };
 
   it('기준 화면 iPhone 17e에서 90이다', () => {
@@ -106,15 +90,15 @@ describe('시계판 아래 끝과 버튼 위 끝은 배율과 무관하게 90 �
     expect(gapOnDevice('iPhoneSE')).toBe(90);
   });
 
-  it('시계판 위 반높이가 356으로 커지는 iPad mini에서도 90이다', () => {
+  it('iPad mini에서도 90이다', () => {
     expect(gapOnDevice('iPadMini')).toBe(90);
   });
 
-  it('배율 3인 짧은 변 1014에서도 90이다', () => {
+  it('짧은 변 1014에서도 90이다', () => {
     expect(gapOn(1014, 24, 1300)).toBe(90);
   });
 
-  it('safe area 높이 500이라 버튼 거리가 하한 44로 클램프돼도 90이다', () => {
-    expect(gapOn(390, 0, 500)).toBe(90);
+  it('safe area 높이 526에서 버튼 거리가 하한 44로 클램프되어도 90이다', () => {
+    expect(gapOn(390, 0, 526)).toBe(90);
   });
 });

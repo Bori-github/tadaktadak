@@ -15,6 +15,7 @@ import { useNotificationSchedule } from '../model/notification';
 import { useNotificationPermission } from '../model/permission';
 import { useTimerSession } from '../model/session';
 import { useTimerSpeed } from '../model/speed';
+import { useWindowControlsLeftInset } from '../model/windowControls';
 
 import { DevPanel } from './DevPanel';
 
@@ -36,7 +37,7 @@ import {
 import { isReadyPhase, type TimerMode } from '@/entities/timer';
 import { playVibration } from '@/entities/vibration';
 import { BUTTON_SIZE_IN_DOTS, COLORS } from '@/shared/constants';
-import { resolveLayout, type RootStackParamList } from '@/shared/lib';
+import { resolveLayout, getFormFactor, type RootStackParamList } from '@/shared/lib';
 import { RoundDotButton } from '@/shared/ui/dot-button';
 import { NOTIFICATION_OFF_ICON, SETTINGS_ICON } from '@/shared/ui/dot-icon';
 
@@ -47,6 +48,7 @@ type TimerScreenProps = NativeStackScreenProps<RootStackParamList, 'timer'>;
 export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const windowControlsLeftInset = useWindowControlsLeftInset();
   const isFocused = useIsFocused();
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
   const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
@@ -66,11 +68,14 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
 
   const layout = resolveLayout({
     shortSide: Math.min(width, height),
+    formFactor: getFormFactor(),
     safeAreaTopEdge: insets.top,
     safeAreaBottomEdge: height - insets.bottom,
+    safeAreaLeftEdge: insets.left,
+    safeAreaRightEdge: width - insets.right,
   });
 
-  const centerX = width / 2;
+  const centerX = layout.dialCenterX;
   const centerY = layout.dialCenterY;
   const editing = isReadyPhase(session.phase);
   const shownMode = editing ? editTarget : session.mode;
@@ -111,10 +116,16 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   const handleChangeEnd = useCallback((value: number) => storeMinutes(editTarget, value), [storeMinutes, editTarget]);
 
   const roundButtonTop = insets.top + layout.edgeMargin;
-  const notificationSettingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, left: layout.edgeMargin }], [roundButtonTop, layout.edgeMargin]);
-  const settingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, right: layout.edgeMargin }], [roundButtonTop, layout.edgeMargin]);
+  const roundButtonLeft = Math.max(insets.left, windowControlsLeftInset) + layout.edgeMargin;
+  const roundButtonRight = insets.right + layout.edgeMargin;
+  const notificationSettingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, left: roundButtonLeft }], [roundButtonTop, roundButtonLeft]);
+  const settingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, right: roundButtonRight }], [roundButtonTop, roundButtonRight]);
   const controlButtonsTop = layout.buttonCenterY - (BUTTON_SIZE_IN_DOTS * layout.dotSize) / 2;
-  const controlButtonsStyle = useMemo(() => [styles.controlButtons, { top: controlButtonsTop }], [controlButtonsTop]);
+  const controlButtonsShift = layout.buttonsCenterX - width / 2;
+  const controlButtonsStyle = useMemo(
+    () => [styles.controlButtons, { top: controlButtonsTop, transform: [{ translateX: controlButtonsShift }] }],
+    [controlButtonsTop, controlButtonsShift],
+  );
   const handleSettingsPress = useCallback(() => navigation.navigate('settings'), [navigation]);
   // 설정 앱 열기 실패 시 화면 변화 없음
   const handleNotificationSettingsPress = useCallback(() => Linking.openSettings().catch(() => {}), []);
@@ -149,7 +160,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
             centerY={centerY}
             radius={layout.itemRadius}
             dotSize={layout.dotSize}
-            screenGrade={layout.screenGrade}
+            bonfireHeightInDots={layout.bonfireHeightInDots}
             remainingMinutes={litMinutes}
             settingMinutes={itemMinutes}
             isPaused={session.phase === 'paused'}
