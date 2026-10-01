@@ -1,15 +1,20 @@
 package expo.modules.liveactivity
 
 import android.annotation.SuppressLint
+import android.app.AlarmManager
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import androidx.core.app.AlarmManagerCompat
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.edit
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -17,6 +22,7 @@ internal const val EXTRA_STOPPED_ENDS_AT = "expo.modules.liveactivity.STOPPED_EN
 
 private const val CHANNEL_ID = "live-activity"
 private const val NOTIFICATION_ID = 1
+private const val SECOND_IN_MS = 1_000.0
 private const val MINUTE_IN_MS = 60_000.0
 
 // `src/shared/constants/colors.ts`의 `focus.arc`
@@ -25,13 +31,24 @@ private const val FOCUS_COLOR = 0xFF6A5B9C.toInt()
 // `rest.arc`는 흰 아이콘과 대비가 4.5:1 미만이라 OS가 어둡게 바꿔 칠해서, 대비가 넘는 `rest.thumbArm`을 씀
 private const val REST_COLOR = 0xFF2F7B85.toInt()
 
+// `rest.arc`
+private const val REST_PROGRESS_COLOR = 0xFF3F9AA6.toInt()
+
+private const val PREFERENCES_NAME = "live-activity-content"
+private const val PROGRESS_STEP_RATIO = 0.01
+
+// 짧은 타이머·배속에서 notify 과다 방지용 하한
+private const val MIN_PROGRESS_STEP_MS = 1_000L
+
 private const val SPRITE_ROWS = 9
 private const val LARGE_ICON_HEIGHT_RATIO = 0.6
+
+internal data class TimerContent(val mode: String, val progressStartsAt: Double, val endsAt: Double, val language: String?)
 
 internal object TimerNotification {
   // `areNotificationsEnabled`가 거부된 알림 권한까지 반영해 여기서 따로 확인하지 않음
   @SuppressLint("MissingPermission")
-  fun show(context: Context, content: LiveActivityContentRecord) {
+  fun show(context: Context, content: TimerContent) {
     val manager = NotificationManagerCompat.from(context)
     if (!manager.areNotificationsEnabled()) return
 
@@ -58,15 +75,86 @@ internal object TimerNotification {
       .setWhen(endsAt)
       .setUsesChronometer(true)
       .setChronometerCountDown(true)
+      .setStyle(progressStyle(content, if (isFocus) FOCUS_COLOR else REST_PROGRESS_COLOR))
       // 끝날 시각에 시스템이 알림을 지움. 앱 프로세스가 없어도 동작
       .setTimeoutAfter((endsAt - System.currentTimeMillis()).coerceAtLeast(0))
       .build()
 
     manager.notify(NOTIFICATION_ID, notification)
+
+    saveContent(context, content)
+    scheduleProgressUpdate(context, content)
+  }
+
+  // dismiss된 알림은 재게시하지 않음
+  fun updateProgress(context: Context) {
+    val manager = context.getSystemService(NotificationManager::class.java)
+    if (manager.activeNotifications.none { it.id == NOTIFICATION_ID }) return
+
+    val content = loadContent(context) ?: return
+    if (content.endsAt <= System.currentTimeMillis()) return
+
+    show(context, content)
   }
 
   fun cancel(context: Context) {
     NotificationManagerCompat.from(context).cancel(NOTIFICATION_ID)
+    context.getSystemService(AlarmManager::class.java).cancel(progressUpdateIntent(context))
+    preferences(context).edit { clear() }
+  }
+
+  // RTC(non-wakeup)라 화면 꺼짐·Doze 중 갱신은 다음 wake까지 지연
+  private fun scheduleProgressUpdate(context: Context, content: TimerContent) {
+    val step = ((content.endsAt - content.progressStartsAt) * PROGRESS_STEP_RATIO).toLong().coerceAtLeast(MIN_PROGRESS_STEP_MS)
+    val next = System.currentTimeMillis() + step
+    if (next >= content.endsAt) return
+
+    val alarmManager = context.getSystemService(AlarmManager::class.java)
+    val intent = progressUpdateIntent(context)
+
+    if (AlarmManagerCompat.canScheduleExactAlarms(alarmManager)) alarmManager.setExact(AlarmManager.RTC, next, intent)
+    else alarmManager.set(AlarmManager.RTC, next, intent)
+  }
+
+  private fun progressUpdateIntent(context: Context): PendingIntent =
+    PendingIntent.getBroadcast(
+      context,
+      0,
+      Intent(context, ProgressUpdateReceiver::class.java),
+      PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+    )
+
+  private fun preferences(context: Context) = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+
+  private fun saveContent(context: Context, content: TimerContent) {
+    preferences(context).edit {
+      putString("mode", content.mode)
+      putLong("progressStartsAt", content.progressStartsAt.toLong())
+      putLong("endsAt", content.endsAt.toLong())
+      putString("language", content.language)
+    }
+  }
+
+  private fun loadContent(context: Context): TimerContent? {
+    val preferences = preferences(context)
+    val mode = preferences.getString("mode", null) ?: return null
+
+    return TimerContent(
+      mode,
+      preferences.getLong("progressStartsAt", 0).toDouble(),
+      preferences.getLong("endsAt", 0).toDouble(),
+      preferences.getString("language", null)
+    )
+  }
+
+  // API 36 미만은 `setProgress` 표준 막대로 fallback, 구간 색 미적용
+  private fun progressStyle(content: TimerContent, color: Int): NotificationCompat.ProgressStyle {
+    val totalSeconds = ((content.endsAt - content.progressStartsAt) / SECOND_IN_MS).toInt()
+    val elapsedSeconds = ((System.currentTimeMillis() - content.progressStartsAt) / SECOND_IN_MS).toInt()
+
+    return NotificationCompat.ProgressStyle()
+      .addProgressSegment(NotificationCompat.ProgressStyle.Segment(totalSeconds).setColor(color))
+      .setProgress(elapsedSeconds.coerceIn(0, totalSeconds))
   }
 
   // 시스템 언어가 아니라 앱에서 고른 언어로 문구를 읽기 위함

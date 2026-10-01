@@ -49,7 +49,7 @@ class LiveActivityModule : Module() {
     }
 
     AsyncFunction("startAsync") { content: LiveActivityContentRecord ->
-      TimerNotification.show(context, content)
+      TimerNotification.show(context, TimerContent(content.mode, content.progressStartsAt, content.endsAt, content.language))
     }
 
     AsyncFunction("endAsync") {
