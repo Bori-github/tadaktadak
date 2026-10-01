@@ -11,7 +11,8 @@ const PROJECTION = { log: 4, bonfire: 9, marker: 5 };
 /** 개체 높이 (dot). `DESIGN.md` §4 */
 const HEIGHT = { bonfire: 9, thumb: 7, numeral: 7, button: BUTTON_SIZE_IN_DOTS };
 
-const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: 47, safeAreaBottomEdge: 810 });
+// 큰 짧은 변에서도 세로 배치를 유지하려고 safe area 아래 끝을 짧은 변의 2배 이상으로 설정
+const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: 47, safeAreaBottomEdge: Math.max(810, shortSide * 2) });
 
 /** 화면 반지름에서 배율을 나눈 값 (px). 도트 수는 배율과 무관하므로 도트 단위 검산은 이 값으로 계산 */
 const baseItemRadius = (shortSide: number) => {
@@ -114,7 +115,7 @@ describe('시계판 아래 끝과 버튼 위 끝은 배율과 무관하게 90 �
     expect(gapOn(1014, 24, 1300)).toBe(90);
   });
 
-  it('safe area 높이 500이라 버튼 거리가 하한 44로 클램프돼도 90이다', () => {
-    expect(gapOn(390, 0, 500)).toBe(90);
+  it('safe area 높이 526에서 버튼 거리가 하한 44로 클램프되어도 90이다', () => {
+    expect(gapOn(390, 0, 526)).toBe(90);
   });
 });

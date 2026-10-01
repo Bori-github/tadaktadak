@@ -68,9 +68,11 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
     shortSide: Math.min(width, height),
     safeAreaTopEdge: insets.top,
     safeAreaBottomEdge: height - insets.bottom,
+    safeAreaLeftEdge: insets.left,
+    safeAreaRightEdge: width - insets.right,
   });
 
-  const centerX = width / 2;
+  const centerX = layout.dialCenterX;
   const centerY = layout.dialCenterY;
   const editing = isReadyPhase(session.phase);
   const shownMode = editing ? editTarget : session.mode;
@@ -111,10 +113,16 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   const handleChangeEnd = useCallback((value: number) => storeMinutes(editTarget, value), [storeMinutes, editTarget]);
 
   const roundButtonTop = insets.top + layout.edgeMargin;
-  const notificationSettingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, left: layout.edgeMargin }], [roundButtonTop, layout.edgeMargin]);
-  const settingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, right: layout.edgeMargin }], [roundButtonTop, layout.edgeMargin]);
+  const roundButtonLeft = insets.left + layout.edgeMargin;
+  const roundButtonRight = insets.right + layout.edgeMargin;
+  const notificationSettingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, left: roundButtonLeft }], [roundButtonTop, roundButtonLeft]);
+  const settingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, right: roundButtonRight }], [roundButtonTop, roundButtonRight]);
   const controlButtonsTop = layout.buttonCenterY - (BUTTON_SIZE_IN_DOTS * layout.dotSize) / 2;
-  const controlButtonsStyle = useMemo(() => [styles.controlButtons, { top: controlButtonsTop }], [controlButtonsTop]);
+  const controlButtonsShift = layout.buttonsCenterX - width / 2;
+  const controlButtonsStyle = useMemo(
+    () => [styles.controlButtons, { top: controlButtonsTop, transform: [{ translateX: controlButtonsShift }] }],
+    [controlButtonsTop, controlButtonsShift],
+  );
   const handleSettingsPress = useCallback(() => navigation.navigate('settings'), [navigation]);
   // 설정 앱 열기 실패 시 화면 변화 없음
   const handleNotificationSettingsPress = useCallback(() => Linking.openSettings().catch(() => {}), []);

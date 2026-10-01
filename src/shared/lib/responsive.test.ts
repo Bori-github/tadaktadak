@@ -9,7 +9,8 @@ import { resolveLayout } from './responsive';
 const SAFE_AREA_TOP_EDGE = 47;
 const SAFE_AREA_BOTTOM_EDGE = 810;
 
-const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: SAFE_AREA_TOP_EDGE, safeAreaBottomEdge: SAFE_AREA_BOTTOM_EDGE });
+// 큰 짧은 변에서도 세로 배치를 유지하려고 safe area 아래 끝을 짧은 변의 2배 이상으로 설정
+const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: SAFE_AREA_TOP_EDGE, safeAreaBottomEdge: Math.max(SAFE_AREA_BOTTOM_EDGE, shortSide * 2) });
 
 // iPad mini 744×1133. safe area 위 24·아래 20
 const ipadMini = () => resolveLayout({ shortSide: 744, safeAreaTopEdge: 24, safeAreaBottomEdge: 1113 });
@@ -137,10 +138,6 @@ describe('safe area 높이와 버튼 거리', () => {
   it('526에서 하한 44에 닿는다', () => {
     expect(buttonOffset(526)).toBe(44);
   });
-
-  it('500에서도 하한 44에 머문다', () => {
-    expect(buttonOffset(500)).toBe(44);
-  });
 });
 
 describe('safe area 높이와 시계판 위 끝', () => {
@@ -152,9 +149,47 @@ describe('safe area 높이와 시계판 위 끝', () => {
     expect(dialTopEdge(600)).toBe(0);
     expect(dialTopEdge(526)).toBe(0);
   });
+});
 
-  it('500에서는 safe area 위 끝을 넘어 잘린다', () => {
-    expect(dialTopEdge(500)).toBeLessThan(0);
+describe('배치 선택', () => {
+  const isLandscape = (safeAreaHeight: number) => resolveLayout({ shortSide: 390, safeAreaTopEdge: 0, safeAreaBottomEdge: safeAreaHeight }).isLandscape;
+
+  it('safe area 높이 525에서 가로 배치로 전환된다', () => {
+    expect(isLandscape(525)).toBe(true);
+  });
+});
+
+describe('가로 배치. 피그마 844×390 기준 프레임', () => {
+  // safe area 좌우 47·아래 21
+  const landscape = resolveLayout({ shortSide: 390, safeAreaTopEdge: 0, safeAreaBottomEdge: 369, safeAreaLeftEdge: 47, safeAreaRightEdge: 797 });
+
+  it('시계판 중심은 safe area 중심 (422, 184.5)이다', () => {
+    expect(landscape.dialCenterX).toBe(422);
+    expect(landscape.dialCenterY).toBe(184.5);
+  });
+
+  it('개체 중심 반지름은 safe area 높이 기준으로 147.5로 축소된다', () => {
+    expect(landscape.itemRadius).toBeCloseTo(147.5);
+  });
+
+  it('버튼 중심은 x 665와 753, y 325다', () => {
+    expect(landscape.buttonsCenterX).toBe(709);
+    expect(landscape.buttonCenterY).toBe(325);
+  });
+});
+
+describe('가로 배치 시계판 축소 하한', () => {
+  const narrowWindow = (safeAreaHeight: number) =>
+    resolveLayout({ shortSide: Math.min(375, safeAreaHeight), safeAreaTopEdge: 0, safeAreaBottomEdge: safeAreaHeight, safeAreaLeftEdge: 0, safeAreaRightEdge: 375 });
+
+  it('개체 중심 반지름이 124.1 미만이면 모닥불이 7 도트다', () => {
+    const l = narrowWindow(442);
+    expect(l.itemRadius).toBeLessThan(124.1);
+    expect(l.bonfireHeightInDots).toBe(7);
+  });
+
+  it('개체 중심 반지름은 118.1 미만으로 축소되지 않는다', () => {
+    expect(narrowWindow(300).itemRadius).toBeCloseTo(118.1);
   });
 });
 
@@ -175,11 +210,6 @@ describe('버튼 아래 끝이 safe area 아래 끝을 넘지 않는다', () => 
     const { buttonCenterY, dotSize } = onDevice(name);
     const buttonBottomEdge = buttonCenterY + (BUTTON_SIZE_IN_DOTS / 2) * dotSize;
     expect(buttonBottomEdge).toBeLessThanOrEqual(DEVICES[name].bottomEdge);
-  });
-
-  it('배율 2에서 하한 클램프에 걸려도 넘지 않는다', () => {
-    const { buttonCenterY, dotSize } = resolveLayout({ shortSide: 744, safeAreaTopEdge: 24, safeAreaBottomEdge: 724 });
-    expect(buttonCenterY + (BUTTON_SIZE_IN_DOTS / 2) * dotSize).toBeLessThanOrEqual(724);
   });
 });
 

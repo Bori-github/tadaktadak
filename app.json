@@ -3,7 +3,7 @@
     "name": "Tadak Tadak",
     "slug": "tadaktadak",
     "platforms": ["ios", "android"],
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#141021",
