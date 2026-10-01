@@ -1,8 +1,10 @@
 import { BUTTON_SIZE_IN_DOTS, DOT_SIZE, SCREEN_GRADES, type ScreenGrade } from '@/shared/constants';
 
 const EDGE_MARGIN = 8;
-const NUMERAL_MARGIN = 20;
-const MAX_ITEM_RADIUS = 153;
+
+const REFERENCE_SHORT_SIDE = 390;
+const REFERENCE_ITEM_RADIUS = 153;
+const MAX_SHORT_SIDE = REFERENCE_SHORT_SIDE * 3;
 
 const NUMERAL_GAP = 6;
 const NUMERAL_HALF_HEIGHT = 7;
@@ -42,7 +44,7 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }
 
   const bonfireHalfHeight = (bonfireHeightInDots * DOT_SIZE) / 2;
 
-  const itemRadius = Math.min(width / 2 - EDGE_MARGIN - NUMERAL_MARGIN - bonfireHalfHeight, MAX_ITEM_RADIUS);
+  const itemRadius = (Math.min(width, MAX_SHORT_SIDE / scale) * REFERENCE_ITEM_RADIUS) / REFERENCE_SHORT_SIDE;
   const arcRadius = itemRadius - bonfireHalfHeight - ARC_GAP;
   const numeralRadius = itemRadius + bonfireHalfHeight + NUMERAL_GAP + NUMERAL_HALF_HEIGHT;
 

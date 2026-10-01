@@ -56,20 +56,25 @@ describe('화면 등급', () => {
 });
 
 describe('개체 중심 반지름', () => {
-  it('지원 최소 짧은 변에서 134다', () => {
-    expect(layout(338).itemRadius).toBe(134);
+  it('지원 최소 짧은 변에서 132.6이다', () => {
+    expect(layout(338).itemRadius).toBeCloseTo(132.6);
   });
 
-  it('너비 380에서 상한 153에 처음 닿는다', () => {
-    expect(layout(380).itemRadius).toBe(153);
+  it('배율이 2로 바뀌는 675와 676 사이에서 1 미만 차이다', () => {
+    expect(Math.abs(layout(676).itemRadius - layout(675).itemRadius)).toBeLessThan(1);
+  });
+
+  it('짧은 변 1170에서 459가 되고 그 이상에서 고정된다', () => {
+    expect(layout(1170).itemRadius).toBeCloseTo(459);
+    expect(layout(1400).itemRadius).toBeCloseTo(459);
   });
 
   it('기준 화면에서 상한 153에 걸린다', () => {
     expect(layout(390).itemRadius).toBe(153);
   });
 
-  it('iPad mini에서 298이다', () => {
-    expect(layout(744).itemRadius).toBe(298);
+  it('iPad mini에서 291.88이다', () => {
+    expect(layout(744).itemRadius).toBeCloseTo(291.88);
   });
 });
 
@@ -84,12 +89,12 @@ describe('기준 화면의 나머지 반지름', () => {
 });
 
 describe('배율 2에서 반지름 셋에 모두 k가 곱해진다', () => {
-  it('호·손잡이 반지름은 254다', () => {
-    expect(layout(744).arcRadius).toBe(254);
+  it('호·손잡이 반지름은 247.88이다', () => {
+    expect(layout(744).arcRadius).toBeCloseTo(247.88);
   });
 
-  it('눈금 숫자 반지름은 342다', () => {
-    expect(layout(744).numeralRadius).toBe(342);
+  it('눈금 숫자 반지름은 335.88이다', () => {
+    expect(layout(744).numeralRadius).toBeCloseTo(335.88);
   });
 });
 
@@ -111,8 +116,8 @@ describe('버튼 중심 y에는 k를 곱하지 않고 버튼에서 시계판까�
     expect(ipadMini().buttonCenterY).toBe(963);
   });
 
-  it('iPad mini에서 시계판 중심 y는 461이다', () => {
-    expect(ipadMini().dialCenterY).toBe(461);
+  it('iPad mini에서 시계판 중심 y는 467.12다', () => {
+    expect(ipadMini().dialCenterY).toBeCloseTo(467.12);
   });
 });
 
