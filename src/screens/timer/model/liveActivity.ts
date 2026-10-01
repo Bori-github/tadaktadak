@@ -1,3 +1,4 @@
+import { type PermissionStatus } from 'expo';
 import { useEffect } from 'react';
 
 import { liveActivity } from '@modules/live-activity';
@@ -11,6 +12,7 @@ type LiveActivityParams = {
   session: TimerSession;
   settingMinutes: Record<TimerMode, number>;
   isSettled: boolean;
+  notificationPermission: PermissionStatus | null;
 };
 
 /**
@@ -19,9 +21,10 @@ type LiveActivityParams = {
  * @param params.session - 타이머 세션 값
  * @param params.settingMinutes - 집중/휴식 타이머 설정 시간(분)
  * @param params.isSettled - 저장값 읽기 완료 여부
+ * @param params.notificationPermission - 알림 권한 상태
  * @returns 없음
  */
-export const useLiveActivity = ({ session, settingMinutes, isSettled }: LiveActivityParams): void => {
+export const useLiveActivity = ({ session, settingMinutes, isSettled, notificationPermission }: LiveActivityParams): void => {
   const language = useLanguage();
 
   useEffect(() => {
@@ -42,5 +45,12 @@ export const useLiveActivity = ({ session, settingMinutes, isSettled }: LiveActi
     apply().catch(() => {});
 
     // 앱이 백그라운드로 가거나 닫혀도 남은 시간이 이어져야 해서 화면이 사라질 때 끝내지 않음
-  }, [session, settingMinutes, isSettled, language]);
+  }, [
+    session,
+    settingMinutes,
+    isSettled,
+    language,
+    // Android 진행 중 알림은 알림 권한이 필요해 권한 변경 시 재호출
+    notificationPermission,
+  ]);
 };
