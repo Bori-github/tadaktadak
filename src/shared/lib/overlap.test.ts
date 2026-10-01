@@ -20,7 +20,7 @@ const baseItemRadius = (shortSide: number) => {
   return itemRadius / scale;
 };
 
-/** 1분 간격 (dot). `DESIGN.md` §7 계산 순서 8 */
+/** 1분 간격 (dot). `DESIGN.md` §7 계산 순서 7 */
 const minuteGap = (shortSide: number) => (Math.PI * baseItemRadius(shortSide)) / 60;
 
 const needed = (a: number, b: number) => (a + b) / 2;

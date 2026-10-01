@@ -61,7 +61,7 @@ const placeLandscapeButtons = ({ safeArea, buttonHalfHeight, scale }: LandscapeB
 
 type PortraitInput = { safeArea: SafeArea; dialTopHalfHeight: number; buttonHalfHeight: number };
 
-/** 세로 배치의 버튼 중심 y와 시계판 중심 y. `DESIGN.md` §7 계산 순서 11~14 */
+/** 세로 배치의 버튼 중심 y와 시계판 중심 y. `DESIGN.md` §7 계산 순서 10~13 */
 const placePortrait = ({ safeArea, dialTopHalfHeight, buttonHalfHeight }: PortraitInput) => {
   // 배율이 달라져도 시계판-버튼 여백 90px 유지. 배율 1에서 182 + 90 + 28 = 300px
   const dialToButton = dialTopHalfHeight + DIAL_TO_BUTTON_GAP + buttonHalfHeight;
