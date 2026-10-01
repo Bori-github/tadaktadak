@@ -71,6 +71,7 @@ internal object TimerNotification {
       .setContentIntent(openAppIntent(context))
       .addAction(0, localized.getString(R.string.live_activity_stop), stopIntent(context, endsAt))
       .setOngoing(true)
+      .setRequestPromotedOngoing(true)
       .setOnlyAlertOnce(true)
       .setWhen(endsAt)
       .setUsesChronometer(true)
