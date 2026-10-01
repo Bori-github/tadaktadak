@@ -1,0 +1,4 @@
+<resources>
+  <string name="live_activity_channel">Live update alerts</string>
+  <string name="live_activity_title">%d min</string>
+</resources>

@@ -5,9 +5,18 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.edit
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import expo.modules.kotlin.records.Field
+import expo.modules.kotlin.records.Record
 
 private const val PREFERENCES_NAME = "live-activity"
 private const val STOPPED_ENDS_AT_KEY = "stoppedEndsAt"
+
+class LiveActivityContentRecord : Record {
+  @Field val mode: String = "focus"
+  @Field val progressStartsAt: Double = 0.0
+  @Field val endsAt: Double = 0.0
+  @Field val language: String? = null
+}
 
 class LiveActivityModule : Module() {
   private val context: Context
@@ -22,6 +31,14 @@ class LiveActivityModule : Module() {
 
     Property("isEnabled") {
       NotificationManagerCompat.from(context).areNotificationsEnabled()
+    }
+
+    AsyncFunction("startAsync") { content: LiveActivityContentRecord ->
+      TimerNotification.show(context, content)
+    }
+
+    AsyncFunction("endAsync") {
+      TimerNotification.cancel(context)
     }
 
     Function("consumeStoppedEndsAt") {
