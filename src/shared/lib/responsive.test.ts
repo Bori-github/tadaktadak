@@ -1,9 +1,10 @@
-import { describe, expect, it } from '@jest/globals';
+import { afterEach, describe, expect, it, jest } from '@jest/globals';
+import { Dimensions, Platform } from 'react-native';
 
 import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
 
 import { DEVICE_NAMES, DEVICES, type DeviceName } from './devices';
-import { resolveLayout } from './responsive';
+import { resolveLayout, getFormFactor, type FormFactor } from './responsive';
 
 // 390×844 화면. safe area 위 47·아래 34이므로 위 끝은 47, 아래 끝은 810
 const SAFE_AREA_TOP_EDGE = 47;
@@ -13,7 +14,7 @@ const SAFE_AREA_BOTTOM_EDGE = 810;
 const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: SAFE_AREA_TOP_EDGE, safeAreaBottomEdge: Math.max(SAFE_AREA_BOTTOM_EDGE, shortSide * 2) });
 
 // iPad mini 744×1133. safe area 위 24·아래 20
-const ipadMini = () => resolveLayout({ shortSide: 744, safeAreaTopEdge: 24, safeAreaBottomEdge: 1113, isTablet: true });
+const ipadMini = () => resolveLayout({ shortSide: 744, safeAreaTopEdge: 24, safeAreaBottomEdge: 1113, formFactor: 'tablet' });
 
 // 위 끝을 0으로 두면 safe area 높이가 그대로 아래 끝 좌표가 됨
 const buttonOffset = (safeAreaHeight: number) => safeAreaHeight - resolveLayout({ shortSide: 390, safeAreaTopEdge: 0, safeAreaBottomEdge: safeAreaHeight }).buttonCenterY;
@@ -73,13 +74,13 @@ describe('지원 밖 화면', () => {
   });
 });
 
-describe('태블릿 창', () => {
-  const tablet = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: 0, safeAreaBottomEdge: shortSide * 2, isTablet: true });
+const dialDiameter = ({ numeralRadius, dotSize }: { numeralRadius: number; dotSize: number }) => (numeralRadius + 3.5 * dotSize) * 2;
 
+const tallWindow = (shortSide: number, formFactor: FormFactor) => resolveLayout({ shortSide, safeAreaTopEdge: 0, safeAreaBottomEdge: shortSide * 2, formFactor });
+
+describe('태블릿', () => {
   it.each([560, 744, 1024])('짧은 변 %d에서 시계판 지름이 짧은 변의 70%다', (shortSide) => {
-    const { numeralRadius, dotSize } = tablet(shortSide);
-    const numeralHalfHeight = 3.5 * dotSize;
-    expect(((numeralRadius + numeralHalfHeight) * 2) / shortSide).toBeCloseTo(0.7);
+    expect(dialDiameter(tallWindow(shortSide, 'tablet')) / shortSide).toBeCloseTo(0.7);
   });
 });
 
@@ -131,7 +132,7 @@ describe('배치 선택', () => {
 
   it('하한 118.1까지 커질 시계판 크기로 배치를 판정한다', () => {
     // 태블릿 70% 크기로는 세로 배치가 들어가지만 하한 크기로는 들어가지 않는 창
-    const { isLandscape: landscape } = resolveLayout({ shortSide: 375, safeAreaTopEdge: 24, safeAreaBottomEdge: 446, isTablet: true });
+    const { isLandscape: landscape } = resolveLayout({ shortSide: 375, safeAreaTopEdge: 24, safeAreaBottomEdge: 446, formFactor: 'tablet' });
     expect(landscape).toBe(true);
   });
 });
@@ -174,7 +175,7 @@ describe('가로 배치 시계판과 버튼', () => {
 
 describe('iPad mini 가로', () => {
   // 1133×744. safe area 위 24·아래 20
-  const ipadMiniLandscape = resolveLayout({ shortSide: 744, safeAreaTopEdge: 24, safeAreaBottomEdge: 724, safeAreaLeftEdge: 0, safeAreaRightEdge: 1133, isTablet: true });
+  const ipadMiniLandscape = resolveLayout({ shortSide: 744, safeAreaTopEdge: 24, safeAreaBottomEdge: 724, safeAreaLeftEdge: 0, safeAreaRightEdge: 1133, formFactor: 'tablet' });
 
   it('가로 배치이고 시계판 중심 x는 566.5다', () => {
     expect(ipadMiniLandscape.isLandscape).toBe(true);
@@ -209,9 +210,24 @@ describe('가로 배치 시계판 축소 하한', () => {
   });
 });
 
+describe('기기 종류 판정', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it.each([
+    { label: '휴대폰', shortSide: 599, expected: 'phone' },
+    { label: '태블릿', shortSide: 600, expected: 'tablet' },
+  ])('Android에서 기기 화면 짧은 변이 $shortSide이면 $label이다', ({ shortSide, expected }) => {
+    jest.replaceProperty(Platform, 'OS', 'android');
+    jest.spyOn(Dimensions, 'get').mockReturnValue({ width: shortSide, height: 900, scale: 2, fontScale: 1 });
+    expect(getFormFactor()).toBe(expected);
+  });
+});
+
 const onDevice = (name: DeviceName) => {
-  const { shortSide, topEdge, bottomEdge, isTablet } = DEVICES[name];
-  return resolveLayout({ shortSide, safeAreaTopEdge: topEdge, safeAreaBottomEdge: bottomEdge, isTablet });
+  const { shortSide, topEdge, bottomEdge, formFactor } = DEVICES[name];
+  return resolveLayout({ shortSide, safeAreaTopEdge: topEdge, safeAreaBottomEdge: bottomEdge, formFactor });
 };
 
 describe('기준 화면 세로 위치', () => {

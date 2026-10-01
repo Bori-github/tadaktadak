@@ -3,7 +3,7 @@ import { describe, expect, it } from '@jest/globals';
 import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
 
 import { DEVICES, type DeviceName } from './devices';
-import { resolveLayout } from './responsive';
+import { resolveLayout, type FormFactor } from './responsive';
 
 /** 최대 투영 (dot). `DESIGN.md` §4 */
 const PROJECTION = { log: 4, bonfire: 7 };
@@ -70,16 +70,16 @@ describe('기준 화면의 반지름 방향 간격', () => {
 });
 
 describe('시계판 아래 끝과 버튼 위 끝은 배율과 무관하게 90 떨어진다', () => {
-  const gapOn = (shortSide: number, top: number, bottom: number, isTablet = false) => {
-    const l = resolveLayout({ shortSide, safeAreaTopEdge: top, safeAreaBottomEdge: bottom, isTablet });
+  const gapOn = (shortSide: number, top: number, bottom: number, formFactor: FormFactor = 'phone') => {
+    const l = resolveLayout({ shortSide, safeAreaTopEdge: top, safeAreaBottomEdge: bottom, formFactor });
     const numeralOuter = l.dialCenterY + l.numeralRadius + HEIGHT.numeral * 0.5 * l.dotSize;
     const buttonTop = l.buttonCenterY - (HEIGHT.button * l.dotSize) / 2;
     return buttonTop - numeralOuter;
   };
 
   const gapOnDevice = (name: DeviceName) => {
-    const { shortSide, topEdge, bottomEdge, isTablet } = DEVICES[name];
-    return gapOn(shortSide, topEdge, bottomEdge, isTablet);
+    const { shortSide, topEdge, bottomEdge, formFactor } = DEVICES[name];
+    return gapOn(shortSide, topEdge, bottomEdge, formFactor);
   };
 
   it('기준 화면 iPhone 17e에서 90이다', () => {

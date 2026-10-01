@@ -12,7 +12,7 @@ import { translate, useLanguage, useSelectedLanguage } from '@/entities/language
 import { previewVibration, setVibrationEnabled, TOGGLE_PATTERN, useVibrationEnabled } from '@/entities/vibration';
 
 import { COLORS, DOT_SIZE } from '@/shared/constants';
-import { isTabletWindow, resolveLayout, type RootStackParamList } from '@/shared/lib';
+import { resolveLayout, getFormFactor, type RootStackParamList } from '@/shared/lib';
 
 import { ChevronIcon, LANGUAGE_ICON, MORE_ICON, RectIconShape, VIBRATION_ICON } from '@/shared/ui/dot-icon';
 import { DotModalStack, type DotModalScreen } from '@/shared/ui/dot-modal';
@@ -27,7 +27,7 @@ export const SettingsScreen = ({ navigation }: SettingsScreenProps): JSX.Element
   const insets = useSafeAreaInsets();
   const { dotSize } = resolveLayout({
     shortSide: Math.min(width, height),
-    isTablet: isTabletWindow(Math.min(width, height)),
+    formFactor: getFormFactor(),
     safeAreaTopEdge: insets.top,
     safeAreaBottomEdge: height - insets.bottom,
   });

@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { Dimensions, Platform } from 'react-native';
 
 import { BUTTON_SIZE_IN_DOTS, DOT_SIZE, SCREEN_GRADES, type BonfireHeightInDots, type ScreenGrade } from '@/shared/constants';
 
@@ -11,7 +11,7 @@ const REFERENCE_ITEM_RADIUS = 153;
 
 /** 축소된 개체 중심 반지름 하한 (배율 1). `DESIGN.md` §5 겹침 검산 */
 const MIN_ITEM_RADIUS = 118.1;
-/** 태블릿 창에서 시계판 지름이 짧은 변에서 차지하는 비율 */
+/** 태블릿에서 시계판 지름이 짧은 변에서 차지하는 비율 */
 const TABLET_DIAL_RATIO = 0.7;
 /** 1분 간격이 모닥불 + 장작 필요 간격 6.5 도트가 되는 반지름. 미만이면 모닥불을 7 도트로 그림 (배율 1). `DESIGN.md` §5 겹침 검산 */
 const LARGE_BONFIRE_MIN_ITEM_RADIUS = (6.5 * 60) / Math.PI;
@@ -35,16 +35,25 @@ const dialOuterOffset = (bonfireHeightInDots: number) => (bonfireHeightInDots * 
 
 const proportionalItemRadius = (shortSide: number, scale: number) => (shortSide * REFERENCE_ITEM_RADIUS) / REFERENCE_SHORT_SIDE / scale;
 
-export const isTabletWindow = (shortSide: number): boolean => (Platform.OS === 'ios' ? Platform.isPad : shortSide >= 600);
+/** Android 태블릿 기기 화면의 최소 짧은 변(dp) */
+const ANDROID_TABLET_MIN_SHORT_SIDE = 600;
 
-type SafeArea = { top: number; bottom: number; left: number; right: number };
+export type FormFactor = 'phone' | 'tablet';
+
+// 앱 창이 아니라 기기 화면으로 판정해서 분할 화면에서도 태블릿 유지
+export const getFormFactor = (): FormFactor => {
+  if (Platform.OS === 'ios') return Platform.isPad ? 'tablet' : 'phone';
+
+  const { width, height } = Dimensions.get('screen');
+  return Math.min(width, height) >= ANDROID_TABLET_MIN_SHORT_SIDE ? 'tablet' : 'phone';
+};
 
 type Rect = { left: number; top: number; right: number; bottom: number };
 
 const distanceToRect = (x: number, y: number, rect: Rect) => Math.hypot(Math.max(rect.left - x, 0, x - rect.right), Math.max(rect.top - y, 0, y - rect.bottom));
 
 /** 가로 배치의 조작 버튼. safe area 오른쪽 하단 */
-type LandscapeButtonsInput = { safeArea: SafeArea; buttonHalfHeight: number; scale: number };
+type LandscapeButtonsInput = { safeArea: Rect; buttonHalfHeight: number; scale: number };
 
 const placeLandscapeButtons = ({ safeArea, buttonHalfHeight, scale }: LandscapeButtonsInput) => {
   const centerY = safeArea.bottom - BUTTON_BOTTOM_MARGIN_MIN - buttonHalfHeight;
@@ -59,7 +68,7 @@ const placeLandscapeButtons = ({ safeArea, buttonHalfHeight, scale }: LandscapeB
   };
 };
 
-type PortraitInput = { safeArea: SafeArea; dialTopHalfHeight: number; buttonHalfHeight: number };
+type PortraitInput = { safeArea: Rect; dialTopHalfHeight: number; buttonHalfHeight: number };
 
 /** 세로 배치의 버튼 중심 y와 시계판 중심 y. `DESIGN.md` §7 계산 순서 10~13 */
 const placePortrait = ({ safeArea, dialTopHalfHeight, buttonHalfHeight }: PortraitInput) => {
@@ -82,7 +91,7 @@ type LayoutInput = {
   safeAreaBottomEdge: number;
   safeAreaLeftEdge?: number;
   safeAreaRightEdge?: number;
-  isTablet?: boolean;
+  formFactor?: FormFactor;
 };
 
 type Layout = {
@@ -103,7 +112,14 @@ type Layout = {
 };
 
 // 좌우 경계를 생략하면 세로 화면으로 보고 너비를 짧은 변으로 사용
-export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge, safeAreaLeftEdge = 0, safeAreaRightEdge = shortSide, isTablet = false }: LayoutInput): Layout => {
+export const resolveLayout = ({
+  shortSide,
+  safeAreaTopEdge,
+  safeAreaBottomEdge,
+  safeAreaLeftEdge = 0,
+  safeAreaRightEdge = shortSide,
+  formFactor = 'phone',
+}: LayoutInput): Layout => {
   const safeArea = { top: safeAreaTopEdge, bottom: safeAreaBottomEdge, left: safeAreaLeftEdge, right: safeAreaRightEdge };
   const safeAreaWidth = safeArea.right - safeArea.left;
   const safeAreaHeight = safeArea.bottom - safeArea.top;
@@ -113,7 +129,9 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge, 
   const buttonHalfHeight = (BUTTON_SIZE_IN_DOTS / 2) * DOT_SIZE * scale;
 
   // 1. 배치 선택. 짧은 변 비례 크기로 세로 배치가 들어가는지 확인
-  const targetDialTopHalfHeight = isTablet ? (shortSide * TABLET_DIAL_RATIO) / 2 : (proportionalItemRadius(shortSide, scale) + dialOuterOffset(gradeBonfireHeight)) * scale;
+  const phoneDialTopHalfHeight = (proportionalItemRadius(shortSide, scale) + dialOuterOffset(gradeBonfireHeight)) * scale;
+  const tabletDialTopHalfHeight = (shortSide * TABLET_DIAL_RATIO) / 2;
+  const targetDialTopHalfHeight = formFactor === 'tablet' ? tabletDialTopHalfHeight : phoneDialTopHalfHeight;
   // MIN_ITEM_RADIUS 미적용 크기로 isLandscape를 판정하면 세로 배치에서 시계판이 safe area 상단을 초과해서 판정 전에 적용
   const minDialTopHalfHeight = (MIN_ITEM_RADIUS + dialOuterOffset(SMALL_BONFIRE_HEIGHT_IN_DOTS)) * scale;
   const proportionalDialTopHalfHeight = Math.max(targetDialTopHalfHeight, minDialTopHalfHeight);
