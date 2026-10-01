@@ -50,7 +50,11 @@ internal object TimerNotification {
   @SuppressLint("MissingPermission")
   fun show(context: Context, content: TimerContent) {
     val manager = NotificationManagerCompat.from(context)
-    if (!manager.areNotificationsEnabled()) return
+    // `setTimeoutAfter(0)`은 timeout 없음이라 끝날 시각 경과 시 게시 생략
+    if (!manager.areNotificationsEnabled() || content.endsAt <= System.currentTimeMillis()) {
+      cancel(context)
+      return
+    }
 
     val localized = localizedContext(context, content.language)
     manager.createNotificationChannel(
@@ -93,9 +97,10 @@ internal object TimerNotification {
     if (manager.activeNotifications.none { it.id == NOTIFICATION_ID }) return
 
     val content = loadContent(context) ?: return
-    if (content.endsAt <= System.currentTimeMillis()) return
 
-    show(context, content)
+    // API 26 미만 `setTimeoutAfter` 미지원 대응으로 끝날 시각 알람에서 cancel
+    if (content.endsAt <= System.currentTimeMillis()) cancel(context)
+    else show(context, content)
   }
 
   fun cancel(context: Context) {
@@ -107,8 +112,7 @@ internal object TimerNotification {
   // RTC(non-wakeup)라 화면 꺼짐·Doze 중 갱신은 다음 wake까지 지연
   private fun scheduleProgressUpdate(context: Context, content: TimerContent) {
     val step = ((content.endsAt - content.progressStartsAt) * PROGRESS_STEP_RATIO).toLong().coerceAtLeast(MIN_PROGRESS_STEP_MS)
-    val next = System.currentTimeMillis() + step
-    if (next >= content.endsAt) return
+    val next = (System.currentTimeMillis() + step).coerceAtMost(content.endsAt.toLong())
 
     val alarmManager = context.getSystemService(AlarmManager::class.java)
     val intent = progressUpdateIntent(context)
