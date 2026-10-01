@@ -1,4 +1,4 @@
-import { BUTTON_SIZE_IN_DOTS, DOT_SIZE, SCREEN_GRADES, type ScreenGrade } from '@/shared/constants';
+import { BUTTON_SIZE_IN_DOTS, DOT_SIZE, SCREEN_GRADES, type BonfireHeightInDots, type ScreenGrade } from '@/shared/constants';
 
 const EDGE_MARGIN = 8;
 
@@ -30,6 +30,7 @@ type Layout = {
   /** 화면 가장자리 여백 (px). `DESIGN.md` §5 배치 순서 */
   edgeMargin: number;
   screenGrade: ScreenGrade;
+  bonfireHeightInDots: BonfireHeightInDots;
   itemRadius: number;
   arcRadius: number;
   numeralRadius: number;
@@ -66,6 +67,7 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge }
     dotSize: DOT_SIZE * scale,
     edgeMargin: EDGE_MARGIN * scale,
     screenGrade,
+    bonfireHeightInDots,
     itemRadius: itemRadius * scale,
     arcRadius: arcRadius * scale,
     numeralRadius: numeralRadius * scale,

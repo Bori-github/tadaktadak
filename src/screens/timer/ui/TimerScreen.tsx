@@ -149,7 +149,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
             centerY={centerY}
             radius={layout.itemRadius}
             dotSize={layout.dotSize}
-            screenGrade={layout.screenGrade}
+            bonfireHeightInDots={layout.bonfireHeightInDots}
             remainingMinutes={litMinutes}
             settingMinutes={itemMinutes}
             isPaused={session.phase === 'paused'}
