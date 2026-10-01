@@ -76,6 +76,10 @@ class LiveActivityModule : Module() {
     val endsAt = intent.getLongExtra(EXTRA_STOPPED_ENDS_AT, 0)
     intent.removeExtra(EXTRA_STOPPED_ENDS_AT)
 
+    // exported Activity라 외부 앱 Intent·Recents 재전달 Intent 무시
+    val isFromHistory = (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0
+    if (isFromHistory || endsAt != TimerNotification.activeEndsAt(context)) return false
+
     preferences.edit { putLong(STOPPED_ENDS_AT_KEY, endsAt) }
     TimerNotification.cancel(context)
 

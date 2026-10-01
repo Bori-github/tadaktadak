@@ -114,6 +114,9 @@ internal object TimerNotification {
   }
 
   @Synchronized
+  fun activeEndsAt(context: Context): Long? = loadContent(context)?.endsAt?.toLong()
+
+  @Synchronized
   fun cancel(context: Context) {
     NotificationManagerCompat.from(context).cancel(NOTIFICATION_ID)
     context.getSystemService(AlarmManager::class.java).cancel(progressUpdateIntent(context))
