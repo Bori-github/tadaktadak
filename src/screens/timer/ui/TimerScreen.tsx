@@ -15,6 +15,7 @@ import { useNotificationSchedule } from '../model/notification';
 import { useNotificationPermission } from '../model/permission';
 import { useTimerSession } from '../model/session';
 import { useTimerSpeed } from '../model/speed';
+import { useWindowControlsLeftInset } from '../model/windowControls';
 
 import { DevPanel } from './DevPanel';
 
@@ -47,6 +48,7 @@ type TimerScreenProps = NativeStackScreenProps<RootStackParamList, 'timer'>;
 export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const windowControlsLeftInset = useWindowControlsLeftInset();
   const isFocused = useIsFocused();
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
   const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
@@ -114,7 +116,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   const handleChangeEnd = useCallback((value: number) => storeMinutes(editTarget, value), [storeMinutes, editTarget]);
 
   const roundButtonTop = insets.top + layout.edgeMargin;
-  const roundButtonLeft = insets.left + layout.edgeMargin;
+  const roundButtonLeft = Math.max(insets.left, windowControlsLeftInset) + layout.edgeMargin;
   const roundButtonRight = insets.right + layout.edgeMargin;
   const notificationSettingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, left: roundButtonLeft }], [roundButtonTop, roundButtonLeft]);
   const settingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, right: roundButtonRight }], [roundButtonTop, roundButtonRight]);
