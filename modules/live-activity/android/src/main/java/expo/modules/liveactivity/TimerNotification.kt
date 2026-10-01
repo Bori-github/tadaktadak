@@ -63,7 +63,8 @@ internal object TimerNotification {
         .build()
     )
 
-    val isFocus = content.mode == "focus"
+    // iOS fallback(`?? .focus`)과 동일
+    val isFocus = content.mode != "rest"
     val minutes = ((content.endsAt - content.progressStartsAt) / MINUTE_IN_MS).roundToInt()
     val endsAt = content.endsAt.toLong()
 
@@ -154,7 +155,7 @@ internal object TimerNotification {
 
   // API 36 미만은 `setProgress` 표준 막대로 fallback, 구간 색 미적용
   private fun progressStyle(content: TimerContent, color: Int): NotificationCompat.ProgressStyle {
-    val totalSeconds = ((content.endsAt - content.progressStartsAt) / SECOND_IN_MS).toInt()
+    val totalSeconds = ((content.endsAt - content.progressStartsAt) / SECOND_IN_MS).toInt().coerceAtLeast(1)
     val elapsedSeconds = ((System.currentTimeMillis() - content.progressStartsAt) / SECOND_IN_MS).toInt()
 
     return NotificationCompat.ProgressStyle()
