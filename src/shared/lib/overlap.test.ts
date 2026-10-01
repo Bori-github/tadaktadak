@@ -6,7 +6,7 @@ import { DEVICES, type DeviceName } from './devices';
 import { resolveLayout } from './responsive';
 
 /** 최대 투영 (dot). `DESIGN.md` §4 */
-const PROJECTION = { log: 4, bonfire: 7, marker: 5 };
+const PROJECTION = { log: 4, bonfire: 7 };
 
 /** 개체 높이 (dot). `DESIGN.md` §4 */
 const HEIGHT = { bonfire: 9, thumb: 7, numeral: 7, button: BUTTON_SIZE_IN_DOTS };
@@ -40,7 +40,7 @@ describe('개체 중심 반지름 하한 118.1의 원주 방향 겹침', () => {
 
   it('1분 간격 최솟값은 6.18 도트이고 모닥불은 7 도트다', () => {
     expect(round(gap)).toBe(6.18);
-    expect(bonfireHeightInDots).toBe(PROJECTION.bonfire);
+    expect(bonfireHeightInDots).toBe(7);
   });
 
   it('7 도트 모닥불 + 장작 여유는 0.68 도트다 (간격 6.18, 필요 5.5)', () => {
@@ -70,16 +70,16 @@ describe('기준 화면의 반지름 방향 간격', () => {
 });
 
 describe('시계판 아래 끝과 버튼 위 끝은 배율과 무관하게 90 떨어진다', () => {
-  const gapOn = (shortSide: number, top: number, bottom: number) => {
-    const l = resolveLayout({ shortSide, safeAreaTopEdge: top, safeAreaBottomEdge: bottom });
+  const gapOn = (shortSide: number, top: number, bottom: number, isTablet = false) => {
+    const l = resolveLayout({ shortSide, safeAreaTopEdge: top, safeAreaBottomEdge: bottom, isTablet });
     const numeralOuter = l.dialCenterY + l.numeralRadius + HEIGHT.numeral * 0.5 * l.dotSize;
     const buttonTop = l.buttonCenterY - (HEIGHT.button * l.dotSize) / 2;
     return buttonTop - numeralOuter;
   };
 
   const gapOnDevice = (name: DeviceName) => {
-    const { shortSide, topEdge, bottomEdge } = DEVICES[name];
-    return gapOn(shortSide, topEdge, bottomEdge);
+    const { shortSide, topEdge, bottomEdge, isTablet } = DEVICES[name];
+    return gapOn(shortSide, topEdge, bottomEdge, isTablet);
   };
 
   it('기준 화면 iPhone 17e에서 90이다', () => {

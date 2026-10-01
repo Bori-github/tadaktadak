@@ -1,6 +1,9 @@
 /** medium 등급이 시작하는 짧은 변(px) */
 const MEDIUM_MIN_SHORT_SIDE = 360;
 
+/** expanded 등급(배율 1.5)이 시작하는 짧은 변(px). `DESIGN.md` §7 */
+const EXPANDED_MIN_SHORT_SIDE = 657;
+
 /** 배율 1에서 도트 한 변. 논리 픽셀 */
 export const DOT_SIZE = 2;
 
@@ -18,7 +21,7 @@ type ScreenGradeSpec = {
 export const SCREEN_GRADES = {
   compact: { minShortSide: 0, scale: 1, bonfireHeightInDots: 7 },
   medium: { minShortSide: MEDIUM_MIN_SHORT_SIDE, scale: 1, bonfireHeightInDots: 9 },
-  expanded: { minShortSide: 657, scale: 1.5, bonfireHeightInDots: 9 },
+  expanded: { minShortSide: EXPANDED_MIN_SHORT_SIDE, scale: 1.5, bonfireHeightInDots: 9 },
 } as const satisfies Record<ScreenGrade, ScreenGradeSpec>;
 
 /** 조작 버튼 한 변 (dot). 피그마 `button-enabled` */

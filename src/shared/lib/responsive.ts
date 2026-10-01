@@ -90,7 +90,6 @@ type Layout = {
   dotSize: number;
   /** 화면 가장자리 여백 (px). `DESIGN.md` §5 배치 순서 */
   edgeMargin: number;
-  screenGrade: ScreenGrade;
   bonfireHeightInDots: BonfireHeightInDots;
   isLandscape: boolean;
   itemRadius: number;
@@ -114,7 +113,10 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge, 
   const buttonHalfHeight = (BUTTON_SIZE_IN_DOTS / 2) * DOT_SIZE * scale;
 
   // 1. 배치 선택. 짧은 변 비례 크기로 세로 배치가 들어가는지 확인
-  const proportionalDialTopHalfHeight = isTablet ? (shortSide * TABLET_DIAL_RATIO) / 2 : (proportionalItemRadius(shortSide, scale) + dialOuterOffset(gradeBonfireHeight)) * scale;
+  const targetDialTopHalfHeight = isTablet ? (shortSide * TABLET_DIAL_RATIO) / 2 : (proportionalItemRadius(shortSide, scale) + dialOuterOffset(gradeBonfireHeight)) * scale;
+  // MIN_ITEM_RADIUS 미적용 크기로 isLandscape를 판정하면 세로 배치에서 시계판이 safe area 상단을 초과해서 판정 전에 적용
+  const minDialTopHalfHeight = (MIN_ITEM_RADIUS + dialOuterOffset(SMALL_BONFIRE_HEIGHT_IN_DOTS)) * scale;
+  const proportionalDialTopHalfHeight = Math.max(targetDialTopHalfHeight, minDialTopHalfHeight);
   const portraitHeight = proportionalDialTopHalfHeight * 2 + DIAL_TO_BUTTON_GAP + buttonHalfHeight * 2 + BUTTON_BOTTOM_MARGIN_MIN;
   const isLandscape = safeAreaHeight < portraitHeight;
 
@@ -143,7 +145,6 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge, 
     scale,
     dotSize: DOT_SIZE * scale,
     edgeMargin: EDGE_MARGIN * scale,
-    screenGrade,
     bonfireHeightInDots,
     isLandscape,
     itemRadius: itemRadius * scale,

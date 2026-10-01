@@ -30,17 +30,13 @@ describe('배율', () => {
   });
 });
 
-describe('화면 등급', () => {
-  it('medium 최소 바로 아래에서 compact다', () => {
-    expect(layout(359).screenGrade).toBe('compact');
+describe('등급별 모닥불', () => {
+  it.each([320, 359])('compact 등급인 짧은 변 %d에서 모닥불은 7 도트다', (shortSide) => {
+    expect(layout(shortSide).bonfireHeightInDots).toBe(7);
   });
 
-  it('배율이 그대로여도 medium 최소에서 medium이 된다', () => {
-    expect(layout(360).screenGrade).toBe('medium');
-  });
-
-  it('지원 최소보다 좁은 320도 compact다', () => {
-    expect(layout(320).screenGrade).toBe('compact');
+  it('medium 최소 짧은 변 360에서 모닥불은 9 도트다', () => {
+    expect(layout(360).bonfireHeightInDots).toBe(9);
   });
 });
 
@@ -132,6 +128,12 @@ describe('배치 선택', () => {
   it('safe area 높이 525에서 가로 배치로 전환된다', () => {
     expect(isLandscape(525)).toBe(true);
   });
+
+  it('하한 118.1까지 커질 시계판 크기로 배치를 판정한다', () => {
+    // 태블릿 70% 크기로는 세로 배치가 들어가지만 하한 크기로는 들어가지 않는 창
+    const { isLandscape: landscape } = resolveLayout({ shortSide: 375, safeAreaTopEdge: 24, safeAreaBottomEdge: 446, isTablet: true });
+    expect(landscape).toBe(true);
+  });
 });
 
 describe('가로 배치. 피그마 844×390 기준 프레임', () => {
@@ -147,9 +149,39 @@ describe('가로 배치. 피그마 844×390 기준 프레임', () => {
     expect(landscape.itemRadius).toBeCloseTo(147.5);
   });
 
-  it('버튼 중심은 x 665와 753, y 325다', () => {
+  it('버튼 두 개의 가운데 x는 709, 중심 y는 325다', () => {
     expect(landscape.buttonsCenterX).toBe(709);
     expect(landscape.buttonCenterY).toBe(325);
+  });
+});
+
+describe('가로 배치 시계판과 버튼', () => {
+  it('버튼 사각형까지 축소된 시계판은 버튼에 닿지 않는다', () => {
+    const l = resolveLayout({ shortSide: 375, safeAreaTopEdge: 0, safeAreaBottomEdge: 442, safeAreaLeftEdge: 0, safeAreaRightEdge: 375 });
+    const buttonHalfSize = (BUTTON_SIZE_IN_DOTS / 2) * l.dotSize;
+    const buttonsLeftEdge = l.buttonsCenterX - 22 * l.dotSize - buttonHalfSize;
+    const buttonsTopEdge = l.buttonCenterY - buttonHalfSize;
+    const distance = Math.hypot(Math.max(buttonsLeftEdge - l.dialCenterX, 0), Math.max(buttonsTopEdge - l.dialCenterY, 0));
+    const dialTopHalfHeight = l.numeralRadius + 3.5 * l.dotSize;
+
+    expect(l.isLandscape).toBe(true);
+    expect(distance).toBeGreaterThanOrEqual(dialTopHalfHeight - 1e-9);
+  });
+});
+
+describe('iPad mini 가로', () => {
+  // 1133×744. safe area 위 24·아래 20
+  const ipadMiniLandscape = resolveLayout({ shortSide: 744, safeAreaTopEdge: 24, safeAreaBottomEdge: 724, safeAreaLeftEdge: 0, safeAreaRightEdge: 1133, isTablet: true });
+
+  it('가로 배치이고 시계판 중심 x는 566.5다', () => {
+    expect(ipadMiniLandscape.isLandscape).toBe(true);
+    expect(ipadMiniLandscape.dialCenterX).toBe(566.5);
+  });
+
+  it('시계판 지름은 짧은 변의 70%다', () => {
+    const { numeralRadius, dotSize } = ipadMiniLandscape;
+    const numeralHalfHeight = 3.5 * dotSize;
+    expect(((numeralRadius + numeralHalfHeight) * 2) / 744).toBeCloseTo(0.7);
   });
 });
 
@@ -169,8 +201,8 @@ describe('가로 배치 시계판 축소 하한', () => {
 });
 
 const onDevice = (name: DeviceName) => {
-  const { shortSide, topEdge, bottomEdge } = DEVICES[name];
-  return resolveLayout({ shortSide, safeAreaTopEdge: topEdge, safeAreaBottomEdge: bottomEdge });
+  const { shortSide, topEdge, bottomEdge, isTablet } = DEVICES[name];
+  return resolveLayout({ shortSide, safeAreaTopEdge: topEdge, safeAreaBottomEdge: bottomEdge, isTablet });
 };
 
 describe('기준 화면 세로 위치', () => {
