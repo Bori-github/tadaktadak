@@ -49,11 +49,13 @@ private const val LARGE_ICON_HEIGHT_RATIO = 0.6
 
 internal data class TimerContent(val mode: String, val progressStartsAt: Double, val endsAt: Double, val language: String?)
 
+// `ProgressUpdateReceiver`(main)와 Expo `AsyncFunction` 스레드의 동시 실행 방지로 public 함수는 `@Synchronized`
 internal object TimerNotification {
   private val largeIcons = mutableMapOf<Int, Bitmap>()
 
   // `areNotificationsEnabled`가 거부된 알림 권한까지 반영해 여기서 따로 확인하지 않음
   @SuppressLint("MissingPermission")
+  @Synchronized
   fun show(context: Context, content: TimerContent) {
     val manager = NotificationManagerCompat.from(context)
     // `setTimeoutAfter(0)`은 timeout 없음이라 끝날 시각 경과 시 게시 생략
@@ -99,6 +101,7 @@ internal object TimerNotification {
   }
 
   // dismiss된 알림은 재게시하지 않음
+  @Synchronized
   fun updateProgress(context: Context) {
     val manager = context.getSystemService(NotificationManager::class.java)
     if (manager.activeNotifications.none { it.id == NOTIFICATION_ID }) return
@@ -110,6 +113,7 @@ internal object TimerNotification {
     else show(context, content)
   }
 
+  @Synchronized
   fun cancel(context: Context) {
     NotificationManagerCompat.from(context).cancel(NOTIFICATION_ID)
     context.getSystemService(AlarmManager::class.java).cancel(progressUpdateIntent(context))
