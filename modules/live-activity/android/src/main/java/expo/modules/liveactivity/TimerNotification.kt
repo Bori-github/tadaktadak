@@ -34,11 +34,15 @@ private const val REST_COLOR = 0xFF2F7B85.toInt()
 // `rest.arc`
 private const val REST_PROGRESS_COLOR = 0xFF3F9AA6.toInt()
 
-private const val PREFERENCES_NAME = "live-activity-content"
+private const val CONTENT_PREFERENCES_NAME = "live-activity-content"
 private const val PROGRESS_STEP_RATIO = 0.01
 
 // 짧은 타이머·배속에서 notify 과다 방지용 하한
 private const val MIN_PROGRESS_STEP_MS = 1_000L
+
+// `PendingIntent` 동일성 비교에서 extra 제외라 requestCode로 구분
+private const val OPEN_APP_REQUEST_CODE = 0
+private const val STOP_REQUEST_CODE = 1
 
 private const val SPRITE_ROWS = 9
 private const val LARGE_ICON_HEIGHT_RATIO = 0.6
@@ -132,7 +136,7 @@ internal object TimerNotification {
       PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
     )
 
-  private fun preferences(context: Context) = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+  private fun preferences(context: Context) = context.getSharedPreferences(CONTENT_PREFERENCES_NAME, Context.MODE_PRIVATE)
 
   private fun saveContent(context: Context, content: TimerContent) {
     preferences(context).edit {
@@ -194,15 +198,14 @@ internal object TimerNotification {
   private fun openAppIntent(context: Context): PendingIntent? {
     val intent = context.packageManager.getLaunchIntentForPackage(context.packageName) ?: return null
 
-    return PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+    return PendingIntent.getActivity(context, OPEN_APP_REQUEST_CODE, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
   }
 
   // Android 12+ notification trampoline 제한으로 Activity를 직접 실행
-  // extra는 `PendingIntent` 동일성 비교에서 제외돼 requestCode 분리
   private fun stopIntent(context: Context, endsAt: Long): PendingIntent? {
     val intent = context.packageManager.getLaunchIntentForPackage(context.packageName) ?: return null
     intent.putExtra(EXTRA_STOPPED_ENDS_AT, endsAt)
 
-    return PendingIntent.getActivity(context, 1, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+    return PendingIntent.getActivity(context, STOP_REQUEST_CODE, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
   }
 }

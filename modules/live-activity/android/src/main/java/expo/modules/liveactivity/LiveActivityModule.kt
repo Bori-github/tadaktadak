@@ -10,7 +10,7 @@ import expo.modules.kotlin.modules.ModuleDefinition
 import expo.modules.kotlin.records.Field
 import expo.modules.kotlin.records.Record
 
-private const val PREFERENCES_NAME = "live-activity"
+private const val STOPPED_PREFERENCES_NAME = "live-activity"
 private const val STOPPED_ENDS_AT_KEY = "stoppedEndsAt"
 
 class LiveActivityContentRecord : Record {
@@ -25,7 +25,7 @@ class LiveActivityModule : Module() {
     get() = requireNotNull(appContext.reactContext)
 
   private val preferences: SharedPreferences
-    get() = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+    get() = context.getSharedPreferences(STOPPED_PREFERENCES_NAME, Context.MODE_PRIVATE)
 
   override fun definition() = ModuleDefinition {
     Name("LiveActivity")
