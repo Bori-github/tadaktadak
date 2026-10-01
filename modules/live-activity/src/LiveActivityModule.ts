@@ -7,26 +7,26 @@ export type LiveActivityContent = {
   mode: LiveActivityMode;
   /** 진행 막대가 0%인 시각. `endsAt - 타이머 시간` (밀리초) */
   progressStartsAt: number;
-  /** 타이머가 끝날 시각(밀리초). 이 시각에 iOS가 Live Activity를 잠금화면에서 제거 */
+  /** 타이머가 끝날 시각(밀리초). OS가 이 시각에 Live Activity·알림 제거 */
   endsAt: number;
   language?: string;
 };
 
 type LiveActivityEvents = {
-  /** `StopTimerIntent`가 `UserDefaults`에 정지 값을 저장한 직후에 발생 */
+  /** 정지 버튼이 정지 값을 저장한 직후 발생 */
   onStopped: () => void;
 };
 
 declare class LiveActivityModule extends NativeModule<LiveActivityEvents> {
-  /** 위젯 타겟 배포 버전인 iOS 18 이상인지 */
+  /** iOS는 위젯 타겟 배포 버전인 18 이상인지. Android는 항상 `true` */
   isSupported: boolean;
-  /** 설정 › 앱 › 타닥 › 실시간 현황 스위치 */
+  /** iOS는 설정 › 앱 › 타닥 › 실시간 현황 스위치. Android는 앱 알림 허용 */
   isEnabled: boolean;
   /** Live Activity가 없으면 시작하고, 있으면 이 값으로 갱신 */
   startAsync(content: LiveActivityContent): Promise<void>;
   /** 남아 있는 Live Activity를 모두 즉시 종료 */
   endAsync(): Promise<void>;
-  /** `StopTimerIntent`가 `UserDefaults`에 저장한, 정지한 Live Activity의 `endsAt`(밀리초) */
+  /** 정지 버튼이 저장한 `endsAt`(밀리초). 읽으면 삭제 */
   consumeStoppedEndsAt(): number | null;
 }
 

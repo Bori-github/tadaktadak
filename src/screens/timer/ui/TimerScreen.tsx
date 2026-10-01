@@ -62,7 +62,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   const permission = useNotificationPermission();
 
   useNotificationSchedule({ session, status: permission, isSettled });
-  useLiveActivity({ session, settingMinutes: realSettingMinutes, isSettled });
+  useLiveActivity({ session, settingMinutes: realSettingMinutes, isSettled, notificationPermission: permission });
 
   const notificationSettingsShown = isNotificationBlocked(permission);
 

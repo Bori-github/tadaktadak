@@ -1,5 +1,6 @@
 import { renderHook } from '@testing-library/react-native';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { PermissionStatus } from 'expo';
 import { type LiveActivityContent } from '@modules/live-activity';
 
 import { useLiveActivity } from './liveActivity';
@@ -38,7 +39,8 @@ const running = (): RunningSession => {
 
 const READY: TimerSession = { phase: 'ready', mode: 'focus' };
 
-const render = async (session: TimerSession, isSettled = true) => renderHook(() => useLiveActivity({ session, settingMinutes: SETTING_MINUTES, isSettled }));
+const render = async (session: TimerSession, isSettled = true) =>
+  renderHook(() => useLiveActivity({ session, settingMinutes: SETTING_MINUTES, isSettled, notificationPermission: PermissionStatus.GRANTED }));
 
 describe('Live Activity 수명', () => {
   beforeEach(() => {
@@ -74,5 +76,18 @@ describe('Live Activity 수명', () => {
     await rerender(undefined);
 
     expect(mockStarted).toHaveLength(1);
+  });
+
+  it('진행 중에 알림 권한이 거부에서 허용으로 바뀌면 Live Activity를 다시 시작한다', async () => {
+    const session = running();
+    const { rerender } = await renderHook(
+      ({ notificationPermission }: { notificationPermission: PermissionStatus }) =>
+        useLiveActivity({ session, settingMinutes: SETTING_MINUTES, isSettled: true, notificationPermission }),
+      { initialProps: { notificationPermission: PermissionStatus.DENIED } },
+    );
+
+    await rerender({ notificationPermission: PermissionStatus.GRANTED });
+
+    expect(mockStarted).toHaveLength(2);
   });
 });

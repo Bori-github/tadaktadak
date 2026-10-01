@@ -12,6 +12,9 @@ expo-env.d.ts
 /ios/
 /android/
 
+# 로컬 모듈 Gradle 빌드 산출물
+modules/*/android/build/
+
 # prebuild가 expo-target.config.js에서 만든다
 targets/*/Assets.xcassets/
 .kotlin/
