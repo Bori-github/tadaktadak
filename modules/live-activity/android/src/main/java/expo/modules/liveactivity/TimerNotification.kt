@@ -46,6 +46,8 @@ private const val LARGE_ICON_HEIGHT_RATIO = 0.6
 internal data class TimerContent(val mode: String, val progressStartsAt: Double, val endsAt: Double, val language: String?)
 
 internal object TimerNotification {
+  private val largeIcons = mutableMapOf<Int, Bitmap>()
+
   // `areNotificationsEnabled`가 거부된 알림 권한까지 반영해 여기서 따로 확인하지 않음
   @SuppressLint("MissingPermission")
   fun show(context: Context, content: TimerContent) {
@@ -174,7 +176,9 @@ internal object TimerNotification {
   }
 
   // 도트 한 칸을 정수 픽셀로 맞춰 nearest-neighbor로 키워 정사각형 가운데에 둠. 칸 크기가 달라지면 도트가 번짐
-  private fun largeIcon(context: Context, resourceId: Int): Bitmap {
+  private fun largeIcon(context: Context, resourceId: Int): Bitmap = largeIcons.getOrPut(resourceId) { createLargeIcon(context, resourceId) }
+
+  private fun createLargeIcon(context: Context, resourceId: Int): Bitmap {
     val sprite = BitmapFactory.decodeResource(context.resources, resourceId)
     val size = context.resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height)
     val dot = (size * LARGE_ICON_HEIGHT_RATIO / SPRITE_ROWS).toInt().coerceAtLeast(1)
