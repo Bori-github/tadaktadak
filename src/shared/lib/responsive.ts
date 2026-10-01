@@ -125,14 +125,14 @@ export const resolveLayout = ({ shortSide, safeAreaTopEdge, safeAreaBottomEdge, 
   const landscapeButtons = placeLandscapeButtons({ safeArea, buttonHalfHeight, scale });
 
   // 2. 시계판 크기. safe area 여백과 가로 배치 버튼에 닿지 않게 줄임
-  const dialTopHalfHeight = Math.min(
-    proportionalDialTopHalfHeight,
-    Math.min(safeAreaWidth, safeAreaHeight) / 2 - DIAL_SAFE_AREA_MARGIN,
-    isLandscape ? distanceToRect(dialCenterX, landscapeDialCenterY, landscapeButtons.rect) : Infinity,
-  );
+  const buttonsLimit = isLandscape ? distanceToRect(dialCenterX, landscapeDialCenterY, landscapeButtons.rect) : Infinity;
+  const dialTopHalfHeight = Math.min(proportionalDialTopHalfHeight, Math.min(safeAreaWidth, safeAreaHeight) / 2 - DIAL_SAFE_AREA_MARGIN, buttonsLimit);
 
-  // 3. 반지름. 줄인 크기에 맞춰 하한과 모닥불 크기를 정함
-  const itemRadius = Math.max(dialTopHalfHeight / scale - dialOuterOffset(gradeBonfireHeight), MIN_ITEM_RADIUS);
+  // 3. 반지름
+  const itemRadius = Math.min(
+    Math.max(dialTopHalfHeight / scale - dialOuterOffset(gradeBonfireHeight), MIN_ITEM_RADIUS),
+    buttonsLimit / scale - dialOuterOffset(gradeBonfireHeight),
+  );
   const bonfireHeightInDots = itemRadius < LARGE_BONFIRE_MIN_ITEM_RADIUS ? SMALL_BONFIRE_HEIGHT_IN_DOTS : gradeBonfireHeight;
   const bonfireHalfHeight = (bonfireHeightInDots * DOT_SIZE) / 2;
   const arcRadius = itemRadius - bonfireHalfHeight - ARC_GAP;

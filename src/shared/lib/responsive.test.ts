@@ -156,8 +156,11 @@ describe('가로 배치. 피그마 844×390 기준 프레임', () => {
 });
 
 describe('가로 배치 시계판과 버튼', () => {
-  it('버튼 사각형까지 축소된 시계판은 버튼에 닿지 않는다', () => {
-    const l = resolveLayout({ shortSide: 375, safeAreaTopEdge: 0, safeAreaBottomEdge: 442, safeAreaLeftEdge: 0, safeAreaRightEdge: 375 });
+  it.each([
+    { label: '너비 375·높이 442', shortSide: 375, height: 442, width: 375 },
+    { label: '너비 400·높이 350', shortSide: 350, height: 350, width: 400 },
+  ])('$label 창에서 시계판은 버튼에 닿지 않는다', ({ shortSide, height, width }) => {
+    const l = resolveLayout({ shortSide, safeAreaTopEdge: 0, safeAreaBottomEdge: height, safeAreaLeftEdge: 0, safeAreaRightEdge: width });
     const buttonHalfSize = (BUTTON_SIZE_IN_DOTS / 2) * l.dotSize;
     const buttonsLeftEdge = l.buttonsCenterX - 22 * l.dotSize - buttonHalfSize;
     const buttonsTopEdge = l.buttonCenterY - buttonHalfSize;
@@ -195,8 +198,14 @@ describe('가로 배치 시계판 축소 하한', () => {
     expect(l.bonfireHeightInDots).toBe(7);
   });
 
-  it('개체 중심 반지름은 118.1 미만으로 축소되지 않는다', () => {
-    expect(narrowWindow(300).itemRadius).toBeCloseTo(118.1);
+  it('버튼과 떨어진 창에서 개체 중심 반지름은 118.1 미만으로 축소되지 않는다', () => {
+    const wideWindow = resolveLayout({ shortSide: 300, safeAreaTopEdge: 0, safeAreaBottomEdge: 300, safeAreaLeftEdge: 0, safeAreaRightEdge: 844 });
+    expect(wideWindow.itemRadius).toBeCloseTo(118.1);
+  });
+
+  it('버튼과 겹치는 창에서는 하한보다 버튼 회피가 우선이다', () => {
+    const lowWindow = resolveLayout({ shortSide: 350, safeAreaTopEdge: 0, safeAreaBottomEdge: 350, safeAreaLeftEdge: 0, safeAreaRightEdge: 400 });
+    expect(lowWindow.itemRadius).toBeLessThan(118.1);
   });
 });
 

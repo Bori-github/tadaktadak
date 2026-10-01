@@ -34,8 +34,8 @@ describe('1분 간격', () => {
 });
 
 describe('개체 중심 반지름 하한 118.1의 원주 방향 겹침', () => {
-  // 가로 배치에서 safe area 높이가 낮아 하한까지 축소된 창
-  const { itemRadius, bonfireHeightInDots } = resolveLayout({ shortSide: 300, safeAreaTopEdge: 0, safeAreaBottomEdge: 300, safeAreaLeftEdge: 0, safeAreaRightEdge: 375 });
+  // 가로 배치에서 safe area 높이가 낮아 하한까지 축소되고 버튼과는 떨어진 창
+  const { itemRadius, bonfireHeightInDots } = resolveLayout({ shortSide: 300, safeAreaTopEdge: 0, safeAreaBottomEdge: 300, safeAreaLeftEdge: 0, safeAreaRightEdge: 844 });
   const gap = (Math.PI * itemRadius) / 60;
 
   it('1분 간격 최솟값은 6.18 도트이고 모닥불은 7 도트다', () => {
