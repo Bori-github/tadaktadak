@@ -12,14 +12,21 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "channel": "preview"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "channel": "production",
+      "environment": "production"
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "ascAppId": "<App Store Connect 앱 번호>"
+      }
+    }
   }
 }
 ```
@@ -55,6 +62,8 @@ eas build --profile <이름>
     - `development`와 같은 설치 방식
   - `developmentClient`가 없으므로 JS를 번들에 넣은 릴리즈 빌드. Metro 서버 없이 실행
   - 스토어에 제출하기 전에 실제 기기에서 동작을 확인하는 용도
+  - `channel: preview`
+    - 빌드가 구독하는 EAS Update 채널
 - `production`
   - `distribution`이 없으므로 기본값 `store`
     - App Store Connect에 제출하는 ipa. 기기에 직접 설치할 수 없어 설치 링크와 QR이 생기지 않음
@@ -62,6 +71,10 @@ eas build --profile <이름>
   - `autoIncrement: true`
     - 빌드마다 빌드 번호(iOS `buildNumber`, Android `versionCode`)가 1씩 증가
     - `appVersionSource`가 `remote`라 증가한 값은 EAS 서버에 보관되고 `app.json`은 바뀌지 않음
+  - `channel: production`
+    - 빌드가 구독하는 EAS Update 채널
+  - `environment: production`
+    - 빌드 시 EAS 환경 변수의 `production` 환경 값을 주입
 
 ## submit
 
@@ -72,6 +85,7 @@ eas build --profile <이름>
   1. Apple ID 입력
   2. App Store Connect 앱 확인. Apple에 로그인해 번들 식별자로 앱을 찾고, 없으면 이름을 물어 만듦. 이름 기본값은 `app.json`의 `name`
   3. 업로드 인증. 처음에 Apple 로그인으로 App Store Connect API 키를 만들어 EAS 서버에 보관하고 다음부터 재사용
+- `ios.ascAppId`가 설정돼 있어 2번 단계 생략
 - 1번과 2번을 건너뛰려면 앱을 만든 뒤 아래를 적음. `ascAppId`는 App Store Connect 앱 페이지 주소의 `apps/` 뒤 숫자
 
 ```json
