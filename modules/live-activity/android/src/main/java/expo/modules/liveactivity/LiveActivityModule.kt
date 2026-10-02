@@ -1,8 +1,10 @@
 package expo.modules.liveactivity
 
+import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.edit
 import expo.modules.kotlin.modules.Module
@@ -12,6 +14,9 @@ import expo.modules.kotlin.records.Record
 
 private const val STOPPED_PREFERENCES_NAME = "live-activity"
 private const val STOPPED_ENDS_AT_KEY = "stoppedEndsAt"
+
+// `src/shared/constants/colors.ts`의 `canvas`
+private const val CANVAS_COLOR = 0xFF141021.toInt()
 
 class LiveActivityContentRecord : Record {
   @Field val mode: String = "focus"
@@ -49,10 +54,12 @@ class LiveActivityModule : Module() {
     }
 
     AsyncFunction("startAsync") { content: LiveActivityContentRecord ->
+      setRecentsScreenshotEnabled(false)
       TimerNotification.show(context, TimerContent(content.mode, content.progressStartsAt, content.endsAt, content.language))
     }
 
     AsyncFunction("endAsync") {
+      setRecentsScreenshotEnabled(true)
       TimerNotification.cancel(context)
     }
 
@@ -66,6 +73,18 @@ class LiveActivityModule : Module() {
       preferences.edit { remove(STOPPED_ENDS_AT_KEY) }
 
       endsAt
+    }
+  }
+
+  // 진행 중 스냅샷은 잠금화면 정지로 앱이 열릴 때 지난 남은 시간을 먼저 보여서, 진행 중에는 배경색 단색으로 대체
+  private fun setRecentsScreenshotEnabled(enabled: Boolean) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+
+    val activity = appContext.currentActivity ?: return
+    activity.runOnUiThread {
+      // 지정하지 않으면 단색이 테마 기본값 `#FAFAFA`라 어두운 화면 사이에 흰 화면이 끼어서 `canvas`로 지정
+      activity.setTaskDescription(ActivityManager.TaskDescription.Builder().setBackgroundColor(CANVAS_COLOR).build())
+      activity.setRecentsScreenshotEnabled(enabled)
     }
   }
 
