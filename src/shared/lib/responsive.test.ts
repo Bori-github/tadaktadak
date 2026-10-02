@@ -13,9 +13,6 @@ const SAFE_AREA_BOTTOM_EDGE = 810;
 // 큰 짧은 변에서도 세로 배치를 유지하려고 safe area 아래 끝을 짧은 변의 2배 이상으로 설정
 const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: SAFE_AREA_TOP_EDGE, safeAreaBottomEdge: Math.max(SAFE_AREA_BOTTOM_EDGE, shortSide * 2) });
 
-// iPad mini 744×1133. safe area 위 24·아래 20
-const ipadMini = () => resolveLayout({ shortSide: 744, safeAreaTopEdge: 24, safeAreaBottomEdge: 1113, formFactor: 'tablet' });
-
 // 위 끝을 0으로 두면 safe area 높이가 그대로 아래 끝 좌표가 됨
 const buttonOffset = (safeAreaHeight: number) => safeAreaHeight - resolveLayout({ shortSide: 390, safeAreaTopEdge: 0, safeAreaBottomEdge: safeAreaHeight }).buttonCenterY;
 
@@ -84,26 +81,26 @@ describe('태블릿', () => {
   });
 });
 
-describe('iPad mini 세로 위치', () => {
-  it('iPad mini에서 버튼 중심 y는 963이다', () => {
-    expect(ipadMini().buttonCenterY).toBe(963);
-  });
-
-  it('iPad mini에서 시계판 중심 y는 570.6이다', () => {
-    expect(ipadMini().dialCenterY).toBeCloseTo(570.6);
-  });
-});
-
-describe('iPad Pro 13 가로 화면의 세로 배치', () => {
-  // 1376×1032. safe area 위 24·아래 20
-  const ipadPro13Landscape = () =>
-    resolveLayout({ shortSide: 1032, safeAreaTopEdge: 24, safeAreaBottomEdge: 1012, safeAreaLeftEdge: 0, safeAreaRightEdge: 1376, formFactor: 'tablet' });
-
-  it('시계판 위 여백과 버튼 아래 여백이 같다', () => {
-    const { dialCenterY, numeralRadius, buttonCenterY, dotSize } = ipadPro13Landscape();
+describe('태블릿 세로 배치', () => {
+  // iPad mini 744×1133, iPad Pro 13 1032×1376. safe area 위 24·아래 20
+  it.each([
+    { label: 'iPad mini 세로', shortSide: 744, width: 744, height: 1133 },
+    { label: 'iPad Pro 13 세로', shortSide: 1032, width: 1032, height: 1376 },
+    { label: 'iPad Pro 13 가로', shortSide: 1032, width: 1376, height: 1032 },
+  ])('$label에서 시계판 위 여백과 버튼 아래 여백이 같다', ({ shortSide, width, height }) => {
+    const bottomEdge = height - 20;
+    const { dialCenterY, numeralRadius, buttonCenterY, dotSize, isLandscape } = resolveLayout({
+      shortSide,
+      safeAreaTopEdge: 24,
+      safeAreaBottomEdge: bottomEdge,
+      safeAreaLeftEdge: 0,
+      safeAreaRightEdge: width,
+      formFactor: 'tablet',
+    });
     // 숫자 반높이 = 7 × 배율, 버튼 반높이 = 14 × 도트 크기. 배율 = dotSize ÷ 2
     const dialTopMargin = dialCenterY - numeralRadius - 7 * (dotSize / 2) - 24;
-    const buttonBottomMargin = 1012 - buttonCenterY - (BUTTON_SIZE_IN_DOTS / 2) * dotSize;
+    const buttonBottomMargin = bottomEdge - buttonCenterY - (BUTTON_SIZE_IN_DOTS / 2) * dotSize;
+    expect(isLandscape).toBe(false);
     expect(dialTopMargin).toBeGreaterThan(0);
     expect(dialTopMargin).toBeCloseTo(buttonBottomMargin);
   });

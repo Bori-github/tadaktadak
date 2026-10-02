@@ -81,7 +81,8 @@ const placePortrait = ({ safeArea, dialTopHalfHeight, buttonHalfHeight, formFact
   const buttonOffsetMin = buttonHalfHeight + BUTTON_BOTTOM_MARGIN_MIN;
   const fittedButtonOffset = safeArea.bottom - safeArea.top - stackHeight;
   const tabletButtonOffset = (fittedButtonOffset + buttonHalfHeight) / 2;
-  const buttonOffset = Math.min(BUTTON_OFFSET_FROM_SAFE_AREA, Math.max(buttonOffsetMin, formFactor === 'tablet' ? tabletButtonOffset : fittedButtonOffset));
+  const buttonOffset =
+    formFactor === 'tablet' ? Math.max(buttonOffsetMin, tabletButtonOffset) : Math.min(BUTTON_OFFSET_FROM_SAFE_AREA, Math.max(buttonOffsetMin, fittedButtonOffset));
   const buttonCenterY = safeArea.bottom - buttonOffset;
 
   return { buttonCenterY, dialCenterY: buttonCenterY - dialToButton };
