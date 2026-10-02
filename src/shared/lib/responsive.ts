@@ -68,10 +68,10 @@ const placeLandscapeButtons = ({ safeArea, buttonHalfHeight, scale }: LandscapeB
   };
 };
 
-type PortraitInput = { safeArea: Rect; dialTopHalfHeight: number; buttonHalfHeight: number };
+type PortraitInput = { safeArea: Rect; dialTopHalfHeight: number; buttonHalfHeight: number; formFactor: FormFactor };
 
 /** 세로 배치의 버튼 중심 y와 시계판 중심 y. `DESIGN.md` §7 계산 순서 10~13 */
-const placePortrait = ({ safeArea, dialTopHalfHeight, buttonHalfHeight }: PortraitInput) => {
+const placePortrait = ({ safeArea, dialTopHalfHeight, buttonHalfHeight, formFactor }: PortraitInput) => {
   // 배율이 달라져도 시계판-버튼 여백 90px 유지. 배율 1에서 182 + 90 + 28 = 300px
   const dialToButton = dialTopHalfHeight + DIAL_TO_BUTTON_GAP + buttonHalfHeight;
   // 시계판 위 끝부터 버튼 중심까지
@@ -79,7 +79,10 @@ const placePortrait = ({ safeArea, dialTopHalfHeight, buttonHalfHeight }: Portra
 
   // 배율이 달라져도 버튼 아래 여백 16px 유지. 배율 1에서 28 + 16 = 44px
   const buttonOffsetMin = buttonHalfHeight + BUTTON_BOTTOM_MARGIN_MIN;
-  const buttonOffset = Math.min(BUTTON_OFFSET_FROM_SAFE_AREA, Math.max(buttonOffsetMin, safeArea.bottom - safeArea.top - stackHeight));
+  const fittedButtonOffset = safeArea.bottom - safeArea.top - stackHeight;
+  const tabletButtonOffset = (fittedButtonOffset + buttonHalfHeight) / 2;
+  const buttonOffset =
+    formFactor === 'tablet' ? Math.max(buttonOffsetMin, tabletButtonOffset) : Math.min(BUTTON_OFFSET_FROM_SAFE_AREA, Math.max(buttonOffsetMin, fittedButtonOffset));
   const buttonCenterY = safeArea.bottom - buttonOffset;
 
   return { buttonCenterY, dialCenterY: buttonCenterY - dialToButton };
@@ -157,7 +160,7 @@ export const resolveLayout = ({
   const numeralRadius = itemRadius + bonfireHalfHeight + NUMERAL_GAP + NUMERAL_HALF_HEIGHT;
 
   // 4. 위치
-  const portrait = placePortrait({ safeArea, dialTopHalfHeight: (numeralRadius + NUMERAL_HALF_HEIGHT) * scale, buttonHalfHeight });
+  const portrait = placePortrait({ safeArea, dialTopHalfHeight: (numeralRadius + NUMERAL_HALF_HEIGHT) * scale, buttonHalfHeight, formFactor });
 
   return {
     scale,
