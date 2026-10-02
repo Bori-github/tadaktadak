@@ -94,6 +94,21 @@ describe('iPad mini 세로 위치', () => {
   });
 });
 
+describe('iPad Pro 13 가로 화면의 세로 배치', () => {
+  // 1376×1032. safe area 위 24·아래 20
+  const ipadPro13Landscape = () =>
+    resolveLayout({ shortSide: 1032, safeAreaTopEdge: 24, safeAreaBottomEdge: 1012, safeAreaLeftEdge: 0, safeAreaRightEdge: 1376, formFactor: 'tablet' });
+
+  it('시계판 위 여백과 버튼 아래 여백이 같다', () => {
+    const { dialCenterY, numeralRadius, buttonCenterY, dotSize } = ipadPro13Landscape();
+    // 숫자 반높이 = 7 × 배율, 버튼 반높이 = 14 × 도트 크기. 배율 = dotSize ÷ 2
+    const dialTopMargin = dialCenterY - numeralRadius - 7 * (dotSize / 2) - 24;
+    const buttonBottomMargin = 1012 - buttonCenterY - (BUTTON_SIZE_IN_DOTS / 2) * dotSize;
+    expect(dialTopMargin).toBeGreaterThan(0);
+    expect(dialTopMargin).toBeCloseTo(buttonBottomMargin);
+  });
+});
+
 describe('safe area 높이와 버튼 거리', () => {
   it('632에서 기준값 150을 지킨다', () => {
     expect(buttonOffset(632)).toBe(150);
