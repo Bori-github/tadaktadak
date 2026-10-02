@@ -21,6 +21,8 @@ pnpm install
 cp .env.example .env   # EXPO_APPLE_TEAM_ID 입력
 pnpm ios               # iOS 시뮬레이터 개발 빌드
 pnpm android           # Android 에뮬레이터 개발 빌드
+pnpm ios:device        # iOS 실기기 개발 빌드
+pnpm android:device    # Android 실기기 개발 빌드
 ```
 
 ## 배포

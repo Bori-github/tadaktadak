@@ -20,7 +20,7 @@ type LiveActivityEvents = {
 declare class LiveActivityModule extends NativeModule<LiveActivityEvents> {
   /** iOS는 위젯 타겟 배포 버전인 18 이상인지. Android는 항상 `true` */
   isSupported: boolean;
-  /** iOS는 설정 › 앱 › 타닥 › 실시간 현황 스위치. Android는 앱 알림 허용 */
+  /** iOS는 설정 › 앱 › 타닥타닥 › 실시간 현황 스위치. Android는 앱 알림 허용 */
   isEnabled: boolean;
   /** Live Activity가 없으면 시작하고, 있으면 이 값으로 갱신 */
   startAsync(content: LiveActivityContent): Promise<void>;

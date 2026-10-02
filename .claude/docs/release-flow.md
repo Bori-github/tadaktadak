@@ -71,7 +71,7 @@ git tag v1.0.1.1 && git push origin v1.0.1.1
 - 스토어 배포 전 `package.json`의 `version`을 직접 올린다
 - OTA 배포에서는 올리지 않는다
 
-빌드 번호(iOS `buildNumber`)는 `appVersionSource: remote` 설정으로 EAS 서버가 보관하고 `autoIncrement`가 빌드마다 올린다.
+빌드 번호(iOS `buildNumber`, Android `versionCode`)는 `appVersionSource: remote` 설정으로 EAS 서버가 보관하고 `autoIncrement`가 빌드마다 올린다.
 
 ## 관련 파일
 
