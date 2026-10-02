@@ -12,10 +12,16 @@
 ## 설치
 
 ```sh
-pnpm ios --device <UDID>
+pnpm ios:device
 ```
 
-빌드, 설치, Metro 기동, 앱 실행까지 한 번에 한다.
+연결된 기기를 탐지해 빌드, 설치, Metro 실행, 앱 실행을 순서대로 수행한다. 기기가 2대 이상이면 대상 기기 선택 프롬프트를 띄운다.
+
+기기를 지정할 때는 UDID를 넘긴다.
+
+```sh
+pnpm ios --device <UDID>
+```
 
 `<UDID>` 자리에는 기기의 UDID를 넣는다. UDID는 `xcrun xctrace list devices`의 `== Devices ==` 아래 괄호 안 값이다.
 
@@ -33,16 +39,18 @@ Debug 구성은 JS를 앱에 넣지 않고 실행 중에 Metro에서 받는다. 
 pnpm ios --device <UDID> --configuration Release
 ```
 
-## 프로파일이 만료됐을 때
+## 프로파일이 만료됐거나 새 기기일 때
 
 `pnpm ios`는 `-allowProvisioningUpdates`를 붙이지 않아 프로파일을 새로 발급받지 못한다. 아래로 한 번 발급받은 뒤 평소 명령으로 돌아간다.
 
 ```sh
-xcodebuild -workspace ios/app.xcworkspace -configuration Debug -scheme app \
-  -destination id=<UDID> -allowProvisioningUpdates build
+xcodebuild -workspace ios/TadakTadak.xcworkspace -configuration Debug -scheme TadakTadak \
+  -destination id=<UDID> -allowProvisioningUpdates -allowProvisioningDeviceRegistration build
 ```
 
-Xcode에서 `ios/app.xcworkspace`를 열고 ⌘R로 실행해도 된다. `app.xcodeproj`가 아니라 워크스페이스를 연다. `app`과 `widget` 두 타겟 모두 Signing & Capabilities에서 팀이 지정돼 있어야 한다.
+`-allowProvisioningDeviceRegistration`은 개발자 계정에 없는 기기를 등록해 프로파일에 넣는다.
+
+Xcode에서 `ios/TadakTadak.xcworkspace`를 열고 ⌘R로 실행해도 된다. `TadakTadak.xcodeproj`가 아니라 워크스페이스를 연다. `TadakTadak`과 `widget` 두 타겟 모두 Signing & Capabilities에서 팀이 지정돼 있어야 한다.
 
 발급된 프로파일은 `~/Library/Developer/Xcode/UserData/Provisioning Profiles/`에 있다. 만료일은 아래로 본다.
 
@@ -52,10 +60,11 @@ security cms -D -i <프로파일>.mobileprovision | plutil -extract ExpirationDa
 
 ## 오류와 조치
 
-| 메시지                                                 | 조치                                             |
-| ------------------------------------------------------ | ------------------------------------------------ |
-| `No device UDID or name matching`                      | `xcrun xctrace list devices`의 UDID를 쓴다       |
-| `The developer disk image could not be mounted`        | 기기 화면 잠금을 푼다                            |
-| `Unable to log in with account`                        | Xcode → Settings → Apple Accounts에서 로그인한다 |
-| `No profiles for 'com.boriguri.tadaktadak' were found` | `-allowProvisioningUpdates`로 재발급받는다       |
-| `its profile has not been explicitly trusted`          | 기기에서 개발자 앱을 신뢰한다                    |
+| 메시지                                                 | 조치                                                |
+| ------------------------------------------------------ | --------------------------------------------------- |
+| `No device UDID or name matching`                      | `xcrun xctrace list devices`의 UDID를 쓴다          |
+| `The developer disk image could not be mounted`        | 기기 화면 잠금을 푼다                               |
+| `Unable to log in with account`                        | Xcode → Settings → Apple Accounts에서 로그인한다    |
+| `No profiles for 'com.boriguri.tadaktadak' were found` | `-allowProvisioningUpdates`로 재발급받는다          |
+| `its profile has not been explicitly trusted`          | 기기에서 개발자 앱을 신뢰한다                       |
+| `isn't registered in your developer account`           | `-allowProvisioningDeviceRegistration`으로 등록한다 |
