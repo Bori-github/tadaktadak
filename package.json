@@ -52,6 +52,8 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
+    "android:device": "sh scripts/run-device.sh android",
+    "ios:device": "sh scripts/run-device.sh ios",
     "build:preview": "eas build --profile preview",
     "build:production": "eas build --profile production",
     "submit": "eas submit --latest",
