@@ -71,17 +71,47 @@ adb connect <IP:포트>
 
 ### 벨소리 모드 변경
 
-벨소리 볼륨(`--stream 2`)을 바꿔 모드를 전환한다. 바꾼 뒤 `dumpsys audio`의 `mode (external)`로 확인한다.
+오디오 시스템 서비스(`audio`)의 벨소리 모드 메서드를 `adb shell service call`로 직접 호출해 전환한다. 볼륨 키와 `cmd media_session volume`으로는 진동에서 무음으로 전환되지 않는다.
 
-| 모드 | 명령                                                    | 결과      |
-| ---- | ------------------------------------------------------- | --------- |
-| 소리 | `adb shell cmd media_session volume --stream 2 --set 5` | `NORMAL`  |
-| 진동 | `adb shell cmd media_session volume --stream 2 --set 0` | `VIBRATE` |
-| 무음 | 없음. 기기에서 변경                                     | `SILENT`  |
+#### 전환
 
-- 진동: 벨소리 볼륨 0에서 진동으로 바뀌는 기기 설정 기준. `NORMAL`에서 `--set 0` 실행 시 `VIBRATE` 확인
-- 무음: `VIBRATE`에서 `input keyevent KEYCODE_VOLUME_MUTE`, `KEYCODE_VOLUME_DOWN`, `--adj lower` 모두 `VIBRATE` 유지
-- `settings put global mode_ringer 2`: 설정값만 2로 바뀌고 `mode (external)`은 `VIBRATE` 유지
+| 모드 | 명령                                                          | `dumpsys audio`의 `mode (external)` |
+| ---- | ------------------------------------------------------------- | ----------------------------------- |
+| 소리 | `adb shell service call audio 34 i32 2 s16 com.android.shell` | `NORMAL`                            |
+| 진동 | `adb shell service call audio 34 i32 1 s16 com.android.shell` | `VIBRATE`                           |
+| 무음 | `adb shell service call audio 34 i32 0 s16 com.android.shell` | `SILENT`                            |
+
+- `34`: 호출할 메서드의 번호. 아래 「기능 번호」 참고
+- `i32 0|1|2`: 벨소리 모드 값. 0 무음, 1 진동, 2 소리
+- `s16 com.android.shell`: 호출자 패키지 이름
+- 전환 후 `adb shell dumpsys audio`의 `Ringer mode:` 아래 `mode (external)` 값으로 결과 확인
+
+#### 현재 모드 읽기
+
+- `adb shell service call audio 36`
+- 결과 `Result: Parcel(00000000 0000000N …)`의 마지막 값 `N`이 현재 모드. 0 무음, 1 진동, 2 소리
+
+#### 기능 번호
+
+- `service call`의 숫자는 시스템 서비스 메서드의 Binder 트랜잭션 번호
+- 측정 기기(Galaxy S20+, Android 13) 기준: 34 `setRingerModeExternal`(변경), 36 `getRingerModeExternal`(읽기)
+- 번호는 AIDL 선언 순서로 정해져 OS 버전마다 다름. 예: Android 12 기준 번호(읽기 34, 변경 32)를 이 기기에 쓰면 읽기로 부른 34가 변경 메서드를 실행
+- 번호가 틀리면 다른 메서드가 실행되므로, 기기나 OS를 바꾸면 아래 절차로 번호를 먼저 확인
+
+#### 기능 번호 확인
+
+```sh
+adb pull /system/framework/framework.jar
+unzip framework.jar 'classes*.dex'
+for f in classes*.dex; do
+  "$ANDROID_HOME"/build-tools/<버전>/dexdump -l plain "$f" \
+    | LC_ALL=C grep -a -A4 -E "name +: 'TRANSACTION_(get|set)RingerModeExternal'" \
+    | LC_ALL=C grep -a -E 'name|value'
+done
+```
+
+- `TRANSACTION_setRingerModeExternal`의 `value`가 변경 번호, `TRANSACTION_getRingerModeExternal`의 `value`가 읽기 번호
+- `LC_ALL=C`: `dexdump` 출력에 섞인 비 UTF-8 바이트로 `grep`이 멈추지 않도록 바이트 단위로 검색
 
 ### 결과 확인에 사용하면 잘못되는 값
 
