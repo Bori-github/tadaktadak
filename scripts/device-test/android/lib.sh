@@ -161,6 +161,159 @@ wait_until_epoch() {
   exit 1
 }
 
+# `dumpsys` 결과에 서비스 머리글이 없으면 adb 실패로 보고 종료. 빈 결과가 「0개」로 판정되지 않도록 여기서 막음
+dumpsys_checked() {
+  header=$1
+  shift
+  out=$(device shell dumpsys "$@")
+  case "$out" in
+    *"$header"*) printf '%s\n' "$out" ;;
+    *) echo "dumpsys $1 결과를 읽지 못함" >&2; exit 1 ;;
+  esac
+}
+
+notification_dump() {
+  dumpsys_checked "Current Notification Manager state" notification --noredact
+}
+
+# 앱 알림의 채널 이름. 한 줄에 하나
+# 알림을 다시 게시하는 순간 같은 알림이 두 목록에 함께 나와 `key`로 중복 제거
+notifications() {
+  dump=$(notification_dump)
+  printf '%s\n' "$dump" 2> /dev/null | awk -v pkg="$PACKAGE" '
+    /NotificationRecord\(/ && index($0, "pkg=" pkg " ") {
+      match($0, /key=[^ ]*/); key = substr($0, RSTART, RLENGTH)
+      if (seen[key]++) next
+      match($0, /channel=[a-z_-]*/); print substr($0, RSTART + 8, RLENGTH - 8)
+    }'
+}
+
+count_notifications() {
+  list=$(notifications)
+  printf '%s\n' "$list" | grep -cx "$1" || true
+}
+
+# `since` 이후 이 앱의 진동. 한 줄에 경로(`app` 앱 직접, `notification` 알림)와 `Usage`
+# 알림 진동은 다른 앱 것도 `opPkg: android`라 `reason`의 패키지 이름으로 구분
+vibrations_since() {
+  dump=$(dumpsys_checked "Vibrator Manager Service" vibrator_manager)
+  printf '%s\n' "$dump" | grep "startTime: " | awk -v since="$1" -v pkg="$PACKAGE" '
+    { split($0, a, "startTime: "); t = substr(a[2], 1, 14) }
+    # 취소/무시된 진동은 재생되지 않아 제외. 확인 시점에 재생 중(`running`)인 진동은 포함
+    t >= since && !index($0, "status: cancelled") && !index($0, "status: ignored") {
+      match($0, /Usage=[A-Z_]+/); usage = substr($0, RSTART + 6, RLENGTH - 6)
+      if (index($0, "opPkg: " pkg ",")) print "app", usage
+      else if (index($0, "opPkg: android,") && index($0, "(" pkg " ")) print "notification", usage
+    }'
+}
+
+# 실시간 업데이트 알림의 끝날 시각(밀리초). 남은 시간은 Skia로 그려 접근성 트리에 없어 이 값으로 확인
+live_ends_at() {
+  dump=$(notification_dump)
+  printf '%s\n' "$dump" 2> /dev/null | awk -v pkg="$PACKAGE" '
+    /NotificationRecord\(/ { on = index($0, "pkg=" pkg " ") && index($0, "channel=live-activity ") }
+    on && /when=[0-9]+/ { sub(/.*when=/, ""); print; exit }'
+}
+
+# 실시간 업데이트 알림의 작은 아이콘 리소스 ID. 집중/휴식 타이머마다 다름
+live_icon() {
+  dump=$(notification_dump)
+  printf '%s\n' "$dump" 2> /dev/null | awk -v pkg="$PACKAGE" '
+    /NotificationRecord\(/ { on = index($0, "pkg=" pkg " ") && index($0, "channel=live-activity ") }
+    on && /icon=Icon\(/ { match($0, /id=0x[0-9a-f]+/); print substr($0, RSTART + 3, RLENGTH - 3); exit }'
+}
+
+# `since` 이후 이 앱의 소리 재생 수. 앱 직접 재생은 오디오 로그의 앱 uid, 알림음은 `mSoundNotificationKey`로 확인
+sounds_since() {
+  uid=$(device shell dumpsys package "$PACKAGE" | grep -m1 -o 'userId=[0-9]*' | sed 's/userId=//')
+  [ -n "$uid" ] || { echo "앱 uid를 읽지 못함" >&2; exit 1; }
+  dump=$(dumpsys_checked "playback activity as reported through PlayerBase" audio)
+  played=$(printf '%s\n' "$dump" 2> /dev/null | awk -v since="$1" -v uid="uid/pid:$uid/" '
+    /playback activity as reported through PlayerBase/ { on = 1; next }
+    on && /^$/ { on = 0 }
+    on && substr($0, 1, 14) >= since && index($0, "new player") && index($0, uid) { n++ }
+    END { print n + 0 }')
+  dump=$(notification_dump)
+  notification=$(printf '%s\n' "$dump" | grep -c "mSoundNotificationKey=.*$PACKAGE" || true)
+  echo $((played + notification))
+}
+
+# 완료 알림 개수. 진동 토글에 따라 `vibration` 또는 `banner` 채널
+count_completions() {
+  echo $(($(count_notifications vibration) + $(count_notifications banner)))
+}
+
+# 진행 상태이면 진행 막대 갱신 알람과 완료 알림 알람이 예약됨
+count_alarms() {
+  dump=$(dumpsys_checked "Current Alarm Manager state" alarm)
+  printf '%s\n' "$dump" | grep -c "Alarm{.* $PACKAGE}" || true
+}
+
+# 앱 창 `fl`의 `0x80`(`FLAG_KEEP_SCREEN_ON`) 비트
+keep_screen_on() {
+  fl=$(device shell dumpsys window windows | grep -A30 "$PACKAGE/" | grep -o ' fl=[0-9a-f]*' | head -1 | sed 's/ fl=//')
+  [ -n "$fl" ] || { echo "앱 창 fl 값을 찾지 못함" >&2; exit 1; }
+  [ $((0x$fl & 0x80)) -ne 0 ]
+}
+
+# 채널 알림 하나의 extras 값. 예: `notification_extra live-activity android.progress`
+notification_extra() {
+  dump=$(notification_dump)
+  printf '%s\n' "$dump" 2> /dev/null | awk -v pkg="$PACKAGE" -v channel="channel=$1 " -v key="$2=" '
+    /NotificationRecord\(/ { on = index($0, "pkg=" pkg " ") && index($0, channel) }
+    on && index($0, key) { sub(/.*=[A-Za-z]+ \(/, ""); sub(/\)$/, ""); print; exit }'
+}
+
+# 실시간 업데이트 알림의 버튼 문구
+live_action() {
+  dump=$(notification_dump)
+  printf '%s\n' "$dump" 2> /dev/null | awk -v pkg="$PACKAGE" '
+    /NotificationRecord\(/ { on = index($0, "pkg=" pkg " ") && index($0, "channel=live-activity ") }
+    on && /\[0\] "/ { sub(/.*\[0\] "/, ""); sub(/".*/, ""); print; exit }'
+}
+
+# 앱 채널 이름. 다른 앱의 같은 ID 채널을 읽지 않도록 이 앱의 `AppSettings` 블록 안에서만 조회
+channel_name() {
+  dump=$(notification_dump)
+  printf '%s\n' "$dump" 2> /dev/null | awk -v pkg="AppSettings: $PACKAGE " -v id="mId='$1', mName=" '
+    /AppSettings: / { on = index($0, pkg) > 0; next }
+    on && index($0, id) { sub(/.*mName=/, ""); sub(/, mDescription=.*/, ""); print; exit }'
+}
+
+resumed_activity() {
+  device shell dumpsys activity activities | grep -m1 topResumedActivity
+}
+
+# 대기 상태에서 숫자 터치 시 조작 진동이 기록되면 진동 토글 켜짐
+vibration_enabled() {
+  since=$(now_stamp)
+  sleep 1
+  tap readout-focus
+  sleep 1
+  vibrations_since "$since" | grep -q '^app TOUCH'
+}
+
+# 1 켜짐, 0 꺼짐
+set_vibration() {
+  current=$(vibration_enabled && echo 1 || echo 0)
+  [ "$current" = "$1" ] && return
+  tap settings
+  tap settings-vibration
+  tap modal-close
+  current=$(vibration_enabled && echo 1 || echo 0)
+  [ "$current" = "$1" ] || { echo "진동 토글을 $1(으)로 설정하지 못함" >&2; exit 1; }
+  changed_vibration=$([ "$1" = 1 ] || echo 1)
+}
+
+# $1 언어 코드 또는 `system`
+select_language() {
+  tap settings
+  tap settings-language
+  tap "language-$1"
+  tap modal-close
+  changed_language=$([ "$1" = system ] || echo 1)
+}
+
 # 앱을 실행하고 타이머가 진행/일시정지 상태이면 정지
 start_idle() {
   launch
@@ -170,6 +323,36 @@ start_idle() {
 # 실행 직후 홈 화면으로 보내 백그라운드에서 완료되게 함
 go_home() {
   device shell input keyevent KEYCODE_HOME
+}
+
+# 터미널이 없으면 질문을 출력하고 `$OUT/answer` 파일이 생길 때까지 대기. 에이전트가 대화창에서 받은 답을 이 파일에 씀
+wait_answer() {
+  if { : < /dev/tty; } 2> /dev/null; then
+    printf '%s ' "$1" > /dev/tty
+    read -r answer < /dev/tty
+    return
+  fi
+  rm -f "$OUT/answer"
+  echo "수동 확인: $1. 답변 파일 $OUT/answer"
+  until [ -f "$OUT/answer" ]; do sleep 1; done
+  answer=$(cat "$OUT/answer")
+  rm -f "$OUT/answer"
+}
+
+# 수동 확인 단계. 입력을 받을 때까지 대기
+prompt() {
+  wait_answer "$1 (Enter)"
+}
+
+# 수동 확인 항목. y면 성공
+ask() {
+  wait_answer "$1 (y/n)"
+  [ "$answer" = y ]
+}
+
+# `TC ID`, 결과(통과/불일치), 근거를 탭 문자(`\t`)로 구분해 한 줄 출력. Test Run 행으로 옮기는 단위
+report() {
+  printf '%s\t%s\t%s\n' "$1" "$([ "$2" = 0 ] && echo 통과 || echo 불일치)" "$3"
 }
 
 original_ringer=$(ringer)
