@@ -8,7 +8,7 @@ description: 타닥타닥 저장소에 Pull Request를 만들 때 쓴다. 사용
 현재 브랜치의 변경으로 Pull Request를 만든다. 규칙의 단일 출처는 아래이며, 이 스킬은 그것을 실행할 뿐 규칙을 다시 정의하지 않는다.
 
 - 제목 형식: `.claude/skills/commit/SKILL.md`
-- 본문 구조: `.github/pull_request_template.md`
+- 본문 구조: `.github/pull_request_template.md`이며, base가 `release/*`이면 `.github/PULL_REQUEST_TEMPLATE/release.md`
 
 ## 절차
 
