@@ -84,8 +84,17 @@ jobs:
             fi
           fi
 
+      # 비교 대상을 태그 버전 미만(OTA 태그는 이하)의 최신 릴리즈로 제한
+      - name: 비교 범위
+        id: range
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          base=$(cut -d. -f1-3 <<< "$version")
+          if [ "$version" = "$base" ]; then echo "range=<$base"; else echo "range=<=$base"; fi >> "$GITHUB_OUTPUT"
+
       - uses: release-drafter/release-drafter@v7
         with:
+          filter-by-range: ${{ steps.range.outputs.range }}
           publish: true
           tag: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
