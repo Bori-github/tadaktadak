@@ -1,0 +1,23 @@
+name: backport-label
+
+on:
+  pull_request:
+    types: [closed]
+    branches: ['release/**']
+
+permissions:
+  pull-requests: write
+
+jobs:
+  label:
+    if: github.event.pull_request.merged
+    runs-on: ubuntu-latest
+    steps:
+      - name: 원본 PR에 backported 라벨 추가
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          number=$(grep -oiE 'Backport of #[0-9]+' <<< "$BODY" | grep -oE '[0-9]+' | head -1)
+          [ -n "$number" ] || exit 0
+          gh pr edit "$number" -R "$GITHUB_REPOSITORY" --add-label backported
