@@ -30,6 +30,7 @@
 `.claude/rules/` 아래 문서를 따른다.
 
 - `.claude/rules/architecture/feature-sliced-design.md`
+- `.claude/rules/workflow/task-tracking.md`
 - `.claude/rules/workflow/work-scope.md`
 
 ## 검증
