@@ -62,3 +62,6 @@ categories:
     when:
       conventional:
         types: [style]
+
+exclude-labels:
+  - backported
