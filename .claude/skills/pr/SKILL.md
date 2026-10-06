@@ -19,7 +19,7 @@ description: 타닥타닥 저장소에 Pull Request를 만들 때 쓴다. 사용
    - `git diff origin/<base>..HEAD --stat` — 변경 파일
    - `DESIGN.md`·`SPEC.md`·`PLAN.md`·`.claude` 변경에서 결정과 이탈을 읽는다
 
-3. **크기 확인** — `sh .lefthook/check-work-scope.sh push`. 목표 400줄을 넘으면 PR을 만들기 전에 나눌 방법을 제안한다(예: 설정·리팩터 같은 준비 변경을 선행 PR로 먼저 낸다). 상한 600줄은 pre-push가 막는다. 규칙은 `.claude/rules/workflow/work-scope.md`.
+3. **크기 확인** — `sh .lefthook/check-work-scope.sh push`. 목표를 넘으면 PR을 만들기 전에 나눌 방법을 제안한다(예: 설정·리팩터 같은 준비 변경을 선행 PR로 먼저 낸다). 상한은 pre-push가 막는다. 규칙은 `.claude/rules/workflow/work-scope.md`.
 
 4. **명세 대조** — 기계가 보지 못하는 것을 코드와 대조한다. 어긋나면 PR을 만들기 전에 알린다.
    - 상수를 바꿨으면 `DESIGN.md`에서 그 값을 쓰는 표가 함께 고쳐졌는가. §5 겹침 검산과 §7 구간별 처리는 상수에서 파생된 값이다
