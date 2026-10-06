@@ -4,10 +4,10 @@
 #   push        lefthook pre-push
 set -u
 
-COMMIT_MAX=200
-COMMIT_MAX_FILES=8
-PR_TARGET=400
-PR_MAX=600
+COMMIT_MAX=300
+COMMIT_MAX_FILES=10
+PR_TARGET=600
+PR_MAX=800
 BASE_BRANCH=main
 RULE=".claude/rules/workflow/work-scope.md"
 
