@@ -17,7 +17,7 @@ description: 타닥타닥 저장소에 Pull Request를 만들 때 쓴다. 사용
 2. **맥락 수집**
    - `git log origin/<base>..HEAD --oneline` — 커밋들이 곧 의도다
    - `git diff origin/<base>..HEAD --stat` — 변경 파일
-   - `DESIGN.md`·`SPEC.md`·`PLAN.md`·`.claude` 변경에서 결정과 이탈을 읽는다
+   - `DESIGN.md`·`SPEC.md`·`.claude` 변경에서 결정과 이탈을 읽는다
 
 3. **크기 확인** — `sh .lefthook/check-work-scope.sh push`. 목표를 넘으면 PR을 만들기 전에 나눌 방법을 제안한다(예: 설정·리팩터 같은 준비 변경을 선행 PR로 먼저 낸다). 상한은 pre-push가 막는다. 규칙은 `.claude/rules/workflow/work-scope.md`.
 
