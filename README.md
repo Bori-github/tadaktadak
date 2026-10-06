@@ -25,6 +25,40 @@ pnpm ios:device        # iOS 실기기 개발 빌드
 pnpm android:device    # Android 실기기 개발 빌드
 ```
 
+## 개발 환경
+
+| 항목           | 값                                                             |
+| -------------- | -------------------------------------------------------------- |
+| macOS          | 26.6.1 Tahoe                                                   |
+| Xcode          | 26.6 (17F113), iOS SDK 26.5                                    |
+| Android Studio | 2026.1. SDK Platform 36, Build-Tools 36.0.0, NDK 27.1.12297006 |
+| Java           | Temurin 21                                                     |
+| Maestro        | 2.10.0                                                         |
+
+- Xcode 27부터 Universal 빌드가 나오지 않아, Intel인 개발용 Mac(MacBookPro16,1)에서는 Xcode 26.6이 마지막 정식 빌드다
+- Android용 Expo Go에서는 `expo-notifications` 55 이상이 import 시점에 예외를 던져 앱이 뜨지 않으므로, 개발 빌드로 실행한다
+
+### E2E
+
+- 시뮬레이터 개발 빌드를 대상으로 하며, `pnpm ios`로 앱을 올리고 알림 권한 창을 한 번 허용한 뒤 `pnpm e2e`를 실행한다
+
+### 설치
+
+```sh
+curl -fsSL https://get.maestro.mobile.dev | bash
+brew install --cask android-studio android-commandlinetools
+sdkmanager --sdk_root=$HOME/Library/Android/sdk "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006" "emulator" "system-images;android-36;google_apis;x86_64"
+avdmanager create avd -n Pixel_10 -k "system-images;android-36;google_apis;x86_64" -d pixel_10
+```
+
+설치 후 `~/.zshrc`에 아래 환경 변수를 추가한다.
+
+```sh
+export JAVA_HOME="$(/usr/libexec/java_home -v 21)"
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+export PATH="$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools"
+```
+
 ## 배포
 
 스토어 배포 시 `package.json`의 `version`을 직접 수정 후 `release/X.Y` 브랜치를 기준으로 다음 스크립트를 실행한다.
