@@ -32,13 +32,9 @@ jobs:
             exit 1
           fi
 
-          # main 기준으로 배포가 진행되므로 main에 없는 커밋의 태그는 릴리즈 노트를 발행하지 않음
-          if ! compared=$(gh api "repos/$GITHUB_REPOSITORY/compare/main...$PUSHED" --jq .status); then
-            echo "::error::${PUSHED}와 main의 비교 조회 실패"
-            exit 1
-          fi
-          if [ "$compared" != identical ] && [ "$compared" != behind ]; then
-            echo "::error::${PUSHED}가 main에 없음. 푸시하지 않은 커밋에 태그가 붙음"
+          # release 브랜치에서만 배포하므로 release 브랜치에 없는 커밋의 태그는 릴리즈 노트를 발행하지 않음
+          if ! grep -q 'origin/release/' <<< "$(git branch -r --contains "$PUSHED")"; then
+            echo "::error::${PUSHED}가 가리키는 커밋이 원격 release 브랜치에 없음"
             exit 1
           fi
 
@@ -88,8 +84,17 @@ jobs:
             fi
           fi
 
+      # 비교 대상을 태그 버전 미만(OTA 태그는 이하)의 최신 릴리즈로 제한
+      - name: 비교 범위
+        id: range
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          base=$(cut -d. -f1-3 <<< "$version")
+          if [ "$version" = "$base" ]; then echo "range=<$base"; else echo "range=<=$base"; fi >> "$GITHUB_OUTPUT"
+
       - uses: release-drafter/release-drafter@v7
         with:
+          filter-by-range: ${{ steps.range.outputs.range }}
           publish: true
           tag: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
