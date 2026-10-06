@@ -8,7 +8,7 @@ description: 타닥타닥 저장소에 Pull Request를 만들 때 쓴다. 사용
 현재 브랜치의 변경으로 Pull Request를 만든다. 규칙의 단일 출처는 아래이며, 이 스킬은 그것을 실행할 뿐 규칙을 다시 정의하지 않는다.
 
 - 제목 형식: `.claude/skills/commit/SKILL.md`
-- 본문 구조: `.github/pull_request_template.md`이며, base가 `release/*`이면 `.github/PULL_REQUEST_TEMPLATE/release.md`
+- 본문 구조: `.github/pull_request_template.md`
 
 ## 절차
 
@@ -26,6 +26,7 @@ description: 타닥타닥 저장소에 Pull Request를 만들 때 쓴다. 사용
    - 시계판에 개체를 더했으면 겹침 검산을 다시 돌렸는가
 
 5. **본문 작성** — 템플릿을 읽어 각 절을 diff·커밋을 근거로 채운다.
+   - 범위의 "의도적으로 하지 않은 것"과 검증(값)은 **반드시** 채운다 — diff에 담기지 않는 정보다
    - 확실치 않으면 추측하지 말고 사용자에게 묻는다
    - diff·커밋·문서에서 읽을 수 있는 것은 되풀이하지 않는다
    - 쓸 내용이 없는 절은 비워 둔다. 채우려고 만들어 내지 않는다

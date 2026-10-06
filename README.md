@@ -27,10 +27,10 @@ pnpm android:device    # Android 실기기 개발 빌드
 
 ## 배포
 
-스토어 배포 시 `package.json`의 `version`을 직접 수정 후 `release/X.Y` 브랜치를 기준으로 다음 스크립트를 실행한다.
+스토어 배포 시 `package.json`의 `version`을 직접 수정 후 `main`을 기준으로 다음 스크립트를 실행한다.
 
 ```bash
-pnpm deploy:ios release/X.Y       # fingerprint로 OTA와 스토어 배포를 구분해 실행
+pnpm deploy:ios                   # fingerprint로 OTA와 스토어 배포를 구분해 실행
 ```
 
 - fingerprint가 직전 빌드와 같으면 OTA로, 다르면 빌드해서 App Store Connect에 업로드

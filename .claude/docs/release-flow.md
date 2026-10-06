@@ -2,21 +2,12 @@
 
 스토어 배포와 OTA 업데이트 흐름 및 릴리즈 노트 발행까지의 흐름
 
-## 브랜치 전략
-
-`main`은 개발, `release/X.Y`는 배포 브랜치로 두며, release 브랜치는 `main`에 머지하지 않는다.
-
-- 개발: 작업 브랜치를 `main`에 PR로 머지
-- 출시: `main`에서 `release/X.Y` 생성
-- 핫픽스: `main`에 머지한 커밋을 `release/X.Y`로 cherry-pick
-
 ## 전체 흐름
 
 ```mermaid
 flowchart TD
     M["main"] -->|push| D["draft.yml → 릴리즈 노트 draft 갱신"]
-    M -->|"브랜치 생성"| RB["release/X.Y"]
-    RB -->|"pnpm deploy:ios release/X.Y"| E
+    M -->|"pnpm deploy:ios"| E
 
     subgraph E["deploy-ios 워크플로"]
         F["fingerprint"] --> G["get-build"]
@@ -49,19 +40,19 @@ fingerprint에는 네이티브 빌드를 결정하는 것만 들어간다. `src/
 ## 배포
 
 ```bash
-pnpm deploy:ios release/1.2
+pnpm deploy:ios
 ```
 
-배포할 `release/*` 브랜치를 인자로 지정한다.
+`--ref main`으로 항상 `main`을 기준으로 배포를 진행한다.
 
 ## 릴리즈 노트
 
 `main`에 머지될 때마다 Release Drafter가 draft에 변경을 쌓는다.
 
-release 브랜치 커밋에 태그를 푸시하면 자동 발행하며, release 브랜치에 없는 커밋의 태그는 발행하지 않는다.
+태그 푸시로 자동 발행한다.
 
 ```bash
-git tag v1.0.1.1 origin/release/1.0 && git push origin v1.0.1.1
+git tag v1.0.1.1 && git push origin v1.0.1.1
 ```
 
 | 배포   | 태그       | 푸시 시점      |
@@ -78,21 +69,16 @@ git tag v1.0.1.1 origin/release/1.0 && git push origin v1.0.1.1
 `package.json`의 `version`을 유일한 출처로 둔다. `app.config.js`가 읽어 Expo 설정에 넣는다.
 
 - 스토어 배포 전 `package.json`의 `version`을 직접 올린다
-  - 마이너: `release/X.Y` 생성 전 `main`에서 변경
-  - 패치: `release/X.Y`에서만 변경
 - OTA 배포에서는 올리지 않는다
 
 빌드 번호(iOS `buildNumber`, Android `versionCode`)는 `appVersionSource: remote` 설정으로 EAS 서버가 보관하고 `autoIncrement`가 빌드마다 올린다.
 
 ## 관련 파일
 
-| 파일                                       | 역할                                                       |
-| ------------------------------------------ | ---------------------------------------------------------- |
-| `.eas/workflows/deploy-ios.yml`            | fingerprint로 배포 수단을 정해 실행                        |
-| `scripts/deploy/ios.sh`                    | `release/*` 브랜치만 deploy-ios 워크플로 실행              |
-| `.github/workflows/draft.yml`              | `main` push마다 릴리즈 노트 draft 갱신                     |
-| `.github/release-drafter.yml`              | 절 이름과 분류 규칙이며, `backported` 라벨 PR은 제외       |
-| `.github/workflows/publish.yml`            | 태그 푸시로 draft 발행                                     |
-| `.github/PULL_REQUEST_TEMPLATE/release.md` | release 브랜치 PR 템플릿                                   |
-| `.github/workflows/backport-label.yml`     | release 브랜치 PR 머지 시 원본 PR에 `backported` 라벨 추가 |
-| `fingerprint.config.js`                    | fingerprint에 `targets/` 추가                              |
+| 파일                            | 역할                                   |
+| ------------------------------- | -------------------------------------- |
+| `.eas/workflows/deploy-ios.yml` | fingerprint로 배포 수단을 정해 실행    |
+| `.github/workflows/draft.yml`   | `main` push마다 릴리즈 노트 draft 갱신 |
+| `.github/release-drafter.yml`   | 절 이름과 분류 규칙                    |
+| `.github/workflows/publish.yml` | 태그 푸시로 draft 발행                 |
+| `fingerprint.config.js`         | fingerprint에 `targets/` 추가          |
