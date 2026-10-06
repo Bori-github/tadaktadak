@@ -17,6 +17,7 @@
 | `DESIGN.md`                              | 화면에 보이는 것. 팔레트, 자형, 개체 규격, 시계판 좌표, 레이어, 반응형, 상태, 모션 |
 | `SPEC.md`                                | 화면에 보이지 않는 동작. 시간 모델, 알림, Live Activity                            |
 | `PLAN.md`                                | 만드는 과정. 작업 단계, 확인할 것, 개발 환경                                       |
+| `TESTS.md`                               | 배포 전 실기기 테스트. 플랫폼별 조작과 결과 확인 방법                              |
 | 피그마 파일                              | 디자인 원본. 주소와 기준일은 `DESIGN.md` frontmatter                               |
 | `.claude/docs/live-activity.md`          | 앱 상태에 따라 Live Activity가 어디까지 동작하는지. 조사 사실과 근거               |
 | `.claude/docs/rendering-optimization.md` | 드래그 시 화면 반영 지연 문제와 원인, 해결, 측정 결과와 방법                       |
