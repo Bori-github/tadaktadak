@@ -18,5 +18,9 @@
   "more": {
     "appVersion": "버전",
     "privacyPolicy": "개인정보처리방침"
+  },
+  "error": {
+    "message": "문제가 발생했어요",
+    "restart": "다시 시작"
   }
 }
