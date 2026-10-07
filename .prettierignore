@@ -7,4 +7,4 @@ CHANGELOG.md
 
 # lottie files
 src/app/ui/splash/splash.json
-src/app/ui/error-fallback/error.json
+src/app/ui/root-error-screen/error.json
