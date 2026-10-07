@@ -66,13 +66,13 @@ afterEach(() => {
 
 describe('배경음 재생', () => {
   it('배경음이 꺼져 있으면 재생하지 않는다', async () => {
-    await renderHook(() => useAmbientSoundPlayback());
+    await renderHook(() => useAmbientSoundPlayback({ canPlay: true }));
 
     expect(mockPlayers).toHaveLength(0);
   });
 
   it('배경음을 켜면 음량 0에서 반복 재생을 시작하고 2초 뒤 음량이 1이 된다', async () => {
-    await renderHook(() => useAmbientSoundPlayback());
+    await renderHook(() => useAmbientSoundPlayback({ canPlay: true }));
     await act(async () => setAmbientSoundEnabled(true));
 
     expect(mockPlayers[0]).toMatchObject({ loop: true, volume: 0, isPlaying: true });
@@ -85,7 +85,7 @@ describe('배경음 재생', () => {
   });
 
   it('배경음을 끄면 재생을 즉시 정지한다', async () => {
-    await renderHook(() => useAmbientSoundPlayback());
+    await renderHook(() => useAmbientSoundPlayback({ canPlay: true }));
     await act(async () => setAmbientSoundEnabled(true));
     await act(async () => setAmbientSoundEnabled(false));
 
@@ -93,7 +93,7 @@ describe('배경음 재생', () => {
   });
 
   it('앱이 백그라운드로 전환되면 정지하고 포그라운드로 복귀하면 다시 재생한다', async () => {
-    await renderHook(() => useAmbientSoundPlayback());
+    await renderHook(() => useAmbientSoundPlayback({ canPlay: true }));
     await act(async () => setAmbientSoundEnabled(true));
 
     await act(async () => changeAppState('background'));
@@ -101,5 +101,14 @@ describe('배경음 재생', () => {
 
     await act(async () => changeAppState('active'));
     expect(mockPlayers[1]).toMatchObject({ volume: 0, isPlaying: true });
+  });
+
+  it('배경음이 켜져 있어도 재생 가능 상태가 되기 전에는 재생하지 않는다', async () => {
+    setAmbientSoundEnabled(true);
+    const { rerender } = await renderHook(({ canPlay }: { canPlay: boolean }) => useAmbientSoundPlayback({ canPlay }), { initialProps: { canPlay: false } });
+    expect(mockPlayers).toHaveLength(0);
+
+    await rerender({ canPlay: true });
+    expect(mockPlayers[0]).toMatchObject({ isPlaying: true });
   });
 });

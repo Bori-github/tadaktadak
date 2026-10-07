@@ -33,7 +33,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const App = (): JSX.Element => {
   const [isSplashVisible, setIsSplashVisible] = useState(true);
-  useAmbientSoundPlayback();
+  useAmbientSoundPlayback({ canPlay: !isSplashVisible });
 
   return (
     <GestureHandlerRootView style={styles.root}>

@@ -19,12 +19,17 @@ const subscribeAppState = (listener: () => void): (() => void) => {
 // iOS 제어 센터 표시 중인 `inactive`도 포그라운드로 보고 재생 유지
 const getIsForeground = (): boolean => AppState.currentState !== 'background';
 
+type AmbientSoundPlaybackOptions = {
+  canPlay: boolean;
+};
+
 /**
  * 배경음이 켜져 있고 앱이 포그라운드인 동안 음원을 반복 재생하고, 재생을 시작할 때 음량을 `FADE_IN_MS` 동안 0에서 1로 올림
  *
+ * @param options.canPlay - false인 동안 재생하지 않음
  * @returns 없음
  */
-export const useAmbientSoundPlayback = (): void => {
+export const useAmbientSoundPlayback = ({ canPlay }: AmbientSoundPlaybackOptions): void => {
   const isEnabled = useAmbientSoundEnabled();
   const isForeground = useSyncExternalStore(subscribeAppState, getIsForeground);
 
@@ -34,7 +39,7 @@ export const useAmbientSoundPlayback = (): void => {
   }, []);
 
   useEffect(() => {
-    if (!isEnabled || !isForeground) return;
+    if (!canPlay || !isEnabled || !isForeground) return;
 
     const player = createAudioPlayer(FIRE_LOOP);
     player.loop = true;
@@ -54,5 +59,5 @@ export const useAmbientSoundPlayback = (): void => {
       player.pause();
       player.remove();
     };
-  }, [isEnabled, isForeground]);
+  }, [canPlay, isEnabled, isForeground]);
 };
