@@ -1,13 +1,15 @@
 import { type JSX, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import * as Sentry from '@sentry/react-native';
 import * as Notifications from 'expo-notifications';
 import { StatusBar } from 'expo-status-bar';
 import { Platform, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { Splash } from './Splash';
+import { RootErrorScreen } from './ui/root-error-screen/RootErrorScreen';
+import { Splash } from './ui/splash/Splash';
 
 import { SettingsScreen } from '@/screens/settings';
 import { completionNotificationBehavior, TimerScreen } from '@/screens/timer';
@@ -34,12 +36,14 @@ export const App = (): JSX.Element => {
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <StatusBar style="light" />
-        <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.canvas } }}>
-            <Stack.Screen name="timer" component={TimerScreen} />
-            <Stack.Screen name="settings" component={SettingsScreen} options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
-          </Stack.Navigator>
-        </NavigationContainer>
+        <Sentry.ErrorBoundary fallback={<RootErrorScreen />}>
+          <NavigationContainer>
+            <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.canvas } }}>
+              <Stack.Screen name="timer" component={TimerScreen} />
+              <Stack.Screen name="settings" component={SettingsScreen} options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </Sentry.ErrorBoundary>
         {isSplashVisible ? <Splash onHidden={() => setIsSplashVisible(false)} /> : null}
       </SafeAreaProvider>
     </GestureHandlerRootView>

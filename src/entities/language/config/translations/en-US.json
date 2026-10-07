@@ -18,5 +18,9 @@
   "more": {
     "appVersion": "Version",
     "privacyPolicy": "Privacy Policy"
+  },
+  "error": {
+    "message": "Something went wrong",
+    "restart": "Restart"
   }
 }
