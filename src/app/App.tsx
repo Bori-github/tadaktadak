@@ -13,6 +13,7 @@ import { Splash } from './ui/splash/Splash';
 
 import { SettingsScreen } from '@/screens/settings';
 import { completionNotificationBehavior, TimerScreen } from '@/screens/timer';
+import { restoreAmbientSoundEnabled, useAmbientSoundPlayback } from '@/entities/ambient-sound';
 import { initLocalization, restoreLanguage } from '@/entities/language';
 import { canVibrate, prepareVibration, restoreVibrationEnabled, TAP_PATTERN } from '@/entities/vibration';
 import { COLORS } from '@/shared/constants';
@@ -22,6 +23,7 @@ prepareVibration(TAP_PATTERN);
 initLocalization();
 restoreLanguage();
 restoreVibrationEnabled();
+restoreAmbientSoundEnabled();
 
 Notifications.setNotificationHandler({
   handleNotification: async () => completionNotificationBehavior({ canVibrate: canVibrate(), platform: Platform.OS }),
@@ -31,6 +33,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const App = (): JSX.Element => {
   const [isSplashVisible, setIsSplashVisible] = useState(true);
+  useAmbientSoundPlayback();
 
   return (
     <GestureHandlerRootView style={styles.root}>
