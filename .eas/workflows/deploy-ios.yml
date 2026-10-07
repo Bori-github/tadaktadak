@@ -25,6 +25,7 @@ jobs:
     params:
       platform: ios
       channel: production
+      upload_sentry_sourcemaps: true
 
   build_ios:
     type: build
