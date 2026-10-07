@@ -44,6 +44,11 @@ updates:
           - version-update:semver-major
           - version-update:semver-minor
           - version-update:semver-patch
+      - dependency-name: '@sentry/react-native'
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
+          - version-update:semver-patch
     groups:
       expo-security:
         applies-to: security-updates
@@ -55,6 +60,7 @@ updates:
           - react-native*
           - '@react-native-async-storage/*'
           - '@shopify/react-native-skia'
+          - '@sentry/react-native'
 
   - package-ecosystem: github-actions
     directory: /
