@@ -7,7 +7,7 @@ import { Platform, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { Splash } from './Splash';
+import { Splash } from './ui/splash/Splash';
 
 import { SettingsScreen } from '@/screens/settings';
 import { completionNotificationBehavior, TimerScreen } from '@/screens/timer';

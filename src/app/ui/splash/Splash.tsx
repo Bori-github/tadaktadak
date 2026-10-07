@@ -7,7 +7,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 
 import splash from './splash.json';
 
-const manifest: Manifest = require('../../assets/bootsplash/manifest.json');
+const manifest: Manifest = require('../../../../assets/bootsplash/manifest.json');
 
 const LAST_FRAME = splash.op - 1;
 
@@ -34,7 +34,7 @@ export const Splash = ({ onHidden }: SplashProps): JSX.Element => {
 
   const { container, logo } = BootSplash.useHideAnimation({
     manifest,
-    logo: require('../../assets/bootsplash/logo.png'),
+    logo: require('../../../../assets/bootsplash/logo.png'),
     animate: () => {
       try {
         // Canvas가 로고 Image와 같은 그림인 0프레임부터 이어 그려서 재생 시작 시 Image 불투명도를 0으로 설정

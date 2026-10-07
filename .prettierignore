@@ -4,4 +4,6 @@ android/
 targets/*/Assets.xcassets/
 pnpm-lock.yaml
 CHANGELOG.md
-src/app/splash.json
+
+# lottie files
+src/app/ui/splash/splash.json
