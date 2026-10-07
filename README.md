@@ -37,6 +37,7 @@ pnpm android:device    # Android 실기기 개발 빌드
 
 - Xcode 27부터 Universal 빌드가 나오지 않아, Intel인 개발용 Mac(MacBookPro16,1)에서는 Xcode 26.6이 마지막 정식 빌드다
 - Android용 Expo Go에서는 `expo-notifications` 55 이상이 import 시점에 예외를 던져 앱이 뜨지 않으므로, 개발 빌드로 실행한다
+- 로컬 Release 빌드는 Sentry 소스맵 업로드 단계를 거쳐 `SENTRY_AUTH_TOKEN`이 없으면 실패하므로, `.env`에 `SENTRY_DISABLE_AUTO_UPLOAD=true`를 넣고 빌드한다
 
 ### E2E
 
