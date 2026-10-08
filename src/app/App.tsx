@@ -33,13 +33,15 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const App = (): JSX.Element => {
   const [isSplashVisible, setIsSplashVisible] = useState(true);
-  useAmbientSoundPlayback({ canPlay: !isSplashVisible });
+  const [hasError, setHasError] = useState(false);
+
+  useAmbientSoundPlayback({ canPlay: !isSplashVisible && !hasError });
 
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <StatusBar style="light" />
-        <Sentry.ErrorBoundary fallback={<RootErrorScreen />}>
+        <Sentry.ErrorBoundary fallback={<RootErrorScreen />} onError={() => setHasError(true)}>
           <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.canvas } }}>
               <Stack.Screen name="timer" component={TimerScreen} />
