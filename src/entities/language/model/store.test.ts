@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { act, renderHook } from '@testing-library/react-native';
 
@@ -12,18 +12,11 @@ jest.mock('expo-localization', () => ({
   useLocales: () => mockSystemLocales,
 }));
 
-let storageSpy: ReturnType<typeof jest.spyOn> | null = null;
-
 describe('선택한 언어', () => {
   // 저장소와 모듈이 기억하는 선택을 함께 비워 앱을 처음 켠 상태에서 시작
   beforeEach(async () => {
     await AsyncStorage.clear();
     await restoreLanguage();
-  });
-
-  afterEach(() => {
-    storageSpy?.mockRestore();
-    storageSpy = null;
   });
 
   it('저장된 언어가 없으면 시스템 언어인 한국어를 반환한다', async () => {
@@ -59,7 +52,7 @@ describe('선택한 언어', () => {
   });
 
   it('저장이 끝나기 전에도 선택한 언어를 반환한다', async () => {
-    storageSpy = jest.spyOn(AsyncStorage, 'setItem').mockReturnValue(new Promise(() => {}));
+    jest.spyOn(AsyncStorage, 'setItem').mockReturnValueOnce(new Promise(() => {}));
     const { result } = await renderHook(() => useLanguage());
 
     await act(async () => {
@@ -70,9 +63,7 @@ describe('선택한 언어', () => {
   });
 
   it('저장에 실패해도 선택한 언어를 반환한다', async () => {
-    storageSpy = jest.spyOn(AsyncStorage, 'setItem').mockImplementation(async () => {
-      throw new Error('기기 저장소 오류');
-    });
+    jest.spyOn(AsyncStorage, 'setItem').mockRejectedValueOnce(new Error('기기 저장소 오류'));
     const { result } = await renderHook(() => useLanguage());
 
     await act(async () => {
@@ -83,9 +74,7 @@ describe('선택한 언어', () => {
   });
 
   it('저장값을 읽지 못하면 시스템 언어인 한국어를 반환한다', async () => {
-    storageSpy = jest.spyOn(AsyncStorage, 'getItem').mockImplementation(async () => {
-      throw new Error('기기 저장소 오류');
-    });
+    jest.spyOn(AsyncStorage, 'getItem').mockRejectedValueOnce(new Error('기기 저장소 오류'));
     const { result } = await renderHook(() => useLanguage());
 
     await act(async () => {
