@@ -133,4 +133,13 @@ describe('배경음 재생', () => {
     await rerender({ canPlay: true });
     expect(mockPlayers[0]).toMatchObject({ isPlaying: true });
   });
+
+  it('재생 중에 재생 불가 상태가 되면 즉시 정지한다', async () => {
+    setAmbientSoundEnabled(true);
+    const { rerender } = await renderHook(({ canPlay }: { canPlay: boolean }) => useAmbientSoundPlayback({ canPlay }), { initialProps: { canPlay: true } });
+    expect(mockPlayers[0]).toMatchObject({ isPlaying: true });
+
+    await rerender({ canPlay: false });
+    expect(mockPlayers[0]).toMatchObject({ isPlaying: false, isRemoved: true });
+  });
 });
