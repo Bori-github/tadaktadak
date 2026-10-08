@@ -1,6 +1,6 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
-import { createAudioPlayer, setAudioModeAsync } from 'expo-audio';
+import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 
 import { useAmbientSoundEnabled } from './store';
 
@@ -41,14 +41,15 @@ export const useAmbientSoundPlayback = ({ canPlay }: AmbientSoundPlaybackOptions
   useEffect(() => {
     if (!canPlay || !isEnabled || !isForeground) return;
 
-    const player = createAudioPlayer(FIRE_LOOP);
-    player.loop = true;
-    player.volume = 0;
+    let player: AudioPlayer | null = null;
     try {
+      player = createAudioPlayer(FIRE_LOOP);
+      player.loop = true;
+      player.volume = 0;
       player.play();
     } catch {
       // iOS `play()`는 오디오 세션 활성화 실패 시 throw해서 플레이어 해제 후 재생 생략
-      player.remove();
+      player?.remove();
       return;
     }
 
