@@ -34,12 +34,13 @@ import {
   Numerals,
   useDialDrag,
 } from '@/widgets/dial';
+import { setAmbientSoundEnabled, useAmbientSoundEnabled } from '@/entities/ambient-sound';
 import { isReadyPhase, type TimerMode } from '@/entities/timer';
 import { playVibration } from '@/entities/vibration';
-import { BUTTON_SIZE_IN_DOTS, COLORS } from '@/shared/constants';
+import { BUTTON_SIZE_IN_DOTS, COLORS, ROUND_BUTTON_DIAMETER_IN_DOTS } from '@/shared/constants';
 import { resolveLayout, getFormFactor, type RootStackParamList } from '@/shared/lib';
 import { RoundDotButton } from '@/shared/ui/dot-button';
-import { NOTIFICATION_OFF_ICON, SETTINGS_ICON } from '@/shared/ui/dot-icon';
+import { NOTIFICATION_OFF_ICON, SETTINGS_ICON, SOUND_ICON, SOUND_OFF_ICON } from '@/shared/ui/dot-icon';
 
 const SECONDS_IN_MINUTE = 60;
 
@@ -65,6 +66,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   useLiveActivity({ session, settingMinutes: realSettingMinutes, isSettled, notificationPermission: permission });
 
   const notificationSettingsShown = isNotificationBlocked(permission);
+  const isAmbientSoundEnabled = useAmbientSoundEnabled();
 
   const layout = resolveLayout({
     shortSide: Math.min(width, height),
@@ -120,6 +122,8 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   const roundButtonRight = insets.right + layout.edgeMargin;
   const notificationSettingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, left: roundButtonLeft }], [roundButtonTop, roundButtonLeft]);
   const settingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, right: roundButtonRight }], [roundButtonTop, roundButtonRight]);
+  const ambientSoundLeft = notificationSettingsShown ? roundButtonLeft + ROUND_BUTTON_DIAMETER_IN_DOTS * layout.dotSize + layout.edgeMargin : roundButtonLeft;
+  const ambientSoundStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, left: ambientSoundLeft }], [roundButtonTop, ambientSoundLeft]);
   const controlButtonsTop = layout.buttonCenterY - (BUTTON_SIZE_IN_DOTS * layout.dotSize) / 2;
   const controlButtonsShift = layout.buttonsCenterX - width / 2;
   const controlButtonsStyle = useMemo(
@@ -191,6 +195,14 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
             onPressIn={() => playVibration()}
           />
         ) : null}
+        <RoundDotButton
+          testID="ambient-sound"
+          dotSize={layout.dotSize}
+          icon={isAmbientSoundEnabled ? SOUND_ICON : SOUND_OFF_ICON}
+          style={ambientSoundStyle}
+          onPress={() => setAmbientSoundEnabled(!isAmbientSoundEnabled)}
+          onPressIn={() => playVibration()}
+        />
         <RoundDotButton
           testID="settings"
           dotSize={layout.dotSize}

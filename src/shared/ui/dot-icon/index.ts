@@ -7,6 +7,8 @@ export { PAUSE_ICON } from './pause';
 export { PLAY_ICON } from './play';
 export { RectIconShape } from './RectIconShape';
 export { SETTINGS_ICON } from './settings';
+export { SOUND_ICON } from './sound';
+export { SOUND_OFF_ICON } from './soundOff';
 export { STOP_ICON } from './stop';
 export { type GridIcon, type RectIcon } from './types';
 export { VIBRATION_ICON } from './vibration';

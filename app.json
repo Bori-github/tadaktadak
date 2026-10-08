@@ -43,7 +43,8 @@
       "./plugins/withoutPushEntitlement",
       ["expo-localization", { "supportedLocales": { "ios": ["en", "ko"], "android": ["en", "ko"] } }],
       ["react-native-bootsplash", { "logo": "./assets/splash-logo.svg", "background": "#141021", "logoWidth": 22, "assetsOutput": "./assets/bootsplash" }],
-      ["@sentry/react-native/expo", { "organization": "boriguri", "project": "tadaktadak" }]
+      ["@sentry/react-native/expo", { "organization": "boriguri", "project": "tadaktadak" }],
+      ["expo-audio", { "microphonePermission": "This app does not use the microphone.", "recordAudioAndroid": false, "enableBackgroundPlayback": false }]
     ],
     "extra": {
       "eas": {

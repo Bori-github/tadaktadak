@@ -20,9 +20,9 @@ disable-model-invocation: true
      ```sh
      adb -s <시리얼> shell dumpsys package com.boriguri.tadaktadak | grep 'POST_NOTIFICATIONS: granted=true'
      ```
-   - 집중 타이머 1분, 진동 토글 켜짐: 아래 명령 출력이 `1 1`
+   - 집중 타이머 1분, 진동 토글 켜짐, 배경음 꺼짐: 아래 명령 출력이 `1 1 0`
      ```sh
-     SERIAL=<시리얼> sh -c '. scripts/device-test/android/lib.sh; start_idle; echo "$(focus_minutes) $(vibration_enabled && echo 1 || echo 0)"'
+     SERIAL=<시리얼> sh -c '. scripts/device-test/android/lib.sh; start_idle; echo "$(focus_minutes) $(vibration_enabled && echo 1 || echo 0) $(wait_ambient 1 && echo 1 || echo 0)"'
      ```
    - 시스템 언어 한국어: `adb -s <시리얼> shell getprop persist.sys.locale` 출력이 `ko-KR`
    - 휴식 타이머 1분, 보안 잠금(PIN/패턴) 없음: adb로 조회할 수 없어 사용자에게 확인
@@ -56,6 +56,7 @@ disable-model-invocation: true
 5. `haptics.sh`
 6. `live-update.sh`
 7. `language.sh`
+8. `ambient-sound.sh`
 
 스크립트 소요 시간(각 머리 주석 참고)이 Bash 도구 기본 타임아웃 2분을 넘을 수 있으므로 `run_in_background`로 실행하고 완료 알림을 기다린다.
 
