@@ -44,7 +44,13 @@ export const useAmbientSoundPlayback = ({ canPlay }: AmbientSoundPlaybackOptions
     const player = createAudioPlayer(FIRE_LOOP);
     player.loop = true;
     player.volume = 0;
-    player.play();
+    try {
+      player.play();
+    } catch {
+      // iOS `play()`는 오디오 세션 활성화 실패 시 throw해서 플레이어 해제 후 재생 생략
+      player.remove();
+      return;
+    }
 
     const startedAt = Date.now();
     const fadeTimer = setInterval(() => {
