@@ -9,10 +9,12 @@ type MockPlayer = { loop: boolean; volume: number; isPlaying: boolean; isRemoved
 
 const mockPlayers: MockPlayer[] = [];
 let mockPlayError: Error | null = null;
+let mockCreateError: Error | null = null;
 
 jest.mock('expo-audio', () => ({
   setAudioModeAsync: async () => {},
   createAudioPlayer: () => {
+    if (mockCreateError) throw mockCreateError;
     const player = {
       loop: false,
       volume: 1,
@@ -50,6 +52,7 @@ beforeEach(() => {
   jest.useFakeTimers();
   mockPlayers.length = 0;
   mockPlayError = null;
+  mockCreateError = null;
   mockAppState = 'active';
   mockAppStateListeners.length = 0;
   jest.mocked(AppState.addEventListener).mockImplementation((_type, listener) => {
@@ -123,6 +126,15 @@ describe('배경음 재생', () => {
     await act(async () => setAmbientSoundEnabled(true));
 
     expect(mockPlayers[0]).toMatchObject({ isPlaying: false, isRemoved: true });
+  });
+
+  it('플레이어 생성에 실패하면 throw하지 않고 재생을 건너뛴다', async () => {
+    mockCreateError = new Error('플레이어 생성 실패');
+    await renderHook(() => useAmbientSoundPlayback({ canPlay: true }));
+
+    await act(async () => setAmbientSoundEnabled(true));
+
+    expect(mockPlayers).toHaveLength(0);
   });
 
   it('배경음이 켜져 있어도 재생 가능 상태가 되기 전에는 재생하지 않는다', async () => {
