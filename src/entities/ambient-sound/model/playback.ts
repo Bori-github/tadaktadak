@@ -34,7 +34,7 @@ export const useAmbientSoundPlayback = ({ canPlay }: AmbientSoundPlaybackOptions
   const isForeground = useSyncExternalStore(subscribeAppState, getIsForeground);
 
   useEffect(() => {
-    // 오디오 모드 설정이 실패해도 expo-audio 기본값이 같은 동작(무음 모드 재생, 다른 앱과 섞기)이라 무시
+    // iOS는 실패 시 기본 오디오 세션으로 남아 무음 스위치에 음소거되지만 재생은 가능해 무시
     setAudioModeAsync({ playsInSilentMode: true, interruptionMode: 'mixWithOthers' }).catch(() => {});
   }, []);
 
