@@ -1,6 +1,6 @@
 #!/bin/sh
 # 실기기 테스트 공통 함수. 케이스 스크립트에서 `.`으로 불러 씀
-# 전제: Play 내부 테스트 설치본, 집중/휴식 타이머 1분, 진동 토글 켜짐, 알림 권한 허용, 시스템 언어 한국어, 보안 잠금(PIN/패턴) 없음
+# 전제: Play 내부 테스트 설치본, 집중/휴식 타이머 1분, 진동 토글 켜짐, 배경음 꺼짐, 알림 권한 허용, 시스템 언어 한국어, 보안 잠금(PIN/패턴) 없음
 # 결과 확인 기준은 `TESTS.md` 「결과 확인」
 set -eu
 
@@ -76,10 +76,14 @@ wait_until_gone() {
   exit 1
 }
 
-launch() {
+open_app() {
   device shell input keyevent KEYCODE_WAKEUP
   device shell wm dismiss-keyguard
   device shell monkey -p "$PACKAGE" -c android.intent.category.LAUNCHER 1 > /dev/null 2>&1
+}
+
+launch() {
+  open_app
   wait_for controls-play
   wait_until_gone splash
 }
@@ -325,6 +329,40 @@ go_home() {
   device shell input keyevent KEYCODE_HOME
 }
 
+# 배경음 플레이어의 `piid`와 상태(예: `1871 started`). 재생을 시작할 때마다 플레이어를 새로 만들어 `piid`가 가장 큰 것을 읽음. 플레이어가 없으면 빈 값
+ambient_state() {
+  uid=$(device shell dumpsys package "$PACKAGE" | grep -m1 -o 'userId=[0-9]*' | sed 's/userId=//')
+  [ -n "$uid" ] || { echo "앱 uid를 읽지 못함" >&2; exit 1; }
+  dump=$(dumpsys_checked "Ringer mode" audio)
+  printf '%s\n' "$dump" | awk -v uid="u/pid:$uid/" '
+    index($0, "AudioPlaybackConfiguration") && index($0, uid) && index($0, "usage=USAGE_MEDIA") {
+      match($0, /piid:[0-9]+/); piid = substr($0, RSTART + 5, RLENGTH - 5) + 0
+      match($0, /state:[a-z]+/); if (piid >= max) { max = piid; state = substr($0, RSTART + 6, RLENGTH - 6) }
+    }
+    END { if (max) print max, state }'
+}
+
+# $1 기대 재생 여부(1 재생, 0 정지). 스플래시 종료 후 재생 시작까지 걸리는 시간을 감안해 최대 10초 대기
+wait_ambient() {
+  for _ in 1 2 3 4 5 6 7 8 9 10; do
+    case "$(ambient_state)" in
+      *started) playing=1 ;;
+      *) playing=0 ;;
+    esac
+    [ "$playing" = "$1" ] && return
+    sleep 1
+  done
+  return 1
+}
+
+# 1 켜짐, 0 꺼짐. 앱이 포그라운드일 때만 재생되므로 앱 실행 후 호출
+set_ambient() {
+  current=$(wait_ambient 1 && echo 1 || echo 0)
+  [ "$current" = "$1" ] && return
+  tap ambient-sound
+  wait_ambient "$1" || { echo "배경음을 $1(으)로 설정하지 못함" >&2; exit 1; }
+}
+
 # 터미널이 없으면 질문을 출력하고 `$OUT/answer` 파일이 생길 때까지 대기. 에이전트가 대화창에서 받은 답을 이 파일에 씀
 wait_answer() {
   if { : < /dev/tty; } 2> /dev/null; then
@@ -357,13 +395,14 @@ report() {
 
 original_ringer=$(ringer)
 original_stay_on=$(device shell settings get global stay_on_while_plugged_in | tr -d '\r')
-# 스크립트가 바꾼 설정을 전제 조건(타이머 1분, 진동 토글 켜짐, 시스템 언어)으로 되돌림
+# 스크립트가 바꾼 설정을 전제 조건(타이머 1분, 진동 토글 켜짐, 시스템 언어, 배경음 꺼짐)으로 되돌림
 # 단계마다 서브셸에서 실행해 앞 단계가 실패해도(`exit`) 다음 단계를 계속 진행
 restore() {
   set +e
   [ -z "${changed_minutes:-}" ] || (start_idle && minutes=$(focus_minutes) && drag_minutes "$minutes" 1)
   [ -z "${changed_vibration:-}" ] || (start_idle && set_vibration 1)
   [ -z "${changed_language:-}" ] || (start_idle && select_language system)
+  [ -z "${changed_ambient:-}" ] || (start_idle && set_ambient 0)
   (set_ringer "$original_ringer")
   device shell settings put global stay_on_while_plugged_in "$original_stay_on"
 }

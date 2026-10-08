@@ -1,5 +1,5 @@
 #!/bin/sh
-# Test Cases: TC-NOTIFICATION-002, TC-NOTIFICATION-003
+# Test Cases: TC-NOTIFICATION-002, TC-NOTIFICATION-003, TC-AMBIENT-SOUND-009
 # 소요 시간: 3분
 # 주의사항:
 # - 알림 권한을 거부로 설정하고 끝나면 허용으로 복원
@@ -13,6 +13,13 @@ trap '(grant); restore' EXIT
 set_ringer 2
 device shell pm revoke "$PACKAGE" android.permission.POST_NOTIFICATIONS
 start_idle
+
+wait_for notification-settings
+# shellcheck disable=SC2046
+set -- $(center notification-settings) $(center ambient-sound)
+ok=0
+{ [ "$1" -lt "$3" ] && [ "$2" = "$4" ]; } || ok=1
+report TC-AMBIENT-SOUND-009 $ok "알림 설정 버튼 중심 ($1, $2), 배경음 버튼 중심 ($3, $4)"
 
 since=$(now_stamp)
 tap controls-play
