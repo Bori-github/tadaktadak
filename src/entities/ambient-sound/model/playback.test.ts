@@ -106,6 +106,16 @@ describe('배경음 재생', () => {
     expect(mockPlayers[1]).toMatchObject({ volume: 0, isPlaying: true });
   });
 
+  it('앱이 inactive 상태가 되어도 재생을 유지한다', async () => {
+    await renderHook(() => useAmbientSoundPlayback({ canPlay: true }));
+    await act(async () => setAmbientSoundEnabled(true));
+
+    await act(async () => changeAppState('inactive'));
+
+    expect(mockPlayers).toHaveLength(1);
+    expect(mockPlayers[0]).toMatchObject({ isPlaying: true, isRemoved: false });
+  });
+
   it('재생 시작에 실패하면 throw하지 않고 플레이어를 해제한다', async () => {
     mockPlayError = new Error('오디오 세션 활성화 실패');
     await renderHook(() => useAmbientSoundPlayback({ canPlay: true }));
