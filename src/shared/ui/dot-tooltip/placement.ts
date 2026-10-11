@@ -1,18 +1,13 @@
 import { type LayoutRectangle } from 'react-native';
 
-import { bubbleLayout, type BubbleArrowAlign, type BubbleArrowDirection, MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS } from '@/shared/ui/dot-shape';
+import { bubbleLayout, type BubbleOptions, MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS } from '@/shared/ui/dot-shape';
 
 /** 화살표 끝과 `anchor` 사이 간격 (dot) */
 const ANCHOR_GAP_IN_DOTS = 2;
 
-type BubbleArrow = {
-  arrowDirection: BubbleArrowDirection;
-  arrowAlign: BubbleArrowAlign;
-};
+type BubbleArrow = Pick<BubbleOptions, 'arrowDirection' | 'arrowAlign'>;
 
-type BubbleOriginOptions = BubbleArrow & {
-  contentWidthInDots: number;
-  contentHeightInDots: number;
+type BubbleOriginOptions = BubbleOptions & {
   /** 툴팁이 가리키는 요소 영역 */
   anchor: LayoutRectangle;
   /** 도트 한 변 (px) */

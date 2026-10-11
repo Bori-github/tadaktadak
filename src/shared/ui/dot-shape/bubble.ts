@@ -18,7 +18,7 @@ export const MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS = ARROW_EDGE_OFFSET_IN_DOTS.horizo
 /** 왼쪽/오른쪽 화살표에서 `start`/`end` 밑변이 같은 행에 놓이는 콘텐츠 높이 (dot). 더 낮으면 두 정렬 위치가 뒤바뀜 */
 export const MIN_BUBBLE_CONTENT_HEIGHT_IN_DOTS = ARROW_EDGE_OFFSET_IN_DOTS.vertical * 2 + ARROW_LENGTH_IN_DOTS;
 
-type BubbleOptions = {
+export type BubbleOptions = {
   /** 화살표 제외 콘텐츠 크기 (dot) */
   contentWidthInDots: number;
   contentHeightInDots: number;
