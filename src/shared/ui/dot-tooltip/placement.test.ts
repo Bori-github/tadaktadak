@@ -54,14 +54,18 @@ describe('maxContentWidthInDots', () => {
   const widthAt = (arrowDirection: BubbleArrowDirection, arrowAlign: BubbleArrowAlign, anchorX: number, maxWidth?: number) =>
     maxContentWidthInDots({ arrowDirection, arrowAlign, anchor: anchorAt(anchorX), dotSize: DOT_SIZE, ...RANGE, maxWidth });
 
-  it.each(cases)('$arrowDirection·$arrowAlign, 요소 x $anchorX: 범위 안에 드는 가장 넓은 너비다', ({ arrowDirection, arrowAlign, anchorX }) => {
-    const width = widthAt(arrowDirection, arrowAlign, anchorX);
+  const casesWithWidth = cases.map((row) => ({ ...row, width: widthAt(row.arrowDirection, row.arrowAlign, row.anchorX) }));
 
-    if (width === MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS) return;
-
-    expect(isInRange(horizontalEdges(arrowDirection, arrowAlign, anchorX, width))).toBe(true);
+  it.each(casesWithWidth)('$arrowDirection·$arrowAlign, 요소 x $anchorX: 계산한 너비보다 1도트 넓은 말풍선은 범위를 벗어난다', ({ arrowDirection, arrowAlign, anchorX, width }) => {
     expect(isInRange(horizontalEdges(arrowDirection, arrowAlign, anchorX, width + 1))).toBe(false);
   });
+
+  it.each(casesWithWidth.filter(({ width }) => width > MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS))(
+    '$arrowDirection·$arrowAlign, 요소 x $anchorX: 최소보다 넓게 계산한 너비의 말풍선은 범위 안에 든다',
+    ({ arrowDirection, arrowAlign, anchorX, width }) => {
+      expect(isInRange(horizontalEdges(arrowDirection, arrowAlign, anchorX, width))).toBe(true);
+    },
+  );
 
   it.each([{ arrowDirection: 'up' }, { arrowDirection: 'left' }] as const)('$arrowDirection 말풍선 전체 너비가 maxWidth를 넘지 않는다', ({ arrowDirection }) => {
     const maxWidth = 150;
