@@ -1,4 +1,4 @@
-import { type DotCell, type DotRole } from './cell';
+import { type DotCell, type DotRole, rowRunCells } from './cell';
 
 /**
  * 도트로 그리는 원. 피그마 `button-settings`
@@ -33,26 +33,5 @@ export const circleCells = (diameterInDots: number): DotCell[] => {
     return 'face';
   };
 
-  const cells: DotCell[] = [];
-
-  for (let row = 0; row < diameterInDots; row += 1) {
-    let run: DotCell | null = null;
-
-    for (let column = 0; column < diameterInDots; column += 1) {
-      if (!isFilled(column, row)) continue;
-
-      const role = roleAt(column, row);
-
-      // 같은 역할이 이어지면 폭만 늘려 그리는 사각형 수를 줄임
-      if (run !== null && run.role === role) {
-        run.widthInDots += 1;
-        continue;
-      }
-
-      run = { key: `${column}-${row}`, column, row, widthInDots: 1, heightInDots: 1, role };
-      cells.push(run);
-    }
-  }
-
-  return cells;
+  return rowRunCells({ widthInDots: diameterInDots, heightInDots: diameterInDots, roleAt: (column, row) => (isFilled(column, row) ? roleAt(column, row) : null) });
 };
