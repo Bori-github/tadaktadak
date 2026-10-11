@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { type BubbleArrowAlign, type BubbleArrowDirection, bubbleLayout, bubbleShape, MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS } from './bubble';
+import { type BubbleArrowAlign, type BubbleArrowDirection, bubbleLayout, bubbleShape, MIN_BUBBLE_CONTENT_HEIGHT_IN_DOTS, MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS } from './bubble';
 import { type DotRole } from './cell';
 
 // 너비와 높이가 뒤바뀌면 드러나도록 다른 값
@@ -79,7 +79,12 @@ describe('도트 말풍선', () => {
       contentHeightInDots: HEIGHT,
       expected: { contentWidthInDots: MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS, contentHeightInDots: HEIGHT },
     },
-    { label: '최소보다 낮은 콘텐츠 높이', contentWidthInDots: WIDTH, contentHeightInDots: 6, expected: { contentWidthInDots: WIDTH, contentHeightInDots: 12 } },
+    {
+      label: '최소보다 낮은 콘텐츠 높이',
+      contentWidthInDots: WIDTH,
+      contentHeightInDots: 6,
+      expected: { contentWidthInDots: WIDTH, contentHeightInDots: MIN_BUBBLE_CONTENT_HEIGHT_IN_DOTS },
+    },
   ])('$label는 최소값이 된다', ({ contentWidthInDots, contentHeightInDots, expected }) => {
     const layout = bubbleLayout({ contentWidthInDots, contentHeightInDots, arrowDirection: 'left', arrowAlign: 'end' });
 
@@ -100,7 +105,7 @@ describe('도트 말풍선', () => {
 
     expect({ contentWidthInDots: shape.contentWidthInDots, contentHeightInDots: shape.contentHeightInDots, hasCells: shape.cells.length > 0 }).toEqual({
       contentWidthInDots: MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS,
-      contentHeightInDots: 12,
+      contentHeightInDots: MIN_BUBBLE_CONTENT_HEIGHT_IN_DOTS,
       hasCells: true,
     });
   });
