@@ -12,6 +12,9 @@ const CORNER_INSETS = [3, 1, 1];
 /** `start`/`end` 정렬 화살표 직각 변과 콘텐츠 끝 사이 오프셋 (dot) */
 const ARROW_EDGE_OFFSET_IN_DOTS = { horizontal: 6, vertical: 4 };
 
+/** `start`/`end` 정렬 화살표 밑변이 같은 열에 놓이는 콘텐츠 너비 (dot). 더 좁으면 두 정렬 위치가 뒤바뀜 */
+export const MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS = ARROW_EDGE_OFFSET_IN_DOTS.horizontal * 2 + ARROW_LENGTH_IN_DOTS;
+
 type BubbleOptions = {
   /** 화살표 제외 콘텐츠 크기 (dot) */
   contentWidthInDots: number;
