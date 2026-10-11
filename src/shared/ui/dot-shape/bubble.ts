@@ -20,8 +20,7 @@ type BubbleOptions = {
   arrowAlign: BubbleArrowAlign;
 };
 
-type BubbleShape = {
-  cells: DotCell[];
+type BubbleLayout = {
   /** 화살표/하단 그림자 행 포함 전체 크기 (dot) */
   widthInDots: number;
   heightInDots: number;
@@ -33,17 +32,60 @@ type BubbleShape = {
   arrowTipRow: number;
 };
 
+type BubbleShape = BubbleLayout & {
+  cells: DotCell[];
+};
+
+const isArrowVertical = (arrowDirection: BubbleArrowDirection): boolean => arrowDirection === 'up' || arrowDirection === 'down';
+
+/** 콘텐츠 변 기준 화살표 직각 변의 오프셋 (dot). `end`는 빗변 방향을 반전해 직각 변을 콘텐츠 끝 쪽에 둠 */
+const arrowStraightSide = ({ contentWidthInDots, contentHeightInDots, arrowDirection, arrowAlign }: BubbleOptions): number => {
+  const edgeLength = isArrowVertical(arrowDirection) ? contentWidthInDots : contentHeightInDots;
+  const edgeOffset = isArrowVertical(arrowDirection) ? ARROW_EDGE_OFFSET_IN_DOTS.horizontal : ARROW_EDGE_OFFSET_IN_DOTS.vertical;
+
+  return { start: edgeOffset, center: Math.floor(edgeLength / 2) - ARROW_LENGTH_IN_DOTS / 2, end: edgeLength - 1 - edgeOffset }[arrowAlign];
+};
+
+/**
+ * `bubbleShape`에서 사각형 계산을 뺀 크기/좌표 계산
+ *
+ * @returns 전체 크기, 콘텐츠/화살표 끝 도트 좌표
+ */
+export const bubbleLayout = (options: BubbleOptions): BubbleLayout => {
+  const { contentWidthInDots, contentHeightInDots, arrowDirection } = options;
+  const contentColumn = arrowDirection === 'left' ? ARROW_LENGTH_IN_DOTS : 0;
+  const contentRow = arrowDirection === 'up' ? ARROW_LENGTH_IN_DOTS : 0;
+  const outlineWidth = isArrowVertical(arrowDirection) ? contentWidthInDots : contentWidthInDots + ARROW_LENGTH_IN_DOTS;
+  const outlineHeight = isArrowVertical(arrowDirection) ? contentHeightInDots + ARROW_LENGTH_IN_DOTS : contentHeightInDots;
+  const straightSide = arrowStraightSide(options);
+
+  const arrowTip = {
+    up: { column: contentColumn + straightSide, row: 0 },
+    down: { column: contentColumn + straightSide, row: outlineHeight - 1 },
+    left: { column: 0, row: contentRow + straightSide },
+    right: { column: outlineWidth - 1, row: contentRow + straightSide },
+  }[arrowDirection];
+
+  return {
+    widthInDots: outlineWidth,
+    // 하단 그림자 1행 포함
+    heightInDots: outlineHeight + 1,
+    contentColumn,
+    contentRow,
+    arrowTipColumn: arrowTip.column,
+    arrowTipRow: arrowTip.row,
+  };
+};
+
 /**
  * 도트 말풍선. 콘텐츠와 화살표를 단일 영역으로 합쳐 외곽선만 테두리로 처리해 연결부에 테두리 없음
  *
  * @returns 행 단위로 병합한 사각형, 전체 크기, 콘텐츠/화살표 끝 도트 좌표
  */
-export const bubbleShape = ({ contentWidthInDots, contentHeightInDots, arrowDirection, arrowAlign }: BubbleOptions): BubbleShape => {
-  const isArrowVertical = arrowDirection === 'up' || arrowDirection === 'down';
-  const contentColumn = arrowDirection === 'left' ? ARROW_LENGTH_IN_DOTS : 0;
-  const contentRow = arrowDirection === 'up' ? ARROW_LENGTH_IN_DOTS : 0;
-  const outlineWidth = isArrowVertical ? contentWidthInDots : contentWidthInDots + ARROW_LENGTH_IN_DOTS;
-  const outlineHeight = isArrowVertical ? contentHeightInDots + ARROW_LENGTH_IN_DOTS : contentHeightInDots;
+export const bubbleShape = (options: BubbleOptions): BubbleShape => {
+  const { contentWidthInDots, contentHeightInDots, arrowDirection, arrowAlign } = options;
+  const layout = bubbleLayout(options);
+  const { contentColumn, contentRow } = layout;
 
   const isInContent = (column: number, row: number): boolean => {
     const localColumn = column - contentColumn;
@@ -65,10 +107,7 @@ export const bubbleShape = ({ contentWidthInDots, contentHeightInDots, arrowDire
       right: { along: row - contentRow, depth: column - (contentColumn + contentWidthInDots - 1) },
     })[arrowDirection];
 
-  const edgeLength = isArrowVertical ? contentWidthInDots : contentHeightInDots;
-  const edgeOffset = isArrowVertical ? ARROW_EDGE_OFFSET_IN_DOTS.horizontal : ARROW_EDGE_OFFSET_IN_DOTS.vertical;
-  // 직각 변 위치. `end`는 빗변 방향을 반전해 직각 변을 콘텐츠 끝 쪽에 둠
-  const straightSide = { start: edgeOffset, center: Math.floor(edgeLength / 2) - ARROW_LENGTH_IN_DOTS / 2, end: edgeLength - 1 - edgeOffset }[arrowAlign];
+  const straightSide = arrowStraightSide(options);
   const slantStep = arrowAlign === 'end' ? -1 : 1;
 
   const isInArrow = (column: number, row: number): boolean => {
@@ -91,21 +130,5 @@ export const bubbleShape = ({ contentWidthInDots, contentHeightInDots, arrowDire
     return isInner ? 'face' : 'edge';
   };
 
-  const arrowTip = {
-    up: { column: contentColumn + straightSide, row: 0 },
-    down: { column: contentColumn + straightSide, row: outlineHeight - 1 },
-    left: { column: 0, row: contentRow + straightSide },
-    right: { column: outlineWidth - 1, row: contentRow + straightSide },
-  }[arrowDirection];
-
-  return {
-    // 하단 그림자 1행 포함
-    cells: rowRunCells({ widthInDots: outlineWidth, heightInDots: outlineHeight + 1, roleAt }),
-    widthInDots: outlineWidth,
-    heightInDots: outlineHeight + 1,
-    contentColumn,
-    contentRow,
-    arrowTipColumn: arrowTip.column,
-    arrowTipRow: arrowTip.row,
-  };
+  return { ...layout, cells: rowRunCells({ widthInDots: layout.widthInDots, heightInDots: layout.heightInDots, roleAt }) };
 };
