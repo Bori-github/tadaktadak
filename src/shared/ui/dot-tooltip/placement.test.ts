@@ -73,6 +73,15 @@ describe('maxContentWidthInDots', () => {
     expect(totalWidth(width + 1)).toBeGreaterThan(maxWidth);
   });
 
+  it.each([
+    { label: '오른쪽 끝이 무한', maxRight: Infinity, dotSize: DOT_SIZE },
+    { label: '도트 크기가 0', maxRight: RANGE.maxRight, dotSize: 0 },
+  ])('$label이면 최소 너비다', ({ maxRight, dotSize }) => {
+    expect(maxContentWidthInDots({ arrowDirection: 'up', arrowAlign: 'start', anchor: anchorAt(150), dotSize, minLeft: RANGE.minLeft, maxRight })).toBe(
+      MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS,
+    );
+  });
+
   it('가장 좁은 말풍선도 범위를 벗어나면 최소 너비다', () => {
     // 요소 왼쪽 공간이 범위 밖이라 최소 너비 말풍선도 넘침
     expect(widthAt('right', 'start', 0)).toBe(MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS);

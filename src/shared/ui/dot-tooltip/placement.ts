@@ -66,7 +66,12 @@ export const maxContentWidthInDots = ({ anchor, dotSize, minLeft, maxRight, maxW
     return width <= maxWidth && minLeft <= left && left + width <= maxRight;
   };
 
-  for (let contentWidthInDots = Math.floor((maxRight - minLeft) / dotSize); contentWidthInDots > MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS; contentWidthInDots -= 1) {
+  const rangeWidthInDots = Math.floor((maxRight - minLeft) / dotSize);
+
+  // 범위가 무한하거나 `dotSize`가 0이면 아래 반복이 끝나지 않아 최소 너비로 처리
+  if (!Number.isFinite(rangeWidthInDots)) return MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS;
+
+  for (let contentWidthInDots = rangeWidthInDots; contentWidthInDots > MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS; contentWidthInDots -= 1) {
     if (fits(contentWidthInDots)) return contentWidthInDots;
   }
 
