@@ -15,6 +15,9 @@ const ARROW_EDGE_OFFSET_IN_DOTS = { horizontal: 6, vertical: 4 };
 /** `start`/`end` 정렬 화살표 밑변이 같은 열에 놓이는 콘텐츠 너비 (dot). 더 좁으면 두 정렬 위치가 뒤바뀜 */
 export const MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS = ARROW_EDGE_OFFSET_IN_DOTS.horizontal * 2 + ARROW_LENGTH_IN_DOTS;
 
+/** 왼쪽/오른쪽 화살표에서 `start`/`end` 밑변이 같은 행에 놓이는 콘텐츠 높이 (dot). 더 낮으면 두 정렬 위치가 뒤바뀜 */
+const MIN_BUBBLE_CONTENT_HEIGHT_IN_DOTS = ARROW_EDGE_OFFSET_IN_DOTS.vertical * 2 + ARROW_LENGTH_IN_DOTS;
+
 type BubbleOptions = {
   /** 화살표 제외 콘텐츠 크기 (dot) */
   contentWidthInDots: number;
@@ -24,6 +27,9 @@ type BubbleOptions = {
 };
 
 type BubbleLayout = {
+  /** 최소 크기를 적용한 콘텐츠 크기 (dot) */
+  contentWidthInDots: number;
+  contentHeightInDots: number;
   /** 화살표/하단 그림자 행 포함 전체 크기 (dot) */
   widthInDots: number;
   heightInDots: number;
@@ -39,6 +45,12 @@ type BubbleShape = BubbleLayout & {
   cells: DotCell[];
 };
 
+const withMinContentSize = (options: BubbleOptions): BubbleOptions => ({
+  ...options,
+  contentWidthInDots: Math.max(MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS, options.contentWidthInDots),
+  contentHeightInDots: Math.max(MIN_BUBBLE_CONTENT_HEIGHT_IN_DOTS, options.contentHeightInDots),
+});
+
 const isArrowVertical = (arrowDirection: BubbleArrowDirection): boolean => arrowDirection === 'up' || arrowDirection === 'down';
 
 /** 콘텐츠 변 기준 화살표 직각 변의 오프셋 (dot). `end`는 빗변 방향을 반전해 직각 변을 콘텐츠 끝 쪽에 둠 */
@@ -52,9 +64,10 @@ const arrowStraightSide = ({ contentWidthInDots, contentHeightInDots, arrowDirec
 /**
  * `bubbleShape`에서 사각형 계산을 뺀 크기/좌표 계산
  *
- * @returns 전체 크기, 콘텐츠/화살표 끝 도트 좌표
+ * @returns 콘텐츠/전체 크기, 콘텐츠/화살표 끝 도트 좌표
  */
-export const bubbleLayout = (options: BubbleOptions): BubbleLayout => {
+export const bubbleLayout = (requested: BubbleOptions): BubbleLayout => {
+  const options = withMinContentSize(requested);
   const { contentWidthInDots, contentHeightInDots, arrowDirection } = options;
   const contentColumn = arrowDirection === 'left' ? ARROW_LENGTH_IN_DOTS : 0;
   const contentRow = arrowDirection === 'up' ? ARROW_LENGTH_IN_DOTS : 0;
@@ -70,6 +83,8 @@ export const bubbleLayout = (options: BubbleOptions): BubbleLayout => {
   }[arrowDirection];
 
   return {
+    contentWidthInDots,
+    contentHeightInDots,
     widthInDots: outlineWidth,
     // 하단 그림자 1행 포함
     heightInDots: outlineHeight + 1,
@@ -83,12 +98,12 @@ export const bubbleLayout = (options: BubbleOptions): BubbleLayout => {
 /**
  * 도트 말풍선. 콘텐츠와 화살표를 단일 영역으로 합쳐 외곽선만 테두리로 처리해 연결부에 테두리 없음
  *
- * @returns 행 단위로 병합한 사각형, 전체 크기, 콘텐츠/화살표 끝 도트 좌표
+ * @returns 행 단위로 병합한 사각형, 콘텐츠/전체 크기, 콘텐츠/화살표 끝 도트 좌표
  */
-export const bubbleShape = (options: BubbleOptions): BubbleShape => {
-  const { contentWidthInDots, contentHeightInDots, arrowDirection, arrowAlign } = options;
-  const layout = bubbleLayout(options);
-  const { contentColumn, contentRow } = layout;
+export const bubbleShape = (requested: BubbleOptions): BubbleShape => {
+  const { arrowDirection, arrowAlign } = requested;
+  const layout = bubbleLayout(requested);
+  const { contentWidthInDots, contentHeightInDots, contentColumn, contentRow } = layout;
 
   const isInContent = (column: number, row: number): boolean => {
     const localColumn = column - contentColumn;
@@ -110,7 +125,7 @@ export const bubbleShape = (options: BubbleOptions): BubbleShape => {
       right: { along: row - contentRow, depth: column - (contentColumn + contentWidthInDots - 1) },
     })[arrowDirection];
 
-  const straightSide = arrowStraightSide(options);
+  const straightSide = arrowStraightSide({ contentWidthInDots, contentHeightInDots, arrowDirection, arrowAlign });
   const slantStep = arrowAlign === 'end' ? -1 : 1;
 
   const isInArrow = (column: number, row: number): boolean => {

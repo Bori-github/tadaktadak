@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { type BubbleArrowAlign, type BubbleArrowDirection, bubbleShape } from './bubble';
+import { type BubbleArrowAlign, type BubbleArrowDirection, bubbleLayout, bubbleShape, MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS } from './bubble';
 import { type DotRole } from './cell';
 
 // 너비와 높이가 뒤바뀌면 드러나도록 다른 값
@@ -70,5 +70,26 @@ describe('도트 말풍선', () => {
     const firstColumns = [0, 1, 2, 3].map((row) => shape.cells.find((cell) => cell.row === row)?.column);
 
     expect(firstColumns).toEqual([3, 1, 1, 0]);
+  });
+
+  it.each([
+    {
+      label: '최소보다 좁은 콘텐츠 너비',
+      contentWidthInDots: 8,
+      contentHeightInDots: HEIGHT,
+      expected: { contentWidthInDots: MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS, contentHeightInDots: HEIGHT },
+    },
+    { label: '최소보다 낮은 콘텐츠 높이', contentWidthInDots: WIDTH, contentHeightInDots: 6, expected: { contentWidthInDots: WIDTH, contentHeightInDots: 12 } },
+  ])('$label는 최소값이 된다', ({ contentWidthInDots, contentHeightInDots, expected }) => {
+    const layout = bubbleLayout({ contentWidthInDots, contentHeightInDots, arrowDirection: 'left', arrowAlign: 'end' });
+
+    expect({ contentWidthInDots: layout.contentWidthInDots, contentHeightInDots: layout.contentHeightInDots }).toEqual(expected);
+  });
+
+  it('최소보다 좁은 콘텐츠에서도 end 정렬 화살표 밑변이 4도트로 그려진다', () => {
+    const shape = bubbleShape({ contentWidthInDots: 8, contentHeightInDots: HEIGHT, arrowDirection: 'up', arrowAlign: 'end' });
+    const baseRow = shape.cells.filter((cell) => cell.row === 3);
+
+    expect(baseRow.reduce((sum, cell) => sum + cell.widthInDots, 0)).toBe(4);
   });
 });
