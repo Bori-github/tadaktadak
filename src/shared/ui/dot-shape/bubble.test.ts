@@ -86,6 +86,12 @@ describe('도트 말풍선', () => {
     expect({ contentWidthInDots: layout.contentWidthInDots, contentHeightInDots: layout.contentHeightInDots }).toEqual(expected);
   });
 
+  it('소수점이 있는 콘텐츠 크기는 올림한 정수가 된다', () => {
+    const layout = bubbleLayout({ contentWidthInDots: 20.5, contentHeightInDots: 14.2, arrowDirection: 'left', arrowAlign: 'end' });
+
+    expect({ contentWidthInDots: layout.contentWidthInDots, contentHeightInDots: layout.contentHeightInDots }).toEqual({ contentWidthInDots: 21, contentHeightInDots: 15 });
+  });
+
   it('최소보다 좁은 콘텐츠에서도 end 정렬 화살표 밑변이 4도트로 그려진다', () => {
     const shape = bubbleShape({ contentWidthInDots: 8, contentHeightInDots: HEIGHT, arrowDirection: 'up', arrowAlign: 'end' });
     const baseRow = shape.cells.filter((cell) => cell.row === 3);

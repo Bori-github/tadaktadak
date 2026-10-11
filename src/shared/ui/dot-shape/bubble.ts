@@ -27,7 +27,7 @@ type BubbleOptions = {
 };
 
 type BubbleLayout = {
-  /** 최소 크기를 적용한 콘텐츠 크기 (dot) */
+  /** 정수로 올림하고 최소 크기를 적용한 콘텐츠 크기 (dot) */
   contentWidthInDots: number;
   contentHeightInDots: number;
   /** 화살표/하단 그림자 행 포함 전체 크기 (dot) */
@@ -45,10 +45,10 @@ type BubbleShape = BubbleLayout & {
   cells: DotCell[];
 };
 
-const withMinContentSize = (options: BubbleOptions): BubbleOptions => ({
+const toDrawableContentSize = (options: BubbleOptions): BubbleOptions => ({
   ...options,
-  contentWidthInDots: Math.max(MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS, options.contentWidthInDots),
-  contentHeightInDots: Math.max(MIN_BUBBLE_CONTENT_HEIGHT_IN_DOTS, options.contentHeightInDots),
+  contentWidthInDots: Math.max(MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS, Math.ceil(options.contentWidthInDots)),
+  contentHeightInDots: Math.max(MIN_BUBBLE_CONTENT_HEIGHT_IN_DOTS, Math.ceil(options.contentHeightInDots)),
 });
 
 const isArrowVertical = (arrowDirection: BubbleArrowDirection): boolean => arrowDirection === 'up' || arrowDirection === 'down';
@@ -67,7 +67,7 @@ const arrowStraightSide = ({ contentWidthInDots, contentHeightInDots, arrowDirec
  * @returns 콘텐츠/전체 크기, 콘텐츠/화살표 끝 도트 좌표
  */
 export const bubbleLayout = (requested: BubbleOptions): BubbleLayout => {
-  const options = withMinContentSize(requested);
+  const options = toDrawableContentSize(requested);
   const { contentWidthInDots, contentHeightInDots, arrowDirection } = options;
   const contentColumn = arrowDirection === 'left' ? ARROW_LENGTH_IN_DOTS : 0;
   const contentRow = arrowDirection === 'up' ? ARROW_LENGTH_IN_DOTS : 0;
