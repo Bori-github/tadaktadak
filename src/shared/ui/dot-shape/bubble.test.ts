@@ -92,6 +92,19 @@ describe('도트 말풍선', () => {
     expect({ contentWidthInDots: layout.contentWidthInDots, contentHeightInDots: layout.contentHeightInDots }).toEqual({ contentWidthInDots: 21, contentHeightInDots: 15 });
   });
 
+  it.each([
+    { label: '무한', size: Infinity },
+    { label: 'NaN', size: NaN },
+  ])('콘텐츠 크기가 $label이면 최소 크기 말풍선이 그려진다', ({ size }) => {
+    const shape = bubbleShape({ contentWidthInDots: size, contentHeightInDots: size, arrowDirection: 'up', arrowAlign: 'start' });
+
+    expect({ contentWidthInDots: shape.contentWidthInDots, contentHeightInDots: shape.contentHeightInDots, hasCells: shape.cells.length > 0 }).toEqual({
+      contentWidthInDots: MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS,
+      contentHeightInDots: 12,
+      hasCells: true,
+    });
+  });
+
   it('최소보다 좁은 콘텐츠에서도 end 정렬 화살표 밑변이 4도트로 그려진다', () => {
     const shape = bubbleShape({ contentWidthInDots: 8, contentHeightInDots: HEIGHT, arrowDirection: 'up', arrowAlign: 'end' });
     const baseRow = shape.cells.filter((cell) => cell.row === 3);

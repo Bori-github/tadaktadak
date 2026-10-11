@@ -45,10 +45,13 @@ type BubbleShape = BubbleLayout & {
   cells: DotCell[];
 };
 
+// 콘텐츠 길이가 무한하면 `rowRunCells` 반복이 끝나지 않고, `NaN`이면 사각형이 만들어지지 않아 최소값으로 처리
+const toDrawableLength = (lengthInDots: number, minInDots: number): number => (Number.isFinite(lengthInDots) ? Math.max(minInDots, Math.ceil(lengthInDots)) : minInDots);
+
 const toDrawableContentSize = (options: BubbleOptions): BubbleOptions => ({
   ...options,
-  contentWidthInDots: Math.max(MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS, Math.ceil(options.contentWidthInDots)),
-  contentHeightInDots: Math.max(MIN_BUBBLE_CONTENT_HEIGHT_IN_DOTS, Math.ceil(options.contentHeightInDots)),
+  contentWidthInDots: toDrawableLength(options.contentWidthInDots, MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS),
+  contentHeightInDots: toDrawableLength(options.contentHeightInDots, MIN_BUBBLE_CONTENT_HEIGHT_IN_DOTS),
 });
 
 const isArrowVertical = (arrowDirection: BubbleArrowDirection): boolean => arrowDirection === 'up' || arrowDirection === 'down';
