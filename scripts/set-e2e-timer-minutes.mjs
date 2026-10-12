@@ -17,7 +17,8 @@ const SCENARIOS = {
   'running-without-dismiss': () => {
     const startedAt = Date.now();
 
-    return { 'timer.session': JSON.stringify({ phase: 'running', mode: 'focus', startedAt, endsAt: startedAt + 60 * 1000 }) };
+    // Android 콜드 스타트(약 25초)를 포함한 판정 시간 동안 집중 타이머가 만료되지 않도록 10분으로 설정
+    return { 'timer.session': JSON.stringify({ phase: 'running', mode: 'focus', startedAt, endsAt: startedAt + 10 * 60 * 1000 }) };
   },
 };
 
