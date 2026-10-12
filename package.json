@@ -61,7 +61,7 @@
     "submit": "eas submit --latest",
     "deploy:ios": "sh scripts/deploy/ios.sh",
     "test": "jest",
-    "e2e": "node scripts/set-e2e-timer-minutes.mjs && maestro test .maestro && maestro test .maestro/clean-install",
+    "e2e:ios": "node scripts/set-e2e-timer-minutes.mjs && maestro -p ios test .maestro && maestro -p ios test .maestro/clean-install",
     "check": "run-p -c lint typecheck format:check",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

@@ -1,7 +1,7 @@
 appId: com.boriguri.tadaktadak
 name: 배경음 안내 툴팁을 닫으면 다시 실행해도 표시하지 않는지 테스트
 ---
-# 전제: 다른 플로우 뒤에 실행. `clearState`가 `pnpm e2e`가 맞춘 저장값을 지움
+# 전제: 다른 플로우 뒤에 실행. `clearState`가 `pnpm e2e:ios`가 맞춘 저장값을 지움
 - launchApp:
     clearState: true
 # 아래 시각은 모두 실행 기준
