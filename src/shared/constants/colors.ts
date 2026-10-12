@@ -57,4 +57,10 @@ export const COLORS = {
     highlight: '#4a4360',
     shadow: '#332a42',
   },
+
+  tooltip: {
+    edge: '#8f86a8',
+    face: '#3f3550',
+    shadow: '#08060d',
+  },
 } as const;
