@@ -106,6 +106,8 @@ const sqlString = (value) => `'${value.replaceAll("'", "''")}'`;
 // `run-as`가 디버그 빌드에서만 동작해서 `pnpm android`로 설치한 빌드 필요
 const seedAndroid = (values, removedKeys) => {
   const serial = onlyAndroidDevice();
+  // `exec-in`/`exec-out`은 `run-as` 실패에도 종료 코드 0을 반환하므로 `shell`로 먼저 확인
+  adb(['-s', serial, 'shell', `run-as ${BUNDLE_IDENTIFIER} true`]);
 
   // 앱이 실행 중이면 AsyncStorage가 종료 시점에 메모리 값으로 파일을 덮어씀
   adb(['-s', serial, 'shell', 'am', 'force-stop', BUNDLE_IDENTIFIER]);
