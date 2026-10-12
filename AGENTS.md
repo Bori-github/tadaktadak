@@ -37,7 +37,7 @@
 
 - `pnpm check`: lint, typecheck, format:check
 - `pnpm test`: Jest
-- `pnpm e2e`: Maestro
+- `pnpm e2e:ios`: Maestro
 
 ## 작업 순서
 

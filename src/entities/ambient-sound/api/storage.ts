@@ -2,6 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ENABLED_KEY = 'ambientSoundEnabled';
 
+/** 배경음 버튼 안내 툴팁 닫기 기록 키 */
+export const AMBIENT_SOUND_TOOLTIP_DISMISSED_KEY = 'ambientSoundTooltipDismissed';
+
 /**
  * 기기에 저장된 배경음 사용 여부 읽기
  *

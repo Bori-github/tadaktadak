@@ -41,7 +41,7 @@ pnpm android:device    # Android 실기기 개발 빌드
 
 ### E2E
 
-- 시뮬레이터 개발 빌드를 대상으로 하며, `pnpm ios`로 앱을 올리고 알림 권한 창을 한 번 허용한 뒤 `pnpm e2e`를 실행한다
+- 시뮬레이터 개발 빌드를 대상으로 하며, `pnpm ios`로 앱을 올리고 알림 권한 창을 한 번 허용한 뒤 `pnpm e2e:ios`를 실행한다
 
 ### 설치
 

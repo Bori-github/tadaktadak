@@ -34,13 +34,16 @@ import {
   Numerals,
   useDialDrag,
 } from '@/widgets/dial';
-import { setAmbientSoundEnabled, useAmbientSoundEnabled } from '@/entities/ambient-sound';
+import { AMBIENT_SOUND_TOOLTIP_DISMISSED_KEY, setAmbientSoundEnabled, useAmbientSoundEnabled } from '@/entities/ambient-sound';
+import { translate, useLanguage } from '@/entities/language';
 import { isReadyPhase, type TimerMode } from '@/entities/timer';
 import { playVibration } from '@/entities/vibration';
 import { BUTTON_SIZE_IN_DOTS, COLORS, ROUND_BUTTON_DIAMETER_IN_DOTS } from '@/shared/constants';
-import { resolveLayout, getFormFactor, type RootStackParamList } from '@/shared/lib';
+import { resolveLayout, getFormFactor, useDismissibleNotice, useIsScreenVisible, type RootStackParamList } from '@/shared/lib';
 import { RoundDotButton } from '@/shared/ui/dot-button';
 import { NOTIFICATION_OFF_ICON, SETTINGS_ICON, SOUND_ICON, SOUND_OFF_ICON } from '@/shared/ui/dot-icon';
+import { DotTooltip } from '@/shared/ui/dot-tooltip';
+import { PortalHost } from '@/shared/ui/portal';
 
 const SECONDS_IN_MINUTE = 60;
 
@@ -67,6 +70,9 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
 
   const notificationSettingsShown = isNotificationBlocked(permission);
   const isAmbientSoundEnabled = useAmbientSoundEnabled();
+  const ambientSoundTooltip = useDismissibleNotice(AMBIENT_SOUND_TOOLTIP_DISMISSED_KEY);
+  const isScreenVisible = useIsScreenVisible();
+  const language = useLanguage();
 
   const layout = resolveLayout({
     shortSide: Math.min(width, height),
@@ -80,6 +86,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   const centerX = layout.dialCenterX;
   const centerY = layout.dialCenterY;
   const editing = isReadyPhase(session.phase);
+  const isAmbientSoundTooltipVisible = editing && ambientSoundTooltip.isVisible;
   const shownMode = editing ? editTarget : session.mode;
   const paintedMode = colorMode({ editing, editTarget });
   const selected = minutes[shownMode];
@@ -154,67 +161,79 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   });
 
   return (
-    <GestureDetector gesture={gesture}>
-      <View style={styles.root}>
-        <Canvas style={StyleSheet.absoluteFill}>
-          <Fill color={COLORS.canvas} />
-          <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} />
-          <DialItems
-            centerX={centerX}
-            centerY={centerY}
-            radius={layout.itemRadius}
+    <PortalHost isEnabled={isScreenVisible}>
+      <GestureDetector gesture={gesture}>
+        <View style={styles.root}>
+          <Canvas style={StyleSheet.absoluteFill}>
+            <Fill color={COLORS.canvas} />
+            <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} />
+            <DialItems
+              centerX={centerX}
+              centerY={centerY}
+              radius={layout.itemRadius}
+              dotSize={layout.dotSize}
+              bonfireHeightInDots={layout.bonfireHeightInDots}
+              remainingMinutes={litMinutes}
+              settingMinutes={itemMinutes}
+              isPaused={session.phase === 'paused'}
+              isReady={editing}
+            />
+            <Embers centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} effectStartedAt={effectStartedAt} />
+            <Thumb centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} isTwinkling={twinkling} />
+            <Numerals centerX={centerX} centerY={centerY} radius={layout.numeralRadius} dotSize={layout.dotSize} />
+            <DialReadout
+              centerX={centerX}
+              centerY={centerY}
+              dotSize={layout.dotSize}
+              focusMinutes={minutes.focus}
+              restMinutes={minutes.rest}
+              active={shownMode}
+              remainingSeconds={remainingSeconds}
+            />
+          </Canvas>
+          {editing ? <ReadoutButtons centerX={centerX} centerY={centerY} dotSize={layout.dotSize} onSelect={setEditTarget} /> : null}
+          <ControlButtons dotSize={layout.dotSize} phase={session.phase} onPlay={handlePlay} onStop={stop} style={controlButtonsStyle} />
+          {notificationSettingsShown ? (
+            <RoundDotButton
+              testID="notification-settings"
+              dotSize={layout.dotSize}
+              icon={NOTIFICATION_OFF_ICON}
+              style={notificationSettingsStyle}
+              onPress={handleNotificationSettingsPress}
+              onPressIn={() => playVibration()}
+            />
+          ) : null}
+          <DotTooltip
+            testID="ambient-sound-tooltip"
+            text={translate('ambientSound.tooltip', language)}
             dotSize={layout.dotSize}
-            bonfireHeightInDots={layout.bonfireHeightInDots}
-            remainingMinutes={litMinutes}
-            settingMinutes={itemMinutes}
-            isPaused={session.phase === 'paused'}
-            isReady={editing}
-          />
-          <Embers centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} effectStartedAt={effectStartedAt} />
-          <Thumb centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} isTwinkling={twinkling} />
-          <Numerals centerX={centerX} centerY={centerY} radius={layout.numeralRadius} dotSize={layout.dotSize} />
-          <DialReadout
-            centerX={centerX}
-            centerY={centerY}
-            dotSize={layout.dotSize}
-            focusMinutes={minutes.focus}
-            restMinutes={minutes.rest}
-            active={shownMode}
-            remainingSeconds={remainingSeconds}
-          />
-        </Canvas>
-        {editing ? <ReadoutButtons centerX={centerX} centerY={centerY} dotSize={layout.dotSize} onSelect={setEditTarget} /> : null}
-        <ControlButtons dotSize={layout.dotSize} phase={session.phase} onPlay={handlePlay} onStop={stop} style={controlButtonsStyle} />
-        {notificationSettingsShown ? (
+            arrowDirection="up"
+            arrowAlign="start"
+            isVisible={isAmbientSoundTooltipVisible}
+            onClose={ambientSoundTooltip.dismiss}
+            style={ambientSoundStyle}
+          >
+            <RoundDotButton
+              testID="ambient-sound"
+              dotSize={layout.dotSize}
+              icon={isAmbientSoundEnabled ? SOUND_ICON : SOUND_OFF_ICON}
+              onPress={() => setAmbientSoundEnabled(!isAmbientSoundEnabled)}
+              onPressIn={() => playVibration()}
+            />
+          </DotTooltip>
           <RoundDotButton
-            testID="notification-settings"
+            testID="settings"
             dotSize={layout.dotSize}
-            icon={NOTIFICATION_OFF_ICON}
-            style={notificationSettingsStyle}
-            onPress={handleNotificationSettingsPress}
+            icon={SETTINGS_ICON}
+            disabled={!editing}
+            style={settingsStyle}
+            onPress={handleSettingsPress}
             onPressIn={() => playVibration()}
           />
-        ) : null}
-        <RoundDotButton
-          testID="ambient-sound"
-          dotSize={layout.dotSize}
-          icon={isAmbientSoundEnabled ? SOUND_ICON : SOUND_OFF_ICON}
-          style={ambientSoundStyle}
-          onPress={() => setAmbientSoundEnabled(!isAmbientSoundEnabled)}
-          onPressIn={() => playVibration()}
-        />
-        <RoundDotButton
-          testID="settings"
-          dotSize={layout.dotSize}
-          icon={SETTINGS_ICON}
-          disabled={!editing}
-          style={settingsStyle}
-          onPress={handleSettingsPress}
-          onPressIn={() => playVibration()}
-        />
-        {__DEV__ ? <DevPanel seconds={remainingSeconds} speed={speed} isSpeedEnabled={editing} onSelectSpeed={setSpeed} /> : null}
-      </View>
-    </GestureDetector>
+          {__DEV__ ? <DevPanel seconds={remainingSeconds} speed={speed} isSpeedEnabled={editing} onSelectSpeed={setSpeed} /> : null}
+        </View>
+      </GestureDetector>
+    </PortalHost>
   );
 };
 

@@ -17,7 +17,7 @@ import { restoreAmbientSoundEnabled, useAmbientSoundPlayback } from '@/entities/
 import { initLocalization, restoreLanguage } from '@/entities/language';
 import { canVibrate, prepareVibration, restoreVibrationEnabled, TAP_PATTERN } from '@/entities/vibration';
 import { COLORS } from '@/shared/constants';
-import { type RootStackParamList } from '@/shared/lib';
+import { type RootStackParamList, SplashVisibleContext } from '@/shared/lib';
 
 prepareVibration(TAP_PATTERN);
 initLocalization();
@@ -42,12 +42,14 @@ export const App = (): JSX.Element => {
       <SafeAreaProvider>
         <StatusBar style="light" />
         <Sentry.ErrorBoundary fallback={<RootErrorScreen />} onError={() => setHasError(true)}>
-          <NavigationContainer>
-            <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.canvas } }}>
-              <Stack.Screen name="timer" component={TimerScreen} />
-              <Stack.Screen name="settings" component={SettingsScreen} options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
-            </Stack.Navigator>
-          </NavigationContainer>
+          <SplashVisibleContext.Provider value={isSplashVisible}>
+            <NavigationContainer>
+              <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.canvas } }}>
+                <Stack.Screen name="timer" component={TimerScreen} />
+                <Stack.Screen name="settings" component={SettingsScreen} options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </SplashVisibleContext.Provider>
         </Sentry.ErrorBoundary>
         {isSplashVisible ? <Splash onHidden={() => setIsSplashVisible(false)} /> : null}
       </SafeAreaProvider>

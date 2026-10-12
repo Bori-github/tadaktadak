@@ -25,6 +25,8 @@ type BubbleProps = {
   width?: number;
   /** 화살표/테두리 포함 말풍선 최대 너비 (px). 초과 문구는 줄바꿈 */
   maxWidth?: number;
+  /** 말풍선 `View`에 지정 */
+  testID?: string;
 };
 
 type DotTooltipProps = BubbleProps & {
@@ -79,6 +81,7 @@ const Bubble = ({
   textAlign = 'center',
   width,
   maxWidth,
+  testID,
   anchor,
   onClose,
 }: BubbleProps & { anchor: LayoutRectangle; onClose: () => void }): JSX.Element => {
@@ -136,7 +139,7 @@ const Bubble = ({
     <>
       {measurer}
       <Portal onDismiss={onClose}>
-        <View style={[styles.bubble, origin, { width: shape.widthInDots * dotSize, height: shape.heightInDots * dotSize }]} pointerEvents="none">
+        <View testID={testID} style={[styles.bubble, origin, { width: shape.widthInDots * dotSize, height: shape.heightInDots * dotSize }]} pointerEvents="none">
           <Canvas style={StyleSheet.absoluteFill}>
             <DotCells cells={shape.cells} dotSize={dotSize} colors={BUBBLE_COLORS} />
           </Canvas>
