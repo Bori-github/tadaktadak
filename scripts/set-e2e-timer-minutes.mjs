@@ -91,14 +91,17 @@ const adb = (args, options = {}) => {
 
 // `maestro -p android`가 기기를 지정하지 않으므로 adb 기기가 하나일 때만 진행
 const onlyAndroidDevice = () => {
-  const devices = adb(['devices'], { encoding: 'utf8' })
+  const serials = adb(['devices'], { encoding: 'utf8' })
     .split('\n')
     .filter((line) => line.endsWith('\tdevice'))
     .map((line) => line.split('\t')[0]);
+  // 무선 디버깅 시 mDNS 자동 연결로 한 기기에 시리얼이 2개 생기므로 `ro.serialno` 기준으로 기기 수 계산
+  const deviceCount = new Set(serials.map((serial) => adb(['-s', serial, 'shell', 'getprop', 'ro.serialno'], { encoding: 'utf8' }).trim())).size;
 
-  if (devices.length !== 1) throw new Error(`adb 기기가 ${devices.length}개. 에뮬레이터 하나만 연결한다`);
+  if (deviceCount !== 1) throw new Error(`adb 기기가 ${deviceCount}개. 에뮬레이터 하나만 연결한다`);
 
-  return devices[0];
+  // `maestro -p android`와 같은 기기를 쓰도록 목록의 첫 시리얼 사용
+  return serials[0];
 };
 
 const sqlString = (value) => `'${value.replaceAll("'", "''")}'`;
