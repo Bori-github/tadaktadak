@@ -6,6 +6,9 @@
     "focus": "집중 끝!",
     "rest": "휴식 끝!"
   },
+  "ambientSound": {
+    "tooltip": "타닥타닥, 장작 타는 소리와 함께해 보세요."
+  },
   "notification": {
     "bannerChannel": "배너 알림",
     "vibrationChannel": "진동 알림"

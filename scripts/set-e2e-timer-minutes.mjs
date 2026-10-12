@@ -7,6 +7,9 @@ const BUNDLE_IDENTIFIER = 'com.boriguri.tadaktadak';
 /** 플로우가 전제하는 타이머 시간(분). `.maestro/*.yaml` 첫 주석 */
 const E2E_MINUTES = { 'timer.minutes.focus': '1', 'timer.minutes.rest': '1' };
 
+/** 배경음 안내 툴팁의 `DismissLayer`가 첫 탭을 소비하지 않도록 닫힘 상태로 저장. 키는 `AMBIENT_SOUND_TOOLTIP_DISMISSED_KEY` */
+const E2E_DISMISSED_NOTICES = { ambientSoundTooltipDismissed: 'true' };
+
 // 실행 중이 아닌 앱을 종료하면 `simctl`이 stderr에 오류를 출력하므로, 표준 오류를 예외에만 담음
 const simctl = (...args) => {
   try {
@@ -45,7 +48,7 @@ const main = () => {
   }
 
   mkdirSync(dirname(manifestPath), { recursive: true });
-  writeFileSync(manifestPath, JSON.stringify({ ...stored, ...E2E_MINUTES }));
+  writeFileSync(manifestPath, JSON.stringify({ ...stored, ...E2E_MINUTES, ...E2E_DISMISSED_NOTICES }));
 
   console.log(`${deviceId}: 집중 ${E2E_MINUTES['timer.minutes.focus']}분, 휴식 ${E2E_MINUTES['timer.minutes.rest']}분`);
 };

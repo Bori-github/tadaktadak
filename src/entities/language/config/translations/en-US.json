@@ -6,6 +6,9 @@
     "focus": "Boom, done!",
     "rest": "Break’s over!"
   },
+  "ambientSound": {
+    "tooltip": "Try the crackling fire sound"
+  },
   "notification": {
     "bannerChannel": "Banner alerts",
     "vibrationChannel": "Vibration alerts"
