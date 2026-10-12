@@ -86,6 +86,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   const centerX = layout.dialCenterX;
   const centerY = layout.dialCenterY;
   const editing = isReadyPhase(session.phase);
+  const isAmbientSoundTooltipVisible = editing && ambientSoundTooltip.isVisible;
   const shownMode = editing ? editTarget : session.mode;
   const paintedMode = colorMode({ editing, editTarget });
   const selected = minutes[shownMode];
@@ -208,7 +209,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
             dotSize={layout.dotSize}
             arrowDirection="up"
             arrowAlign="start"
-            isVisible={ambientSoundTooltip.isVisible}
+            isVisible={isAmbientSoundTooltipVisible}
             onClose={ambientSoundTooltip.dismiss}
             style={ambientSoundStyle}
           >
