@@ -1,15 +1,22 @@
 appId: com.boriguri.tadaktadak
 name: 이전 실행이 남긴 세션 정리
 ---
+# JS 번들 로드 전에는 뷰 계층에 `splash`가 없어 `notVisible`이 즉시 통과하므로 재생 버튼 렌더링부터 대기
+# Android 개발 빌드는 Metro 번들 로드로 재생 버튼 렌더링까지 약 25초 소요
+- extendedWaitUntil:
+    visible:
+      id: 'controls-play'
+    timeout: 30000
+
 # 스플래시가 떠 있는 동안에는 아래 탭이 스플래시에 막혀서 사라질 때까지 기다림
 - extendedWaitUntil:
     notVisible:
       id: 'splash'
-    timeout: 10000
+    timeout: 40000
 
 # 이전 실행이 남긴 세션이 있으면 정지 버튼이 활성화됨
-# 세션 복원이 늦게 반영될 수 있어 최대 10초 기다림
-# 정리할 세션이 없으면 10초를 모두 기다린 뒤 실패 없이 넘어감
+# 타임아웃 10초가 `launchApp` 기준이므로 앞 대기가 10초를 넘으면 대기 없이 1회만 조회
+# 정리할 세션이 없으면 `optional`이라 실패 처리하지 않음
 - extendedWaitUntil:
     visible:
       id: 'controls-stop'

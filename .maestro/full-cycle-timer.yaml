@@ -1,14 +1,16 @@
 appId: com.boriguri.tadaktadak
 name: 집중/휴식 타이머를 모두 실행하는 전체 타이머 사이클
 ---
-# 전제: 앱 설정이 집중 60초, 휴식 60초. `pnpm e2e:ios`가 실행 전에 맞춤
+# 전제: 앱 설정이 집중 60초, 휴식 60초. `pnpm e2e:ios`/`pnpm e2e:android`가 실행 전에 맞춤
 - launchApp
 
 - runFlow:
     file: subflows/clear-session.yaml
 
+# 남은 시간이 매초 갱신되어 탭 후 UI 안정화 대기가 끝나지 않으므로 0.5초로 제한
 - tapOn:
     id: 'controls-play'
+    waitToSettleTimeoutMs: 500
 # 아래 timeout은 모두 이 탭 시각(t=0) 기준 마감 시각
 # (앞 대기가 쓴 시간만큼 뒤 대기의 남은 시간이 줄어듦)
 
