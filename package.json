@@ -61,6 +61,7 @@
     "submit": "eas submit --latest",
     "deploy:ios": "sh scripts/deploy/ios.sh",
     "test": "jest",
+    "e2e:android": "node scripts/set-e2e-timer-minutes.mjs --platform android && maestro -p android test .maestro && node scripts/set-e2e-timer-minutes.mjs --platform android --scenario running-without-dismiss && maestro -p android test .maestro/running-without-dismiss && maestro -p android test .maestro/clean-install",
     "e2e:ios": "node scripts/set-e2e-timer-minutes.mjs && maestro -p ios test .maestro && node scripts/set-e2e-timer-minutes.mjs --scenario running-without-dismiss && maestro -p ios test .maestro/running-without-dismiss && maestro -p ios test .maestro/clean-install",
     "check": "run-p -c lint typecheck format:check",
     "lint": "eslint .",
