@@ -1,29 +1,30 @@
 appId: com.boriguri.tadaktadak
 name: 타이머 진행 중에는 배경음 안내 툴팁을 표시하지 않고 정지하면 표시하는지 테스트
 ---
-# 전제: 집중 타이머 진행 중이고 툴팁 닫기 기록이 없음. `pnpm e2e:ios`가 실행 전에 맞춤
+# 전제: 집중 타이머 진행 중이고 툴팁 닫기 기록이 없음. `pnpm e2e:ios`/`pnpm e2e:android`가 실행 전에 맞춤
 - launchApp
 # 아래 시각은 모두 실행 기준
 
-# [마감 실행 +10s] 스플래시가 나타날 때까지
+# [마감 실행 +30s] 스플래시가 나타날 때까지
 # 실행 직후에는 스플래시가 그려지기 전이라 사라짐 판정이 바로 통과함
+# Android 개발 빌드는 Metro 번들 로드로 스플래시 렌더링까지 약 25초 소요
 - extendedWaitUntil:
     visible:
       id: 'splash'
-    timeout: 10000
+    timeout: 30000
     optional: true
-# [마감 실행 +20s] 스플래시가 사라질 때까지
+# [마감 실행 +40s] 스플래시가 사라질 때까지
 - extendedWaitUntil:
     notVisible:
       id: 'splash'
-    timeout: 20000
+    timeout: 40000
 
-# [마감 실행 +20s] 저장값을 읽어 진행 세션이 살아날 때까지
+# [마감 실행 +40s] 저장값을 읽어 진행 세션이 살아날 때까지
 - extendedWaitUntil:
     visible:
       id: 'controls-stop'
       enabled: true
-    timeout: 20000
+    timeout: 40000
 
 # [마감 스플래시 종료 +5s] 툴팁이 그려질 시간을 둔 뒤 미표시 판정
 - extendedWaitUntil:
