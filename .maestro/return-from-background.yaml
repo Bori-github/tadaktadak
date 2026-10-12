@@ -56,7 +56,7 @@ name: 백그라운드에서 집중 타이머가 끝난 뒤 돌아오면 휴식 �
           id: 'remaining-seconds'
       - evalScript: ${output.readAt = (output.readStartedAt + Date.now()) / 2}
       # 휴식 타이머는 `completedAt`부터 계산하므로, `markedSeconds`에 휴식 60초를 더하고 `markedAt` 이후로 흐른 시간을 뺌
-      # 오차 2초는 표시 올림 1초와 `copyTextFrom` 소요 시간 편차 1초
+      # 허용 오차 2초: 표시값 올림 1초 + 조회 시각 오차 1초
       - assertTrue: ${Math.abs(output.markedSeconds + 60 - (output.readAt - output.markedAt) / 1000 - Number(maestro.copiedText)) <= 2}
 
 - assertVisible:

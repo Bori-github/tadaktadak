@@ -37,14 +37,17 @@ name: 타이머 진행 중 앱을 닫고 다시 켜면 남은 시간이 이어�
     visible:
       id: 'remaining-seconds'
     timeout: 40000
-- evalScript: ${output.readStartedAt = Date.now()}
-- copyTextFrom:
-    id: 'remaining-seconds'
-- evalScript: ${output.readAt = (output.readStartedAt + Date.now()) / 2}
-
-# 재실행에 걸린 시간과 무관하게 판정하기 위해 실제로 흐른 시간으로 계산
-# 오차 2초는 표시 올림 1초와 `copyTextFrom` 소요 시간 편차 1초
-- assertTrue: ${Math.abs(output.killedSeconds - (output.readAt - output.killedAt) / 1000 - Number(maestro.copiedText)) <= 2}
+# 조회 시각 오차가 허용치를 넘으면 재조회
+- retry:
+    maxRetries: 2
+    commands:
+      - evalScript: ${output.readStartedAt = Date.now()}
+      - copyTextFrom:
+          id: 'remaining-seconds'
+      - evalScript: ${output.readAt = (output.readStartedAt + Date.now()) / 2}
+      # 재실행에 걸린 시간과 무관하게 판정하기 위해 실제로 흐른 시간으로 계산
+      # 허용 오차 2초: 표시값 올림 1초 + 조회 시각 오차 1초
+      - assertTrue: ${Math.abs(output.killedSeconds - (output.readAt - output.killedAt) / 1000 - Number(maestro.copiedText)) <= 2}
 
 # 다음 플로우가 대기에서 시작하게 세션 정리
 - tapOn:
