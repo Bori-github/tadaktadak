@@ -203,6 +203,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
             />
           ) : null}
           <DotTooltip
+            testID="ambient-sound-tooltip"
             text={translate('ambientSound.tooltip', language)}
             dotSize={layout.dotSize}
             arrowDirection="up"
