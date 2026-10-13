@@ -21,6 +21,7 @@ interface StoredSetting<TValue> {
  */
 export const createStoredSetting = <TValue>({ initialValue, load, save }: StoredSettingOptions<TValue>): StoredSetting<TValue> => {
   let value = initialValue;
+  let setCount = 0;
   const listeners = new Set<() => void>();
 
   const apply = (next: TValue): void => {
@@ -33,6 +34,7 @@ export const createStoredSetting = <TValue>({ initialValue, load, save }: Stored
   const get = (): TValue => value;
 
   const set = (next: TValue): void => {
+    setCount += 1;
     apply(next);
 
     // 저장 실패 시 메모리 값만 반영. 다음 실행은 이전 저장값으로 복원
@@ -40,7 +42,7 @@ export const createStoredSetting = <TValue>({ initialValue, load, save }: Stored
   };
 
   const restore = async (): Promise<void> => {
-    const before = value;
+    const setCountAtStart = setCount;
 
     let saved: TValue;
     try {
@@ -50,8 +52,8 @@ export const createStoredSetting = <TValue>({ initialValue, load, save }: Stored
       return;
     }
 
-    // 로드 중 값 변경 시 저장값 반영 생략
-    if (value !== before) return;
+    // 로드 중 `set` 호출 시 저장값 반영 생략
+    if (setCount !== setCountAtStart) return;
 
     apply(saved);
   };
