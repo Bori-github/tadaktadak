@@ -109,7 +109,7 @@ describe('배경음 재생', () => {
     expect(mockPlayers[1]).toMatchObject({ volume: 0, isPlaying: true });
   });
 
-  it('앱이 inactive 상태가 되어도 재생을 유지한다', async () => {
+  it('앱이 잠시 비활성 상태가 되어도 재생을 유지한다', async () => {
     await renderHook(() => useAmbientSoundPlayback({ canPlay: true }));
     await act(async () => setAmbientSoundEnabled(true));
 
