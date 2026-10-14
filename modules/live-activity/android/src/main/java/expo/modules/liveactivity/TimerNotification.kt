@@ -37,8 +37,8 @@ private const val REST_PROGRESS_COLOR = 0xFF3F9AA6.toInt()
 private const val CONTENT_PREFERENCES_NAME = "live-activity-content"
 private const val PROGRESS_STEP_RATIO = 0.01
 
-// 짧은 타이머·배속에서 notify 과다 방지용 하한
-private const val MIN_PROGRESS_STEP_MS = 1_000L
+// AOSP `AlarmManagerService`가 non-core uid 알람의 트리거 시각을 `MIN_FUTURITY`(기본 5초) 이후로 보정해 동일 값으로 설정
+private const val MIN_PROGRESS_STEP_MS = 5_000L
 
 // `PendingIntent` 동일성 비교에서 extra 제외라 requestCode로 구분
 private const val OPEN_APP_REQUEST_CODE = 0
