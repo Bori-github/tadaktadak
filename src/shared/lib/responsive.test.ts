@@ -271,9 +271,15 @@ describe('화면 가장자리 여백', () => {
     expect(layout(390).edgeMargin).toBe(8);
   });
 
-  it.each(DEVICE_NAMES)('%s에서 화면 가장자리 여백은 8 × 배율이다', (name) => {
-    const { edgeMargin, scale } = onDevice(name);
-
-    expect(edgeMargin).toBe(8 * scale);
+  it.each<{ label: string; name: DeviceName; expected: number }>([
+    { label: 'iPhone SE', name: 'iPhoneSE', expected: 8 },
+    { label: 'iPhone 17e', name: 'iPhone17e', expected: 8 },
+    { label: 'iPhone Pro Max', name: 'iPhoneProMax', expected: 8 },
+    { label: '작은 Android 휴대폰', name: 'androidSmall', expected: 8 },
+    { label: 'iPad mini', name: 'iPadMini', expected: 12 },
+    { label: 'iPad', name: 'iPadHome', expected: 12 },
+    { label: 'iPad Pro 13', name: 'iPadPro13', expected: 12 },
+  ])('$label에서 화면 가장자리 여백은 8 × 배율이다', ({ name, expected }) => {
+    expect(onDevice(name).edgeMargin).toBe(expected);
   });
 });
