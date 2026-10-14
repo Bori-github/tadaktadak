@@ -74,7 +74,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-describe('Portal', () => {
+describe('`children`을 가장 가까운 `PortalHost`에 렌더링', () => {
   it('Portal 내용은 PortalHost의 children 뒤에 렌더링된다', async () => {
     await render(<Screen isOpen />);
 

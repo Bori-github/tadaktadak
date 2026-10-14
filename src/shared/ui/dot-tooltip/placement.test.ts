@@ -24,7 +24,7 @@ const ALIGN_LABELS: Record<BubbleArrowAlign, string> = { start: '시작', center
 
 const isInRange = ({ left, right }: { left: number; right: number }) => RANGE.minLeft <= left && right <= RANGE.maxRight;
 
-describe('bubbleOrigin', () => {
+describe('화살표 끝을 `anchor` 변 중앙에 맞춘 말풍선 위치', () => {
   const anchor = anchorAt(100);
 
   const arrowTipOf = (arrowDirection: BubbleArrowDirection) => {
@@ -52,7 +52,7 @@ describe('bubbleOrigin', () => {
   });
 });
 
-describe('maxContentWidthInDots', () => {
+describe('가로 범위와 `maxWidth`를 넘지 않는 최대 콘텐츠 너비', () => {
   const directions: BubbleArrowDirection[] = ['up', 'down', 'left', 'right'];
   const aligns: BubbleArrowAlign[] = ['start', 'center', 'end'];
   const anchors = [

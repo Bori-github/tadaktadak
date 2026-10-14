@@ -52,7 +52,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-describe('DotTooltip', () => {
+describe('`children`을 가리키는 도트 말풍선', () => {
   it('툴팁을 숨기면 문구를 렌더링하지 않는다', async () => {
     await renderTooltip({ isVisible: false });
 
