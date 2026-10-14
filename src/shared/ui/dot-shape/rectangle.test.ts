@@ -22,18 +22,18 @@ describe('도트 사각형', () => {
   });
 
   it.each([
-    { column: 1, row: HEIGHT - 2 },
-    { column: WIDTH - 2, row: 1 },
-  ])('하이라이트와 그림자가 겹치는 ($column, $row)는 그림자다', ({ column, row }) => {
+    { label: '왼쪽 아래 모서리', column: 1, row: HEIGHT - 2 },
+    { label: '오른쪽 위 모서리', column: WIDTH - 2, row: 1 },
+  ])('하이라이트와 그림자가 겹치는 $label ($column, $row)는 그림자다', ({ column, row }) => {
     expect(roleAt(column, row)).toBe('shadow');
   });
 
   it.each([
-    { column: 3, row: 3 },
-    { column: WIDTH - 4, row: 3 },
-    { column: 3, row: HEIGHT - 4 },
-    { column: WIDTH - 4, row: HEIGHT - 4 },
-  ])('리벳 ($column, $row)는 테두리 색이다', ({ column, row }) => {
+    { label: '왼쪽 위', column: 3, row: 3 },
+    { label: '오른쪽 위', column: WIDTH - 4, row: 3 },
+    { label: '왼쪽 아래', column: 3, row: HEIGHT - 4 },
+    { label: '오른쪽 아래', column: WIDTH - 4, row: HEIGHT - 4 },
+  ])('$label 리벳 ($column, $row)는 테두리 색이다', ({ column, row }) => {
     expect(roleAt(column, row)).toBe('edge');
   });
 });

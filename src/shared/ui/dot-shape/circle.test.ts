@@ -51,17 +51,17 @@ describe('도트 원', () => {
 
   // 하이라이트와 그림자 조건이 함께 참인 칸
   it.each([
-    { column: 17, row: 2 },
-    { column: 18, row: 3 },
-    { column: 19, row: 4 },
-    { column: 20, row: 5 },
-    { column: 21, row: 6 },
-    { column: 2, row: 17 },
-    { column: 3, row: 18 },
-    { column: 4, row: 19 },
-    { column: 5, row: 20 },
-    { column: 6, row: 21 },
-  ])('($column, $row)는 그림자다', ({ column, row }) => {
+    { label: '오른쪽 위 대각선', column: 17, row: 2 },
+    { label: '오른쪽 위 대각선', column: 18, row: 3 },
+    { label: '오른쪽 위 대각선', column: 19, row: 4 },
+    { label: '오른쪽 위 대각선', column: 20, row: 5 },
+    { label: '오른쪽 위 대각선', column: 21, row: 6 },
+    { label: '왼쪽 아래 대각선', column: 2, row: 17 },
+    { label: '왼쪽 아래 대각선', column: 3, row: 18 },
+    { label: '왼쪽 아래 대각선', column: 4, row: 19 },
+    { label: '왼쪽 아래 대각선', column: 5, row: 20 },
+    { label: '왼쪽 아래 대각선', column: 6, row: 21 },
+  ])('$label ($column, $row)는 그림자다', ({ column, row }) => {
     expect(roleAt(column, row)).toBe('shadow');
   });
 

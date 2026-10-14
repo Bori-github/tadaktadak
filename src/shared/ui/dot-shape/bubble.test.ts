@@ -36,23 +36,23 @@ describe('도트 말풍선', () => {
   });
 
   it.each([
-    { arrowDirection: 'up', widthInDots: WIDTH, heightInDots: HEIGHT + 5, contentColumn: 0, contentRow: 4 },
-    { arrowDirection: 'down', widthInDots: WIDTH, heightInDots: HEIGHT + 5, contentColumn: 0, contentRow: 0 },
-    { arrowDirection: 'left', widthInDots: WIDTH + 4, heightInDots: HEIGHT + 1, contentColumn: 4, contentRow: 0 },
-    { arrowDirection: 'right', widthInDots: WIDTH + 4, heightInDots: HEIGHT + 1, contentColumn: 0, contentRow: 0 },
-  ] as const)('$arrowDirection 화살표는 그 방향으로 전체 크기를 늘린다', ({ arrowDirection, ...expected }) => {
+    { label: '위', arrowDirection: 'up', widthInDots: WIDTH, heightInDots: HEIGHT + 5, contentColumn: 0, contentRow: 4 },
+    { label: '아래', arrowDirection: 'down', widthInDots: WIDTH, heightInDots: HEIGHT + 5, contentColumn: 0, contentRow: 0 },
+    { label: '왼쪽', arrowDirection: 'left', widthInDots: WIDTH + 4, heightInDots: HEIGHT + 1, contentColumn: 4, contentRow: 0 },
+    { label: '오른쪽', arrowDirection: 'right', widthInDots: WIDTH + 4, heightInDots: HEIGHT + 1, contentColumn: 0, contentRow: 0 },
+  ] as const)('$label 화살표는 화살표 방향으로 전체 크기를 늘린다', ({ label: _label, arrowDirection, ...expected }) => {
     const { widthInDots, heightInDots, contentColumn, contentRow } = shapeOf(arrowDirection, 'center');
 
     expect({ widthInDots, heightInDots, contentColumn, contentRow }).toEqual(expected);
   });
 
   it.each([
-    { arrowDirection: 'up', arrowAlign: 'start', arrowTipColumn: 6, arrowTipRow: 0 },
-    { arrowDirection: 'down', arrowAlign: 'end', arrowTipColumn: WIDTH - 1 - 6, arrowTipRow: HEIGHT + 3 },
-    { arrowDirection: 'left', arrowAlign: 'start', arrowTipColumn: 0, arrowTipRow: 4 },
-    { arrowDirection: 'right', arrowAlign: 'end', arrowTipColumn: WIDTH + 3, arrowTipRow: HEIGHT - 1 - 4 },
-    { arrowDirection: 'left', arrowAlign: 'center', arrowTipColumn: 0, arrowTipRow: HEIGHT / 2 - 2 },
-  ] as const)('$arrowDirection·$arrowAlign 화살표 끝 도트 좌표를 반환한다', ({ arrowDirection, arrowAlign, ...expected }) => {
+    { label: '위 화살표·시작 정렬', arrowDirection: 'up', arrowAlign: 'start', arrowTipColumn: 6, arrowTipRow: 0 },
+    { label: '아래 화살표·끝 정렬', arrowDirection: 'down', arrowAlign: 'end', arrowTipColumn: WIDTH - 1 - 6, arrowTipRow: HEIGHT + 3 },
+    { label: '왼쪽 화살표·시작 정렬', arrowDirection: 'left', arrowAlign: 'start', arrowTipColumn: 0, arrowTipRow: 4 },
+    { label: '오른쪽 화살표·끝 정렬', arrowDirection: 'right', arrowAlign: 'end', arrowTipColumn: WIDTH + 3, arrowTipRow: HEIGHT - 1 - 4 },
+    { label: '왼쪽 화살표·가운데 정렬', arrowDirection: 'left', arrowAlign: 'center', arrowTipColumn: 0, arrowTipRow: HEIGHT / 2 - 2 },
+  ] as const)('$label 말풍선은 화살표 끝 도트 좌표를 반환한다', ({ label: _label, arrowDirection, arrowAlign, ...expected }) => {
     const shape = shapeOf(arrowDirection, arrowAlign);
 
     expect({ arrowTipColumn: shape.arrowTipColumn, arrowTipRow: shape.arrowTipRow }).toEqual(expected);

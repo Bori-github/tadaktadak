@@ -19,6 +19,9 @@ const horizontalEdges = (arrowDirection: BubbleArrowDirection, arrowAlign: Bubbl
   return { left, right: left + bubbleLayout(bubble).widthInDots * DOT_SIZE };
 };
 
+const DIRECTION_LABELS: Record<BubbleArrowDirection, string> = { up: '위', down: '아래', left: '왼쪽', right: '오른쪽' };
+const ALIGN_LABELS: Record<BubbleArrowAlign, string> = { start: '시작', center: '가운데', end: '끝' };
+
 const isInRange = ({ left, right }: { left: number; right: number }) => RANGE.minLeft <= left && right <= RANGE.maxRight;
 
 describe('bubbleOrigin', () => {
@@ -35,11 +38,16 @@ describe('bubbleOrigin', () => {
   };
 
   it.each([
-    { arrowDirection: 'up', gap: arrowTipOf('up').top - (anchor.y + anchor.height), center: arrowTipOf('up').centerX - (anchor.x + anchor.width / 2) },
-    { arrowDirection: 'down', gap: anchor.y - arrowTipOf('down').bottom, center: arrowTipOf('down').centerX - (anchor.x + anchor.width / 2) },
-    { arrowDirection: 'left', gap: arrowTipOf('left').left - (anchor.x + anchor.width), center: arrowTipOf('left').centerY - (anchor.y + anchor.height / 2) },
-    { arrowDirection: 'right', gap: anchor.x - arrowTipOf('right').right, center: arrowTipOf('right').centerY - (anchor.y + anchor.height / 2) },
-  ])('$arrowDirection 화살표 끝은 요소 변 가운데에서 2도트 떨어진다', ({ gap, center }) => {
+    { label: DIRECTION_LABELS.up, arrowDirection: 'up', gap: arrowTipOf('up').top - (anchor.y + anchor.height), center: arrowTipOf('up').centerX - (anchor.x + anchor.width / 2) },
+    { label: DIRECTION_LABELS.down, arrowDirection: 'down', gap: anchor.y - arrowTipOf('down').bottom, center: arrowTipOf('down').centerX - (anchor.x + anchor.width / 2) },
+    {
+      label: DIRECTION_LABELS.left,
+      arrowDirection: 'left',
+      gap: arrowTipOf('left').left - (anchor.x + anchor.width),
+      center: arrowTipOf('left').centerY - (anchor.y + anchor.height / 2),
+    },
+    { label: DIRECTION_LABELS.right, arrowDirection: 'right', gap: anchor.x - arrowTipOf('right').right, center: arrowTipOf('right').centerY - (anchor.y + anchor.height / 2) },
+  ])('$label 화살표 끝은 요소 변 가운데에서 2도트 떨어진다', ({ gap, center }) => {
     expect({ gap, center }).toEqual({ gap: GAP, center: 0 });
   });
 });
@@ -47,27 +55,42 @@ describe('bubbleOrigin', () => {
 describe('maxContentWidthInDots', () => {
   const directions: BubbleArrowDirection[] = ['up', 'down', 'left', 'right'];
   const aligns: BubbleArrowAlign[] = ['start', 'center', 'end'];
-  // 범위 왼쪽 끝/중앙/오른쪽 끝 요소 x 좌표
-  const anchorXs = [RANGE.minLeft, (RANGE.minLeft + RANGE.maxRight - ANCHOR_SIZE) / 2, RANGE.maxRight - ANCHOR_SIZE];
-  const cases = directions.flatMap((arrowDirection) => aligns.flatMap((arrowAlign) => anchorXs.map((anchorX) => ({ arrowDirection, arrowAlign, anchorX }))));
+  const anchors = [
+    { label: '범위 왼쪽 끝', anchorX: RANGE.minLeft },
+    { label: '범위 가운데', anchorX: (RANGE.minLeft + RANGE.maxRight - ANCHOR_SIZE) / 2 },
+    { label: '범위 오른쪽 끝', anchorX: RANGE.maxRight - ANCHOR_SIZE },
+  ];
+  const cases = directions.flatMap((arrowDirection) =>
+    aligns.flatMap((arrowAlign) =>
+      anchors.map(({ label, anchorX }) => ({
+        label: `${DIRECTION_LABELS[arrowDirection]} 화살표·${ALIGN_LABELS[arrowAlign]} 정렬, ${label} 요소`,
+        arrowDirection,
+        arrowAlign,
+        anchorX,
+      })),
+    ),
+  );
 
   const widthAt = (arrowDirection: BubbleArrowDirection, arrowAlign: BubbleArrowAlign, anchorX: number, maxWidth?: number) =>
     maxContentWidthInDots({ arrowDirection, arrowAlign, anchor: anchorAt(anchorX), dotSize: DOT_SIZE, ...RANGE, maxWidth });
 
   const casesWithWidth = cases.map((row) => ({ ...row, width: widthAt(row.arrowDirection, row.arrowAlign, row.anchorX) }));
 
-  it.each(casesWithWidth)('$arrowDirection·$arrowAlign, 요소 x $anchorX: 계산한 너비보다 1도트 넓은 말풍선은 범위를 벗어난다', ({ arrowDirection, arrowAlign, anchorX, width }) => {
+  it.each(casesWithWidth)('$label: 계산한 너비보다 1도트 넓은 말풍선은 범위를 벗어난다', ({ arrowDirection, arrowAlign, anchorX, width }) => {
     expect(isInRange(horizontalEdges(arrowDirection, arrowAlign, anchorX, width + 1))).toBe(false);
   });
 
   it.each(casesWithWidth.filter(({ width }) => width > MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS))(
-    '$arrowDirection·$arrowAlign, 요소 x $anchorX: 최소보다 넓게 계산한 너비의 말풍선은 범위 안에 든다',
+    '$label: 최소보다 넓게 계산한 너비의 말풍선은 범위 안에 든다',
     ({ arrowDirection, arrowAlign, anchorX, width }) => {
       expect(isInRange(horizontalEdges(arrowDirection, arrowAlign, anchorX, width))).toBe(true);
     },
   );
 
-  it.each([{ arrowDirection: 'up' }, { arrowDirection: 'left' }] as const)('$arrowDirection 말풍선 전체 너비가 maxWidth를 넘지 않는다', ({ arrowDirection }) => {
+  it.each([
+    { label: DIRECTION_LABELS.up, arrowDirection: 'up' },
+    { label: DIRECTION_LABELS.left, arrowDirection: 'left' },
+  ] as const)('$label 화살표 말풍선 전체 너비가 maxWidth를 넘지 않는다', ({ arrowDirection }) => {
     const maxWidth = 150;
     const width = widthAt(arrowDirection, 'start', 150, maxWidth);
     const totalWidth = (contentWidthInDots: number) =>
