@@ -23,7 +23,7 @@ beforeAll(() => {
 });
 
 describe('시스템 선호 언어에서 지원 언어 고르기', () => {
-  it('첫 항목이 지원 목록에 있으면 그 항목의 언어를 반환한다', () => {
+  it('첫 항목이 지원 목록에 있으면 첫 항목의 언어를 반환한다', () => {
     expect(pickLanguage(toLocales('ko'))).toBe('ko-KR');
   });
 
@@ -31,11 +31,11 @@ describe('시스템 선호 언어에서 지원 언어 고르기', () => {
     expect(pickLanguage(toLocales('ja', 'ko', 'en'))).toBe('ko-KR');
   });
 
-  it('일치하는 언어가 없으면 en-US를 반환한다', () => {
+  it('일치하는 언어가 없으면 기본 언어를 반환한다', () => {
     expect(pickLanguage(toLocales('de', 'fr'))).toBe('en-US');
   });
 
-  it('languageCode가 null인 항목은 건너뛴다', () => {
+  it('언어 코드가 없는 항목은 건너뛴다', () => {
     expect(pickLanguage(toLocales(null, 'ko'))).toBe('ko-KR');
   });
 });

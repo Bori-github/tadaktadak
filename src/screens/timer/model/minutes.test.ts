@@ -36,7 +36,7 @@ beforeEach(() => {
 });
 
 describe('기기에 남는 타이머 시간(분)', () => {
-  it('읽기가 끝나기 전에 바꾸면 그 값이 남는다', async () => {
+  it('읽기가 끝나기 전에 바꾸면 바꾼 타이머 시간이 남는다', async () => {
     const { result } = await renderBeforeRead();
 
     await act(async () => result.current.changeMinutes('focus', 7));

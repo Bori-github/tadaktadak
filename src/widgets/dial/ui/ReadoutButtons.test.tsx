@@ -74,7 +74,7 @@ describe('두 버튼이 겹치지 않는다', () => {
   });
 });
 
-describe('누르면 그쪽 이름을 넘긴다', () => {
+describe('누르면 누른 숫자의 타이머 모드를 넘긴다', () => {
   it('가운데 숫자는 집중이다', async () => {
     expect(await press('focus')).toEqual(['focus']);
   });
