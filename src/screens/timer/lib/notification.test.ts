@@ -29,7 +29,7 @@ const WITHOUT_PERMISSION: { situation: string; status: PermissionStatus | null }
 
 const at = (session: TimerSession, status: PermissionStatus | null) => scheduleAt({ session, status, now: NOW });
 
-describe('알림을 걸 시각', () => {
+describe('알림을 예약할 시각', () => {
   it('진행 중이고 권한이 있으면 끝날 시각이다', () => {
     expect(at(RUNNING, PermissionStatus.GRANTED)).toBe(NOW + MINUTE_MS);
   });
@@ -49,7 +49,7 @@ describe('알림을 걸 시각', () => {
   });
 });
 
-describe('알림이 막힌 상태', () => {
+describe('알림이 오지 못하는 상태', () => {
   it.each<{ situation: string; status: PermissionStatus | null; blocked: boolean }>([
     { situation: '아직 읽지 않음', status: null, blocked: false },
     { situation: '허용', status: PermissionStatus.GRANTED, blocked: false },
@@ -60,14 +60,14 @@ describe('알림이 막힌 상태', () => {
   });
 });
 
-describe('알림 본문', () => {
+describe('타이머가 끝났을 때 띄울 알림 본문', () => {
   it('한국어는 다국어 적용 전과 같은 문구를 반환한다', () => {
     expect(notificationBody('focus', 'ko-KR')).toBe('집중 끝!');
     expect(notificationBody('rest', 'ko-KR')).toBe('휴식 끝!');
   });
 });
 
-describe('completionNotificationOptions', () => {
+describe('완료 알림 예약 옵션', () => {
   it.each([
     { label: 'Android', platform: 'android' },
     { label: 'iOS', platform: 'ios' },
@@ -86,7 +86,7 @@ describe('completionNotificationOptions', () => {
   });
 });
 
-describe('completionNotificationBehavior', () => {
+describe('포그라운드에서 받은 완료 알림의 표시 방식', () => {
   it.each([
     { label: 'Android', platform: 'android' },
     { label: 'iOS', platform: 'ios' },

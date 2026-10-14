@@ -17,7 +17,7 @@ beforeAll(() => {
   initLocalization();
 });
 
-describe('SettingsScreen', () => {
+describe('설정 화면', () => {
   it('더보기 행을 누르면 더보기 화면을 연다', async () => {
     await render(
       <NavigationContainer>

@@ -2,7 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 
 import { realMinutes, toShownMinutes, toShownSeconds } from './speed';
 
-describe('배속을 걸었을 때 실제로 흐를 설정 시간', () => {
+describe('배속을 걸었을 때 실제로 흐를 설정 시간(분)', () => {
   it.each([
     { label: '1배속', speed: 1, expected: { focus: 25, rest: 5 } },
     { label: '5배속', speed: 5, expected: { focus: 5, rest: 1 } },
@@ -13,7 +13,7 @@ describe('배속을 걸었을 때 실제로 흐를 설정 시간', () => {
   });
 });
 
-describe('배속에서 보여 줄 초', () => {
+describe('남은 실제 시간이 배속에서 보일 초', () => {
   it.each([
     { label: '1배속', realMs: 150_000, speed: 1, expected: 150 },
     { label: '10배속', realMs: 150_000, speed: 10, expected: 1500 },
@@ -23,7 +23,7 @@ describe('배속에서 보여 줄 초', () => {
   });
 });
 
-describe('배속에서 보여 줄 분', () => {
+describe('남은 실제 시간이 배속에서 보일 분', () => {
   it.each([
     { label: '1배속', realMs: 30_000, speed: 1, expected: 0.5 },
     { label: '10배속', realMs: 30_000, speed: 10, expected: 5 },

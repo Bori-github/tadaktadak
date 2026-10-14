@@ -2,7 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 
 import { createStoredSetting } from './storedSetting';
 
-describe('createStoredSetting', () => {
+describe('영속 설정 값 하나의 외부 store', () => {
   it('restore 중 set 호출 시 값이 초기값과 같아도 load 결과를 반영하지 않는다', async () => {
     let resolveLoad: (saved: boolean) => void = () => {};
     const setting = createStoredSetting({
