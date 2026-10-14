@@ -24,12 +24,14 @@ case "$payload" in
   *) exit 0 ;;
 esac
 
-fields=$(printf '%s' "$payload" | jq -r '[.tool_input.file_path // "", .tool_input.command // "", .transcript_path // "", .agent_id // ""] | join("\u001f")')
+fields=$(printf '%s' "$payload" | jq -r '[.tool_input.file_path // "", .transcript_path // "", .agent_id // ""] | join("\u001f")')
 # 탭은 IFS 공백이라 연속된 탭이 하나로 합쳐지고 빈 필드가 사라짐.
 sep=$(printf '\037')
-IFS="$sep" read -r file_path command transcript agent_id <<FIELDS
+IFS="$sep" read -r file_path transcript agent_id <<FIELDS
 $fields
 FIELDS
+# read 는 첫 줄만 읽어 여러 줄 명령이 뒤 필드를 비우므로 command 는 따로 추출
+command=$(printf '%s' "$payload" | jq -r '.tool_input.command // ""')
 
 # 서브에이전트의 도구 호출에도 transcript_path 가 상위 세션 기록이라 agent_id 로 서브에이전트 기록 경로를 만듦
 # 서브에이전트 기록 경로는 공식 문서에 없음. 실제 파일 위치를 따름

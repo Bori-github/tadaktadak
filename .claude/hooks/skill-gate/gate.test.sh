@@ -105,6 +105,9 @@ for c in "cat > src/a$E <<EOF" "cat > src/T$X <<EOF" "printf x > src/a$E" \
   check deny "$(run_bash "$work/not-called.jsonl" "$c")" "$c"
 done
 
+multiline=$(printf 'cat > src/a%s <<EOF\nx\nEOF' "$E")
+check deny "$(run_bash "$work/not-called.jsonl" "$multiline")" "여러 줄 heredoc 명령도 거부"
+
 echo "Bash: 통과해야 하는 것"
 for c in "cat src/a$E" "grep -n foo src/a$E" "pnpm tsc --noEmit" \
          "wc -l src/a$E > /tmp/counts.txt" "cat > /tmp/probe$E <<EOF" \
