@@ -19,6 +19,11 @@ interface SplashProps {
   onHidden: () => void;
 }
 
+/**
+ * 스플래시
+ *
+ * @returns 네이티브 스플래시 로고에서 이어 재생하고 사라지는 애니메이션 화면
+ */
 export const Splash = ({ onHidden }: SplashProps): JSX.Element => {
   // 언마운트 뒤 GC 대상이 되도록 컴포넌트 안에서 생성
   // Skottie.Make는 JSON 파싱 실패 시 null을 반환하는데 반환 타입에 빠져 있어서 null 포함으로 선언

@@ -16,6 +16,11 @@ type DotSpriteProps = {
   opacity?: number;
 };
 
+/**
+ * 도트 격자를 그리는 스프라이트
+ *
+ * @returns 색이 지정된 글자마다 도트 하나를 그린 Skia `Group`
+ */
 export const DotSprite = ({ grid, centerX, centerY, dotSize, colors = SPRITE_COLORS, opacity = 1 }: DotSpriteProps): JSX.Element => {
   const width = grid[0]?.length ?? 0;
 

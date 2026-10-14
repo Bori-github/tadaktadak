@@ -17,6 +17,11 @@ const BUTTON_DOT_SIZE = 2;
 const BUTTON_WIDTH_IN_DOTS = 76;
 const BUTTON_HEIGHT_IN_DOTS = 24;
 
+/**
+ * 에러 화면
+ *
+ * @returns 에러 애니메이션을 반복 재생하고 재시작 버튼을 둔 화면
+ */
 export const RootErrorScreen = (): JSX.Element => {
   const language = useLanguage();
   // 언마운트 뒤 GC 대상이 되도록 컴포넌트 안에서 생성

@@ -70,6 +70,11 @@ type DotToggleProps = {
   testID?: string;
 };
 
+/**
+ * 도트 토글
+ *
+ * @returns 누르면 `onValueChange`에 반대 값을 넘기는 `Pressable`
+ */
 export const DotToggle = memo(({ dotSize, value, onValueChange, onPressIn, style, testID }: DotToggleProps) => {
   const knobColumn = useSharedValue(value ? KNOB_TRAVEL_IN_DOTS : 0);
   const isTurningOn = useSharedValue(value);

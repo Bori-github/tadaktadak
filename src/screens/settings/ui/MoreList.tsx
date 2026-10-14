@@ -21,6 +21,11 @@ type MoreListProps = {
   dotSize: number;
 };
 
+/**
+ * 더보기 화면 목록
+ *
+ * @returns 앱 버전 행과 개인정보 처리방침 행
+ */
 export const MoreList = memo(({ dotSize }: MoreListProps) => {
   const language = useLanguage();
   const fontStyle = { fontSize: 16 * (dotSize / DOT_SIZE) };
