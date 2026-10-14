@@ -86,10 +86,19 @@ case "${relative_path#./}" in
   src/*) skills="$skills test-driven-development" ;;
 esac
 
+# 슬래시 명령은 Skill 도구 호출이 아니라 사용자 메시지 문자열 안의 command-name 태그로 기록됨
+# 도구 입력·결과에 포함된 같은 문자열을 호출로 판정하지 않도록 content 가 문자열인 사용자 메시지에서만 확인
+is_skill_called() {
+  # 패턴 원문에 [[:space:]] 가 들어가 자기 자신에는 매칭되지 않음.
+  grep -qE "\"skill\"[[:space:]]*:[[:space:]]*\"$1\"" "$transcript" && return 0
+  grep -F "<command-name>/$1</command-name>" "$transcript" \
+    | jq -nRe --arg tag "<command-name>/$1</command-name>" \
+      'any(inputs | fromjson? | select(.type == "user" and (.message.content | type) == "string"); .message.content | contains($tag))' >/dev/null
+}
+
 missing=""
 for skill in $skills; do
-  # 패턴 원문에 [[:space:]] 가 들어가 자기 자신에는 매칭되지 않음.
-  grep -qE "\"skill\"[[:space:]]*:[[:space:]]*\"$skill\"" "$transcript" || missing="$missing, $skill"
+  is_skill_called "$skill" || missing="$missing, $skill"
 done
 
 [ -z "$missing" ] && exit 0

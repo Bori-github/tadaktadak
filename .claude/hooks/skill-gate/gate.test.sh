@@ -20,6 +20,23 @@ skill_call() {
 skill_call typescript-style-guide > "$work/style-guide-only.jsonl"
 skill_call ko-dev-doc > "$work/not-called.jsonl"
 
+# 사용자가 입력한 슬래시 명령의 기록 형식. 태그를 조각으로 만들어 이 파일을 읽은 대화 기록이 게이트를 통과하지 않게 함
+slash_call() {
+  tag=command-name
+  jq -nc --arg c "$(printf '<%s>/%s</%s>' "$tag" "$1" "$tag")" '{type:"user",message:{role:"user",content:$c}}'
+}
+
+{ slash_call typescript-style-guide; slash_call code-quality; } > "$work/slash-called.jsonl"
+
+# 도구 입력과 도구 결과에만 태그 문자열이 있는 기록
+tag_text() { printf '<%s>/%s</%s>' command-name "$1" command-name; }
+{
+  jq -nc --arg c "echo '$(tag_text typescript-style-guide)$(tag_text code-quality)'" \
+    '{type:"assistant",message:{content:[{type:"tool_use",name:"Bash",input:{command:$c}}]}}'
+  jq -nc --arg c "$(tag_text typescript-style-guide)$(tag_text code-quality)" \
+    '{type:"user",message:{role:"user",content:[{type:"tool_result",content:$c}]}}'
+} > "$work/tag-in-tool-text.jsonl"
+
 pass=0
 fail=0
 
@@ -69,6 +86,10 @@ check deny "$(run_write "$work/not-called.jsonl" "/x/A$X")"   "미호출 .tsx �
 check pass "$(run_write "$work/not-called.jsonl" /x/a.md)"    ".md 는 통과"
 check pass "$(run_write "$work/called.jsonl" "/x/a$E")"       "호출했으면 통과"
 check pass "$(run_write "" "/x/a$E")"                         "기록 없으면 통과"
+
+echo "슬래시 명령으로 호출"
+check pass "$(run_write "$work/slash-called.jsonl" "/x/a$E")" "슬래시 명령으로 호출했으면 통과"
+check deny "$(run_write "$work/tag-in-tool-text.jsonl" "/x/a$E")" "도구 입력이나 도구 결과에 태그 문자열만 있으면 거부"
 
 echo "필수 스킬 일부만 호출"
 check deny "$(run_write "$work/style-guide-only.jsonl" "/x/a$E")" "typescript-style-guide 만 호출했으면 거부"
