@@ -18,10 +18,10 @@ describe('점화 판정', () => {
   });
 
   it.each([
-    { remainingMinutes: 4, expected: 1 },
-    { remainingMinutes: 4.5, expected: 0.5 },
-    { remainingMinutes: 5, expected: 0 },
-  ])('남은 $remainingMinutes분일 때 5번 눈금 진행률은 $expected이다', ({ remainingMinutes, expected }) => {
+    { label: '다 붙음', remainingMinutes: 4, expected: 1 },
+    { label: '절반 붙음', remainingMinutes: 4.5, expected: 0.5 },
+    { label: '붙기 전', remainingMinutes: 5, expected: 0 },
+  ])('$label: 남은 $remainingMinutes분일 때 5번 눈금 진행률은 $expected이다', ({ remainingMinutes, expected }) => {
     expect(ignitionAt(5, remainingMinutes)).toBe(expected);
   });
 

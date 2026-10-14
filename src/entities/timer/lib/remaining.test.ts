@@ -17,10 +17,10 @@ describe('남은 시간', () => {
   });
 
   it.each([
-    { elapsedMs: 25 * MINUTE_IN_MS - 1, expected: 1 },
-    { elapsedMs: 25 * MINUTE_IN_MS, expected: 0 },
-    { elapsedMs: 25 * MINUTE_IN_MS + 1, expected: 0 },
-  ])('$elapsedMs밀리초 흐르면 $expected밀리초 남는다', ({ elapsedMs, expected }) => {
+    { label: '타이머가 끝나기 직전', elapsedMs: 25 * MINUTE_IN_MS - 1, expected: 1 },
+    { label: '타이머가 끝난 시각', elapsedMs: 25 * MINUTE_IN_MS, expected: 0 },
+    { label: '타이머가 끝난 뒤', elapsedMs: 25 * MINUTE_IN_MS + 1, expected: 0 },
+  ])('$label: $elapsedMs밀리초 흐르면 $expected밀리초 남는다', ({ elapsedMs, expected }) => {
     expect(remainingAfter(elapsedMs)).toBe(expected);
   });
 
