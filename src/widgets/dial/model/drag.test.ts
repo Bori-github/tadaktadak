@@ -143,7 +143,7 @@ describe('손잡이를 끌어 타이머 시간을 바꾸는 제스처', () => {
     expect(mockAutoShutdown).toEqual(['hold', 'release']);
   });
 
-  it('손잡이 밖을 잡으면 끌어도 타이머 시간이 바뀌지 않는다', async () => {
+  it('손잡이 밖을 잡으면 제스처를 넘기고 끌어도 타이머 시간이 바뀌지 않는다', async () => {
     const { onChange, onChangeEnd, manager } = await drag({ grabAt: getDialPoint(START_MINUTES + 15), through: [26, 27, 28] });
 
     expect(manager.fail).toHaveBeenCalled();
