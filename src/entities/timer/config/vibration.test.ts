@@ -7,6 +7,8 @@ const transientsOf = (mode: TimerMode) => COMPLETION_PATTERN[mode].filter((event
 
 const outOfRangeOf = (mode: TimerMode) => COMPLETION_PATTERN[mode].filter((event) => event.intensity < 0 || event.intensity > 1 || event.sharpness < 0 || event.sharpness > 1);
 
+const MODE_LABELS: Record<TimerMode, string> = { focus: '집중', rest: '휴식' };
+
 describe('완료 진동 패턴', () => {
   it('집중 패턴은 뚝뚝 끊기는 진동 세 번으로 구성된다', () => {
     expect(transientsOf('focus')).toHaveLength(3);
@@ -16,7 +18,7 @@ describe('완료 진동 패턴', () => {
     expect(COMPLETION_PATTERN.rest).toEqual([expect.objectContaining({ type: 'continuous' })]);
   });
 
-  it.each(TIMER_MODES)('%s 패턴에 세기와 날카로움이 0에서 1을 벗어난 이벤트가 없다', (mode) => {
+  it.each(TIMER_MODES.map((mode) => ({ label: MODE_LABELS[mode], mode })))('$label 패턴에 세기와 날카로움이 0에서 1을 벗어난 이벤트가 없다', ({ mode }) => {
     expect(outOfRangeOf(mode)).toEqual([]);
   });
 });

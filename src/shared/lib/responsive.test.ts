@@ -19,17 +19,26 @@ const buttonOffset = (safeAreaHeight: number) => safeAreaHeight - resolveLayout(
 const dialTopEdge = (safeAreaHeight: number) => resolveLayout({ shortSide: 390, safeAreaTopEdge: 0, safeAreaBottomEdge: safeAreaHeight }).dialCenterY - 182;
 
 describe('배율', () => {
-  it.each([338, 656])('짧은 변 %d에서 1배다', (shortSide) => {
+  it.each([
+    { label: 'compact 최소', shortSide: 338 },
+    { label: 'medium 최대', shortSide: 656 },
+  ])('$label 짧은 변 $shortSide에서 1배다', ({ shortSide }) => {
     expect(layout(shortSide).scale).toBe(1);
   });
 
-  it.each([657, 1024])('짧은 변 %d에서 상한 1.5배다', (shortSide) => {
+  it.each([
+    { label: 'expanded 최소', shortSide: 657 },
+    { label: '큰 태블릿', shortSide: 1024 },
+  ])('$label 짧은 변 $shortSide에서 상한 1.5배다', ({ shortSide }) => {
     expect(layout(shortSide).scale).toBe(1.5);
   });
 });
 
 describe('등급별 모닥불', () => {
-  it.each([320, 359])('compact 등급인 짧은 변 %d에서 모닥불은 7 도트다', (shortSide) => {
+  it.each([
+    { label: '지원 범위보다 작은', shortSide: 320 },
+    { label: 'compact 최대', shortSide: 359 },
+  ])('$label 짧은 변 $shortSide에서 모닥불은 7 도트다', ({ shortSide }) => {
     expect(layout(shortSide).bonfireHeightInDots).toBe(7);
   });
 
@@ -76,7 +85,11 @@ const dialDiameter = ({ numeralRadius, dotSize }: { numeralRadius: number; dotSi
 const tallWindow = (shortSide: number, formFactor: FormFactor) => resolveLayout({ shortSide, safeAreaTopEdge: 0, safeAreaBottomEdge: shortSide * 2, formFactor });
 
 describe('태블릿', () => {
-  it.each([560, 744, 1024])('짧은 변 %d에서 시계판 지름이 짧은 변의 70%다', (shortSide) => {
+  it.each([
+    { label: 'medium 등급', shortSide: 560 },
+    { label: 'iPad mini', shortSide: 744 },
+    { label: '큰 태블릿', shortSide: 1024 },
+  ])('$label 짧은 변 $shortSide에서 시계판 지름이 짧은 변의 70%다', ({ shortSide }) => {
     expect(dialDiameter(tallWindow(shortSide, 'tablet')) / shortSide).toBeCloseTo(0.7);
   });
 });
@@ -249,8 +262,20 @@ describe('기준 화면 세로 위치', () => {
   });
 });
 
+const DEVICE_LABELS: Record<DeviceName, string> = {
+  iPhoneSE: 'iPhone SE',
+  iPhone17e: 'iPhone 17e',
+  iPhoneProMax: 'iPhone Pro Max',
+  iPadMini: 'iPad mini',
+  iPadHome: 'iPad',
+  iPadPro13: 'iPad Pro 13',
+  androidSmall: '작은 Android 휴대폰',
+};
+
+const DEVICE_ROWS = DEVICE_NAMES.map((name) => ({ label: DEVICE_LABELS[name], name }));
+
 describe('버튼 아래 끝이 safe area 아래 끝을 넘지 않는다', () => {
-  it.each(DEVICE_NAMES)('%s', (name) => {
+  it.each(DEVICE_ROWS)('$label', ({ name }) => {
     const { buttonCenterY, dotSize } = onDevice(name);
     const buttonBottomEdge = buttonCenterY + (BUTTON_SIZE_IN_DOTS / 2) * dotSize;
     expect(buttonBottomEdge).toBeLessThanOrEqual(DEVICES[name].bottomEdge);
@@ -258,7 +283,7 @@ describe('버튼 아래 끝이 safe area 아래 끝을 넘지 않는다', () => 
 });
 
 describe('시계판 위 끝이 safe area 위 끝을 넘지 않는다', () => {
-  it.each(DEVICE_NAMES)('%s', (name) => {
+  it.each(DEVICE_ROWS)('$label', ({ name }) => {
     const { dialCenterY, numeralRadius, dotSize } = onDevice(name);
     // 숫자 반높이 = 7 × 배율 (px). 배율 = dotSize ÷ 2
     const dialTopEdge = dialCenterY - numeralRadius - 7 * (dotSize / 2);
@@ -271,15 +296,17 @@ describe('화면 가장자리 여백', () => {
     expect(layout(390).edgeMargin).toBe(8);
   });
 
-  it.each<{ label: string; name: DeviceName; expected: number }>([
-    { label: 'iPhone SE', name: 'iPhoneSE', expected: 8 },
-    { label: 'iPhone 17e', name: 'iPhone17e', expected: 8 },
-    { label: 'iPhone Pro Max', name: 'iPhoneProMax', expected: 8 },
-    { label: '작은 Android 휴대폰', name: 'androidSmall', expected: 8 },
-    { label: 'iPad mini', name: 'iPadMini', expected: 12 },
-    { label: 'iPad', name: 'iPadHome', expected: 12 },
-    { label: 'iPad Pro 13', name: 'iPadPro13', expected: 12 },
-  ])('$label에서 화면 가장자리 여백은 8 × 배율이다', ({ name, expected }) => {
+  const EDGE_MARGINS: Record<DeviceName, number> = {
+    iPhoneSE: 8,
+    iPhone17e: 8,
+    iPhoneProMax: 8,
+    iPadMini: 12,
+    iPadHome: 12,
+    iPadPro13: 12,
+    androidSmall: 8,
+  };
+
+  it.each(DEVICE_ROWS.map((row) => ({ ...row, expected: EDGE_MARGINS[row.name] })))('$label에서 화면 가장자리 여백은 8 × 배율이다', ({ name, expected }) => {
     expect(onDevice(name).edgeMargin).toBe(expected);
   });
 });

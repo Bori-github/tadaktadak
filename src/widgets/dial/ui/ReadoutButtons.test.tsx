@@ -64,7 +64,11 @@ describe('숫자 자리', () => {
 });
 
 describe('두 버튼이 겹치지 않는다', () => {
-  it.each([2, 4, 6])('도트 %i', async (dotSize) => {
+  it.each([
+    { label: '도트 한 변 2px', dotSize: 2 },
+    { label: '도트 한 변 4px', dotSize: 4 },
+    { label: '도트 한 변 6px', dotSize: 6 },
+  ])('$label', async ({ dotSize }) => {
     const { focus, rest } = await rects(dotSize);
     expect(focus.top + focus.height).toBeLessThan(rest.top);
   });
@@ -81,7 +85,10 @@ describe('누르면 그쪽 이름을 넘긴다', () => {
 });
 
 describe('누르는 순간 진동한다', () => {
-  it.each(['focus', 'rest'] as TimerMode[])('%s 숫자', async (target) => {
+  it.each<{ label: string; target: TimerMode }>([
+    { label: '집중 타이머', target: 'focus' },
+    { label: '휴식 타이머', target: 'rest' },
+  ])('$label 숫자', async ({ target }) => {
     const found = await buttons(2);
     fireEvent(found[target], 'pressIn');
 

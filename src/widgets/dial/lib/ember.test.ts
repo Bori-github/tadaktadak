@@ -36,9 +36,9 @@ describe('불티 생성', () => {
   });
 
   it.each([
-    { elapsedMs: 2099, expected: EMBER_COUNT },
-    { elapsedMs: 2100, expected: 0 },
-  ])('수명 2100밀리초로 만들면 노출 후 $elapsedMs밀리초에 $expected개가 된다', ({ elapsedMs, expected }) => {
+    { label: '수명이 끝나기 직전', elapsedMs: 2099, expected: EMBER_COUNT },
+    { label: '수명이 끝난 시각', elapsedMs: 2100, expected: 0 },
+  ])('수명 2100밀리초로 만들면 $label(노출 후 $elapsedMs밀리초)에 $expected개가 된다', ({ elapsedMs, expected }) => {
     expect(embers(() => 0, elapsedMs)).toHaveLength(expected);
   });
 
@@ -66,24 +66,24 @@ describe('불티 위치', () => {
 
 describe('불티 수명', () => {
   it.each([
-    [0, 1],
-    [1400, 0.5],
-    [2800, 0],
-    [3200, 0],
-  ])('노출 후 %i밀리초에 남은 수명은 %s다', (elapsedMs, expected) => {
+    { label: '노출 직후', elapsedMs: 0, expected: 1 },
+    { label: '수명 절반', elapsedMs: 1400, expected: 0.5 },
+    { label: '수명이 끝난 시각', elapsedMs: 2800, expected: 0 },
+    { label: '수명이 끝난 뒤', elapsedMs: 3200, expected: 0 },
+  ])('$label(노출 후 $elapsedMs밀리초)에 남은 수명은 $expected다', ({ elapsedMs, expected }) => {
     expect(emberAt(rising, elapsedMs).life).toBeCloseTo(expected, 10);
   });
 });
 
 describe('불티 색', () => {
   it.each([
-    [1, COLORS.fire.core],
-    [0.67, COLORS.fire.core],
-    [0.66, COLORS.fire.mid],
-    [0.34, COLORS.fire.mid],
-    [0.33, COLORS.fire.base],
-    [0, COLORS.fire.base],
-  ])('남은 수명 %s일 때 %s다', (life, expected) => {
+    { label: '가득 참', life: 1, color: '불 심', expected: COLORS.fire.core },
+    { label: '불 심 구간 하한', life: 0.67, color: '불 심', expected: COLORS.fire.core },
+    { label: '불 가운데 구간 상한', life: 0.66, color: '불 가운데', expected: COLORS.fire.mid },
+    { label: '불 가운데 구간 하한', life: 0.34, color: '불 가운데', expected: COLORS.fire.mid },
+    { label: '불 아래 구간 상한', life: 0.33, color: '불 아래', expected: COLORS.fire.base },
+    { label: '다함', life: 0, color: '불 아래', expected: COLORS.fire.base },
+  ])('남은 수명 $life($label)에서는 $color 색이다', ({ life, expected }) => {
     expect(EMBER_COLORS[emberColorIndex(life)]).toBe(expected);
   });
 });

@@ -19,10 +19,10 @@ describe('손잡이가 반짝이는 단계', () => {
 
 describe('손잡이 반짝임 프레임', () => {
   it.each([
-    [0, SPARK_A],
-    [1, SPARK_B],
-    [2, SPARK_A],
-  ])('반짝이는 동안 %i번째 프레임은 A와 B를 번갈아 그린다', (step, expected) => {
+    { label: '첫 번째 프레임', frame: 'A', step: 0, expected: SPARK_A },
+    { label: '두 번째 프레임', frame: 'B', step: 1, expected: SPARK_B },
+    { label: '세 번째 프레임', frame: 'A', step: 2, expected: SPARK_A },
+  ])('반짝이는 동안 $label에는 손잡이 $frame를 그린다', ({ step, expected }) => {
     expect(thumbGrid({ mode: 'focus', isTwinkling: true, step })).toBe(expected);
   });
 

@@ -68,7 +68,10 @@ describe('알림 본문', () => {
 });
 
 describe('completionNotificationOptions', () => {
-  it.each(['android', 'ios'] as const)('%s: 진동 사용 여부가 켜져 있으면 vibration, 꺼져 있으면 banner 채널 ID를 반환한다', (platform) => {
+  it.each([
+    { label: 'Android', platform: 'android' },
+    { label: 'iOS', platform: 'ios' },
+  ] as const)('$label: 진동 사용 여부가 켜져 있으면 vibration, 꺼져 있으면 banner 채널 ID를 반환한다', ({ platform }) => {
     expect(completionNotificationOptions({ isVibrationEnabled: true, platform }).channelId).toBe(VIBRATION_CHANNEL_ID);
     expect(completionNotificationOptions({ isVibrationEnabled: false, platform }).channelId).toBe(BANNER_CHANNEL_ID);
   });
@@ -84,7 +87,10 @@ describe('completionNotificationOptions', () => {
 });
 
 describe('completionNotificationBehavior', () => {
-  it.each(['android', 'ios'] as const)('%s: canVibrate가 true면 배너·알림 목록·알림음을 모두 비활성화한다', (platform) => {
+  it.each([
+    { label: 'Android', platform: 'android' },
+    { label: 'iOS', platform: 'ios' },
+  ] as const)('$label: canVibrate가 true면 배너·알림 목록·알림음을 모두 비활성화한다', ({ platform }) => {
     expect(completionNotificationBehavior({ canVibrate: true, platform })).toEqual({
       shouldShowBanner: false,
       shouldShowList: false,

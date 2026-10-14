@@ -13,10 +13,10 @@ describe('빛 번짐 반지름', () => {
   });
 
   it.each([
-    [3, 28.8],
-    [1, 32],
-    [2, 35.2],
-  ])('눈금 %i에서 깜빡임이 %s로 간다', (tick, expected) => {
+    { label: '깜빡임 0.9배', tick: 3, expected: 28.8 },
+    { label: '깜빡임 1.0배', tick: 1, expected: 32 },
+    { label: '깜빡임 1.1배', tick: 2, expected: 35.2 },
+  ])('$label인 눈금 $tick의 다 붙은 모닥불은 $expected다', ({ tick, expected }) => {
     expect(radius(tick, true)).toBeCloseTo(expected, 10);
   });
 
