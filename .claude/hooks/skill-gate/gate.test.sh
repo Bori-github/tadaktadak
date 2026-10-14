@@ -8,6 +8,7 @@ gate="$(dirname "$0")/gate.sh"
 [ -r "$gate" ] || { echo "게이트를 찾을 수 없다: $gate" >&2; exit 1; }
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
+export CLAUDE_PROJECT_DIR=/proj
 
 skill_call() {
   jq -nc --arg n "$1" \
@@ -15,8 +16,26 @@ skill_call() {
 }
 
 { skill_call typescript-style-guide; skill_call code-quality; } > "$work/called.jsonl"
+{ skill_call typescript-style-guide; skill_call code-quality; skill_call test-driven-development; } > "$work/tdd-called.jsonl"
 skill_call typescript-style-guide > "$work/style-guide-only.jsonl"
 skill_call ko-dev-doc > "$work/not-called.jsonl"
+
+# 사용자가 입력한 슬래시 명령의 기록 형식. 태그를 조각으로 만들어 이 파일을 읽은 대화 기록이 게이트를 통과하지 않게 함
+slash_call() {
+  tag=command-name
+  jq -nc --arg c "$(printf '<%s>/%s</%s>' "$tag" "$1" "$tag")" '{type:"user",message:{role:"user",content:$c}}'
+}
+
+{ slash_call typescript-style-guide; slash_call code-quality; } > "$work/slash-called.jsonl"
+
+# 도구 입력과 도구 결과에만 태그 문자열이 있는 기록
+tag_text() { printf '<%s>/%s</%s>' command-name "$1" command-name; }
+{
+  jq -nc --arg c "echo '$(tag_text typescript-style-guide)$(tag_text code-quality)'" \
+    '{type:"assistant",message:{content:[{type:"tool_use",name:"Bash",input:{command:$c}}]}}'
+  jq -nc --arg c "$(tag_text typescript-style-guide)$(tag_text code-quality)" \
+    '{type:"user",message:{role:"user",content:[{type:"tool_result",content:$c}]}}'
+} > "$work/tag-in-tool-text.jsonl"
 
 pass=0
 fail=0
@@ -68,6 +87,10 @@ check pass "$(run_write "$work/not-called.jsonl" /x/a.md)"    ".md 는 통과"
 check pass "$(run_write "$work/called.jsonl" "/x/a$E")"       "호출했으면 통과"
 check pass "$(run_write "" "/x/a$E")"                         "기록 없으면 통과"
 
+echo "슬래시 명령으로 호출"
+check pass "$(run_write "$work/slash-called.jsonl" "/x/a$E")" "슬래시 명령으로 호출했으면 통과"
+check deny "$(run_write "$work/tag-in-tool-text.jsonl" "/x/a$E")" "도구 입력이나 도구 결과에 태그 문자열만 있으면 거부"
+
 echo "필수 스킬 일부만 호출"
 check deny "$(run_write "$work/style-guide-only.jsonl" "/x/a$E")" "typescript-style-guide 만 호출했으면 거부"
 reason=$(deny_reason "$work/style-guide-only.jsonl" "/x/a$E")
@@ -79,6 +102,26 @@ reason=$(deny_reason "$work/not-called.jsonl" "/x/a$E")
 case "$reason" in *"typescript-style-guide, code-quality"*) named=yes ;; *) named=no ;; esac
 check yes "$named" "둘 다 호출하지 않았으면 거부 사유에 두 이름을 쉼표로 구분"
 
+run_subagent_write() {
+  jq -nc --arg t "$1" --arg a "$2" --arg f "$3" \
+    '{tool_name:"Write",transcript_path:$t,agent_id:$a,tool_input:{file_path:$f,content:"x"}}' \
+    | sh "$gate" | decision
+}
+
+mkdir -p "$work/session/subagents"
+cp "$work/called.jsonl" "$work/session.jsonl"
+cp "$work/not-called.jsonl" "$work/uncalled-session.jsonl"
+mkdir -p "$work/uncalled-session/subagents"
+cp "$work/called.jsonl" "$work/uncalled-session/subagents/agent-self.jsonl"
+cp "$work/not-called.jsonl" "$work/session/subagents/agent-parent-only.jsonl"
+cp "$work/called.jsonl" "$work/session/subagents/agent-self.jsonl"
+
+echo "서브에이전트"
+check pass "$(run_subagent_write "$work/uncalled-session.jsonl" self "/x/a$E")" "서브에이전트 기록에 호출이 있으면 통과"
+check deny "$(run_subagent_write "$work/session.jsonl" parent-only "/x/a$E")" "상위 세션 기록에만 호출이 있으면 거부"
+check pass "$(run_subagent_write "$work/session.jsonl" missing "/x/a$E")"          "서브에이전트 기록이 없고 상위 세션 기록에 호출이 있으면 통과"
+check deny "$(run_subagent_write "$work/uncalled-session.jsonl" missing "/x/a$E")" "서브에이전트 기록이 없고 상위 세션 기록에도 호출이 없으면 거부"
+
 echo "Bash: 막아야 하는 것"
 for c in "cat > src/a$E <<EOF" "cat > src/T$X <<EOF" "printf x > src/a$E" \
          "echo x >> src/a$E" "tee src/a$E" "tee -a src/a$E" \
@@ -87,6 +130,9 @@ for c in "cat > src/a$E <<EOF" "cat > src/T$X <<EOF" "printf x > src/a$E" \
          "cp scratch/T$X src/T$X" "mkdir -p src && cp /tmp/probe$E src/a$E"; do
   check deny "$(run_bash "$work/not-called.jsonl" "$c")" "$c"
 done
+
+multiline=$(printf 'cat > src/a%s <<EOF\nx\nEOF' "$E")
+check deny "$(run_bash "$work/not-called.jsonl" "$multiline")" "여러 줄 heredoc 명령도 거부"
 
 echo "Bash: 통과해야 하는 것"
 for c in "cat src/a$E" "grep -n foo src/a$E" "pnpm tsc --noEmit" \
@@ -99,7 +145,21 @@ for c in "cat src/a$E" "grep -n foo src/a$E" "pnpm tsc --noEmit" \
 done
 
 echo "Bash: 호출한 뒤에는 통과"
-check pass "$(run_bash "$work/called.jsonl" "cat > src/a$E <<EOF")" "호출했으면 Bash 쓰기도 통과"
+check pass "$(run_bash "$work/tdd-called.jsonl" "cat > src/a$E <<EOF")" "호출했으면 Bash 쓰기도 통과"
+
+echo "src/ 아래 .ts/.tsx"
+check deny "$(run_write "$work/called.jsonl" "/proj/src/a$E")"              "test-driven-development 를 호출하지 않았으면 거부"
+reason=$(deny_reason "$work/called.jsonl" "/proj/src/a$E")
+case "$reason" in *test-driven-development*) named=yes ;; *) named=no ;; esac
+check yes "$named" "거부 사유에 test-driven-development 표시"
+check pass "$(run_write "$work/tdd-called.jsonl" "/proj/src/a$E")"          "세 스킬을 모두 호출했으면 통과"
+check pass "$(run_write "$work/called.jsonl" "/proj/modules/x/src/a$E")"    "modules/ 아래 .ts 는 test-driven-development 를 호출하지 않아도 통과"
+check deny "$(run_bash "$work/called.jsonl" "cat > src/a$E <<EOF")"         "Bash 로 src/ 아래 .ts 를 쓸 때도 거부"
+check deny "$(run_bash "$work/called.jsonl" "cat > ./src/a$E <<EOF")"       "./src/ 로 시작하는 경로도 거부"
+check deny "$(run_bash "$work/called.jsonl" "cat > /proj/src/a$E <<EOF")"   "Bash 로 프로젝트 절대 경로의 src/ 아래 .ts 를 쓸 때도 거부"
+check deny "$(CLAUDE_PROJECT_DIR=/proj/ run_write "$work/called.jsonl" "/proj/src/a$E")" "CLAUDE_PROJECT_DIR 끝에 / 가 있어도 거부"
+check deny "$(run_write "$work/called.jsonl" "/proj/.claude/worktrees/feature/src/a$E")" "워크트리의 src/ 아래 .ts 도 거부"
+check pass "$(run_write "$work/called.jsonl" "/proj/.claude/worktrees/feature/modules/x/src/a$E")" "워크트리의 modules/ 아래 .ts 는 test-driven-development 를 호출하지 않아도 통과"
 
 printf '\n통과 %d, 실패 %d\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

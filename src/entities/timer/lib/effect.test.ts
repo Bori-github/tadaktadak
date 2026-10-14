@@ -17,22 +17,19 @@ const remaining = (session: TimerSession, now: number) => {
   return startedAt === null ? null : completedEffectRemainingMs({ startedAt, now });
 };
 
-describe('완료 연출이 끝나기까지', () => {
-  it.each([
-    { elapsedMs: 0, expected: 3500 },
-    { elapsedMs: 3499, expected: 1 },
-    { elapsedMs: 3500, expected: 0 },
-    { elapsedMs: 4000, expected: 0 },
-  ])('집중 타이머가 끝나고 $elapsedMs밀리초에 $expected밀리초 남는다', ({ elapsedMs, expected }) => {
+const EFFECT_TIMELINE = [
+  { label: '연출 시작', elapsedMs: 0, expected: 3500 },
+  { label: '연출이 끝나기 직전', elapsedMs: 3499, expected: 1 },
+  { label: '연출이 끝난 시각', elapsedMs: 3500, expected: 0 },
+  { label: '연출이 끝난 뒤', elapsedMs: 4000, expected: 0 },
+];
+
+describe('완료 연출이 끝나기까지 남은 시간 (밀리초)', () => {
+  it.each(EFFECT_TIMELINE)('$label: 집중 타이머가 끝나고 $elapsedMs밀리초에 $expected밀리초 남는다', ({ elapsedMs, expected }) => {
     expect(remaining(focusCompleted, NOW + elapsedMs)).toBe(expected);
   });
 
-  it.each([
-    { elapsedMs: 0, expected: 3500 },
-    { elapsedMs: 3499, expected: 1 },
-    { elapsedMs: 3500, expected: 0 },
-    { elapsedMs: 4000, expected: 0 },
-  ])('휴식 타이머가 시작되고 $elapsedMs밀리초에 $expected밀리초 남는다', ({ elapsedMs, expected }) => {
+  it.each(EFFECT_TIMELINE)('$label: 휴식 타이머가 시작되고 $elapsedMs밀리초에 $expected밀리초 남는다', ({ elapsedMs, expected }) => {
     expect(remaining(resting, NOW + elapsedMs)).toBe(expected);
   });
 

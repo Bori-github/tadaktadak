@@ -20,7 +20,7 @@ const toggle = async (value: boolean) => {
   return screen.getByTestId('toggle');
 };
 
-describe('토글', () => {
+describe('도트 토글', () => {
   it('꺼진 토글을 누르면 켜짐을 넘긴다', async () => {
     await fireEvent.press(await toggle(false));
 

@@ -2,6 +2,7 @@
 # 필수 스킬 PreToolUse 게이트.
 #
 # .ts/.tsx 를 쓰기 전에 필수 스킬의 호출 기록을 대화 기록에서 확인. 호출 기록이 없는 스킬이 있으면 거부.
+# src/ 아래 .ts/.tsx 는 test-driven-development 도 필수 스킬에 포함.
 #
 # 대상을 찾는 곳: > >> &> tee sed -i perl -i 와 cp mv 의 마지막 인자
 # node -e, python3 -c, pnpm codegen 은 명령 문자열만으로 대상을 알 수 없음.
@@ -23,12 +24,21 @@ case "$payload" in
   *) exit 0 ;;
 esac
 
-fields=$(printf '%s' "$payload" | jq -r '[.tool_input.file_path // "", .tool_input.command // "", .transcript_path // ""] | join("\u001f")')
+fields=$(printf '%s' "$payload" | jq -r '[.tool_input.file_path // "", .transcript_path // "", .agent_id // ""] | join("\u001f")')
 # 탭은 IFS 공백이라 연속된 탭이 하나로 합쳐지고 빈 필드가 사라짐.
 sep=$(printf '\037')
-IFS="$sep" read -r file_path command transcript <<FIELDS
+IFS="$sep" read -r file_path transcript agent_id <<FIELDS
 $fields
 FIELDS
+# read 는 첫 줄만 읽어 여러 줄 명령이 뒤 필드를 비우므로 command 는 따로 추출
+command=$(printf '%s' "$payload" | jq -r '.tool_input.command // ""')
+
+# 서브에이전트의 도구 호출에도 transcript_path 가 상위 세션 기록이라 agent_id 로 서브에이전트 기록 경로를 만듦
+# 서브에이전트 기록 경로는 공식 문서에 없어 파일이 없으면 상위 세션 기록으로 확인
+if [ -n "$agent_id" ]; then
+  subagent_transcript="${transcript%.jsonl}/subagents/agent-$agent_id.jsonl"
+  [ -r "$subagent_transcript" ] && transcript=$subagent_transcript
+fi
 
 if [ -z "$file_path" ] && [ -n "$command" ]; then
   file_path=$(printf '%s' "$command" | awk '
@@ -70,10 +80,28 @@ esac
 
 [ -r "$transcript" ] || exit 0
 
-missing=""
-for skill in typescript-style-guide code-quality; do
+skills="typescript-style-guide code-quality"
+relative_path=${file_path#"${CLAUDE_PROJECT_DIR%/}"/}
+relative_path=${relative_path#./}
+# CLAUDE_PROJECT_DIR 가 메인 저장소를 가리키면 워크트리 파일 경로에 .claude/worktrees/<이름>/ 접두사가 남아 src/ 판별 전에 제거
+relative_path=${relative_path#.claude/worktrees/*/}
+case "$relative_path" in
+  src/*) skills="$skills test-driven-development" ;;
+esac
+
+# 슬래시 명령은 Skill 도구 호출이 아니라 사용자 메시지 문자열 안의 command-name 태그로 기록됨
+# 도구 입력·결과에 포함된 같은 문자열을 호출로 판정하지 않도록 content 가 문자열인 사용자 메시지에서만 확인
+is_skill_called() {
   # 패턴 원문에 [[:space:]] 가 들어가 자기 자신에는 매칭되지 않음.
-  grep -qE "\"skill\"[[:space:]]*:[[:space:]]*\"$skill\"" "$transcript" || missing="$missing, $skill"
+  grep -qE "\"skill\"[[:space:]]*:[[:space:]]*\"$1\"" "$transcript" && return 0
+  grep -F "<command-name>/$1</command-name>" "$transcript" \
+    | jq -nRe --arg tag "<command-name>/$1</command-name>" \
+      'any(inputs | fromjson? | select(.type == "user" and (.message.content | type) == "string"); .message.content | contains($tag))' >/dev/null
+}
+
+missing=""
+for skill in $skills; do
+  is_skill_called "$skill" || missing="$missing, $skill"
 done
 
 [ -z "$missing" ] && exit 0

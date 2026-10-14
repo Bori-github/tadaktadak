@@ -14,7 +14,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-describe('MoreList', () => {
+describe('더보기 화면 목록', () => {
   it('개인정보처리방침 행을 누르면 개인정보처리방침 페이지를 연다', async () => {
     const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
     await render(<MoreList dotSize={2} />);

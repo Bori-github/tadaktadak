@@ -28,7 +28,7 @@ beforeEach(() => {
   mockFailure.set = false;
 });
 
-describe('useDismissibleNotice', () => {
+describe('`storageKey`에 닫기 기록이 없을 때만 표시하는 안내의 표시 여부', () => {
   it('닫기 기록이 없으면 안내를 표시한다', async () => {
     const { result } = await renderHook(() => useDismissibleNotice(STORAGE_KEY));
 

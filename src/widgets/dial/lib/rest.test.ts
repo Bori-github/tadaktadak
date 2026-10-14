@@ -4,12 +4,12 @@ import { restDialMinutes } from './rest';
 
 const minutes = (remainingMinutes: number, restMinutes = 5) => restDialMinutes({ focusMinutes: 25, restMinutes, remainingMinutes });
 
-describe('휴식 진행 중 호가 가리킬 분', () => {
+describe('휴식 타이머가 진행되는 동안 호와 손잡이가 가리킬 시간(분)', () => {
   it.each([
-    [5, 0],
-    [2.5, 12.5],
-    [0, 25],
-  ])('휴식 %s분이 남으면 %s분을 가리킨다', (remainingMinutes, expected) => {
+    { label: '휴식 시작', remainingMinutes: 5, expected: 0 },
+    { label: '휴식 절반', remainingMinutes: 2.5, expected: 12.5 },
+    { label: '휴식 끝', remainingMinutes: 0, expected: 25 },
+  ])('$label: 휴식 $remainingMinutes분이 남으면 $expected분을 가리킨다', ({ remainingMinutes, expected }) => {
     expect(minutes(remainingMinutes)).toBe(expected);
   });
 

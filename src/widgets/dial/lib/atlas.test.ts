@@ -5,7 +5,7 @@ import { packSprites } from './atlas';
 const SMALL = ['ab', 'cd'];
 const TALL = ['xyz', 'xyz', 'xyz'];
 
-describe('아틀라스 배치', () => {
+describe('도트 격자 여럿을 이미지 한 장에 나란히 놓기', () => {
   it('격자 사이에 한 도트를 비우고 가장 높은 격자에 높이를 맞춘다', () => {
     expect(packSprites([SMALL, TALL])).toEqual({
       image: { widthInDots: 6, heightInDots: 3 },

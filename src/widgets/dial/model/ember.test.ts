@@ -56,7 +56,7 @@ describe('불티를 노출하는 동안', () => {
   it.each([
     { label: '방금', completedBeforeMs: 0 },
     { label: '1초 전에', completedBeforeMs: 1000 },
-  ])('집중 타이머가 $label 끝났으면 그 시각을 담는다', async ({ completedBeforeMs }) => {
+  ])('집중 타이머가 $label 끝났으면 끝난 시각을 담는다', async ({ completedBeforeMs }) => {
     const completedAt = Date.now() - completedBeforeMs;
     const { result } = await startedAt({ phase: 'completed', mode: 'focus', completedAt });
 

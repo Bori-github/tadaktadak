@@ -22,6 +22,11 @@ type SettingsView = 'settings' | 'language' | 'more';
 
 type SettingsScreenProps = NativeStackScreenProps<RootStackParamList, 'settings'>;
 
+/**
+ * 설정 화면
+ *
+ * @returns 설정·언어·더보기 화면을 쌓는 `DotModalStack`
+ */
 export const SettingsScreen = ({ navigation }: SettingsScreenProps): JSX.Element | null => {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();

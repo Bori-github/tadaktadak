@@ -74,7 +74,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-describe('DotModalStack', () => {
+describe('화면 스택을 관리하는 공용 모달', () => {
   it('같은 화면 연속 push 시 스택에 한 번만 쌓인다', async () => {
     await render(stack());
     await fireEvent.press(screen.getByTestId('to-second-twice'));

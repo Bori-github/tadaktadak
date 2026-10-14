@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react-native';
 
 import { DotSprite } from './DotSprite';
 
-describe('DotSprite', () => {
+describe('도트 격자를 그리는 스프라이트', () => {
   it('켜진 도트만 격자 좌표에 놓는다', async () => {
     // Canvas 밖에서는 Skia 노드가 만들어지지 않아 감싼다
     await render(

@@ -5,7 +5,7 @@ import { countdownSeconds } from './countdown';
 const seconds = (mode: 'focus' | 'rest', active: 'focus' | 'rest', remainingSeconds: number | null) =>
   countdownSeconds({ mode, active, minutes: mode === 'focus' ? 25 : 5, remainingSeconds });
 
-describe('시계판 숫자 한 줄', () => {
+describe('시계판 숫자 한 줄이 보여 줄 초', () => {
   it('대기에서는 두 줄 다 설정 시간이다', () => {
     expect([seconds('focus', 'focus', null), seconds('rest', 'focus', null)]).toEqual([1500, 300]);
   });

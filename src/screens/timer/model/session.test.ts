@@ -214,7 +214,7 @@ afterEach(() => {
 });
 
 describe('저장값을 읽는 사이의 조작', () => {
-  it('읽기가 끝나기 전에 재생하면 그 조작이 남는다', async () => {
+  it('읽기가 끝나기 전에 재생하면 재생 조작이 남는다', async () => {
     const { result } = await renderBeforeRead();
 
     await act(async () => result.current.play());
@@ -223,7 +223,7 @@ describe('저장값을 읽는 사이의 조작', () => {
     expect(result.current.session.phase).toBe('running');
   });
 
-  it('읽기가 끝나기 전에 재생하면 그 단계를 기기에 남긴다', async () => {
+  it('읽기가 끝나기 전에 재생하면 재생한 단계를 기기에 남긴다', async () => {
     const { result } = await renderBeforeRead();
 
     await act(async () => result.current.play());
@@ -343,7 +343,7 @@ describe('잠금화면 정지 버튼', () => {
     expect(mockStoppedEndsAt).toBeNull();
   });
 
-  it('저장값을 읽기 전에 재생하면 남은 정지 값이 그 진행을 되돌리지 않는다', async () => {
+  it('저장값을 읽기 전에 재생하면 남은 정지 값이 재생한 진행을 되돌리지 않는다', async () => {
     // 시각이 멈춘 테스트라 25분 뒤로 두면 새 진행의 끝날 시각과 같아짐
     mockStoppedEndsAt = Date.now() + 10 * MINUTE_IN_MS;
 
@@ -368,7 +368,7 @@ describe('잠금화면 정지 버튼', () => {
 });
 
 describe('완료 뒤 자동 시작', () => {
-  it('1초 전에 끝난 집중을 읽으면 그 시각부터 휴식 진행이 된다', async () => {
+  it('1초 전에 끝난 집중을 읽으면 끝난 시각부터 휴식 진행이 된다', async () => {
     const completedAt = Date.now() - COMPLETED_BEFORE_MS;
     const result = await renderCompleted('focus');
 

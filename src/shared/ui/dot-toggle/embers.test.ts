@@ -9,7 +9,7 @@ jest.mock('react-native-reanimated', () => ({
   Easing: { linear: (progress: number) => progress, bezierFn: () => (progress: number) => progress },
 }));
 
-describe('토글 불티', () => {
+describe('경과 시간 기준 불티 1개의 위치와 색', () => {
   it('켜기 시작 직후 첫 불티는 손잡이 앞에 불 심 색으로 있다', () => {
     expect(emberAt(TURN_ON, 0, 0)).toEqual({ column: 10, row: 5, color: COLORS.fire.core });
   });

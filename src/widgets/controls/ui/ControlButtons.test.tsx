@@ -25,7 +25,7 @@ const buttons = async (phase: TimerPhase) => {
   return { play: screen.getByTestId('controls-play'), stop: screen.getByTestId('controls-stop') };
 };
 
-describe('누르면 해당 조작을 넘긴다', () => {
+describe('누르면 누른 버튼의 조작을 넘긴다', () => {
   it('대기 상태에서 재생 버튼', async () => {
     const { play } = await buttons('ready');
     await fireEvent.press(play);

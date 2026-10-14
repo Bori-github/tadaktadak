@@ -66,7 +66,7 @@ describe('단계 전이', () => {
   });
 });
 
-describe('완료에서 다음으로', () => {
+describe('완료에서 다음 단계로', () => {
   const completedBefore = (elapsedMs: number): CompletedSession => ({ phase: 'completed', mode: 'focus', completedAt: NOW - elapsedMs });
 
   it('집중이 5초 전에 끝났으면 휴식도 5초 지난 자리에서 이어진다', () => {

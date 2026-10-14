@@ -42,7 +42,7 @@ const READY: TimerSession = { phase: 'ready', mode: 'focus' };
 const render = async (session: TimerSession, isSettled = true) =>
   renderHook(() => useLiveActivity({ session, settingMinutes: SETTING_MINUTES, isSettled, notificationPermission: PermissionStatus.GRANTED }));
 
-describe('Live Activity 수명', () => {
+describe('타이머 세션 값에 따라 Live Activity 시작/종료', () => {
   beforeEach(() => {
     mockStarted.length = 0;
     mockEndCount = 0;

@@ -21,6 +21,11 @@ type DotTextButtonProps = {
   testID?: string;
 };
 
+/**
+ * 글자 버튼
+ *
+ * @returns 누르는 동안 한 도트 내려가는 `DotPressable`
+ */
 export const DotTextButton = memo(({ dotSize, widthInDots, heightInDots, label, onPress, style, testID }: DotTextButtonProps) => {
   const width = widthInDots * dotSize;
   const height = heightInDots * dotSize;
