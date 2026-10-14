@@ -15,6 +15,7 @@ skill_call() {
 }
 
 { skill_call typescript-style-guide; skill_call code-quality; } > "$work/called.jsonl"
+{ skill_call typescript-style-guide; skill_call code-quality; skill_call test-driven-development; } > "$work/tdd-called.jsonl"
 skill_call typescript-style-guide > "$work/style-guide-only.jsonl"
 skill_call ko-dev-doc > "$work/not-called.jsonl"
 
@@ -115,7 +116,17 @@ for c in "cat src/a$E" "grep -n foo src/a$E" "pnpm tsc --noEmit" \
 done
 
 echo "Bash: 호출한 뒤에는 통과"
-check pass "$(run_bash "$work/called.jsonl" "cat > src/a$E <<EOF")" "호출했으면 Bash 쓰기도 통과"
+check pass "$(run_bash "$work/tdd-called.jsonl" "cat > src/a$E <<EOF")" "호출했으면 Bash 쓰기도 통과"
+
+echo "src/ 아래 .ts/.tsx"
+export CLAUDE_PROJECT_DIR=/proj
+check deny "$(run_write "$work/called.jsonl" "/proj/src/a$E")"              "test-driven-development 를 호출하지 않았으면 거부"
+reason=$(deny_reason "$work/called.jsonl" "/proj/src/a$E")
+case "$reason" in *test-driven-development*) named=yes ;; *) named=no ;; esac
+check yes "$named" "거부 사유에 test-driven-development 표시"
+check pass "$(run_write "$work/tdd-called.jsonl" "/proj/src/a$E")"          "세 스킬을 모두 호출했으면 통과"
+check pass "$(run_write "$work/called.jsonl" "/proj/modules/x/src/a$E")"    "modules/ 아래 .ts 는 test-driven-development 를 호출하지 않아도 통과"
+check deny "$(run_bash "$work/called.jsonl" "cat > src/a$E <<EOF")"         "Bash 로 src/ 아래 .ts 를 쓸 때도 거부"
 
 printf '\n통과 %d, 실패 %d\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

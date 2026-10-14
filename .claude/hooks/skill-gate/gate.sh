@@ -2,6 +2,7 @@
 # 필수 스킬 PreToolUse 게이트.
 #
 # .ts/.tsx 를 쓰기 전에 필수 스킬의 호출 기록을 대화 기록에서 확인. 호출 기록이 없는 스킬이 있으면 거부.
+# src/ 아래 .ts/.tsx 는 test-driven-development 도 필수 스킬에 포함.
 #
 # 대상을 찾는 곳: > >> &> tee sed -i perl -i 와 cp mv 의 마지막 인자
 # node -e, python3 -c, pnpm codegen 은 명령 문자열만으로 대상을 알 수 없음.
@@ -74,8 +75,13 @@ esac
 
 [ -r "$transcript" ] || exit 0
 
+skills="typescript-style-guide code-quality"
+case "${file_path#"$CLAUDE_PROJECT_DIR"/}" in
+  src/*) skills="$skills test-driven-development" ;;
+esac
+
 missing=""
-for skill in typescript-style-guide code-quality; do
+for skill in $skills; do
   # 패턴 원문에 [[:space:]] 가 들어가 자기 자신에는 매칭되지 않음.
   grep -qE "\"skill\"[[:space:]]*:[[:space:]]*\"$skill\"" "$transcript" || missing="$missing, $skill"
 done
