@@ -79,6 +79,22 @@ reason=$(deny_reason "$work/not-called.jsonl" "/x/a$E")
 case "$reason" in *"typescript-style-guide, code-quality"*) named=yes ;; *) named=no ;; esac
 check yes "$named" "둘 다 호출하지 않았으면 거부 사유에 두 이름을 쉼표로 구분"
 
+run_subagent_write() {
+  jq -nc --arg t "$1" --arg a "$2" --arg f "$3" \
+    '{tool_name:"Write",transcript_path:$t,agent_id:$a,tool_input:{file_path:$f,content:"x"}}' \
+    | sh "$gate" | decision
+}
+
+mkdir -p "$work/session/subagents"
+cp "$work/called.jsonl" "$work/session.jsonl"
+cp "$work/not-called.jsonl" "$work/session/subagents/agent-parent-only.jsonl"
+cp "$work/called.jsonl" "$work/session/subagents/agent-self.jsonl"
+
+echo "서브에이전트"
+check pass "$(run_subagent_write "$work/session.jsonl" self "/x/a$E")"        "서브에이전트 기록에 호출이 있으면 통과"
+check deny "$(run_subagent_write "$work/session.jsonl" parent-only "/x/a$E")" "상위 세션 기록에만 호출이 있으면 거부"
+check pass "$(run_subagent_write "$work/session.jsonl" missing "/x/a$E")"     "서브에이전트 기록이 없으면 통과"
+
 echo "Bash: 막아야 하는 것"
 for c in "cat > src/a$E <<EOF" "cat > src/T$X <<EOF" "printf x > src/a$E" \
          "echo x >> src/a$E" "tee src/a$E" "tee -a src/a$E" \
