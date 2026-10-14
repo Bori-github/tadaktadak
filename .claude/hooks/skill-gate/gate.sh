@@ -81,7 +81,8 @@ esac
 [ -r "$transcript" ] || exit 0
 
 skills="typescript-style-guide code-quality"
-case "${file_path#"$CLAUDE_PROJECT_DIR"/}" in
+relative_path=${file_path#"${CLAUDE_PROJECT_DIR%/}"/}
+case "${relative_path#./}" in
   src/*) skills="$skills test-driven-development" ;;
 esac
 

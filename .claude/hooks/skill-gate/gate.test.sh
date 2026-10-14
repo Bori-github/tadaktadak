@@ -134,7 +134,9 @@ check yes "$named" "거부 사유에 test-driven-development 표시"
 check pass "$(run_write "$work/tdd-called.jsonl" "/proj/src/a$E")"          "세 스킬을 모두 호출했으면 통과"
 check pass "$(run_write "$work/called.jsonl" "/proj/modules/x/src/a$E")"    "modules/ 아래 .ts 는 test-driven-development 를 호출하지 않아도 통과"
 check deny "$(run_bash "$work/called.jsonl" "cat > src/a$E <<EOF")"         "Bash 로 src/ 아래 .ts 를 쓸 때도 거부"
+check deny "$(run_bash "$work/called.jsonl" "cat > ./src/a$E <<EOF")"       "./src/ 로 시작하는 경로도 거부"
 check deny "$(run_bash "$work/called.jsonl" "cat > /proj/src/a$E <<EOF")"   "Bash 로 프로젝트 절대 경로의 src/ 아래 .ts 를 쓸 때도 거부"
+check deny "$(CLAUDE_PROJECT_DIR=/proj/ run_write "$work/called.jsonl" "/proj/src/a$E")" "CLAUDE_PROJECT_DIR 끝에 / 가 있어도 거부"
 
 printf '\n통과 %d, 실패 %d\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]
