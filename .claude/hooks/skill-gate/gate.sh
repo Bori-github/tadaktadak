@@ -34,8 +34,11 @@ FIELDS
 command=$(printf '%s' "$payload" | jq -r '.tool_input.command // ""')
 
 # 서브에이전트의 도구 호출에도 transcript_path 가 상위 세션 기록이라 agent_id 로 서브에이전트 기록 경로를 만듦
-# 서브에이전트 기록 경로는 공식 문서에 없음. 실제 파일 위치를 따름
-[ -n "$agent_id" ] && transcript="${transcript%.jsonl}/subagents/agent-$agent_id.jsonl"
+# 서브에이전트 기록 경로는 공식 문서에 없어 파일이 없으면 상위 세션 기록으로 확인
+if [ -n "$agent_id" ]; then
+  subagent_transcript="${transcript%.jsonl}/subagents/agent-$agent_id.jsonl"
+  [ -r "$subagent_transcript" ] && transcript=$subagent_transcript
+fi
 
 if [ -z "$file_path" ] && [ -n "$command" ]; then
   file_path=$(printf '%s' "$command" | awk '

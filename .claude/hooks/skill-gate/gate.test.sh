@@ -88,13 +88,17 @@ run_subagent_write() {
 
 mkdir -p "$work/session/subagents"
 cp "$work/called.jsonl" "$work/session.jsonl"
+cp "$work/not-called.jsonl" "$work/uncalled-session.jsonl"
+mkdir -p "$work/uncalled-session/subagents"
+cp "$work/called.jsonl" "$work/uncalled-session/subagents/agent-self.jsonl"
 cp "$work/not-called.jsonl" "$work/session/subagents/agent-parent-only.jsonl"
 cp "$work/called.jsonl" "$work/session/subagents/agent-self.jsonl"
 
 echo "서브에이전트"
-check pass "$(run_subagent_write "$work/session.jsonl" self "/x/a$E")"        "서브에이전트 기록에 호출이 있으면 통과"
+check pass "$(run_subagent_write "$work/uncalled-session.jsonl" self "/x/a$E")" "서브에이전트 기록에 호출이 있으면 통과"
 check deny "$(run_subagent_write "$work/session.jsonl" parent-only "/x/a$E")" "상위 세션 기록에만 호출이 있으면 거부"
-check pass "$(run_subagent_write "$work/session.jsonl" missing "/x/a$E")"     "서브에이전트 기록이 없으면 통과"
+check pass "$(run_subagent_write "$work/session.jsonl" missing "/x/a$E")"          "서브에이전트 기록이 없고 상위 세션 기록에 호출이 있으면 통과"
+check deny "$(run_subagent_write "$work/uncalled-session.jsonl" missing "/x/a$E")" "서브에이전트 기록이 없고 상위 세션 기록에도 호출이 없으면 거부"
 
 echo "Bash: 막아야 하는 것"
 for c in "cat > src/a$E <<EOF" "cat > src/T$X <<EOF" "printf x > src/a$E" \
