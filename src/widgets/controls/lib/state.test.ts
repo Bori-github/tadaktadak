@@ -5,7 +5,7 @@ import { playIcon } from './state';
 import { type TimerPhase } from '@/entities/timer';
 import { PAUSE_ICON, PLAY_ICON, type GridIcon } from '@/shared/ui/dot-icon';
 
-describe('재생 버튼 아이콘', () => {
+describe('타이머 단계에 따른 재생/일시정지 버튼 아이콘', () => {
   it.each<{ phase: TimerPhase; name: string; icon: GridIcon }>([
     { phase: 'ready', name: '재생', icon: PLAY_ICON },
     { phase: 'running', name: '일시정지', icon: PAUSE_ICON },

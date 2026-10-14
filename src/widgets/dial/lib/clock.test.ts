@@ -2,7 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 
 import { formatSecondsToClock } from './clock';
 
-describe('시계판 숫자', () => {
+describe('초를 mm:ss 형태 문자열로 변환', () => {
   it.each([
     { label: '시간 없음', totalSeconds: 0, expected: '00:00' },
     { label: '1분 직전', totalSeconds: 59, expected: '00:59' },

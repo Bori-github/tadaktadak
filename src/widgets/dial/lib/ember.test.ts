@@ -9,7 +9,7 @@ const embers = (random?: () => number, elapsedMs = 0) => spawnEmbers({ centerX: 
 /** 12시에서 초당 한 도트로 곧게 오르는 불티. 수명은 2.8초 */
 const rising: Ember = { x: 0, y: 0, velocityX: 0, velocityY: -1, lifeMs: 2800 };
 
-describe('불티 생성', () => {
+describe('완료에서 개체 둘레에 노출되는 불티', () => {
   it('80개를 만든다', () => {
     expect(embers()).toHaveLength(EMBER_COUNT);
   });
@@ -75,7 +75,7 @@ describe('불티 수명', () => {
   });
 });
 
-describe('불티 색', () => {
+describe('남은 수명이 가리키는 `EMBER_COLORS` 위치', () => {
   it.each([
     { label: '가득 참', life: 1, color: '불 심', expected: COLORS.fire.core },
     { label: '불 심 구간 하한', life: 0.67, color: '불 심', expected: COLORS.fire.core },

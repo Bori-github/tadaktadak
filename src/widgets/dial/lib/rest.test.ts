@@ -4,7 +4,7 @@ import { restDialMinutes } from './rest';
 
 const minutes = (remainingMinutes: number, restMinutes = 5) => restDialMinutes({ focusMinutes: 25, restMinutes, remainingMinutes });
 
-describe('휴식 진행 중 호가 가리킬 분', () => {
+describe('휴식 타이머가 진행되는 동안 호와 손잡이가 가리킬 시간(분)', () => {
   it.each([
     { label: '휴식 시작', remainingMinutes: 5, expected: 0 },
     { label: '휴식 절반', remainingMinutes: 2.5, expected: 12.5 },

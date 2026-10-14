@@ -7,7 +7,7 @@ const DOT = 2;
 
 const radius = (tick: number, isMajorTick: boolean, progress = 1, dotSize = DOT) => bloomRadius({ tick, isMajorTick, progress, step: 0, dotSize });
 
-describe('빛 번짐 반지름', () => {
+describe('눈금 하나의 빛 번짐 반지름 (px)', () => {
   it('다 붙은 모닥불은 32, 장작은 16이다', () => {
     expect([radius(1, true), radius(1, false)]).toEqual([32, 16]);
   });

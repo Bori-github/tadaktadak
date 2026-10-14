@@ -11,7 +11,7 @@ const CASES: { situation: string; editing: boolean; editTarget: TimerMode; expec
   { situation: '휴식 타이머 진행', editing: false, editTarget: 'rest', expected: 'focus' },
 ];
 
-describe('호와 손잡이를 그릴 색', () => {
+describe('호와 손잡이 색을 결정하는 타이머 모드', () => {
   it.each(CASES)('$situation에는 $expected 색이다', ({ editing, editTarget, expected }) => {
     expect(colorMode({ editing, editTarget })).toBe(expected);
   });

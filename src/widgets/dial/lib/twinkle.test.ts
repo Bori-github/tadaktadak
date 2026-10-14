@@ -5,7 +5,7 @@ import { isThumbTwinkling, thumbGrid } from './twinkle';
 import { type TimerPhase } from '@/entities/timer';
 import { SPARK_A, SPARK_B, SPARK_REST } from '@/shared/ui/dot-sprite';
 
-describe('손잡이가 반짝이는 단계', () => {
+describe('손잡이가 반짝이는지 여부', () => {
   it.each([
     { label: '집중 타이머 진행', isResting: false, phase: 'running', expected: true },
     { label: '집중 타이머 대기', isResting: false, phase: 'ready', expected: false },
@@ -17,7 +17,7 @@ describe('손잡이가 반짝이는 단계', () => {
   });
 });
 
-describe('손잡이 반짝임 프레임', () => {
+describe('손잡이가 이번 프레임에 그릴 도트 격자', () => {
   it.each([
     { label: '첫 번째 프레임', frame: 'A', step: 0, expected: SPARK_A },
     { label: '두 번째 프레임', frame: 'B', step: 1, expected: SPARK_B },
