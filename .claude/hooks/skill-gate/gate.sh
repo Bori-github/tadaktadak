@@ -82,7 +82,10 @@ esac
 
 skills="typescript-style-guide code-quality"
 relative_path=${file_path#"${CLAUDE_PROJECT_DIR%/}"/}
-case "${relative_path#./}" in
+relative_path=${relative_path#./}
+# CLAUDE_PROJECT_DIR 가 메인 저장소를 가리키면 워크트리 파일 경로에 .claude/worktrees/<이름>/ 접두사가 남아 src/ 판별 전에 제거
+relative_path=${relative_path#.claude/worktrees/*/}
+case "$relative_path" in
   src/*) skills="$skills test-driven-development" ;;
 esac
 
