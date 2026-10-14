@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { EMBER_COLORS, EMBER_COUNT, emberAt, emberColorIndex, spawnEmbers, type Ember } from './ember';
+import { EMBER_COLORS, emberAt, emberColorIndex, spawnEmbers, type Ember } from './ember';
 
 import { COLORS } from '@/shared/constants';
 
@@ -11,7 +11,7 @@ const rising: Ember = { x: 0, y: 0, velocityX: 0, velocityY: -1, lifeMs: 2800 };
 
 describe('완료에서 개체 둘레에 노출되는 불티', () => {
   it('80개를 만든다', () => {
-    expect(embers()).toHaveLength(EMBER_COUNT);
+    expect(embers()).toHaveLength(80);
   });
 
   it.each([
@@ -36,7 +36,7 @@ describe('완료에서 개체 둘레에 노출되는 불티', () => {
   });
 
   it.each([
-    { label: '수명이 끝나기 직전', elapsedMs: 2099, expected: EMBER_COUNT },
+    { label: '수명이 끝나기 직전', elapsedMs: 2099, expected: 80 },
     { label: '수명이 끝난 시각', elapsedMs: 2100, expected: 0 },
   ])('수명 2100밀리초로 만들면 $label(노출 후 $elapsedMs밀리초)에 $expected개가 된다', ({ elapsedMs, expected }) => {
     expect(embers(() => 0, elapsedMs)).toHaveLength(expected);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { type BubbleArrowAlign, type BubbleArrowDirection, bubbleLayout, bubbleShape, MIN_BUBBLE_CONTENT_HEIGHT_IN_DOTS, MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS } from './bubble';
+import { type BubbleArrowAlign, type BubbleArrowDirection, bubbleLayout, bubbleShape } from './bubble';
 import { type DotRole } from './cell';
 
 // 너비와 높이가 뒤바뀌면 드러나도록 다른 값
@@ -27,7 +27,7 @@ describe('도트 말풍선', () => {
     expect(roleAt(shape, 20, shape.contentRow)).toBe('edge');
   });
 
-  it('end 정렬은 직각 변이 콘텐츠 끝 쪽에 온다', () => {
+  it('끝 정렬은 직각 변이 콘텐츠 끝 쪽에 온다', () => {
     const shape = shapeOf('up', 'end');
     const tipColumn = WIDTH - 1 - 6;
 
@@ -77,13 +77,13 @@ describe('도트 말풍선', () => {
       label: '최소보다 좁은 콘텐츠 너비',
       contentWidthInDots: 8,
       contentHeightInDots: HEIGHT,
-      expected: { contentWidthInDots: MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS, contentHeightInDots: HEIGHT },
+      expected: { contentWidthInDots: 16, contentHeightInDots: HEIGHT },
     },
     {
       label: '최소보다 낮은 콘텐츠 높이',
       contentWidthInDots: WIDTH,
       contentHeightInDots: 6,
-      expected: { contentWidthInDots: WIDTH, contentHeightInDots: MIN_BUBBLE_CONTENT_HEIGHT_IN_DOTS },
+      expected: { contentWidthInDots: WIDTH, contentHeightInDots: 12 },
     },
   ])('$label는 최소값이 된다', ({ contentWidthInDots, contentHeightInDots, expected }) => {
     const layout = bubbleLayout({ contentWidthInDots, contentHeightInDots, arrowDirection: 'left', arrowAlign: 'end' });
@@ -104,13 +104,13 @@ describe('도트 말풍선', () => {
     const shape = bubbleShape({ contentWidthInDots: size, contentHeightInDots: size, arrowDirection: 'up', arrowAlign: 'start' });
 
     expect({ contentWidthInDots: shape.contentWidthInDots, contentHeightInDots: shape.contentHeightInDots, hasCells: shape.cells.length > 0 }).toEqual({
-      contentWidthInDots: MIN_BUBBLE_CONTENT_WIDTH_IN_DOTS,
-      contentHeightInDots: MIN_BUBBLE_CONTENT_HEIGHT_IN_DOTS,
+      contentWidthInDots: 16,
+      contentHeightInDots: 12,
       hasCells: true,
     });
   });
 
-  it('최소보다 좁은 콘텐츠에서도 end 정렬 화살표 밑변이 4도트로 그려진다', () => {
+  it('최소보다 좁은 콘텐츠에서도 끝 정렬 화살표 밑변이 4도트로 그려진다', () => {
     const shape = bubbleShape({ contentWidthInDots: 8, contentHeightInDots: HEIGHT, arrowDirection: 'up', arrowAlign: 'end' });
     const baseRow = shape.cells.filter((cell) => cell.row === 3);
 
