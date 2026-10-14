@@ -24,6 +24,8 @@ type AmbientSoundPlaybackOptions = {
 };
 
 /**
+ * 배경음 재생
+ *
  * 배경음이 켜져 있고 앱이 포그라운드인 동안 음원을 반복 재생하고, 재생을 시작할 때 음량을 `FADE_IN_MS` 동안 0에서 1로 올림
  *
  * @param options.canPlay - false인 동안 재생하지 않음

@@ -16,7 +16,7 @@ type LiveActivityParams = {
 };
 
 /**
- * `SPEC.md` 상태 전이 시 처리
+ * 타이머 세션 값에 따라 Live Activity 시작/종료. `SPEC.md` 상태 전이 시 처리
  *
  * @param params.session - 타이머 세션 값
  * @param params.settingMinutes - 집중/휴식 타이머 설정 시간(분)

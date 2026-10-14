@@ -67,7 +67,7 @@ export const pickLanguage = (locales: Pick<Locale, 'languageCode'>[]): Language 
 export const parseLanguage = (saved: string | null): Language | null => SUPPORTED_LANGUAGES.find((language) => language === saved) ?? null;
 
 /**
- * 전역 로케일 대신 호출마다 언어를 받음
+ * 언어별 문구 조회
  *
  * @returns 키 값에 대응하는 문구
  */
