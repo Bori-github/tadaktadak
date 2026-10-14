@@ -50,12 +50,12 @@ describe('알림을 예약할 시각', () => {
 });
 
 describe('알림이 오지 못하는 상태', () => {
-  it.each<{ situation: string; status: PermissionStatus | null; blocked: boolean }>([
-    { situation: '아직 읽지 않음', status: null, blocked: false },
-    { situation: '허용', status: PermissionStatus.GRANTED, blocked: false },
-    { situation: '아직 묻지 않음', status: PermissionStatus.UNDETERMINED, blocked: true },
-    { situation: '거부', status: PermissionStatus.DENIED, blocked: true },
-  ])('$situation이면 $blocked', ({ status, blocked }) => {
+  it.each<{ situation: string; status: PermissionStatus | null; blocked: boolean; result: string }>([
+    { situation: '아직 읽지 않음', status: null, blocked: false, result: '알림이 오는 상태다' },
+    { situation: '허용', status: PermissionStatus.GRANTED, blocked: false, result: '알림이 오는 상태다' },
+    { situation: '아직 묻지 않음', status: PermissionStatus.UNDETERMINED, blocked: true, result: '알림이 오지 못하는 상태다' },
+    { situation: '거부', status: PermissionStatus.DENIED, blocked: true, result: '알림이 오지 못하는 상태다' },
+  ])('권한이 $situation이면 $result', ({ status, blocked }) => {
     expect(isNotificationBlocked(status)).toBe(blocked);
   });
 });
