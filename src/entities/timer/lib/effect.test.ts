@@ -24,7 +24,7 @@ const EFFECT_TIMELINE = [
   { label: '연출이 끝난 뒤', elapsedMs: 4000, expected: 0 },
 ];
 
-describe('완료 연출이 끝나기까지', () => {
+describe('완료 연출이 끝나기까지 남은 시간 (밀리초)', () => {
   it.each(EFFECT_TIMELINE)('$label: 집중 타이머가 끝나고 $elapsedMs밀리초에 $expected밀리초 남는다', ({ elapsedMs, expected }) => {
     expect(remaining(focusCompleted, NOW + elapsedMs)).toBe(expected);
   });

@@ -7,7 +7,7 @@ import { NOW } from '../lib/fixtures';
 
 const running: RunningSession = { phase: 'running', mode: 'focus', startedAt: NOW - 22 * MINUTE_IN_MS, endsAt: NOW + 3 * MINUTE_IN_MS };
 
-describe('저장된 타이머 세션 값 읽기', () => {
+describe('저장 문자열에서 읽어 낸 타이머 세션 값', () => {
   it('저장한 대로 돌아온다', () => {
     expect(parseSession(JSON.stringify(running))).toEqual(running);
   });
@@ -28,7 +28,7 @@ describe('저장된 타이머 세션 값 읽기', () => {
   });
 });
 
-describe('저장된 타이머 시간 읽기', () => {
+describe('저장 문자열에서 읽어 낸 타이머 시간', () => {
   it('저장한 분이 범위 안이면 그대로 쓴다', () => {
     expect(parseMinutes('40', 'focus')).toBe(40);
   });

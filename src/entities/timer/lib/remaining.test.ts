@@ -7,7 +7,7 @@ import { READY_SESSION } from '../model/session';
 
 const remainingAfter = (elapsedMs: number, remainingAtStartMs = 25 * MINUTE_IN_MS) => remainingMs({ remainingAtStartMs, startedAtUptime: 1000, nowUptime: 1000 + elapsedMs });
 
-describe('남은 시간', () => {
+describe('진행 중 남은 시간', () => {
   it('25분 타이머가 1분 흐르면 24분 남는다', () => {
     expect(remainingAfter(MINUTE_IN_MS)).toBe(24 * MINUTE_IN_MS);
   });

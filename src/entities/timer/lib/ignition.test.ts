@@ -4,7 +4,7 @@ import { ignitionProgress } from './ignition';
 
 const ignitionAt = (tick: number, remainingMinutes: number, settingMinutes = 25) => ignitionProgress({ tick, remainingMinutes, settingMinutes });
 
-describe('점화 판정', () => {
+describe('시계판 눈금 하나에 불이 붙은 정도', () => {
   it('남은 3분일 때 5번 눈금은 완전히 붙었다', () => {
     expect(ignitionAt(5, 3)).toBe(1);
   });
