@@ -2,6 +2,7 @@ import { type HapticEvent } from '@modules/haptic-pattern';
 
 import { type TimerMode } from '../model/mode';
 
+/** 완료 진동 패턴 */
 export const COMPLETION_PATTERN: Record<TimerMode, HapticEvent[]> = {
   // `intensity` 1.0이 이벤트 하나의 상한이라, 세기를 더 올리려고 같은 시각에 겹쳐 둠
   focus: [

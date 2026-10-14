@@ -42,6 +42,8 @@ export const initLocalization = (): void => {
 };
 
 /**
+ * 시스템 선호 언어에서 지원 언어 고르기
+ *
  * @param locales - 시스템 설정의 선호 순서대로 전달되는 언어 목록
  * @returns 지원 목록과 처음 일치하는 언어. 없으면 `en-US`
  */
@@ -57,6 +59,8 @@ export const pickLanguage = (locales: Pick<Locale, 'languageCode'>[]): Language 
 };
 
 /**
+ * 저장된 언어 태그 검증
+ *
  * @param saved - 기기에 저장된 언어 태그
  * @returns 지원 언어면 그 언어. 저장값이 없거나 지원 목록에 없으면 `null`
  */

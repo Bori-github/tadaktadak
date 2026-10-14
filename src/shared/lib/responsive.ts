@@ -40,7 +40,13 @@ const ANDROID_TABLET_MIN_SHORT_SIDE = 600;
 
 export type FormFactor = 'phone' | 'tablet';
 
-// 앱 창이 아니라 기기 화면으로 판정해서 분할 화면에서도 태블릿 유지
+/**
+ * 기기 종류 판정
+ *
+ * 앱 창이 아니라 기기 화면으로 판정해서 분할 화면에서도 태블릿 유지
+ *
+ * @returns iPad와 기기 화면 짧은 변이 `ANDROID_TABLET_MIN_SHORT_SIDE` 이상인 Android는 `tablet`, 그 밖은 `phone`
+ */
 export const getFormFactor = (): FormFactor => {
   if (Platform.OS === 'ios') return Platform.isPad ? 'tablet' : 'phone';
 
