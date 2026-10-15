@@ -53,7 +53,6 @@ $fix"
 # release 브랜치의 백포트 커밋이 main 이력에 없으므로 `rev-list --count` 최소인 원격 브랜치를 기준으로 선택
 nearest_base() {
   best=""
-  best_count=""
   for ref in $(git for-each-ref --format='%(refname:short)' refs/remotes/origin/main 'refs/remotes/origin/release/*'); do
     git merge-base "$ref" "$1" >/dev/null 2>&1 || continue
     count=$(git rev-list --count "$ref..$1")
