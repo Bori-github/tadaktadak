@@ -8,7 +8,6 @@ COMMIT_MAX=300
 COMMIT_MAX_FILES=10
 PR_TARGET=600
 PR_MAX=800
-BASE_BRANCH=main
 RULE=".claude/rules/workflow/work-scope.md"
 
 # 집계 제외 경로
@@ -51,14 +50,28 @@ $fix"
   exit 0
 }
 
+# release 브랜치의 백포트 커밋이 main 이력에 없으므로 `rev-list --count` 최소인 원격 브랜치를 기준으로 선택
+nearest_base() {
+  best=""
+  for ref in $(git for-each-ref --format='%(refname:short)' refs/remotes/origin/main 'refs/remotes/origin/release/*'); do
+    git merge-base "$ref" "$1" >/dev/null 2>&1 || continue
+    count=$(git rev-list --count "$ref..$1")
+    if [ -z "$best" ] || [ "$count" -lt "$best_count" ]; then
+      best=$ref
+      best_count=$count
+    fi
+  done
+  echo "$best"
+}
+
 # 브랜치 전체 크기(목표·상한)와 각 커밋별 크기(--amend, fixup, rebase로 커진 커밋) 검사
 check_branch_size() {
   ref_name=$1
   sha=$2
-  base="origin/$BASE_BRANCH"
+  base=$(nearest_base "$sha")
 
-  git merge-base "$base" "$sha" >/dev/null 2>&1 || {
-    echo "work-scope: $ref_name 은 $base 와 공통 조상이 없어 검사하지 않는다" >&2
+  [ -n "$base" ] || {
+    echo "work-scope: $ref_name 은 origin/main, origin/release/* 와 공통 조상이 없어 검사하지 않는다" >&2
     return 0
   }
 
@@ -86,9 +99,9 @@ git rebase -i 로 나눈다. 정당한 예외는 LEFTHOOK_EXCLUDE=work-scope git
 }
 
 check_push() {
-  git fetch --quiet origin "$BASE_BRANCH" 2>/dev/null || true
-  git rev-parse --verify --quiet "origin/$BASE_BRANCH" >/dev/null || {
-    echo "work-scope: origin/$BASE_BRANCH 가 없어 검사하지 않는다" >&2
+  git fetch --quiet origin '+refs/heads/main:refs/remotes/origin/main' '+refs/heads/release/*:refs/remotes/origin/release/*' 2>/dev/null || true
+  [ -n "$(git for-each-ref --count=1 refs/remotes/origin/main 'refs/remotes/origin/release/*')" ] || {
+    echo "work-scope: origin/main, origin/release/* 가 없어 검사하지 않는다" >&2
     exit 0
   }
 
