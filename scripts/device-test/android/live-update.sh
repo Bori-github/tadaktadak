@@ -37,8 +37,8 @@ check_interval() {
 }
 
 set_ringer 2
-# 1분의 1%는 0.6초라 최소값 1초. 값 조회 지연으로 2초까지 허용
-check_interval TC-LOCK-SCREEN-003 15 1 2
+# 1분의 1%는 0.6초라 최소값 5초. 값 조회 지연으로 ±1초 허용
+check_interval TC-LOCK-SCREEN-003 20 4 6
 
 start_idle
 tap controls-play
