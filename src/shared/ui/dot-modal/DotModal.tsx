@@ -19,14 +19,19 @@ type DotModalProps = {
   /** Android 뒤로 버튼도 이 핸들러로 연결 */
   onBack?: () => void;
   children?: ReactNode;
+  /** `ScrollView` 밖 하단에 고정 렌더링하는 요소 */
+  footer?: ReactNode;
 };
 
-export const DotModal = ({ dotSize, onClose, onBack, children }: DotModalProps): JSX.Element => {
+export const DotModal = ({ dotSize, onClose, onBack, children, footer }: DotModalProps): JSX.Element => {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const scale = dotSize / DOT_SIZE;
 
-  const scrollStyle = { marginTop: insets.top + FIRST_ROW_TOP * scale, marginBottom: insets.bottom };
+  const hasFooter = footer !== undefined;
+  // `footer`를 safe area 안에 배치하도록 하단 inset을 `ScrollView` 대신 `footer`에 적용
+  const scrollStyle = { marginTop: insets.top + FIRST_ROW_TOP * scale, marginBottom: hasFooter ? 0 : insets.bottom };
+  const footerStyle = { marginBottom: insets.bottom };
   const contentStyle = { width: Math.min(CONTENT_WIDTH * scale, width), paddingBottom: BOTTOM_PADDING * scale };
   const closeButtonStyle = { top: insets.top + BUTTON_INSET * scale, right: insets.right + BUTTON_INSET * scale };
   const backButtonStyle = { top: insets.top + BUTTON_INSET * scale, left: insets.left + BUTTON_INSET * scale };
@@ -42,9 +47,14 @@ export const DotModal = ({ dotSize, onClose, onBack, children }: DotModalProps):
 
   return (
     <View style={styles.root}>
-      <ScrollView style={scrollStyle} contentContainerStyle={[styles.content, contentStyle]}>
+      <ScrollView testID="modal-scroll" style={scrollStyle} contentContainerStyle={[styles.content, contentStyle]}>
         {children}
       </ScrollView>
+      {hasFooter ? (
+        <View testID="modal-footer" style={footerStyle}>
+          {footer}
+        </View>
+      ) : null}
       {onBack === undefined ? null : <IconButton testID="modal-back" dotSize={dotSize} icon={BACK_ICON} style={[styles.button, backButtonStyle]} onPress={onBack} />}
       <IconButton testID="modal-close" dotSize={dotSize} icon={CLOSE_ICON} style={[styles.button, closeButtonStyle]} onPress={onClose} />
     </View>
