@@ -1,5 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { StyleSheet } from 'react-native';
+import type * as ReactNative from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { fireEvent, render, screen } from '@testing-library/react-native';
@@ -23,6 +24,22 @@ jest.mock('react-native-google-mobile-ads', () => ({
   BannerAdSize: { INLINE_ADAPTIVE_BANNER: 'INLINE_ADAPTIVE_BANNER' },
   TestIds: { ADAPTIVE_BANNER: 'test-adaptive-banner' },
 }));
+
+// import 시 react-native-worklets 초기화에서 `loadUnpackers` 미정의 예외가 발생해 reanimated API를 값 반환 목으로 대체
+jest.mock('react-native-reanimated', () => {
+  const { View } = jest.requireActual<typeof ReactNative>('react-native');
+  return {
+    __esModule: true,
+    default: { View },
+    cancelAnimation: () => {},
+    Easing: { inOut: (easing: unknown) => easing, quad: (value: number) => value },
+    useAnimatedStyle: (updater: () => object) => updater(),
+    useSharedValue: (initial: unknown) => ({ value: initial }),
+    withRepeat: (animation: unknown) => animation,
+    withSequence: (...animations: unknown[]) => animations[0],
+    withTiming: (target: unknown) => target,
+  };
+});
 
 // 광고 SDK 초기화 없이 배너를 렌더링하도록 `useCanShowAdvertisement`를 true로 고정한 목으로 대체
 jest.mock('@/entities/advertisement', () => ({ useCanShowAdvertisement: () => true }));

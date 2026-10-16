@@ -56,6 +56,7 @@ export const COLORS = {
     face: '#3f3550',
     highlight: '#4a4360',
     shadow: '#332a42',
+    skeleton: '#f4ead614',
   },
 
   tooltip: {

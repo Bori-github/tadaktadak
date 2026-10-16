@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import type * as ReactNative from 'react-native';
 import { act, render, screen } from '@testing-library/react-native';
 
 import { AdvertisementFooter } from './AdvertisementFooter';
@@ -8,6 +9,7 @@ type BannerProps = {
   size: string;
   width?: number;
   maxHeight?: number;
+  onAdLoaded?: () => void;
   onAdFailedToLoad?: (error: Error) => void;
 };
 
@@ -23,6 +25,22 @@ jest.mock('react-native-google-mobile-ads', () => ({
   BannerAdSize: { INLINE_ADAPTIVE_BANNER: 'INLINE_ADAPTIVE_BANNER' },
   TestIds: { ADAPTIVE_BANNER: 'test-adaptive-banner' },
 }));
+
+// import 시 react-native-worklets 초기화에서 `loadUnpackers` 미정의 예외가 발생해 reanimated API를 값 반환 목으로 대체
+jest.mock('react-native-reanimated', () => {
+  const { View } = jest.requireActual<typeof ReactNative>('react-native');
+  return {
+    __esModule: true,
+    default: { View },
+    cancelAnimation: () => {},
+    Easing: { inOut: (easing: unknown) => easing, quad: (value: number) => value },
+    useAnimatedStyle: (updater: () => object) => updater(),
+    useSharedValue: (initial: unknown) => ({ value: initial }),
+    withRepeat: (animation: unknown) => animation,
+    withSequence: (...animations: unknown[]) => animations[0],
+    withTiming: (target: unknown) => target,
+  };
+});
 
 // `useCanShowAdvertisement` 반환값을 테스트별로 제어하도록 목으로 대체
 jest.mock('@/entities/advertisement', () => ({
@@ -45,6 +63,22 @@ describe('설정 화면 하단 구분선과 광고 배너', () => {
     await render(<AdvertisementFooter dotSize={2} width={342} />);
 
     expect(screen.getByTestId('advertisement-banner-area')).toHaveStyle({ minHeight: 40 });
+  });
+
+  it('광고 로드 전 배너 영역에 스켈레톤을 렌더링한다', async () => {
+    await render(<AdvertisementFooter dotSize={2} width={342} />);
+
+    expect(screen.queryByTestId('advertisement-skeleton')).not.toBeNull();
+  });
+
+  it('`onAdLoaded` 발생 시 스켈레톤을 언마운트한다', async () => {
+    await render(<AdvertisementFooter dotSize={2} width={342} />);
+
+    await act(() => {
+      mockBannerProps?.onAdLoaded?.();
+    });
+
+    expect(screen.queryByTestId('advertisement-skeleton')).toBeNull();
   });
 
   it('`onAdFailedToLoad` 발생 시 구분선과 배너를 렌더링하지 않는다', async () => {
