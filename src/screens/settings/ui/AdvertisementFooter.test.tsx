@@ -7,6 +7,7 @@ type BannerProps = {
   unitId: string;
   size: string;
   width?: number;
+  maxHeight?: number;
   onAdFailedToLoad?: (error: Error) => void;
 };
 
@@ -19,7 +20,7 @@ jest.mock('react-native-google-mobile-ads', () => ({
     mockBannerProps = props;
     return null;
   },
-  BannerAdSize: { LARGE_ANCHORED_ADAPTIVE_BANNER: 'LARGE_ANCHORED_ADAPTIVE_BANNER' },
+  BannerAdSize: { INLINE_ADAPTIVE_BANNER: 'INLINE_ADAPTIVE_BANNER' },
   TestIds: { ADAPTIVE_BANNER: 'test-adaptive-banner' },
 }));
 
@@ -34,16 +35,16 @@ beforeEach(() => {
 });
 
 describe('설정 화면 하단 구분선과 광고 배너', () => {
-  it('광고 표시 가능 시 `width` 폭의 `LARGE_ANCHORED_ADAPTIVE_BANNER`를 요청한다', async () => {
+  it('광고 표시 가능 시 `width` 폭과 `maxHeight` 높이 상한으로 `INLINE_ADAPTIVE_BANNER`를 요청한다', async () => {
     await render(<AdvertisementFooter dotSize={2} width={342} />);
 
-    expect(mockBannerProps).toEqual(expect.objectContaining({ unitId: 'test-adaptive-banner', size: 'LARGE_ANCHORED_ADAPTIVE_BANNER', width: 342 }));
+    expect(mockBannerProps).toEqual(expect.objectContaining({ unitId: 'test-adaptive-banner', size: 'INLINE_ADAPTIVE_BANNER', width: 342, maxHeight: 40 }));
   });
 
-  it('광고 로드 완료 전 배너 영역에 최소 높이를 지정한다', async () => {
+  it('광고 로드 완료 전 배너 영역에 `maxHeight`와 같은 최소 높이를 지정한다', async () => {
     await render(<AdvertisementFooter dotSize={2} width={342} />);
 
-    expect(screen.getByTestId('advertisement-banner-area')).toHaveStyle({ minHeight: 50 });
+    expect(screen.getByTestId('advertisement-banner-area')).toHaveStyle({ minHeight: 40 });
   });
 
   it('`onAdFailedToLoad` 발생 시 구분선과 배너를 렌더링하지 않는다', async () => {

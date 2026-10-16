@@ -9,8 +9,8 @@ import { COLORS, DOT_SIZE } from '@/shared/constants';
 // TODO: AdMob 광고 단위 ID 발급 후 `TestIds`를 실제 ID로 교체
 const BANNER_UNIT_ID = TestIds.ADAPTIVE_BANNER;
 
-/** 적응형 배너 최소 높이 (px) */
-const MIN_BANNER_HEIGHT = 50;
+/** `BannerAd` `maxHeight`와 로드 전 배너 영역 `minHeight` 값 (px) */
+const BANNER_HEIGHT = 40;
 
 type AdvertisementFooterProps = {
   /** 도트 한 변 (px) */
@@ -32,13 +32,13 @@ export const AdvertisementFooter = ({ dotSize, width }: AdvertisementFooterProps
   const scale = dotSize / DOT_SIZE;
 
   const dividerStyle = { height: dotSize, marginBottom: 16 * scale };
-  const bannerAreaStyle = { width, minHeight: MIN_BANNER_HEIGHT, marginBottom: 16 * scale };
+  const bannerAreaStyle = { width, minHeight: BANNER_HEIGHT, marginBottom: 16 * scale };
 
   return (
     <View testID="advertisement-footer">
       <View style={[styles.divider, dividerStyle]} />
       <View testID="advertisement-banner-area" style={[styles.bannerArea, bannerAreaStyle]}>
-        <BannerAd unitId={BANNER_UNIT_ID} size={BannerAdSize.LARGE_ANCHORED_ADAPTIVE_BANNER} width={width} onAdFailedToLoad={() => setHasLoadFailed(true)} />
+        <BannerAd unitId={BANNER_UNIT_ID} size={BannerAdSize.INLINE_ADAPTIVE_BANNER} width={width} maxHeight={BANNER_HEIGHT} onAdFailedToLoad={() => setHasLoadFailed(true)} />
       </View>
     </View>
   );
