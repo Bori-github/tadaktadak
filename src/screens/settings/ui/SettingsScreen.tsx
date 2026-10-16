@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { type NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Canvas } from '@shopify/react-native-skia';
 
+import { AdvertisementFooter } from './AdvertisementFooter';
 import { LanguageList } from './LanguageList';
 import { MoreList } from './MoreList';
 import { SettingsRow } from './SettingsRow';
@@ -15,7 +16,7 @@ import { COLORS, DOT_SIZE } from '@/shared/constants';
 import { resolveLayout, getFormFactor, type RootStackParamList } from '@/shared/lib';
 
 import { ChevronIcon, LANGUAGE_ICON, MORE_ICON, RectIconShape, VIBRATION_ICON } from '@/shared/ui/dot-icon';
-import { DotModalStack, type DotModalScreen } from '@/shared/ui/dot-modal';
+import { DotModalStack, MODAL_CONTENT_WIDTH, type DotModalScreen } from '@/shared/ui/dot-modal';
 import { DotToggle } from '@/shared/ui/dot-toggle';
 
 type SettingsView = 'settings' | 'language' | 'more';
@@ -76,6 +77,7 @@ export const SettingsScreen = ({ navigation }: SettingsScreenProps): JSX.Element
           </SettingsRow>
         </>
       ),
+      footer: <AdvertisementFooter dotSize={dotSize} width={Math.min(MODAL_CONTENT_WIDTH * scale, width)} />,
     },
     language: {
       render: () => <LanguageList dotSize={dotSize} />,

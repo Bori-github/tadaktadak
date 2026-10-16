@@ -7,7 +7,7 @@ import { COLORS, DOT_SIZE } from '@/shared/constants';
 import { BACK_ICON, CLOSE_ICON, IconButton } from '@/shared/ui/icon-button';
 
 /** 배율 1의 논리 픽셀. 피그마 `설정 화면 · 페이지` */
-const CONTENT_WIDTH = 342;
+export const CONTENT_WIDTH = 342;
 const FIRST_ROW_TOP = 52;
 const BOTTOM_PADDING = 20;
 const BUTTON_INSET = 16;
