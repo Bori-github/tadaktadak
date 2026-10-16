@@ -1,14 +1,16 @@
 import { type JSX, useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 import Animated, { cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 
 import { useCanShowAdvertisement } from '@/entities/advertisement';
 
-import { COLORS, DOT_SIZE } from '@/shared/constants';
+import { COLORS, DOT_SIZE, ENV } from '@/shared/constants';
 
-// TODO: AdMob 광고 단위 ID 발급 후 `TestIds`를 실제 ID로 교체
-const BANNER_UNIT_ID = TestIds.ADAPTIVE_BANNER;
+// 개발 빌드에서 실제 광고 노출/클릭이 무효 트래픽으로 집계되지 않도록 `TestIds` 사용
+const BANNER_UNIT_ID = __DEV__
+  ? TestIds.ADAPTIVE_BANNER
+  : (Platform.select({ ios: ENV.ADMOB_IOS_BANNER_UNIT_ID, default: ENV.ADMOB_ANDROID_BANNER_UNIT_ID }) ?? TestIds.ADAPTIVE_BANNER);
 
 /** `BannerAd` `maxHeight`와 로드 전 배너 영역 `minHeight` 값 (px) */
 const BANNER_HEIGHT = 40;
