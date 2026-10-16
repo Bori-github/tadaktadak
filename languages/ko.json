@@ -1,7 +1,8 @@
 {
   "ios": {
     "CFBundleDisplayName": "타닥타닥",
-    "NSMicrophoneUsageDescription": "이 앱은 마이크를 사용하지 않습니다."
+    "NSMicrophoneUsageDescription": "이 앱은 마이크를 사용하지 않습니다.",
+    "NSUserTrackingUsageDescription": "이 식별자는 맞춤형 광고를 제공하는 데 사용됩니다."
   },
   "android": {
     "app_name": "타닥타닥"
