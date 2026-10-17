@@ -1,7 +1,8 @@
 import { useSyncExternalStore } from 'react';
-import mobileAds, { AdsConsent, MaxAdContentRating } from 'react-native-google-mobile-ads';
+import mobileAds, { AdsConsent, type AdsConsentInfo, AdsConsentPrivacyOptionsRequirementStatus, MaxAdContentRating } from 'react-native-google-mobile-ads';
 
 let canShowAdvertisement = false;
+let isPrivacyOptionsRequired = false;
 const listeners = new Set<() => void>();
 
 const subscribe = (listener: () => void): (() => void) => {
@@ -12,6 +13,14 @@ const subscribe = (listener: () => void): (() => void) => {
 };
 
 const getCanShowAdvertisement = (): boolean => canShowAdvertisement;
+
+const getIsPrivacyOptionsRequired = (): boolean => isPrivacyOptionsRequired;
+
+const notifyListeners = (): void => {
+  listeners.forEach((listener) => {
+    listener();
+  });
+};
 
 /**
  * 광고 동의를 확인하고, 광고를 요청할 수 있으면 광고 SDK를 초기화
@@ -25,14 +34,17 @@ export const initializeAdvertisement = async (): Promise<void> => {
     // 동의 확인에 실패해도 광고 요청 여부는 `getConsentInfo` 결과로 판단
   }
 
-  let canRequestAds: boolean;
+  let consentInfo: AdsConsentInfo;
   try {
-    ({ canRequestAds } = await AdsConsent.getConsentInfo());
+    consentInfo = await AdsConsent.getConsentInfo();
   } catch {
     // 동의 정보를 읽지 못하면 동의 여부를 알 수 없어 광고를 요청하지 않음
     return;
   }
-  if (!canRequestAds) return;
+
+  isPrivacyOptionsRequired = consentInfo.privacyOptionsRequirementStatus === AdsConsentPrivacyOptionsRequirementStatus.REQUIRED;
+  notifyListeners();
+  if (!consentInfo.canRequestAds) return;
 
   try {
     await mobileAds().setRequestConfiguration({ maxAdContentRating: MaxAdContentRating.G });
@@ -43,9 +55,7 @@ export const initializeAdvertisement = async (): Promise<void> => {
   }
 
   canShowAdvertisement = true;
-  listeners.forEach((listener) => {
-    listener();
-  });
+  notifyListeners();
 };
 
 /**
@@ -54,3 +64,23 @@ export const initializeAdvertisement = async (): Promise<void> => {
  * @returns 광고 SDK 초기화가 끝났으면 true
  */
 export const useCanShowAdvertisement = (): boolean => useSyncExternalStore(subscribe, getCanShowAdvertisement);
+
+/**
+ * 개인정보 옵션 필요 여부 변경 시 리렌더링됨
+ *
+ * @returns 동의 정보의 `privacyOptionsRequirementStatus`가 `REQUIRED`면 true
+ */
+export const usePrivacyOptionsRequired = (): boolean => useSyncExternalStore(subscribe, getIsPrivacyOptionsRequired);
+
+/**
+ * 개인정보 옵션 동의 화면 표시
+ *
+ * @returns 동의 화면이 닫히면 이행하는 프로미스. 실패해도 거부되지 않음
+ */
+export const showPrivacyOptions = async (): Promise<void> => {
+  try {
+    await AdsConsent.showPrivacyOptionsForm();
+  } catch {
+    // 동의 화면 표시 실패 시 더보기 화면 유지, 재시도는 행 터치로 처리
+  }
+};

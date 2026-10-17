@@ -9,11 +9,13 @@ let mockCanRequestAds = true;
 let mockGatherConsent: () => Promise<unknown>;
 let mockInitialize: () => Promise<unknown>;
 let mockGetConsentInfo: () => Promise<unknown>;
+let mockPrivacyOptionsRequirementStatus = 'NOT_REQUIRED';
+let mockShowPrivacyOptionsForm: () => Promise<unknown>;
 
 const buildConsentInfo = (): Record<string, unknown> => ({
   status: 'NOT_REQUIRED',
   canRequestAds: mockCanRequestAds,
-  privacyOptionsRequirementStatus: 'NOT_REQUIRED',
+  privacyOptionsRequirementStatus: mockPrivacyOptionsRequirementStatus,
   isConsentFormAvailable: false,
 });
 
@@ -37,11 +39,16 @@ jest.mock('react-native-google-mobile-ads', () => ({
       mockCalls.push('getConsentInfo');
       return mockGetConsentInfo();
     },
+    showPrivacyOptionsForm: () => {
+      mockCalls.push('showPrivacyOptionsForm');
+      return mockShowPrivacyOptionsForm();
+    },
   },
+  AdsConsentPrivacyOptionsRequirementStatus: { UNKNOWN: 'UNKNOWN', REQUIRED: 'REQUIRED', NOT_REQUIRED: 'NOT_REQUIRED' },
   MaxAdContentRating: { G: 'G', PG: 'PG', T: 'T', MA: 'MA' },
 }));
 
-// `canShowAdvertisement`가 테스트 사이에 남지 않도록 매번 새로 불러옴
+// 모듈 상태(`canShowAdvertisement`, `isPrivacyOptionsRequired`)가 테스트 사이에 남지 않도록 테스트마다 모듈 재로드
 const loadAdvertisementModule = (): typeof advertisementModule => {
   let loaded: typeof advertisementModule | undefined;
   jest.isolateModules(() => {
@@ -60,6 +67,8 @@ beforeEach(() => {
   mockGatherConsent = async () => buildConsentInfo();
   mockInitialize = async () => [];
   mockGetConsentInfo = async () => buildConsentInfo();
+  mockPrivacyOptionsRequirementStatus = 'NOT_REQUIRED';
+  mockShowPrivacyOptionsForm = async () => buildConsentInfo();
 });
 
 describe('광고 동의를 확인하고, 광고를 요청할 수 있으면 광고 SDK를 초기화', () => {
@@ -144,5 +153,64 @@ describe('광고 표시 가능 여부 변경 시 리렌더링됨', () => {
     });
 
     expect(result.current).toBe(false);
+  });
+});
+
+describe('개인정보 옵션 필요 여부 변경 시 리렌더링됨', () => {
+  it('`privacyOptionsRequirementStatus`가 `REQUIRED`면 개인정보 옵션이 필요하다', async () => {
+    mockPrivacyOptionsRequirementStatus = 'REQUIRED';
+    const { initializeAdvertisement, usePrivacyOptionsRequired } = loadAdvertisementModule();
+    const { result } = await renderHook(() => usePrivacyOptionsRequired());
+
+    expect(result.current).toBe(false);
+
+    await act(async () => {
+      await initializeAdvertisement();
+    });
+
+    expect(result.current).toBe(true);
+  });
+
+  it('광고를 요청할 수 없어도 `privacyOptionsRequirementStatus`가 `REQUIRED`면 개인정보 옵션이 필요하다', async () => {
+    mockCanRequestAds = false;
+    mockPrivacyOptionsRequirementStatus = 'REQUIRED';
+    const { initializeAdvertisement, usePrivacyOptionsRequired } = loadAdvertisementModule();
+    const { result } = await renderHook(() => usePrivacyOptionsRequired());
+
+    await act(async () => {
+      await initializeAdvertisement();
+    });
+
+    expect(result.current).toBe(true);
+  });
+
+  it('`privacyOptionsRequirementStatus`가 `NOT_REQUIRED`면 개인정보 옵션이 필요하지 않다', async () => {
+    const { initializeAdvertisement, usePrivacyOptionsRequired } = loadAdvertisementModule();
+    const { result } = await renderHook(() => usePrivacyOptionsRequired());
+
+    await act(async () => {
+      await initializeAdvertisement();
+    });
+
+    expect(result.current).toBe(false);
+  });
+});
+
+describe('개인정보 옵션 동의 화면 표시', () => {
+  it('`showPrivacyOptionsForm`을 호출한다', async () => {
+    const { showPrivacyOptions } = loadAdvertisementModule();
+
+    await showPrivacyOptions();
+
+    expect(mockCalls).toEqual(['showPrivacyOptionsForm']);
+  });
+
+  it('`showPrivacyOptionsForm`이 실패해도 거부되지 않는다', async () => {
+    mockShowPrivacyOptionsForm = async () => {
+      throw new Error('동의 화면 표시 실패');
+    };
+    const { showPrivacyOptions } = loadAdvertisementModule();
+
+    await expect(showPrivacyOptions()).resolves.toBeUndefined();
   });
 });

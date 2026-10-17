@@ -42,7 +42,7 @@ jest.mock('react-native-reanimated', () => {
 });
 
 // 광고 SDK 초기화 없이 배너를 렌더링하도록 `useCanShowAdvertisement`를 true로 고정한 목으로 대체
-jest.mock('@/entities/advertisement', () => ({ useCanShowAdvertisement: () => true }));
+jest.mock('@/entities/advertisement', () => ({ useCanShowAdvertisement: () => true, usePrivacyOptionsRequired: () => false }));
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
