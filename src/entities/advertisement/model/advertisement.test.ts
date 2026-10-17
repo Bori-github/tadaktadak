@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { act, renderHook } from '@testing-library/react-native';
 import React from 'react';
+import type * as ReactNative from 'react-native';
 
 import type * as advertisementModule from './advertisement';
 
@@ -11,6 +12,7 @@ let mockInitialize: () => Promise<unknown>;
 let mockGetConsentInfo: () => Promise<unknown>;
 let mockPrivacyOptionsRequirementStatus = 'NOT_REQUIRED';
 let mockShowPrivacyOptionsForm: () => Promise<unknown>;
+let mockAppStateListener: ((state: ReactNative.AppStateStatus) => void) | undefined;
 
 const buildConsentInfo = (): Record<string, unknown> => ({
   status: 'NOT_REQUIRED',
@@ -54,6 +56,16 @@ const loadAdvertisementModule = (): typeof advertisementModule => {
   jest.isolateModules(() => {
     // 새로 불러온 모듈이 `renderHook`과 다른 React를 쓰면 `Invalid hook call`로 실패해 같은 React를 쓰도록 지정
     jest.doMock('react', () => React);
+    // `AppState` 변경 이벤트를 테스트에서 발생시키도록 `AppState.addEventListener` 리스너를 캡처하는 목으로 대체
+    const { AppState } = jest.requireActual<typeof ReactNative>('react-native');
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_type, listener) => {
+      mockAppStateListener = listener;
+      return {
+        remove: () => {
+          mockAppStateListener = undefined;
+        },
+      };
+    });
     loaded = jest.requireActual<typeof advertisementModule>('./advertisement');
   });
   if (loaded === undefined) throw new Error('advertisement 모듈을 불러오지 못함');
@@ -69,6 +81,7 @@ beforeEach(() => {
   mockGetConsentInfo = async () => buildConsentInfo();
   mockPrivacyOptionsRequirementStatus = 'NOT_REQUIRED';
   mockShowPrivacyOptionsForm = async () => buildConsentInfo();
+  mockAppStateListener = undefined;
 });
 
 describe('광고 동의를 확인하고, 광고를 요청할 수 있으면 광고 SDK를 초기화', () => {
@@ -98,6 +111,67 @@ describe('광고 동의를 확인하고, 광고를 요청할 수 있으면 광�
     await initializeAdvertisement();
 
     expect(mockCalls).toEqual(['gatherConsent', 'getConsentInfo', 'setRequestConfiguration:G', 'initialize']);
+  });
+
+  it('광고 SDK 초기화 완료 후 `initializeAdvertisement`를 재호출하면 `gatherConsent`를 호출하지 않는다', async () => {
+    const { initializeAdvertisement } = loadAdvertisementModule();
+
+    await initializeAdvertisement();
+    mockCalls.length = 0;
+    await initializeAdvertisement();
+
+    expect(mockCalls).toEqual([]);
+  });
+
+  it('초기화가 끝나기 전에 `initializeAdvertisement`를 재호출해도 `gatherConsent`를 한 번만 호출한다', async () => {
+    const { initializeAdvertisement } = loadAdvertisementModule();
+
+    await Promise.all([initializeAdvertisement(), initializeAdvertisement()]);
+
+    expect(mockCalls.filter((call) => call === 'gatherConsent')).toEqual(['gatherConsent']);
+  });
+
+  it('`canRequestAds`가 false였으면 `initializeAdvertisement` 재호출 시 `gatherConsent`를 다시 호출한다', async () => {
+    mockCanRequestAds = false;
+    const { initializeAdvertisement } = loadAdvertisementModule();
+
+    await initializeAdvertisement();
+    mockCalls.length = 0;
+    await initializeAdvertisement();
+
+    expect(mockCalls).toEqual(['gatherConsent', 'getConsentInfo']);
+  });
+});
+
+describe('`canStart`가 true가 되면 광고 SDK 초기화를 시작하고, `AppState`가 `active`로 바뀔 때마다 재시도', () => {
+  it('`canStart`가 false면 `gatherConsent`를 호출하지 않는다', async () => {
+    const { useAdvertisementInitialization } = loadAdvertisementModule();
+
+    await renderHook(() => useAdvertisementInitialization({ canStart: false }));
+
+    expect(mockCalls).toEqual([]);
+  });
+
+  it('`canStart`가 true면 `gatherConsent`를 호출한다', async () => {
+    const { useAdvertisementInitialization } = loadAdvertisementModule();
+
+    await renderHook(() => useAdvertisementInitialization({ canStart: true }));
+
+    expect(mockCalls).toContain('gatherConsent');
+  });
+
+  it('`canRequestAds`가 false였으면 `AppState`가 `active`로 바뀔 때 `gatherConsent`를 다시 호출한다', async () => {
+    mockCanRequestAds = false;
+    const { useAdvertisementInitialization } = loadAdvertisementModule();
+    await renderHook(() => useAdvertisementInitialization({ canStart: true }));
+    await act(async () => {});
+    mockCalls.length = 0;
+
+    await act(async () => {
+      mockAppStateListener?.('active');
+    });
+
+    expect(mockCalls).toEqual(['gatherConsent', 'getConsentInfo']);
   });
 });
 

@@ -1,4 +1,4 @@
-import { type JSX, useEffect, useState } from 'react';
+import { type JSX, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Sentry from '@sentry/react-native';
@@ -13,7 +13,7 @@ import { Splash } from './ui/splash/Splash';
 
 import { SettingsScreen } from '@/screens/settings';
 import { completionNotificationBehavior, TimerScreen } from '@/screens/timer';
-import { initializeAdvertisement } from '@/entities/advertisement';
+import { useAdvertisementInitialization } from '@/entities/advertisement';
 import { restoreAmbientSoundEnabled, useAmbientSoundPlayback } from '@/entities/ambient-sound';
 import { initLocalization, restoreLanguage } from '@/entities/language';
 import { canVibrate, prepareVibration, restoreVibrationEnabled, TAP_PATTERN } from '@/entities/vibration';
@@ -38,11 +38,8 @@ export const App = (): JSX.Element => {
 
   useAmbientSoundPlayback({ canPlay: !isSplashVisible && !hasError });
 
-  useEffect(() => {
-    // 동의 화면이 스플래시 위에 뜨지 않도록 스플래시가 끝난 뒤 `initializeAdvertisement` 호출
-    if (isSplashVisible) return;
-    initializeAdvertisement();
-  }, [isSplashVisible]);
+  // 동의 화면이 스플래시 위에 뜨지 않도록 스플래시가 끝난 뒤 광고 초기화 시작
+  useAdvertisementInitialization({ canStart: !isSplashVisible });
 
   return (
     <GestureHandlerRootView style={styles.root}>

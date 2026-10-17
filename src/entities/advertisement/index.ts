@@ -1,1 +1,1 @@
-export { initializeAdvertisement, showPrivacyOptions, useCanShowAdvertisement, usePrivacyOptionsRequired } from './model/advertisement';
+export { showPrivacyOptions, useAdvertisementInitialization, useCanShowAdvertisement, usePrivacyOptionsRequired } from './model/advertisement';
