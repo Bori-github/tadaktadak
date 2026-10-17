@@ -39,7 +39,7 @@ export const App = (): JSX.Element => {
   useAmbientSoundPlayback({ canPlay: !isSplashVisible && !hasError });
 
   useEffect(() => {
-    // 동의 화면과 ATT 팝업이 스플래시 위에 뜨지 않도록 스플래시가 끝난 뒤 `initializeAdvertisement` 호출
+    // 동의 화면이 스플래시 위에 뜨지 않도록 스플래시가 끝난 뒤 `initializeAdvertisement` 호출
     if (isSplashVisible) return;
     initializeAdvertisement();
   }, [isSplashVisible]);
