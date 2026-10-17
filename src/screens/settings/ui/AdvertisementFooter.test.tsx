@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import type * as ReactNative from 'react-native';
 import { act, render, screen } from '@testing-library/react-native';
+import React from 'react';
 
 import { AdvertisementFooter } from './AdvertisementFooter';
 
@@ -102,6 +103,28 @@ describe('설정 화면 하단 구분선과 광고 배너', () => {
     });
 
     expect(screen.queryByTestId('advertisement-footer')).not.toBeNull();
+  });
+
+  it('`__DEV__`가 false이고 광고 단위 ID 환경 변수가 없으면 구분선과 배너를 렌더링하지 않는다', async () => {
+    const originalIsDev = __DEV__;
+    let IsolatedAdvertisementFooter: typeof AdvertisementFooter | undefined;
+    jest.isolateModules(() => {
+      // `BANNER_UNIT_ID`가 모듈 로드 시 결정되어 `__DEV__`와 `ENV` 변경 후 모듈 재로드
+      Object.assign(globalThis, { __DEV__: false });
+      // 새로 불러온 모듈이 `render`와 다른 React를 쓰면 `Invalid hook call`로 실패해 같은 React를 쓰도록 지정
+      jest.doMock('react', () => React);
+      jest.doMock('@/shared/constants', () => ({
+        ...jest.requireActual<object>('@/shared/constants'),
+        ENV: { ADMOB_IOS_BANNER_UNIT_ID: undefined, ADMOB_ANDROID_BANNER_UNIT_ID: undefined },
+      }));
+      IsolatedAdvertisementFooter = jest.requireActual<{ AdvertisementFooter: typeof AdvertisementFooter }>('./AdvertisementFooter').AdvertisementFooter;
+    });
+    Object.assign(globalThis, { __DEV__: originalIsDev });
+    if (IsolatedAdvertisementFooter === undefined) throw new Error('AdvertisementFooter 모듈을 불러오지 못함');
+
+    await render(<IsolatedAdvertisementFooter dotSize={2} width={342} />);
+
+    expect(screen.queryByTestId('advertisement-footer')).toBeNull();
   });
 
   it('`useCanShowAdvertisement`가 false면 구분선과 배너를 렌더링하지 않는다', async () => {
