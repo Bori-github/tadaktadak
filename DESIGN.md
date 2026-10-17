@@ -2,7 +2,7 @@
 id: tadaktadak
 name: "Tadak Tadak"
 figma: "https://www.figma.com/design/qmtzKbnYAsTAXvn0CBbfo2/tadaktadak"
-updated: 2026-10-07
+updated: 2026-10-17
 category: personal-tool
 bundle_id: "com.boriguri.tadaktadak"
 primary_color: "#ffb43c"
@@ -450,6 +450,7 @@ hHHHHHh     .hHHHh.     kKKKKKk
 ### 설정 화면
 
 - 버튼 여백 16, 첫 줄 위치 52, 줄 폭 342, 끝 여백 20에 배율을 곱한다. 위치는 safe area 끝에서 잰다
+- 광고 배너 폭은 줄 폭에 배율을 곱한 값과 창 너비 중 작은 값이다. 배너 높이 상한 40에는 배율을 곱하지 않는다
 
 ## 8. States
 
@@ -517,6 +518,11 @@ hHHHHHh     .hHHHh.     kKKKKKk
 - 휴식 타이머가 끝나면 집중 타이머 대기로 간다
 - 휴식 타이머가 `00:00`이면 완료 연출이 끝날 때 집중 타이머 대기로 가고, 그전에 재생 버튼을 누르면 집중 타이머가 시작된다
 
+### 광고 배너
+
+- 광고가 로드되기 전에는 배너 자리에 스켈레톤을 표시한다
+- 광고 로드에 실패하거나 광고 SDK 초기화가 끝나지 않으면 구분선과 배너 자리를 표시하지 않는다
+
 ## 9. Motion & Easing
 
 | 항목 | 단위                                                                          |
@@ -572,3 +578,10 @@ hHHHHHh     .hHHHh.     kKKKKKk
 | 불티 지움      | 마지막 구간 종료 시 일괄 제거. 투명도 변화 없음                                          |
 | 모션 중 토글   | 손잡이는 현재 위치에서 반대쪽으로 이동, 불티는 반대 방향 첫 구간부터 재시작              |
 | 켜짐 불티 이징 | 둘째·셋째 구간 linear. 피그마 ease-out·ease-in 연결은 구간 경계 속도가 0이라 불티가 정지 |
+
+### 광고 스켈레톤
+
+| 항목   | 값                         |
+| ------ | -------------------------- |
+| 투명도 | 1과 0.45 사이 무한 반복    |
+| 편도   | 800밀리초, `easeInOutQuad` |
