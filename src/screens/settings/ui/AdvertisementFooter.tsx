@@ -79,7 +79,10 @@ export const AdvertisementFooter = ({ dotSize, width }: AdvertisementFooterProps
           width={width}
           maxHeight={BANNER_HEIGHT}
           onAdLoaded={() => setHasLoaded(true)}
-          onAdFailedToLoad={() => setHasLoadFailed(true)}
+          onAdFailedToLoad={() => {
+            // AdMob 광고 단위 자동 새로고침 설정 「Google 최적화」에서 새로고침 실패에도 호출되어 직전 광고 유지를 위해 첫 로드 실패에서만 영역 제거
+            if (!hasLoaded) setHasLoadFailed(true);
+          }}
         />
       </View>
     </View>

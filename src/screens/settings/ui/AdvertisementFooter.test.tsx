@@ -81,7 +81,7 @@ describe('설정 화면 하단 구분선과 광고 배너', () => {
     expect(screen.queryByTestId('advertisement-skeleton')).toBeNull();
   });
 
-  it('`onAdFailedToLoad` 발생 시 구분선과 배너를 렌더링하지 않는다', async () => {
+  it('광고 로드 전 `onAdFailedToLoad` 발생 시 구분선과 배너를 렌더링하지 않는다', async () => {
     await render(<AdvertisementFooter dotSize={2} width={342} />);
 
     await act(() => {
@@ -89,6 +89,19 @@ describe('설정 화면 하단 구분선과 광고 배너', () => {
     });
 
     expect(screen.queryByTestId('advertisement-footer')).toBeNull();
+  });
+
+  it('`onAdLoaded` 이후 자동 새로고침에서 `onAdFailedToLoad` 발생 시 구분선과 배너를 유지한다', async () => {
+    await render(<AdvertisementFooter dotSize={2} width={342} />);
+
+    await act(() => {
+      mockBannerProps?.onAdLoaded?.();
+    });
+    await act(() => {
+      mockBannerProps?.onAdFailedToLoad?.(new Error('광고 없음'));
+    });
+
+    expect(screen.queryByTestId('advertisement-footer')).not.toBeNull();
   });
 
   it('`useCanShowAdvertisement`가 false면 구분선과 배너를 렌더링하지 않는다', async () => {
