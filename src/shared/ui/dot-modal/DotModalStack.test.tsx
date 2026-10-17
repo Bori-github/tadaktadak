@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { BackHandler, Pressable, Text, type HardwareBackPressEvent } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 
 import { DotModalStack, type DotModalScreen } from './DotModalStack';
 
@@ -23,6 +23,7 @@ const stackScreens: Record<StackView, DotModalScreen<StackView>> = {
         />
       </>
     ),
+    footer: <Text>첫 화면 footer</Text>,
   },
   second: {
     render: () => <Text>두번째 화면</Text>,
@@ -112,5 +113,31 @@ describe('화면 스택을 관리하는 공용 모달', () => {
 
     expect(await pressBack()).toBe(false);
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('화면에 `footer`가 있으면 스크롤 영역 밖에 표시한다', async () => {
+    await render(stack());
+
+    expect(screen.getByText('첫 화면 footer')).not.toBeNull();
+    expect(within(screen.getByTestId('modal-scroll')).queryByText('첫 화면 footer')).toBeNull();
+  });
+
+  it('`footer`가 없는 화면으로 이동하면 이전 화면의 `footer`를 표시하지 않는다', async () => {
+    await render(stack());
+    await fireEvent.press(screen.getByTestId('to-second'));
+
+    expect(screen.queryByText('첫 화면 footer')).toBeNull();
+  });
+
+  it('`footer`가 있으면 safe area 아래 여백을 스크롤 영역이 아니라 `footer` 아래에 둔다', async () => {
+    const bottomInsetMetrics = { ...metrics, insets: { ...metrics.insets, bottom: 34 } };
+    await render(
+      <SafeAreaProvider initialMetrics={bottomInsetMetrics}>
+        <DotModalStack dotSize={2} initial="first" screens={stackScreens} onClose={() => {}} />
+      </SafeAreaProvider>,
+    );
+
+    expect(screen.getByTestId('modal-scroll')).toHaveStyle({ marginBottom: 0 });
+    expect(screen.getByTestId('modal-footer')).toHaveStyle({ marginBottom: 34 });
   });
 });

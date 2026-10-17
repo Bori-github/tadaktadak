@@ -8,6 +8,8 @@ type ModalNavigation<TView extends string> = {
 
 export type DotModalScreen<TView extends string> = {
   render: (navigation: ModalNavigation<TView>) => ReactNode;
+  /** `ScrollView` 밖 하단에 고정 렌더링하는 요소 */
+  footer?: ReactNode;
 };
 
 type DotModalStackProps<TView extends string> = {
@@ -38,7 +40,7 @@ export const DotModalStack = <TView extends string>({ dotSize, initial, screens,
   if (screen === undefined) return null;
 
   return (
-    <DotModal dotSize={dotSize} onClose={onClose} onBack={views.length > 1 ? back : undefined}>
+    <DotModal dotSize={dotSize} onClose={onClose} onBack={views.length > 1 ? back : undefined} footer={screen.footer}>
       {screen.render({ open })}
     </DotModal>
   );
