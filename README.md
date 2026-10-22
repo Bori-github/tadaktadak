@@ -1,9 +1,10 @@
 # 타닥타닥
 
-집중할 땐 은은하게 밝아지고, 쉴 땐 차분하게 어두워져요.
-집중할 시간과 휴식할 시간을 설정하고, 타이머를 시작하면 돼요.
+오늘도, 타닥타닥
+나만의 속도로 집중하는 시간을 만들어보세요.
 
-[App Store에서 받기](https://apps.apple.com/app/id6811381445)
+- [App Store에서 받기](https://apps.apple.com/app/id6811381445)
+- [Google Play에서 받기](https://play.google.com/store/apps/details?id=com.boriguri.tadaktadak)
 
 <p>
   <img src="store/ios/screenshots/ko/01-timer-setting.png" width="200">
