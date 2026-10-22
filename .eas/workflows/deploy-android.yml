@@ -1,0 +1,42 @@
+name: deploy-android
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  fingerprint:
+    type: fingerprint
+    environment: production
+
+  get_build:
+    type: get-build
+    needs: [fingerprint]
+    params:
+      platform: android
+      profile: production
+      distribution: store
+      channel: production
+      fingerprint_hash: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
+
+  update_android:
+    type: update
+    needs: [get_build]
+    if: ${{ needs.get_build.outputs.build_id }}
+    params:
+      platform: android
+      channel: production
+      upload_sentry_sourcemaps: true
+
+  build_android:
+    type: build
+    needs: [get_build]
+    if: ${{ !needs.get_build.outputs.build_id }}
+    params:
+      platform: android
+      profile: production
+
+  submit_android:
+    type: submit
+    needs: [build_android]
+    params:
+      build_id: ${{ needs.build_android.outputs.build_id }}
