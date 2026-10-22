@@ -1,9 +1,10 @@
 # 타닥타닥
 
-집중할 땐 은은하게 밝아지고, 쉴 땐 차분하게 어두워져요.
-집중할 시간과 휴식할 시간을 설정하고, 타이머를 시작하면 돼요.
+오늘도, 타닥타닥
+나만의 속도로 집중하는 시간을 만들어보세요.
 
-[App Store에서 받기](https://apps.apple.com/app/id6811381445)
+- [App Store에서 받기](https://apps.apple.com/app/id6811381445)
+- [Google Play에서 받기](https://play.google.com/store/apps/details?id=com.boriguri.tadaktadak)
 
 <p>
   <img src="store/ios/screenshots/ko/01-timer-setting.png" width="200">
@@ -68,14 +69,15 @@ export PATH="$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools"
 
 ```bash
 pnpm deploy:ios release/X.Y       # fingerprint로 OTA와 스토어 배포를 구분해 실행
+pnpm deploy:android release/X.Y
 ```
 
-- fingerprint가 직전 빌드와 같으면 OTA로, 다르면 빌드해서 App Store Connect에 업로드
+- fingerprint가 직전 빌드와 같으면 OTA로, 다르면 빌드해서 App Store Connect 또는 Google Play internal 트랙에 업로드
 
 배포 후 태그 푸시를 통해 릴리즈 노트를 발행한다.
 
 - OTA: 배포 직후
-- 스토어: 승인·출시 후
+- 스토어: 두 스토어 모두 출시 후
 
 ```bash
 git tag v1.0.1.1 && git push origin v1.0.1.1   # OTA
