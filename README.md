@@ -68,14 +68,15 @@ export PATH="$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools"
 
 ```bash
 pnpm deploy:ios release/X.Y       # fingerprint로 OTA와 스토어 배포를 구분해 실행
+pnpm deploy:android release/X.Y
 ```
 
-- fingerprint가 직전 빌드와 같으면 OTA로, 다르면 빌드해서 App Store Connect에 업로드
+- fingerprint가 직전 빌드와 같으면 OTA로, 다르면 빌드해서 App Store Connect 또는 Google Play internal 트랙에 업로드
 
 배포 후 태그 푸시를 통해 릴리즈 노트를 발행한다.
 
 - OTA: 배포 직후
-- 스토어: 승인·출시 후
+- 스토어: 두 스토어 모두 출시 후
 
 ```bash
 git tag v1.0.1.1 && git push origin v1.0.1.1   # OTA

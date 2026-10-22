@@ -1,4 +1,4 @@
-# 릴리즈 흐름(iOS 기준)
+# 릴리즈 흐름
 
 스토어 배포와 OTA 업데이트 흐름 및 릴리즈 노트 발행까지의 흐름
 
@@ -16,9 +16,9 @@
 flowchart TD
     M["main"] -->|push| D["draft.yml → 릴리즈 노트 draft 갱신"]
     M -->|"브랜치 생성"| RB["release/X.Y"]
-    RB -->|"pnpm deploy:ios release/X.Y"| E
+    RB -->|"pnpm deploy:ios / deploy:android release/X.Y"| E
 
-    subgraph E["deploy-ios 워크플로"]
+    subgraph E["deploy-ios / deploy-android 워크플로"]
         F["fingerprint"] --> G["get-build"]
         G -->|"빌드 있음"| U["update"]
         G -->|"빌드 없음"| B["build"] --> S["submit"]
@@ -37,7 +37,7 @@ flowchart TD
 `fingerprint` 잡이 현재 커밋의 네이티브 fingerprint를 계산하고, `get-build` 잡이 같은 fingerprint로 만들어진 production 빌드가 EAS 서버에 있는지 조회한다.
 
 - 찾으면 `eas update`로 JS 번들만 내보낸다
-- 못 찾으면 빌드해서 App Store Connect에 올린다
+- 못 찾으면 빌드해서 App Store Connect 또는 Google Play internal 트랙에 올린다
 
 fingerprint에는 네이티브 빌드를 결정하는 것만 들어간다. `src/` 아래 TypeScript는 들어가지 않아, 화면 로직만 고친 배포는 OTA로 나간다. 다음을 고치면 fingerprint가 바뀌어 스토어 빌드가 필요하다.
 
@@ -50,9 +50,12 @@ fingerprint에는 네이티브 빌드를 결정하는 것만 들어간다. `src/
 
 ```bash
 pnpm deploy:ios release/1.2
+pnpm deploy:android release/1.2
 ```
 
 배포할 `release/*` 브랜치를 인자로 지정한다.
+
+Android 빌드는 EAS에 등록한 Google 서비스 계정 키로 internal 트랙에 제출되며, 프로덕션 승격은 Play Console에서 직접 진행한다.
 
 ## 릴리즈 노트
 
@@ -64,10 +67,10 @@ release 브랜치 커밋에 태그를 푸시하면 자동 발행하며, release 
 git tag v1.0.1.1 origin/release/1.0 && git push origin v1.0.1.1
 ```
 
-| 배포   | 태그       | 푸시 시점      |
-| ------ | ---------- | -------------- |
-| OTA    | `v1.0.1.1` | 배포 직후      |
-| 스토어 | `v1.0.1`   | 승인·출시된 뒤 |
+| 배포   | 태그       | 푸시 시점                |
+| ------ | ---------- | ------------------------ |
+| OTA    | `v1.0.1.1` | 배포 직후                |
+| 스토어 | `v1.0.1`   | 두 스토어 모두 출시된 뒤 |
 
 릴리즈 제목은 태그와 같다.
 
@@ -89,7 +92,8 @@ git tag v1.0.1.1 origin/release/1.0 && git push origin v1.0.1.1
 | 파일                                       | 역할                                                       |
 | ------------------------------------------ | ---------------------------------------------------------- |
 | `.eas/workflows/deploy-ios.yml`            | fingerprint로 배포 수단을 정해 실행                        |
-| `scripts/deploy/ios.sh`                    | `release/*` 브랜치만 deploy-ios 워크플로 실행              |
+| `.eas/workflows/deploy-android.yml`        | fingerprint로 배포 수단을 정해 실행                        |
+| `scripts/deploy.sh`                        | `release/*` 브랜치만 플랫폼별 deploy 워크플로 실행         |
 | `.github/workflows/draft.yml`              | `main` push마다 릴리즈 노트 draft 갱신                     |
 | `.github/release-drafter.yml`              | 절 이름과 분류 규칙이며, `backported` 라벨 PR은 제외       |
 | `.github/workflows/publish.yml`            | 태그 푸시로 draft 발행                                     |
