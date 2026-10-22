@@ -4726,15 +4726,6 @@ packages:
   react-is@19.3.1:
     resolution: {integrity: sha512-RRieF6IyxQBkcK6pP8xOHprLTPW6QjRkbGdImtqNme+/hYVwCZkLQLdlZGOhUqXwkS9IEynaGvPJtv6XB/cz0Q==}
 
-  react-is@19.3.1:
-    resolution: {integrity: sha512-RRieF6IyxQBkcK6pP8xOHprLTPW6QjRkbGdImtqNme+/hYVwCZkLQLdlZGOhUqXwkS9IEynaGvPJtv6XB/cz0Q==}
-
-  react-is@19.3.1:
-    resolution: {integrity: sha512-RRieF6IyxQBkcK6pP8xOHprLTPW6QjRkbGdImtqNme+/hYVwCZkLQLdlZGOhUqXwkS9IEynaGvPJtv6XB/cz0Q==}
-
-  react-is@19.3.1:
-    resolution: {integrity: sha512-RRieF6IyxQBkcK6pP8xOHprLTPW6QjRkbGdImtqNme+/hYVwCZkLQLdlZGOhUqXwkS9IEynaGvPJtv6XB/cz0Q==}
-
   react-native-bootsplash@7.3.3:
     resolution: {integrity: sha512-Olyxf2kTHUZtlXTOPl2QhQhOYZ7oS1PGMyicPlNKWtl8HYTbyywzuYfMKA9+2QZHhFXsaT4C7H5UP3Te0QuZcQ==}
     hasBin: true
@@ -11591,12 +11582,6 @@ snapshots:
   react-is@18.3.1: {}
 
   react-is@19.2.8: {}
-
-  react-is@19.3.1: {}
-
-  react-is@19.3.1: {}
-
-  react-is@19.3.1: {}
 
   react-is@19.3.1: {}
 
