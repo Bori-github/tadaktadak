@@ -21,6 +21,6 @@ describe('MoreList', () => {
 
     await fireEvent.press(screen.getByTestId('more-privacy-policy'));
 
-    expect(openURL).toHaveBeenCalledWith('https://qhflrnfl4324.notion.site/tadaktadak');
+    expect(openURL).toHaveBeenCalledWith('https://hello-tadaktadak.vercel.app/privacy');
   });
 });
