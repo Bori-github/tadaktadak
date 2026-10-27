@@ -34,7 +34,7 @@ describe('더보기 화면 목록', () => {
 
     await fireEvent.press(screen.getByTestId('more-privacy-policy'));
 
-    expect(openURL).toHaveBeenCalledWith('https://qhflrnfl4324.notion.site/tadaktadak');
+    expect(openURL).toHaveBeenCalledWith('https://hello-tadaktadak.vercel.app/privacy');
   });
 
   it('개인정보 옵션이 필요하면 개인정보 옵션 행을 렌더링한다', async () => {
