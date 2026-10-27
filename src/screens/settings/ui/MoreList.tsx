@@ -10,7 +10,7 @@ import { COLORS, DOT_SIZE } from '@/shared/constants';
 
 import { ChevronIcon } from '@/shared/ui/dot-icon';
 
-const PRIVACY_POLICY_URL = 'https://qhflrnfl4324.notion.site/tadaktadak';
+const PRIVACY_POLICY_URL = 'https://hello-tadaktadak.vercel.app/privacy';
 
 const openPrivacyPolicy = (): void => {
   // https 주소를 여는 앱이 없을 때만 실패해 알림 없이 무시함
