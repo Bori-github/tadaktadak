@@ -49,6 +49,11 @@ center() {
   center_of "resource-id=\"$1\""
 }
 
+# 마지막 화면 덤프 기준
+visible() {
+  [ -n "$(center "$1")" ] && echo 표시 || echo 없음
+}
+
 # 정지 버튼 비활성이면 대기 상태. Android 접근성 트리에는 `remaining-seconds`가 없음
 is_idle() {
   dump_ui
