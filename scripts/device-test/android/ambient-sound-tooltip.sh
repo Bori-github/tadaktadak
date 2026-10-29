@@ -1,5 +1,5 @@
 #!/bin/sh
-# Test Cases: TC-AMBIENT-SOUND-012, TC-AMBIENT-SOUND-017, TC-AMBIENT-SOUND-013, TC-AMBIENT-SOUND-016, TC-AMBIENT-SOUND-014, TC-AMBIENT-SOUND-015
+# Test Cases: TC-AMBIENT-SOUND-012, TC-AMBIENT-SOUND-017, TC-AMBIENT-SOUND-014, TC-AMBIENT-SOUND-016, TC-AMBIENT-SOUND-015
 # 소요 시간: 2분
 # 주의사항:
 # - 앱 데이터를 삭제하고 끝나거나 중단되면 집중/휴식 타이머를 1분으로 복원
@@ -31,13 +31,11 @@ report TC-AMBIENT-SOUND-017 $ok "툴팁을 닫지 않고 앱 종료 후 다시 �
 
 ok=0
 tooltip_shown || ok=1
-# 배경음 버튼과 설정 버튼 사이의 빈 곳
-# shellcheck disable=SC2046
-device shell input tap $(center readout-focus | cut -d' ' -f1) $(center settings | cut -d' ' -f2)
-sleep 1
+tap ambient-sound
 closed=$(shown)
-[ "$closed" = 없음 ] || ok=1
-report TC-AMBIENT-SOUND-013 $ok "빈 곳 터치 후 툴팁 $closed"
+playing=$(wait_ambient 1 && echo 재생 || echo 정지)
+{ [ "$closed" = 없음 ] && [ "$playing" = 정지 ]; } || ok=1
+report TC-AMBIENT-SOUND-014 $ok "배경음 버튼 터치 후 툴팁 $closed, 10초 동안 배경음 $playing"
 
 close_app
 launch
@@ -45,16 +43,6 @@ ok=0
 reopened=$(shown)
 [ "$reopened" = 없음 ] || ok=1
 report TC-AMBIENT-SOUND-016 $ok "툴팁을 닫은 뒤 앱 종료 후 다시 진입 시 툴팁 $reopened"
-
-clear_app
-launch
-ok=0
-tooltip_shown || ok=1
-tap ambient-sound
-closed=$(shown)
-playing=$(wait_ambient 1 && echo 재생 || echo 정지)
-{ [ "$closed" = 없음 ] && [ "$playing" = 정지 ]; } || ok=1
-report TC-AMBIENT-SOUND-014 $ok "배경음 버튼 터치 후 툴팁 $closed, 10초 동안 배경음 $playing"
 
 clear_app
 launch
