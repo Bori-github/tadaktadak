@@ -1,6 +1,6 @@
 ---
 name: android-device-test
-description: Android 실기기 테스트 스크립트를 순서대로 실행하고 TC별 결과를 보고한다. 약 30분간 기기를 조작하면서 벨소리 모드, 알림 권한, 화면 켜짐 유지, 앱의 진동 토글/언어/타이머 시간을 바꾸므로 `/android-device-test`로만 실행한다. 바꾼 설정은 스크립트가 끝나거나 중단될 때 되돌린다.
+description: Android 실기기 테스트 스크립트를 순서대로 실행하고 TC별 결과를 보고한다. 약 30분간 기기를 조작하면서 앱 데이터를 삭제하고 벨소리 모드, 알림 권한, 화면 켜짐 유지, 앱의 진동 토글/언어/타이머 시간을 바꾸므로 `/android-device-test`로만 실행한다. 바꾼 설정은 스크립트가 끝나거나 중단될 때 되돌린다.
 disable-model-invocation: true
 ---
 
@@ -14,7 +14,8 @@ disable-model-invocation: true
 2. 이후 모든 adb 명령은 `adb -s <시리얼>`로, 모든 스크립트는 `SERIAL=<시리얼>`을 붙여 실행한다.
 3. 기기 모델(`getprop ro.product.model`), Android 버전(`getprop ro.build.version.release`), 앱 버전(`dumpsys package com.boriguri.tadaktadak | grep versionName`)을 조회해 결과 보고에 사용한다.
 4. 기기가 `TESTS.md`의 측정 기기와 다르면 같은 문서의 「다른 기기 사용」을 안내하고 중단한다.
-5. 아래 전제 조건을 확인하고, 하나라도 충족하지 않으면 사용자에게 알린 뒤 중단한다.
+5. 다른 모든 스크립트보다 먼저 `ambient-sound-tooltip.sh`를 「실행 명령」 형식으로 `run_in_background`로 실행하고 결과 줄을 수집한다.
+6. 아래 전제 조건을 확인하고, 하나라도 충족하지 않으면 사용자에게 알린 뒤 중단한다.
 
    - 알림 권한 허용: 아래 명령 출력이 있음
      ```sh
