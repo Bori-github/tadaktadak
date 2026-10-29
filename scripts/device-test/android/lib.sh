@@ -88,6 +88,24 @@ launch() {
   wait_until_gone splash
 }
 
+# `pm clear`가 알림 권한도 회수해 삭제 직후 다시 허용
+clear_app() {
+  device shell pm clear "$PACKAGE" > /dev/null
+  device shell pm grant "$PACKAGE" android.permission.POST_NOTIFICATIONS
+  cleared_app=1
+}
+
+tooltip_shown() {
+  dump_ui
+  [ -n "$(center ambient-sound-tooltip)" ]
+}
+
+close_tooltip() {
+  tooltip_shown || return 0
+  device shell input keyevent KEYCODE_BACK
+  sleep 1
+}
+
 # 최근 앱 화면에서 앱 카드를 위로 드래그해 앱 종료. `am force-stop`과 달리 예약 알람과 알림 유지
 # 카드 중심 좌표를 `card`에 남겨 `swipe_card`가 화면 덤프 없이 다시 씀
 close_app() {
@@ -399,6 +417,8 @@ original_stay_on=$(device shell settings get global stay_on_while_plugged_in | t
 # 단계마다 서브셸에서 실행해 앞 단계가 실패해도(`exit`) 다음 단계를 계속 진행
 restore() {
   set +e
+  # 앱 데이터 삭제로 타이머 시간(분)이 기본값 집중 25분/휴식 5분이 되어 여기서 1분으로 되돌림
+  [ -z "${cleared_app:-}" ] || (start_idle && close_tooltip && drag_minutes 25 1 && tap readout-rest && drag_minutes 5 1 && tap readout-focus)
   [ -z "${changed_minutes:-}" ] || (start_idle && minutes=$(focus_minutes) && drag_minutes "$minutes" 1)
   [ -z "${changed_vibration:-}" ] || (start_idle && set_vibration 1)
   [ -z "${changed_language:-}" ] || (start_idle && select_language system)
