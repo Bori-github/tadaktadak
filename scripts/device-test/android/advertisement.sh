@@ -2,7 +2,8 @@
 # Test Cases: TC-ADVERTISEMENT-001, TC-ADVERTISEMENT-003, TC-ADVERTISEMENT-006, TC-ADVERTISEMENT-004, TC-ADVERTISEMENT-005
 # 소요 시간: 2분
 # 주의사항:
-# - 비행기 모드를 켜고 끝나거나 중단되면 끔
+# - 비행기 모드를 켜고 끝나거나 중단되면 원래 값으로 복원
+# - 무선 디버깅 연결에서는 비행기 모드가 Wi-Fi를 꺼 adb 연결이 끊기므로 USB 연결로 실행
 # - 앱 데이터를 삭제하고 끝나거나 중단되면 집중/휴식 타이머를 1분으로 복원
 . "$(dirname "$0")/lib.sh"
 
@@ -45,20 +46,21 @@ options=$([ -n "$(center more-privacy-options)" ] && echo 표시 || echo 없음)
 report TC-ADVERTISEMENT-006 $ok "더보기 화면 개인정보 옵션 행 $options"
 tap modal-close
 
-device shell cmd connectivity airplane-mode enable
 changed_airplane=1
+set_airplane 1
 sleep 3
 ok=0
+network=$(online && echo 연결 || echo 끊김)
 tap settings
 wait_for settings-language
 sleep 5
 dump_ui
 offline_footer=$(footer)
-[ "$offline_footer" = 없음 ] || ok=1
-report TC-ADVERTISEMENT-004 $ok "비행기 모드 $(device shell settings get global airplane_mode_on | tr -d '\r')에서 설정 화면 진입 5초 후 배너 영역 $offline_footer"
+{ [ "$network" = 끊김 ] && [ "$offline_footer" = 없음 ]; } || ok=1
+report TC-ADVERTISEMENT-004 $ok "비행기 모드에서 네트워크 $network, 설정 화면 진입 5초 후 배너 영역 $offline_footer"
 tap modal-close
-device shell cmd connectivity airplane-mode disable
-changed_airplane=
+set_airplane 0
+wait_online || { echo "비행기 모드 해제 후 네트워크가 연결되지 않음" >&2; exit 1; }
 
 clear_app
 launch
@@ -66,9 +68,8 @@ ok=0
 covered=0
 for _ in 1 2 3 4 5; do
   dump_ui
-  [ -n "$(center controls-play)" ] || covered=$((covered + 1))
-  resumed_activity | grep -q "$PACKAGE/.MainActivity" || covered=$((covered + 1))
+  { [ -n "$(center controls-play)" ] && resumed_activity | grep -q "$PACKAGE/.MainActivity"; } || covered=$((covered + 1))
   sleep 1
 done
 [ "$covered" = 0 ] || ok=1
-report TC-ADVERTISEMENT-005 $ok "앱 데이터 삭제 후 첫 실행 10초 동안 타이머 화면이 가려진 확인 횟수 $covered/10"
+report TC-ADVERTISEMENT-005 $ok "앱 데이터 삭제 후 첫 실행에서 화면 확인 5회 중 타이머 화면이 가려진 횟수 $covered"
