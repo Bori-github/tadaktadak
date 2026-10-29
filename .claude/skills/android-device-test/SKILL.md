@@ -1,6 +1,6 @@
 ---
 name: android-device-test
-description: Android 실기기 테스트 스크립트를 순서대로 실행하고 TC별 결과를 보고한다. 약 30분간 기기를 조작하면서 앱 데이터를 삭제하고 벨소리 모드, 알림 권한, 화면 켜짐 유지, 앱의 진동 토글/언어/타이머 시간을 바꾸므로 `/android-device-test`로만 실행한다. 바꾼 설정은 스크립트가 끝나거나 중단될 때 되돌린다.
+description: Android 실기기 테스트 스크립트를 순서대로 실행하고 TC별 결과를 보고한다. 약 30분간 기기를 조작하면서 앱 데이터를 삭제하고 벨소리 모드, 비행기 모드, 알림 권한, 화면 켜짐 유지, 앱의 진동 토글/언어/타이머 시간을 바꾸므로 `/android-device-test`로만 실행한다. 바꾼 설정은 스크립트가 끝나거나 중단될 때 되돌린다.
 disable-model-invocation: true
 ---
 
@@ -58,6 +58,7 @@ disable-model-invocation: true
 6. `live-update.sh`
 7. `language.sh`
 8. `ambient-sound.sh`
+9. `advertisement.sh`
 
 스크립트 소요 시간(각 머리 주석 참고)이 Bash 도구 기본 타임아웃 2분을 넘을 수 있으므로 `run_in_background`로 실행하고 완료 알림을 기다린다.
 
