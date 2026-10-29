@@ -417,6 +417,7 @@ original_stay_on=$(device shell settings get global stay_on_while_plugged_in | t
 # 단계마다 서브셸에서 실행해 앞 단계가 실패해도(`exit`) 다음 단계를 계속 진행
 restore() {
   set +e
+  [ -z "${changed_airplane:-}" ] || device shell cmd connectivity airplane-mode disable
   # 앱 데이터 삭제로 타이머 시간(분)이 기본값 집중 25분/휴식 5분이 되어 여기서 1분으로 되돌림
   [ -z "${cleared_app:-}" ] || (start_idle && close_tooltip && drag_minutes 25 1 && tap readout-rest && drag_minutes 5 1 && tap readout-focus)
   [ -z "${changed_minutes:-}" ] || (start_idle && minutes=$(focus_minutes) && drag_minutes "$minutes" 1)

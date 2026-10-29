@@ -1,5 +1,5 @@
 #!/bin/sh
-# Test Cases: TC-SETTINGS-001, TC-SETTINGS-002, TC-SETTINGS-003, TC-SETTINGS-004, TC-SETTINGS-006, TC-SETTINGS-007
+# Test Cases: TC-SETTINGS-001, TC-SETTINGS-002, TC-SETTINGS-003, TC-SETTINGS-004, TC-SETTINGS-006, TC-SETTINGS-007, TC-SETTINGS-008
 # 소요 시간: 4분
 . "$(dirname "$0")/lib.sh"
 
@@ -40,6 +40,12 @@ button_tap TC-SETTINGS-004 1
 drag TC-SETTINGS-003 1
 
 set_vibration 0
+close_app
+launch
+ok=0
+stored=$(vibration_enabled && echo 켜짐 || echo 꺼짐)
+[ "$stored" = 꺼짐 ] || ok=1
+report TC-SETTINGS-008 $ok "진동 토글 끄기 후 앱 종료, 다시 진입 시 조작 진동 기준 진동 토글 $stored"
 button_tap TC-SETTINGS-007 0
 drag TC-SETTINGS-006 0
 
