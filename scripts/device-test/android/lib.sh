@@ -49,6 +49,11 @@ center() {
   center_of "resource-id=\"$1\""
 }
 
+# 마지막 화면 덤프 기준
+visible() {
+  [ -n "$(center "$1")" ] && echo 표시 || echo 없음
+}
+
 # 정지 버튼 비활성이면 대기 상태. Android 접근성 트리에는 `remaining-seconds`가 없음
 is_idle() {
   dump_ui
@@ -104,6 +109,24 @@ close_tooltip() {
   tooltip_shown || return 0
   device shell input keyevent KEYCODE_BACK
   sleep 1
+}
+
+# 1 켜짐, 0 꺼짐
+set_airplane() {
+  device shell cmd connectivity airplane-mode "$([ "$1" = 1 ] && echo enable || echo disable)"
+}
+
+online() {
+  ! device shell dumpsys connectivity | grep -q 'Active default network: none'
+}
+
+# 비행기 모드 해제 후 기본 네트워크 재연결까지 5초가 걸려 최대 15초 대기
+wait_online() {
+  for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+    online && return
+    sleep 1
+  done
+  return 1
 }
 
 # 최근 앱 화면에서 앱 카드를 위로 드래그해 앱 종료. `am force-stop`과 달리 예약 알람과 알림 유지
@@ -413,10 +436,12 @@ report() {
 
 original_ringer=$(ringer)
 original_stay_on=$(device shell settings get global stay_on_while_plugged_in | tr -d '\r')
+original_airplane=$(device shell settings get global airplane_mode_on | tr -d '\r')
 # 스크립트가 바꾼 설정을 전제 조건(타이머 1분, 진동 토글 켜짐, 시스템 언어, 배경음 꺼짐)으로 되돌림
 # 단계마다 서브셸에서 실행해 앞 단계가 실패해도(`exit`) 다음 단계를 계속 진행
 restore() {
   set +e
+  [ -z "${changed_airplane:-}" ] || set_airplane "$original_airplane"
   # 앱 데이터 삭제로 타이머 시간(분)이 기본값 집중 25분/휴식 5분이 되어 여기서 1분으로 되돌림
   [ -z "${cleared_app:-}" ] || (start_idle && close_tooltip && drag_minutes 25 1 && tap readout-rest && drag_minutes 5 1 && tap readout-focus)
   [ -z "${changed_minutes:-}" ] || (start_idle && minutes=$(focus_minutes) && drag_minutes "$minutes" 1)

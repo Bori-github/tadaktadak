@@ -9,7 +9,8 @@
 TOOLTIP_TEXT='타닥타닥, 장작 타는 소리와 함께해 보세요.'
 
 shown() {
-  tooltip_shown && echo 표시 || echo 없음
+  dump_ui
+  visible ambient-sound-tooltip
 }
 
 clear_app
