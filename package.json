@@ -39,7 +39,7 @@
     "eslint": "^9.39.5",
     "eslint-config-expo": "^57.0.1",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-boundaries": "^7.2.0",
+    "eslint-plugin-boundaries": "^7.4.0",
     "eslint-plugin-fsd-lint": "^1.2.1",
     "eslint-plugin-unicorn": "^78.0.0",
     "expo-doctor": "^1.20.2",
