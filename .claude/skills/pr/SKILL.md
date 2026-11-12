@@ -59,6 +59,7 @@ description: 타닥타닥 저장소에 Pull Request를 만들 때 쓴다. 사용
     - `gh pr create --base <base> --title "…" --body "…" --assignee @me`
     - `gh pr edit --add-label <label>`
     - 담당자는 `@me`(현재 인증 사용자)로 배정한다. 계정명을 하드코딩하지 않는다
+    - 브랜치 이름의 TASK ID 번호로 WBS 행을 조회해 `PR` 속성에 PR 주소를 입력한다
 
 ## 규칙
 
