@@ -117,9 +117,16 @@ export const releaseVibration = (): void => {
 };
 
 /**
+ * 기기의 햅틱 지원 여부
+ *
+ * @returns 네이티브 모듈이 없거나 기기가 햅틱을 지원하면 true
+ */
+export const isHapticsSupported = (): boolean => hapticPattern === null || hapticPattern.supportsHaptics;
+
+/**
  * @returns 진동 사용 여부가 켜져 있고, 네이티브 모듈이 없거나 기기가 햅틱을 지원하면 true
  */
-export const canVibrate = (): boolean => enabledSetting.get() && (hapticPattern === null || hapticPattern.supportsHaptics);
+export const canVibrate = (): boolean => enabledSetting.get() && isHapticsSupported();
 
 /** `events` 패턴 1회 재생 */
 export const playVibrationPattern = (events: HapticEvent[]): void => {
