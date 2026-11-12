@@ -10,7 +10,7 @@ import { MoreList } from './MoreList';
 import { SettingsRow } from './SettingsRow';
 
 import { translate, useLanguage, useSelectedLanguage } from '@/entities/language';
-import { previewVibration, setVibrationEnabled, TOGGLE_PATTERN, useVibrationEnabled } from '@/entities/vibration';
+import { isHapticsSupported, previewVibration, setVibrationEnabled, TOGGLE_PATTERN, useVibrationEnabled } from '@/entities/vibration';
 
 import { COLORS, DOT_SIZE } from '@/shared/constants';
 import { resolveLayout, getFormFactor, type RootStackParamList } from '@/shared/lib';
@@ -56,19 +56,21 @@ export const SettingsScreen = ({ navigation }: SettingsScreenProps): JSX.Element
             <Text style={[styles.value, valueStyle]}>{selected === null ? translate('language.system', language) : translate('language.name', selected)}</Text>
             <ChevronIcon dotSize={dotSize} />
           </SettingsRow>
-          <SettingsRow dotSize={dotSize}>
-            <Canvas style={{ width: iconSize, height: iconSize }}>
-              <RectIconShape icon={VIBRATION_ICON} left={0} top={0} dotSize={dotSize} color={COLORS.icon.default} />
-            </Canvas>
-            <DotToggle
-              testID="settings-vibration"
-              dotSize={dotSize}
-              value={isVibrationEnabled}
-              style={styles.trailing}
-              onPressIn={() => previewVibration(TOGGLE_PATTERN)}
-              onValueChange={setVibrationEnabled}
-            />
-          </SettingsRow>
+          {isHapticsSupported() ? (
+            <SettingsRow dotSize={dotSize}>
+              <Canvas style={{ width: iconSize, height: iconSize }}>
+                <RectIconShape icon={VIBRATION_ICON} left={0} top={0} dotSize={dotSize} color={COLORS.icon.default} />
+              </Canvas>
+              <DotToggle
+                testID="settings-vibration"
+                dotSize={dotSize}
+                value={isVibrationEnabled}
+                style={styles.trailing}
+                onPressIn={() => previewVibration(TOGGLE_PATTERN)}
+                onValueChange={setVibrationEnabled}
+              />
+            </SettingsRow>
+          ) : null}
           <SettingsRow dotSize={dotSize} testID="settings-more" onPress={() => open('more')}>
             <Canvas style={{ width: iconSize, height: iconSize }}>
               <RectIconShape icon={MORE_ICON} left={0} top={0} dotSize={dotSize} color={COLORS.icon.default} />

@@ -10,8 +10,20 @@ import { SettingsScreen } from './SettingsScreen';
 import { initLocalization } from '@/entities/language';
 import { type RootStackParamList } from '@/shared/lib';
 
-// 진동 토글은 이 테스트 대상이 아니고 reanimated가 jest에서 초기화되지 않아서 목으로 대체
-jest.mock('@/shared/ui/dot-toggle', () => ({ DotToggle: () => null }));
+// reanimated가 jest 환경에서 초기화되지 않아 `DotToggle`을 `testID`만 전달하는 목으로 대체
+jest.mock('@/shared/ui/dot-toggle', () => {
+  const { View } = jest.requireActual<typeof ReactNative>('react-native');
+  return { DotToggle: ({ testID }: { testID?: string }) => <View testID={testID} /> };
+});
+
+let mockSupportsHaptics = true;
+
+// getter가 접근 시점의 `mockSupportsHaptics`를 반환하므로 테스트마다 햅틱 지원 여부 변경 가능
+jest.mock('@modules/haptic-pattern', () => ({
+  get hapticPattern() {
+    return { supportsHaptics: mockSupportsHaptics };
+  },
+}));
 
 let mockBannerWidth: number | undefined;
 
@@ -52,6 +64,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   mockBannerWidth = undefined;
+  mockSupportsHaptics = true;
 });
 
 const renderSettingsScreen = async (): Promise<void> => {
@@ -106,5 +119,12 @@ describe('설정 화면', () => {
     await fireEvent.press(screen.getByTestId('settings-more'));
 
     expect(screen.queryByTestId('advertisement-footer')).toBeNull();
+  });
+
+  it('햅틱 미지원 기기면 진동 토글을 렌더링하지 않는다', async () => {
+    mockSupportsHaptics = false;
+    await renderSettingsScreen();
+
+    expect(screen.queryByTestId('settings-vibration')).toBeNull();
   });
 });
