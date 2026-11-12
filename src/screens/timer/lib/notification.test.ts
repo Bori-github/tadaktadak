@@ -72,17 +72,21 @@ describe('완료 알림 예약 옵션', () => {
     { label: 'Android', platform: 'android' },
     { label: 'iOS', platform: 'ios' },
   ] as const)('$label: 진동 사용 여부가 켜져 있으면 vibration, 꺼져 있으면 banner 채널 ID를 반환한다', ({ platform }) => {
-    expect(completionNotificationOptions({ isVibrationEnabled: true, platform }).channelId).toBe(VIBRATION_CHANNEL_ID);
-    expect(completionNotificationOptions({ isVibrationEnabled: false, platform }).channelId).toBe(BANNER_CHANNEL_ID);
+    expect(completionNotificationOptions({ isVibrationEnabled: true, isHapticsSupported: true, platform }).channelId).toBe(VIBRATION_CHANNEL_ID);
+    expect(completionNotificationOptions({ isVibrationEnabled: false, isHapticsSupported: true, platform }).channelId).toBe(BANNER_CHANNEL_ID);
   });
 
   it('iOS는 content.sound에 진동 사용 여부를 지정한다', () => {
-    expect(completionNotificationOptions({ isVibrationEnabled: true, platform: 'ios' }).content).toEqual({ sound: true });
-    expect(completionNotificationOptions({ isVibrationEnabled: false, platform: 'ios' }).content).toEqual({ sound: false });
+    expect(completionNotificationOptions({ isVibrationEnabled: true, isHapticsSupported: true, platform: 'ios' }).content).toEqual({ sound: true });
+    expect(completionNotificationOptions({ isVibrationEnabled: false, isHapticsSupported: true, platform: 'ios' }).content).toEqual({ sound: false });
+  });
+
+  it('iOS는 햅틱 미지원 기기면 진동 사용 여부가 꺼져 있어도 content.sound를 켠다', () => {
+    expect(completionNotificationOptions({ isVibrationEnabled: false, isHapticsSupported: false, platform: 'ios' }).content).toEqual({ sound: true });
   });
 
   it('Android는 setSilent 판정을 피하도록 content.sound를 지정하지 않는다', () => {
-    expect(completionNotificationOptions({ isVibrationEnabled: false, platform: 'android' }).content).toEqual({});
+    expect(completionNotificationOptions({ isVibrationEnabled: false, isHapticsSupported: true, platform: 'android' }).content).toEqual({});
   });
 });
 

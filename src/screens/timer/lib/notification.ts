@@ -56,6 +56,7 @@ export const scheduleAt = ({ session, status, now }: ScheduleInput): number | nu
 
 type CompletionNotificationOptionsInput = {
   isVibrationEnabled: boolean;
+  isHapticsSupported: boolean;
   platform: PlatformOSType;
 };
 
@@ -67,15 +68,16 @@ type CompletionNotificationOptions = {
 };
 
 /**
- * 완료 알림 예약 옵션. 백그라운드 알림은 `setNotificationHandler`를 거치지 않아 예약 시점의 진동 사용 여부로 결정
+ * 완료 알림 예약 옵션. 백그라운드 알림은 `setNotificationHandler`를 거치지 않아 예약 시점의 진동 사용 여부와 햅틱 지원 여부로 결정
  *
  * @returns Android 채널 ID와 `content`에 병합할 필드
  */
-export const completionNotificationOptions = ({ isVibrationEnabled, platform }: CompletionNotificationOptionsInput): CompletionNotificationOptions => ({
+export const completionNotificationOptions = ({ isVibrationEnabled, isHapticsSupported, platform }: CompletionNotificationOptionsInput): CompletionNotificationOptions => ({
   channelId: isVibrationEnabled ? VIBRATION_CHANNEL_ID : BANNER_CHANNEL_ID,
   // iOS 알림 진동은 알림음에 종속되어 `sound: false`면 진동도 없음
   // Android는 `sound: false`면 무음 알림(`setSilent`)으로 게시되어 헤드업이 표시되지 않으므로 iOS에만 지정
-  content: platform === 'ios' ? { sound: isVibrationEnabled } : {},
+  // 햅틱 미지원 기기는 설정 화면에 진동 토글이 없어 알림음을 켜짐으로 고정
+  content: platform === 'ios' ? { sound: isVibrationEnabled || !isHapticsSupported } : {},
 });
 
 type CompletionNotificationBehaviorInput = {

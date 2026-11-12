@@ -7,6 +7,7 @@ import { type HapticEvent } from '@modules/haptic-pattern';
 import {
   canVibrate,
   holdVibration,
+  isHapticsSupported,
   playVibration,
   playVibrationPattern,
   prepareVibration,
@@ -68,6 +69,14 @@ describe('조작 진동', () => {
       holdVibration();
       releaseVibration();
     }).not.toThrow();
+  });
+});
+
+describe('기기의 햅틱 지원 여부', () => {
+  it('기기가 햅틱을 지원하지 않으면 false를 반환한다', () => {
+    mockModule = { supportsHaptics: false };
+
+    expect(isHapticsSupported()).toBe(false);
   });
 });
 

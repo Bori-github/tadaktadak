@@ -8,7 +8,7 @@ import { completionNotificationOptions, notificationBody, scheduleAt } from '../
 
 import { type TimerSession } from '@/entities/timer';
 import { translate, useLanguage, type Language } from '@/entities/language';
-import { useVibrationEnabled } from '@/entities/vibration';
+import { isHapticsSupported, useVibrationEnabled } from '@/entities/vibration';
 
 /** 마지막 채널 등록. 알림 예약 전에 완료를 대기 */
 let channelsReady: Promise<unknown> = Promise.resolve();
@@ -105,7 +105,7 @@ export const useNotificationSchedule = ({ session, status, isSettled }: Notifica
       // 채널 등록을 기다리는 동안 이펙트가 다시 실행되면 이전 실행의 예약 생략
       if (!live) return;
 
-      const options = completionNotificationOptions({ isVibrationEnabled, platform: Platform.OS });
+      const options = completionNotificationOptions({ isVibrationEnabled, isHapticsSupported: isHapticsSupported(), platform: Platform.OS });
 
       await Notifications.scheduleNotificationAsync({
         identifier: `${COMPLETION_NOTIFICATION_ID_PREFIX}${at}`,
