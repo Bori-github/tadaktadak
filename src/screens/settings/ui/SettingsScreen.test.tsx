@@ -121,6 +121,12 @@ describe('설정 화면', () => {
     expect(screen.queryByTestId('advertisement-footer')).toBeNull();
   });
 
+  it('햅틱 지원 기기면 진동 토글을 렌더링한다', async () => {
+    await renderSettingsScreen();
+
+    expect(screen.queryByTestId('settings-vibration')).not.toBeNull();
+  });
+
   it('햅틱 미지원 기기면 진동 토글을 렌더링하지 않는다', async () => {
     mockSupportsHaptics = false;
     await renderSettingsScreen();
