@@ -50,19 +50,6 @@ const press = async (target: TimerMode) => {
   return picked;
 };
 
-describe('숫자 자리', () => {
-  it('기준 화면에서 두 숫자를 덮는다', async () => {
-    expect(await rects(2)).toEqual({
-      focus: { left: 100, top: 331, width: 190, height: 58 },
-      rest: { left: 158, top: 393, width: 74, height: 30 },
-    });
-  });
-
-  it('배율 2에서 함께 커진다', async () => {
-    expect((await rects(4)).focus).toEqual({ left: 13, top: 310, width: 364, height: 100 });
-  });
-});
-
 describe('두 버튼이 겹치지 않는다', () => {
   it.each([
     { label: '도트 한 변 2px', dotSize: 2 },

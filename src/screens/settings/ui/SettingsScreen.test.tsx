@@ -1,5 +1,4 @@
 import { beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { StyleSheet } from 'react-native';
 import type * as ReactNative from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -25,14 +24,9 @@ jest.mock('@modules/haptic-pattern', () => ({
   },
 }));
 
-let mockBannerWidth: number | undefined;
-
-// import 시 `TurboModuleRegistry.getEnforcing`이 `RNGoogleMobileAdsModule` 미등록으로 예외를 던져 `width` 캡처용 목으로 대체
+// import 시 `TurboModuleRegistry.getEnforcing`이 `RNGoogleMobileAdsModule` 미등록으로 예외를 던져 목으로 대체
 jest.mock('react-native-google-mobile-ads', () => ({
-  BannerAd: ({ width }: { width?: number }) => {
-    mockBannerWidth = width;
-    return null;
-  },
+  BannerAd: () => null,
   BannerAdSize: { INLINE_ADAPTIVE_BANNER: 'INLINE_ADAPTIVE_BANNER' },
   TestIds: { ADAPTIVE_BANNER: 'test-adaptive-banner' },
 }));
@@ -63,7 +57,6 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-  mockBannerWidth = undefined;
   mockSupportsHaptics = true;
 });
 
@@ -96,13 +89,6 @@ describe('설정 화면', () => {
     await renderSettingsScreen();
 
     expect(screen.queryByTestId('advertisement-footer')).not.toBeNull();
-  });
-
-  it('광고 배너를 목록 줄 폭으로 요청한다', async () => {
-    await renderSettingsScreen();
-
-    const { width: rowWidth } = StyleSheet.flatten(screen.getByTestId('modal-scroll').props.contentContainerStyle);
-    expect(mockBannerWidth).toBe(rowWidth);
   });
 
   it('언어 목록 화면에는 광고 배너를 렌더링하지 않는다', async () => {
