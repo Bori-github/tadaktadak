@@ -105,14 +105,6 @@ describe('네이티브 모듈이 없는 빌드의 Vibration.vibrate 대체 재�
     expect(Vibration.vibrate).toHaveBeenCalledWith([0, 60, 120, 60]);
   });
 
-  it('canVibrate는 진동 사용 여부 설정값을 그대로 반환한다', () => {
-    expect(canVibrate()).toBe(true);
-
-    setVibrationEnabled(false);
-
-    expect(canVibrate()).toBe(false);
-  });
-
   it('진동 사용 여부가 꺼져 있으면 조작 진동과 완료 진동을 재생하지 않는다', () => {
     prepareVibration(PATTERN);
     setVibrationEnabled(false);

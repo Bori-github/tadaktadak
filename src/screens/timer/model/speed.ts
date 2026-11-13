@@ -12,7 +12,7 @@ import { type TimerMode } from '@/entities/timer';
  * @param speed - 1이 실제 속도
  * @returns 배속만큼 짧아진 설정 시간(분)
  */
-export const realMinutes = (settingMinutes: Record<TimerMode, number>, speed: number): Record<TimerMode, number> => ({
+const realMinutes = (settingMinutes: Record<TimerMode, number>, speed: number): Record<TimerMode, number> => ({
   focus: settingMinutes.focus / speed,
   rest: settingMinutes.rest / speed,
 });
@@ -24,7 +24,7 @@ export const realMinutes = (settingMinutes: Record<TimerMode, number>, speed: nu
  * @param speed - 1이 실제 속도
  * @returns 화면에 보여 줄 시간(초)
  */
-export const toShownSeconds = (realMs: number, speed: number): number => {
+const toShownSeconds = (realMs: number, speed: number): number => {
   'worklet';
   return millisecondsToSeconds(realMs * speed);
 };
@@ -36,7 +36,7 @@ export const toShownSeconds = (realMs: number, speed: number): number => {
  * @param speed - 1이 실제 속도
  * @returns 화면에 보여 줄 시간(분). 초로 깎지 않아 프레임마다 값이 달라짐
  */
-export const toShownMinutes = (realMs: number, speed: number): number => {
+const toShownMinutes = (realMs: number, speed: number): number => {
   'worklet';
   return millisecondsToMinutes(realMs * speed);
 };

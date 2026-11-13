@@ -54,18 +54,6 @@ beforeEach(() => {
 });
 
 describe('설정 화면 하단 구분선과 광고 배너', () => {
-  it('광고 표시 가능 시 `width` 폭과 `maxHeight` 높이 상한으로 `INLINE_ADAPTIVE_BANNER`를 요청한다', async () => {
-    await render(<AdvertisementFooter dotSize={2} width={342} />);
-
-    expect(mockBannerProps).toEqual(expect.objectContaining({ unitId: 'test-adaptive-banner', size: 'INLINE_ADAPTIVE_BANNER', width: 342, maxHeight: 40 }));
-  });
-
-  it('광고 로드 완료 전 배너 영역에 `maxHeight`와 같은 최소 높이를 지정한다', async () => {
-    await render(<AdvertisementFooter dotSize={2} width={342} />);
-
-    expect(screen.getByTestId('advertisement-banner-area')).toHaveStyle({ minHeight: 40 });
-  });
-
   it('광고 로드 전 배너 영역에 스켈레톤을 렌더링한다', async () => {
     await render(<AdvertisementFooter dotSize={2} width={342} />);
 

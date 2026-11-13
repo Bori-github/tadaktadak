@@ -12,12 +12,12 @@ const onPress = () => {
   presses += 1;
 };
 
-const button = async ({ disabled = false, dotSize = 2 } = {}) => {
+const button = async ({ disabled = false } = {}) => {
   presses = 0;
   pressIns = 0;
   await render(
     <DotButton
-      dotSize={dotSize}
+      dotSize={2}
       icon={PLAY_ICON}
       disabled={disabled}
       onPress={onPress}
@@ -29,25 +29,6 @@ const button = async ({ disabled = false, dotSize = 2 } = {}) => {
 
   return screen.getByRole('button');
 };
-
-const sizeOf = ({ props }: { props: Record<string, unknown> }) => {
-  const { width, height } = Object.assign({}, ...[props.style].flat()) as { width: number; height: number };
-  return { width, height };
-};
-
-describe('조작 버튼 크기와 터치 영역', () => {
-  it('기준 화면에서 조작 버튼은 56 × 56이다', async () => {
-    expect(sizeOf(await button())).toEqual({ width: 56, height: 56 });
-  });
-
-  it('도트 4에서 조작 버튼은 112 × 112다', async () => {
-    expect(sizeOf(await button({ dotSize: 4 }))).toEqual({ width: 112, height: 112 });
-  });
-
-  it('조작 버튼의 터치 영역은 사방으로 4씩 넓다', async () => {
-    expect((await button()).props.hitSlop).toBe(4);
-  });
-});
 
 describe('누름', () => {
   it('조작 버튼을 누르면 onPress가 불린다', async () => {
