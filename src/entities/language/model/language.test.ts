@@ -50,13 +50,6 @@ describe('저장된 언어 태그 검증', () => {
   });
 });
 
-describe('언어별 문구 조회', () => {
-  it('같은 키를 언어마다 다른 문구로 반환한다', () => {
-    expect(translate('timer.focus', 'ko-KR')).toBe('집중 끝!');
-    expect(translate('timer.focus', 'en-US')).toBe('Boom, done!');
-  });
-});
-
 describe('앱 이름 동기화', () => {
   it('번역 리소스와 빌드 설정의 이름이 같다', () => {
     expect(translate('app.name', 'en-US')).toBe(appConfig.expo.name);

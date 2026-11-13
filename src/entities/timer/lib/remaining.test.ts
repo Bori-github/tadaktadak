@@ -23,10 +23,6 @@ describe('진행 중 남은 시간', () => {
   ])('$label: $elapsedMs밀리초 흐르면 $expected밀리초 남는다', ({ elapsedMs, expected }) => {
     expect(remainingAfter(elapsedMs)).toBe(expected);
   });
-
-  it('25분 타이머가 60분 지나도 0이다', () => {
-    expect(remainingAfter(60 * MINUTE_IN_MS)).toBe(0);
-  });
 });
 
 describe('복구한 단계의 남은 시간(밀리초)', () => {

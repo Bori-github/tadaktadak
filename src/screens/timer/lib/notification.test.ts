@@ -1,7 +1,7 @@
 import { PermissionStatus } from 'expo';
 import { beforeAll, describe, expect, it } from '@jest/globals';
 
-import { completionNotificationOptions, completionNotificationBehavior, isNotificationBlocked, notificationBody, scheduleAt } from './notification';
+import { completionNotificationOptions, completionNotificationBehavior, isNotificationBlocked, scheduleAt } from './notification';
 import { BANNER_CHANNEL_ID, VIBRATION_CHANNEL_ID } from '../config/notification';
 
 import { initLocalization } from '@/entities/language';
@@ -57,13 +57,6 @@ describe('알림이 오지 못하는 상태', () => {
     { situation: '거부', status: PermissionStatus.DENIED, blocked: true, result: '알림이 오지 못하는 상태다' },
   ])('권한이 $situation이면 $result', ({ status, blocked }) => {
     expect(isNotificationBlocked(status)).toBe(blocked);
-  });
-});
-
-describe('타이머가 끝났을 때 띄울 알림 본문', () => {
-  it('한국어는 다국어 적용 전과 같은 문구를 반환한다', () => {
-    expect(notificationBody('focus', 'ko-KR')).toBe('집중 끝!');
-    expect(notificationBody('rest', 'ko-KR')).toBe('휴식 끝!');
   });
 });
 

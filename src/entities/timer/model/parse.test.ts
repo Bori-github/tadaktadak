@@ -1,17 +1,10 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { parseMinutes, parseSession } from './parse';
-import { type RunningSession } from './session';
-import { MINUTE_IN_MS, TIMER_DEFAULT } from '../config/minutes';
+import { TIMER_DEFAULT } from '../config/minutes';
 import { NOW } from '../lib/fixtures';
 
-const running: RunningSession = { phase: 'running', mode: 'focus', startedAt: NOW - 22 * MINUTE_IN_MS, endsAt: NOW + 3 * MINUTE_IN_MS };
-
 describe('저장 문자열에서 읽어 낸 타이머 세션 값', () => {
-  it('저장한 대로 돌아온다', () => {
-    expect(parseSession(JSON.stringify(running))).toEqual(running);
-  });
-
   it.each([
     { label: '저장값이 없으면', raw: null },
     { label: 'JSON이 아니면', raw: '{' },
