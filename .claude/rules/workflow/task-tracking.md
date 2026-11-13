@@ -8,7 +8,9 @@
 | -------------------------------------------------------------------------- | --------------------------------------------------- |
 | [기능 명세서](https://app.notion.com/p/3ee426a38e8680a68deffeb2bdd06c4e)   | `collection://cb369731-5916-4a79-ac5e-a51188e00ece` |
 | [WBS](https://app.notion.com/p/3f0426a38e868082a902ca0835f7946f)           | `collection://73fe99e0-43a7-470d-b481-3d1236de5d9c` |
-| [테스트 케이스](https://app.notion.com/p/7b3365bc9c694e3d88502b7f302aa416) | `collection://0650bde2-17d0-48a3-9522-b0508686acff` |
+| [테스트 케이스](https://app.notion.com/p/3ee426a38e86808099d2cdf9b1a39f0f) | `collection://0650bde2-17d0-48a3-9522-b0508686acff` |
+
+Notion 문서에 행을 작성하기 전에 표의 문서 페이지에 있는 Rules 탭과, Rules 탭이 참조하는 공통 Rules를 읽는다.
 
 ## 작업 시작 순서
 
