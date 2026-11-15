@@ -14,6 +14,10 @@ import expo.modules.kotlin.records.Record
 
 private const val STOPPED_PREFERENCES_NAME = "live-activity"
 private const val STOPPED_ENDS_AT_KEY = "stoppedEndsAt"
+private const val START_REQUESTED_KEY = "startRequested"
+
+// `plugins/withAndroidShortcuts.js`와 같은 값
+internal const val EXTRA_START_REQUESTED = "expo.modules.liveactivity.START_REQUESTED"
 
 // `src/shared/constants/colors.ts`의 `canvas`
 private const val CANVAS_COLOR = 0xFF141021.toInt()
@@ -37,14 +41,21 @@ class LiveActivityModule : Module() {
 
     Events("onStopped", "onStartRequested")
 
+    // 이전 프로세스의 미처리 요청 삭제. 콜드 스타트의 요청은 Intent extra로 `consumeStartRequested`가 읽음
+    OnCreate {
+      preferences.edit { remove(START_REQUESTED_KEY) }
+    }
+
     OnNewIntent { intent ->
       if (saveStoppedEndsAt(intent)) sendEvent("onStopped")
+      if (saveStartRequest(intent)) sendEvent("onStartRequested")
     }
 
     // Activity 재생성 시 `onNewIntent` 대신 `getIntent()`로 전달됨
     OnActivityEntersForeground {
       val intent = appContext.currentActivity?.intent ?: return@OnActivityEntersForeground
       if (saveStoppedEndsAt(intent)) sendEvent("onStopped")
+      if (saveStartRequest(intent)) sendEvent("onStartRequested")
     }
 
     Property("isSupported") { true }
@@ -75,8 +86,27 @@ class LiveActivityModule : Module() {
       endsAt
     }
 
-    // 앱 아이콘 메뉴 단축어 구현 전까지 항상 false
-    Function("consumeStartRequested") { false }
+    Function("consumeStartRequested") {
+      appContext.currentActivity?.intent?.let { saveStartRequest(it) }
+
+      val requested = preferences.getBoolean(START_REQUESTED_KEY, false)
+      preferences.edit { remove(START_REQUESTED_KEY) }
+
+      requested
+    }
+  }
+
+  private fun saveStartRequest(intent: Intent): Boolean {
+    if (!intent.hasExtra(EXTRA_START_REQUESTED)) return false
+
+    intent.removeExtra(EXTRA_START_REQUESTED)
+
+    // Recents 재전달 Intent 무시
+    if ((intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0) return false
+
+    preferences.edit { putBoolean(START_REQUESTED_KEY, true) }
+
+    return true
   }
 
   // 진행 중 스냅샷은 잠금화면 정지로 앱이 열릴 때 지난 남은 시간을 먼저 보여서, 진행 중에는 배경색 단색으로 대체
