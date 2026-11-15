@@ -69,8 +69,11 @@ let mockPlayRejects = false;
 let mockStoppedEndsAt: number | null = null;
 // Android처럼 네이티브 모듈이 없는 빌드
 let mockHasLiveActivityModule = true;
-// `StopTimerIntent`가 값을 저장했을 때 네이티브가 보내는 이벤트를 테스트가 직접 발생시킴
+// `StartFocusTimerIntent`가 저장한 시작 요청. 읽으면 제거되는 `consumeStartRequested` 동작을 모의
+let mockStartRequested = false;
+// 네이티브가 보내는 이벤트를 테스트가 직접 발생시킴
 const mockStoppedListeners: (() => void)[] = [];
+const mockStartRequestedListeners: (() => void)[] = [];
 
 jest.mock('@modules/live-activity', () => ({
   get liveActivity() {
@@ -84,14 +87,23 @@ jest.mock('@modules/live-activity', () => ({
 
         return endsAt;
       },
-      addListener: (_event: string, listener: () => void) => {
-        mockStoppedListeners.push(listener);
+      consumeStartRequested: () => {
+        const requested = mockStartRequested;
+
+        mockStartRequested = false;
+
+        return requested;
+      },
+      addListener: (event: string, listener: () => void) => {
+        const listeners = event === 'onStopped' ? mockStoppedListeners : mockStartRequestedListeners;
+
+        listeners.push(listener);
 
         return {
           remove: () => {
-            const index = mockStoppedListeners.indexOf(listener);
+            const index = listeners.indexOf(listener);
 
-            if (index !== -1) mockStoppedListeners.splice(index, 1);
+            if (index !== -1) listeners.splice(index, 1);
           },
         };
       },
@@ -182,8 +194,10 @@ beforeEach(() => {
   mockPatterns.length = 0;
   mockPlayRejects = false;
   mockStoppedEndsAt = null;
+  mockStartRequested = false;
   mockHasLiveActivityModule = true;
   mockStoppedListeners.length = 0;
+  mockStartRequestedListeners.length = 0;
   mockFallbackCount = 0;
   mockPending = null;
   mockAppState = 'active';
@@ -364,6 +378,69 @@ describe('잠금화면 정지 버튼', () => {
     await act(async () => mockRelease(storedRunning(Date.now() + 25 * MINUTE_IN_MS)));
 
     expect(result.current.session.phase).toBe('running');
+  });
+});
+
+describe('단축어 시작 요청', () => {
+  const storedRunning = (endsAt: number) => JSON.stringify({ phase: 'running', mode: 'rest', startedAt: endsAt - 5 * MINUTE_IN_MS, endsAt });
+
+  const requestStart = async () => {
+    mockStartRequested = true;
+
+    await act(async () => {
+      for (const listener of mockStartRequestedListeners) listener();
+    });
+  };
+
+  it('앱 종료 상태에서 요청하면 저장값을 읽은 뒤 설정한 집중 타이머 시간으로 집중 타이머 진행이 된다', async () => {
+    mockStartRequested = true;
+
+    const { result } = await renderBeforeRead();
+
+    await act(async () => mockRelease(null));
+
+    expect(result.current.session).toEqual({ phase: 'running', mode: 'focus', startedAt: Date.now(), endsAt: Date.now() + TIMER_DEFAULT.focus * MINUTE_IN_MS });
+    expect(mockStartRequested).toBe(false);
+  });
+
+  it('저장값이 진행 중이면 요청을 지우고 진행을 유지한다', async () => {
+    const endsAt = Date.now() + 5 * MINUTE_IN_MS;
+
+    mockStartRequested = true;
+
+    const { result } = await renderBeforeRead();
+
+    await act(async () => mockRelease(storedRunning(endsAt)));
+
+    expect(result.current.session).toEqual({ phase: 'running', mode: 'rest', startedAt: endsAt - 5 * MINUTE_IN_MS, endsAt });
+    expect(mockStartRequested).toBe(false);
+  });
+
+  it('앱이 떠 있을 때 요청 이벤트가 오면 집중 타이머 진행이 된다', async () => {
+    const { result } = await renderBeforeRead();
+
+    await act(async () => mockRelease(null));
+    await requestStart();
+
+    expect(result.current.session).toEqual({ phase: 'running', mode: 'focus', startedAt: Date.now(), endsAt: Date.now() + TIMER_DEFAULT.focus * MINUTE_IN_MS });
+  });
+
+  it('집중 타이머 완료 상태에서 요청하면 집중 타이머 진행이 된다', async () => {
+    const result = await renderCompleted('focus', { focus: 25, rest: 0 });
+
+    await requestStart();
+
+    expect(result.current.session).toEqual({ phase: 'running', mode: 'focus', startedAt: Date.now(), endsAt: Date.now() + 25 * MINUTE_IN_MS });
+  });
+
+  it('일시정지 상태에서 요청하면 요청을 지우고 일시정지를 유지한다', async () => {
+    const { result } = await renderBeforeRead();
+
+    await act(async () => mockRelease(STORED_PAUSED));
+    await requestStart();
+
+    expect(result.current.session).toEqual({ phase: 'paused', mode: 'rest', startedAt: NOW, pausedRemainingMs: 90_000 });
+    expect(mockStartRequested).toBe(false);
   });
 });
 

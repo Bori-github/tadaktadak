@@ -38,3 +38,8 @@ struct TimerActivityAttributes: ActivityAttributes {
 enum TimerStoppedFlag {
     static let key = "liveActivityStoppedEndsAt"
 }
+
+/// `StartFocusTimerIntent`가 저장하는 값. 단축어 시작 요청 여부(Bool)
+enum TimerStartRequestFlag {
+    static let key = "shortcutStartRequested"
+}

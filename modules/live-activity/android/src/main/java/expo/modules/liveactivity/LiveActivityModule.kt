@@ -35,7 +35,7 @@ class LiveActivityModule : Module() {
   override fun definition() = ModuleDefinition {
     Name("LiveActivity")
 
-    Events("onStopped")
+    Events("onStopped", "onStartRequested")
 
     OnNewIntent { intent ->
       if (saveStoppedEndsAt(intent)) sendEvent("onStopped")
@@ -74,6 +74,9 @@ class LiveActivityModule : Module() {
 
       endsAt
     }
+
+    // 앱 아이콘 메뉴 단축어 구현 전까지 항상 false
+    Function("consumeStartRequested") { false }
   }
 
   // 진행 중 스냅샷은 잠금화면 정지로 앱이 열릴 때 지난 남은 시간을 먼저 보여서, 진행 중에는 배경색 단색으로 대체

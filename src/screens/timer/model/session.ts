@@ -41,6 +41,19 @@ const isStoppedOnLockScreen = (stored: TimerSession | null): boolean => {
   return stoppedEndsAt !== null && stored?.phase === 'running' && stored.endsAt === stoppedEndsAt;
 };
 
+type StartFocusInput = {
+  session: TimerSession;
+  now: number;
+  focusMs: number;
+};
+
+// 단축어 시작 요청. 대기/완료 상태만 집중 타이머 진행으로 전환하고 진행/일시정지 상태는 유지
+const startFocusIfIdle = ({ session, now, focusMs }: StartFocusInput): TimerSession => {
+  if (session.phase !== 'ready' && session.phase !== 'completed') return session;
+
+  return startTimer({ session: READY_SESSION, now, settingMs: focusMs });
+};
+
 type TimerSessionInput = {
   settingMinutes: Record<TimerMode, number>;
   toSeconds?: (ms: number) => number;
@@ -190,6 +203,9 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     });
   }, [running]);
 
+  const restMs = settingMinutes.rest * MINUTE_IN_MS;
+  const focusMs = settingMinutes.focus * MINUTE_IN_MS;
+
   const applySession = useCallback(
     (next: TimerSession, now: number) => {
       const remaining = sessionRemainingMs({ session: next, now }) ?? 0;
@@ -228,7 +244,10 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
         settled.current = true;
         setIsSettled(true);
 
-        const next = restoreSession({ stored, now, stopped: isStoppedOnLockScreen(stored) });
+        const restored = restoreSession({ stored, now, stopped: isStoppedOnLockScreen(stored) });
+        // 네이티브 모듈이 없는 빌드에서 `null`. 단축어도 없으므로 요청 없음으로 처리
+        const requested = liveActivity?.consumeStartRequested() ?? false;
+        const next = requested ? startFocusIfIdle({ session: restored, now, focusMs }) : restored;
 
         applySession(next, now);
         // 초기값 READY_SESSION과 같은 객체면 리렌더가 없어 [session] 이펙트가 돌지 않으므로 여기서 한 번 저장
@@ -238,7 +257,23 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     return () => {
       live = false;
     };
-  }, [applySession]);
+  }, [applySession, focusMs]);
+
+  useEffect(() => {
+    // 앱 실행 중 단축어 실행은 `AppState` 전환 없이 `StartFocusTimerIntent`의 저장만 발생
+    const subscription = liveActivity?.addListener('onStartRequested', () => {
+      // 저장값 읽기 전이면 요청이 유지되어 읽기 완료 시 처리됨
+      if (!settled.current) return;
+      if (!liveActivity?.consumeStartRequested()) return;
+
+      const now = Date.now();
+      const next = startFocusIfIdle({ session, now, focusMs });
+
+      if (next !== session) applySession(next, now);
+    });
+
+    return () => subscription?.remove();
+  }, [session, applySession, focusMs]);
 
   useEffect(() => {
     if (!settled.current) return;
@@ -246,9 +281,6 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     // 실패하면 앱을 다시 켤 때 이전 단계로 돌아감
     saveSession(session).catch(() => {});
   }, [session]);
-
-  const restMs = settingMinutes.rest * MINUTE_IN_MS;
-  const focusMs = settingMinutes.focus * MINUTE_IN_MS;
 
   const startsRestAutomatically = session.phase === 'completed' && session.mode === 'focus' && restMs > 0;
 
