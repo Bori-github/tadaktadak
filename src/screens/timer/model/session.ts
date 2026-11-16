@@ -70,6 +70,8 @@ interface TimerSessionState {
   remainingMinutes: SharedValue<number>;
   /** 카운트다운 중인 타이머. 남은 분과 같은 워클릿에서 바뀜 */
   countingMode: SharedValue<TimerMode>;
+  /** 진행/일시정지 중 단축어 시작 요청을 거절한 시각 (밀리초). 거절 이력이 없으면 `null` */
+  rejectedStartRequestAt: number | null;
   play: () => void;
   stop: () => void;
 }
@@ -94,6 +96,8 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
   // `consumeStoppedEndsAt`이 읽고 지운 값을 기억. `AppState` active와 `onStopped`가 겹쳐 나중 호출이 `null`을 읽어도 정지를 유지
   const stoppedEndsAt = useRef<number | null>(null);
+
+  const [rejectedStartRequestAt, setRejectedStartRequestAt] = useState<number | null>(null);
 
   const remainingAtStart = useSharedValue(0);
   const startedAtUptime = useSharedValue(NOT_STARTED);
@@ -249,6 +253,8 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
         const requested = liveActivity?.consumeStartRequested() ?? false;
         const next = requested ? startFocusIfIdle({ session: restored, now, focusMs }) : restored;
 
+        if (requested && next === restored) setRejectedStartRequestAt(now);
+
         applySession(next, now);
         // 초기값 READY_SESSION과 같은 객체면 리렌더가 없어 [session] 이펙트가 돌지 않으므로 여기서 한 번 저장
         saveSession(next).catch(() => {});
@@ -269,7 +275,8 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
       const now = Date.now();
       const next = startFocusIfIdle({ session, now, focusMs });
 
-      if (next !== session) applySession(next, now);
+      if (next === session) setRejectedStartRequestAt(now);
+      else applySession(next, now);
     });
 
     return () => subscription?.remove();
@@ -389,5 +396,5 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     return remaining === null ? null : toSeconds(remaining);
   }, [session, countedSeconds, toSeconds]);
 
-  return { session, isSettled, remainingSeconds, remainingMinutes, countingMode, play, stop };
+  return { session, isSettled, remainingSeconds, remainingMinutes, countingMode, rejectedStartRequestAt, play, stop };
 };

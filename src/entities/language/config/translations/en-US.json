@@ -9,6 +9,9 @@
   "ambientSound": {
     "tooltip": "Try the crackling fire sound"
   },
+  "shortcut": {
+    "alreadyStarted": "You already started a timer!"
+  },
   "notification": {
     "bannerChannel": "Banner alerts",
     "vibrationChannel": "Vibration alerts"

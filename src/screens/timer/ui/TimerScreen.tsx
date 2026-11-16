@@ -41,7 +41,8 @@ import { playVibration } from '@/entities/vibration';
 import { BUTTON_SIZE_IN_DOTS, COLORS, ROUND_BUTTON_DIAMETER_IN_DOTS } from '@/shared/constants';
 import { resolveLayout, getFormFactor, useDismissibleNotice, useIsScreenVisible, type RootStackParamList } from '@/shared/lib';
 import { RoundDotButton } from '@/shared/ui/dot-button';
-import { NOTIFICATION_OFF_ICON, SETTINGS_ICON, SOUND_ICON, SOUND_OFF_ICON } from '@/shared/ui/dot-icon';
+import { NOTIFICATION_OFF_ICON, SETTINGS_ICON, SOUND_ICON, SOUND_OFF_ICON, WARNING_ICON } from '@/shared/ui/dot-icon';
+import { DotToast } from '@/shared/ui/dot-toast';
 import { DotTooltip } from '@/shared/ui/dot-tooltip';
 import { PortalHost } from '@/shared/ui/portal';
 
@@ -57,7 +58,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
   const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
   const { speed, setSpeed, realSettingMinutes, toSeconds, toMinutes } = useTimerSpeed(minutes);
-  const { session, isSettled, remainingSeconds, remainingMinutes, countingMode, play, stop } = useTimerSession({
+  const { session, isSettled, remainingSeconds, remainingMinutes, countingMode, rejectedStartRequestAt, play, stop } = useTimerSession({
     settingMinutes: realSettingMinutes,
     toSeconds,
     toMinutes,
@@ -131,6 +132,13 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   const settingsStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, right: roundButtonRight }], [roundButtonTop, roundButtonRight]);
   const ambientSoundLeft = notificationSettingsShown ? roundButtonLeft + ROUND_BUTTON_DIAMETER_IN_DOTS * layout.dotSize + layout.edgeMargin : roundButtonLeft;
   const ambientSoundStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, left: ambientSoundLeft }], [roundButtonTop, ambientSoundLeft]);
+  const toastTop = roundButtonTop + ROUND_BUTTON_DIAMETER_IN_DOTS * layout.dotSize + layout.edgeMargin;
+
+  // 닫은 거절 시각과 비교해 같은 거절에 토스트를 재표시하지 않음
+  const [closedToastAt, setClosedToastAt] = useState<number | null>(null);
+  // 스플래시 중 거절된 요청은 스플래시 종료 시점부터 표시 시간 측정
+  const isStartRejectedToastVisible = isScreenVisible && rejectedStartRequestAt !== null && rejectedStartRequestAt !== closedToastAt;
+  const handleToastClose = useCallback(() => setClosedToastAt(rejectedStartRequestAt), [rejectedStartRequestAt]);
   const controlButtonsTop = layout.buttonCenterY - (BUTTON_SIZE_IN_DOTS * layout.dotSize) / 2;
   const controlButtonsShift = layout.buttonsCenterX - width / 2;
   const controlButtonsStyle = useMemo(
@@ -229,6 +237,15 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
             style={settingsStyle}
             onPress={handleSettingsPress}
             onPressIn={() => playVibration()}
+          />
+          <DotToast
+            testID="start-rejected-toast"
+            text={translate('shortcut.alreadyStarted', language)}
+            icon={WARNING_ICON}
+            dotSize={layout.dotSize}
+            top={toastTop}
+            isVisible={isStartRejectedToastVisible}
+            onClose={handleToastClose}
           />
           {__DEV__ ? <DevPanel seconds={remainingSeconds} speed={speed} isSpeedEnabled={editing} onSelectSpeed={setSpeed} /> : null}
         </View>

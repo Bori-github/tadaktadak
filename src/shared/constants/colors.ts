@@ -64,4 +64,11 @@ export const COLORS = {
     face: '#3f3550',
     shadow: '#08060d',
   },
+
+  toast: {
+    edge: '#ffb43c',
+    face: '#3f3550',
+    shadow: '#08060d',
+    icon: '#ffb43c',
+  },
 } as const;

@@ -401,9 +401,10 @@ describe('단축어 시작 요청', () => {
 
     expect(result.current.session).toEqual({ phase: 'running', mode: 'focus', startedAt: Date.now(), endsAt: Date.now() + TIMER_DEFAULT.focus * MINUTE_IN_MS });
     expect(mockStartRequested).toBe(false);
+    expect(result.current.rejectedStartRequestAt).toBeNull();
   });
 
-  it('저장값이 진행 중이면 요청을 지우고 진행을 유지한다', async () => {
+  it('저장값이 진행 중이면 요청을 지우고 진행을 유지하며 거절 시각을 남긴다', async () => {
     const endsAt = Date.now() + 5 * MINUTE_IN_MS;
 
     mockStartRequested = true;
@@ -414,6 +415,7 @@ describe('단축어 시작 요청', () => {
 
     expect(result.current.session).toEqual({ phase: 'running', mode: 'rest', startedAt: endsAt - 5 * MINUTE_IN_MS, endsAt });
     expect(mockStartRequested).toBe(false);
+    expect(result.current.rejectedStartRequestAt).toBe(Date.now());
   });
 
   it('앱이 떠 있을 때 요청 이벤트가 오면 집중 타이머 진행이 된다', async () => {
@@ -433,7 +435,7 @@ describe('단축어 시작 요청', () => {
     expect(result.current.session).toEqual({ phase: 'running', mode: 'focus', startedAt: Date.now(), endsAt: Date.now() + 25 * MINUTE_IN_MS });
   });
 
-  it('일시정지 상태에서 요청하면 요청을 지우고 일시정지를 유지한다', async () => {
+  it('일시정지 상태에서 요청하면 요청을 지우고 일시정지를 유지하며 거절 시각을 남긴다', async () => {
     const { result } = await renderBeforeRead();
 
     await act(async () => mockRelease(STORED_PAUSED));
@@ -441,6 +443,7 @@ describe('단축어 시작 요청', () => {
 
     expect(result.current.session).toEqual({ phase: 'paused', mode: 'rest', startedAt: NOW, pausedRemainingMs: 90_000 });
     expect(mockStartRequested).toBe(false);
+    expect(result.current.rejectedStartRequestAt).toBe(Date.now());
   });
 });
 
