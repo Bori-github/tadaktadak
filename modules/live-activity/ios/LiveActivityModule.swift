@@ -20,7 +20,7 @@ struct LiveActivityContentRecord: Record {
 }
 
 public class LiveActivityModule: Module {
-  private var stoppedObserver: NSObjectProtocol?
+  private var defaultsObserver: NSObjectProtocol?
   // 이미 보낸 정지 값. 무관한 `UserDefaults` 변경이나 같은 값에 다시 보내지 않기 위함
   private var emittedStoppedEndsAt: Int?
 
@@ -39,7 +39,7 @@ public class LiveActivityModule: Module {
     OnStartObserving {
       self.emittedStoppedEndsAt = nil
       // `didChangeNotification`은 `UserDefaults.standard`의 모든 변경에 발생하므로 값이 새로 저장된 경우만 전송
-      self.stoppedObserver = NotificationCenter.default.addObserver(
+      self.defaultsObserver = NotificationCenter.default.addObserver(
         forName: UserDefaults.didChangeNotification,
         object: UserDefaults.standard,
         queue: .main
@@ -52,11 +52,11 @@ public class LiveActivityModule: Module {
     }
 
     OnStopObserving {
-      if let observer = self.stoppedObserver {
+      if let observer = self.defaultsObserver {
         NotificationCenter.default.removeObserver(observer)
       }
 
-      self.stoppedObserver = nil
+      self.defaultsObserver = nil
     }
 
     Property("isSupported") {

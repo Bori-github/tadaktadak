@@ -14,7 +14,6 @@ import expo.modules.kotlin.records.Record
 
 private const val STOPPED_PREFERENCES_NAME = "live-activity"
 private const val STOPPED_ENDS_AT_KEY = "stoppedEndsAt"
-private const val START_REQUESTED_KEY = "startRequested"
 
 // `plugins/withAndroidShortcuts.js`와 같은 값
 internal const val EXTRA_START_REQUESTED = "expo.modules.liveactivity.START_REQUESTED"
@@ -30,6 +29,8 @@ class LiveActivityContentRecord : Record {
 }
 
 class LiveActivityModule : Module() {
+  private var isStartRequested = false
+
   private val context: Context
     get() = requireNotNull(appContext.reactContext)
 
@@ -41,21 +42,11 @@ class LiveActivityModule : Module() {
 
     Events("onStopped", "onStartRequested")
 
-    // 이전 프로세스의 미처리 요청 삭제. 콜드 스타트의 요청은 Intent extra로 `consumeStartRequested`가 읽음
-    OnCreate {
-      preferences.edit { remove(START_REQUESTED_KEY) }
-    }
-
-    OnNewIntent { intent ->
-      if (saveStoppedEndsAt(intent)) sendEvent("onStopped")
-      if (saveStartRequest(intent)) sendEvent("onStartRequested")
-    }
+    OnNewIntent { intent -> handleIntent(intent) }
 
     // Activity 재생성 시 `onNewIntent` 대신 `getIntent()`로 전달됨
     OnActivityEntersForeground {
-      val intent = appContext.currentActivity?.intent ?: return@OnActivityEntersForeground
-      if (saveStoppedEndsAt(intent)) sendEvent("onStopped")
-      if (saveStartRequest(intent)) sendEvent("onStartRequested")
+      appContext.currentActivity?.intent?.let { handleIntent(it) }
     }
 
     Property("isSupported") { true }
@@ -89,13 +80,19 @@ class LiveActivityModule : Module() {
     Function("consumeStartRequested") {
       appContext.currentActivity?.intent?.let { saveStartRequest(it) }
 
-      val requested = preferences.getBoolean(START_REQUESTED_KEY, false)
-      preferences.edit { remove(START_REQUESTED_KEY) }
+      val requested = isStartRequested
+      isStartRequested = false
 
       requested
     }
   }
 
+  private fun handleIntent(intent: Intent) {
+    if (saveStoppedEndsAt(intent)) sendEvent("onStopped")
+    if (saveStartRequest(intent)) sendEvent("onStartRequested")
+  }
+
+  // 요청은 Intent 수신부터 JavaScript가 읽을 때까지만 유효하고 프로세스 종료 시 소멸해야 하므로 메모리 필드에 보관
   private fun saveStartRequest(intent: Intent): Boolean {
     if (!intent.hasExtra(EXTRA_START_REQUESTED)) return false
 
@@ -104,7 +101,7 @@ class LiveActivityModule : Module() {
     // Recents 재전달 Intent 무시
     if ((intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0) return false
 
-    preferences.edit { putBoolean(START_REQUESTED_KEY, true) }
+    isStartRequested = true
 
     return true
   }

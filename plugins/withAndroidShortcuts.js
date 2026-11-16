@@ -28,10 +28,13 @@ const shortcutsXml = (packageName) => `<?xml version="1.0" encoding="utf-8"?>
 // 앱 아이콘 메뉴의 「타닥타닥 시작」 단축어. 정적 단축어라 앱 실행 전에도 표시됨
 module.exports = function withAndroidShortcuts(config) {
   config = withAndroidManifest(config, (config) => {
-    const mainActivity = AndroidConfig.Manifest.getMainActivityOrThrow(config.modResults);
-    const others = (mainActivity['meta-data'] ?? []).filter((item) => item.$['android:name'] !== 'android.app.shortcuts');
-
-    mainActivity['meta-data'] = [...others, { $: { 'android:name': 'android.app.shortcuts', 'android:resource': '@xml/shortcuts' } }];
+    // Activity의 `meta-data` 배열도 application과 같은 형태라 application용 helper 사용
+    AndroidConfig.Manifest.addMetaDataItemToMainApplication(
+      AndroidConfig.Manifest.getMainActivityOrThrow(config.modResults),
+      'android.app.shortcuts',
+      '@xml/shortcuts',
+      'resource',
+    );
 
     return config;
   });
