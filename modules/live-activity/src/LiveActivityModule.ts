@@ -15,6 +15,8 @@ export type LiveActivityContent = {
 type LiveActivityEvents = {
   /** 정지 버튼이 정지 값을 저장한 직후 발생 */
   onStopped: () => void;
+  /** 단축어가 시작 요청을 저장한 직후 발생 */
+  onStartRequested: () => void;
 };
 
 declare class LiveActivityModule extends NativeModule<LiveActivityEvents> {
@@ -28,6 +30,8 @@ declare class LiveActivityModule extends NativeModule<LiveActivityEvents> {
   endAsync(): Promise<void>;
   /** 정지 버튼이 저장한 `endsAt`(밀리초). 읽으면 삭제 */
   consumeStoppedEndsAt(): number | null;
+  /** 단축어가 저장한 시작 요청 여부. 읽으면 삭제 */
+  consumeStartRequested(): boolean;
 }
 
 export const liveActivity = requireOptionalNativeModule<LiveActivityModule>('LiveActivity');

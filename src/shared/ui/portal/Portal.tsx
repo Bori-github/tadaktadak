@@ -11,6 +11,8 @@ type PortalContextValue = {
   hostRef: RefObject<View | null>;
   /** `PortalHost` 너비 (px). 첫 레이아웃 전에는 0 */
   hostWidth: number;
+  /** `PortalHost`가 `Portal` 내용을 렌더링하는 중인지 */
+  isEnabled: boolean;
   mount: (key: string, entry: PortalEntry) => void;
   unmount: (key: string) => void;
 };
@@ -55,7 +57,7 @@ export const PortalHost = ({ isEnabled = true, children }: PortalHostProps): JSX
     });
   }, []);
 
-  const value = useMemo<PortalContextValue>(() => ({ hostRef, hostWidth, mount, unmount }), [hostWidth, mount, unmount]);
+  const value = useMemo<PortalContextValue>(() => ({ hostRef, hostWidth, isEnabled, mount, unmount }), [hostWidth, isEnabled, mount, unmount]);
 
   // 터치와 `BackHandler`가 같은 `Portal`을 닫도록 마지막에 mount한 `Portal`의 `onDismiss`만 호출
   const dismissTop = isEnabled ? [...entries.values()].findLast((entry) => entry.onDismiss !== undefined)?.onDismiss : undefined;
@@ -157,12 +159,12 @@ export const Portal = ({ onDismiss, children }: PortalProps): null => {
 /**
  * 가장 가까운 `PortalHost`의 ref와 너비. `Portal` 자식 요소의 좌표 기준
  *
- * @returns `PortalHost` ref, 너비 (px)
+ * @returns `PortalHost` ref, 너비 (px), 활성 여부
  */
-export const usePortalHost = (): Pick<PortalContextValue, 'hostRef' | 'hostWidth'> => {
-  const { hostRef, hostWidth } = usePortalContext();
+export const usePortalHost = (): Pick<PortalContextValue, 'hostRef' | 'hostWidth' | 'isEnabled'> => {
+  const { hostRef, hostWidth, isEnabled } = usePortalContext();
 
-  return { hostRef, hostWidth };
+  return { hostRef, hostWidth, isEnabled };
 };
 
 const styles = StyleSheet.create({

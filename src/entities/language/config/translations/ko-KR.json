@@ -9,6 +9,9 @@
   "ambientSound": {
     "tooltip": "타닥타닥, 장작 타는 소리와 함께해 보세요."
   },
+  "shortcut": {
+    "alreadyStarted": "이미 시작한 타이머가 있어요!"
+  },
   "notification": {
     "bannerChannel": "배너 알림",
     "vibrationChannel": "진동 알림"

@@ -15,6 +15,9 @@ import expo.modules.kotlin.records.Record
 private const val STOPPED_PREFERENCES_NAME = "live-activity"
 private const val STOPPED_ENDS_AT_KEY = "stoppedEndsAt"
 
+// `plugins/withAndroidShortcuts.js`와 같은 값
+internal const val EXTRA_START_REQUESTED = "expo.modules.liveactivity.START_REQUESTED"
+
 // `src/shared/constants/colors.ts`의 `canvas`
 private const val CANVAS_COLOR = 0xFF141021.toInt()
 
@@ -26,6 +29,8 @@ class LiveActivityContentRecord : Record {
 }
 
 class LiveActivityModule : Module() {
+  private var isStartRequested = false
+
   private val context: Context
     get() = requireNotNull(appContext.reactContext)
 
@@ -35,16 +40,13 @@ class LiveActivityModule : Module() {
   override fun definition() = ModuleDefinition {
     Name("LiveActivity")
 
-    Events("onStopped")
+    Events("onStopped", "onStartRequested")
 
-    OnNewIntent { intent ->
-      if (saveStoppedEndsAt(intent)) sendEvent("onStopped")
-    }
+    OnNewIntent { intent -> handleIntent(intent) }
 
     // Activity 재생성 시 `onNewIntent` 대신 `getIntent()`로 전달됨
     OnActivityEntersForeground {
-      val intent = appContext.currentActivity?.intent ?: return@OnActivityEntersForeground
-      if (saveStoppedEndsAt(intent)) sendEvent("onStopped")
+      appContext.currentActivity?.intent?.let { handleIntent(it) }
     }
 
     Property("isSupported") { true }
@@ -74,6 +76,34 @@ class LiveActivityModule : Module() {
 
       endsAt
     }
+
+    Function("consumeStartRequested") {
+      appContext.currentActivity?.intent?.let { saveStartRequest(it) }
+
+      val requested = isStartRequested
+      isStartRequested = false
+
+      requested
+    }
+  }
+
+  private fun handleIntent(intent: Intent) {
+    if (saveStoppedEndsAt(intent)) sendEvent("onStopped")
+    if (saveStartRequest(intent)) sendEvent("onStartRequested")
+  }
+
+  // 요청은 Intent 수신부터 JavaScript가 읽을 때까지만 유효하고 프로세스 종료 시 소멸해야 하므로 메모리 필드에 보관
+  private fun saveStartRequest(intent: Intent): Boolean {
+    if (!intent.hasExtra(EXTRA_START_REQUESTED)) return false
+
+    intent.removeExtra(EXTRA_START_REQUESTED)
+
+    // Recents 재전달 Intent 무시
+    if ((intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0) return false
+
+    isStartRequested = true
+
+    return true
   }
 
   // 진행 중 스냅샷은 잠금화면 정지로 앱이 열릴 때 지난 남은 시간을 먼저 보여서, 진행 중에는 배경색 단색으로 대체

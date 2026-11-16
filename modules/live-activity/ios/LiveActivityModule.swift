@@ -20,47 +20,43 @@ struct LiveActivityContentRecord: Record {
 }
 
 public class LiveActivityModule: Module {
-  private var stoppedObserver: NSObjectProtocol?
+  private var defaultsObserver: NSObjectProtocol?
   // 이미 보낸 정지 값. 무관한 `UserDefaults` 변경이나 같은 값에 다시 보내지 않기 위함
   private var emittedStoppedEndsAt: Int?
 
   public func definition() -> ModuleDefinition {
     Name("LiveActivity")
 
-    Events("onStopped")
+    Events("onStopped", "onStartRequested")
 
-    // `StopTimerIntent`가 앱 프로세스에서 값을 쓰는 순간 JavaScript에 이벤트를 보냄
+    // 콜드 스타트는 모듈 생성 뒤 `StartFocusTimerIntent.perform()`이 실행되므로 이전 프로세스의 미처리 요청만 삭제됨
+    OnCreate {
+      UserDefaults.standard.removeObject(forKey: TimerStartRequestFlag.key)
+    }
+
+    // `StopTimerIntent`와 `StartFocusTimerIntent`가 앱 프로세스에서 값을 저장하면 JavaScript에 이벤트 전송
     // 앱이 열릴 때 `AppState` active가 이 저장보다 먼저 오면 전환 처리가 값을 읽지 못함
     OnStartObserving {
       self.emittedStoppedEndsAt = nil
-      // `didChangeNotification`은 `UserDefaults.standard`의 모든 변경에 오므로, 정지 값이 새로 써진 때만 골라 보냄
-      self.stoppedObserver = NotificationCenter.default.addObserver(
+      // `didChangeNotification`은 `UserDefaults.standard`의 모든 변경에 발생하므로 값이 새로 저장된 경우만 전송
+      self.defaultsObserver = NotificationCenter.default.addObserver(
         forName: UserDefaults.didChangeNotification,
         object: UserDefaults.standard,
         queue: .main
       ) { [weak self] _ in
         guard let self else { return }
 
-        // 값이 없으면 읽고 지워진 것. 다음 저장을 새 이벤트로 보게 초기화
-        guard let endsAt = UserDefaults.standard.object(forKey: TimerStoppedFlag.key) as? Int else {
-          self.emittedStoppedEndsAt = nil
-          return
-        }
-
-        guard endsAt != self.emittedStoppedEndsAt else { return }
-
-        // 정지 값은 `consumeStoppedEndsAt`으로 읽으므로 이벤트엔 싣지 않고 신호만 보냄
-        self.emittedStoppedEndsAt = endsAt
-        self.sendEvent("onStopped")
+        self.emitStoppedIfNeeded()
+        self.emitStartRequestIfNeeded()
       }
     }
 
     OnStopObserving {
-      if let observer = self.stoppedObserver {
+      if let observer = self.defaultsObserver {
         NotificationCenter.default.removeObserver(observer)
       }
 
-      self.stoppedObserver = nil
+      self.defaultsObserver = nil
     }
 
     Property("isSupported") {
@@ -112,6 +108,36 @@ public class LiveActivityModule: Module {
 
       return endsAt
     }
+
+    Function("consumeStartRequested") { () -> Bool in
+      let defaults = UserDefaults.standard
+      let requested = defaults.bool(forKey: TimerStartRequestFlag.key)
+
+      defaults.removeObject(forKey: TimerStartRequestFlag.key)
+
+      return requested
+    }
+  }
+
+  private func emitStoppedIfNeeded() {
+    // 값이 없으면 읽고 지워진 것. 다음 저장을 새 이벤트로 보게 초기화
+    guard let endsAt = UserDefaults.standard.object(forKey: TimerStoppedFlag.key) as? Int else {
+      emittedStoppedEndsAt = nil
+      return
+    }
+
+    guard endsAt != emittedStoppedEndsAt else { return }
+
+    // 정지 값은 `consumeStoppedEndsAt`으로 읽으므로 이벤트엔 싣지 않고 신호만 보냄
+    emittedStoppedEndsAt = endsAt
+    sendEvent("onStopped")
+  }
+
+  // `consumeStartRequested`가 읽으면 삭제하므로 중복 전송은 JavaScript에서 무시됨
+  private func emitStartRequestIfNeeded() {
+    guard UserDefaults.standard.bool(forKey: TimerStartRequestFlag.key) else { return }
+
+    sendEvent("onStartRequested")
   }
 
   // 집중 타이머 완료로 앱이 다시 열리며 휴식 타이머를 시작할 때, 포그라운드 전환 직후엔 `request`가 `visibility`로 거부됨

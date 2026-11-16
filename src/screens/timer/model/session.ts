@@ -57,6 +57,9 @@ interface TimerSessionState {
   remainingMinutes: SharedValue<number>;
   /** 카운트다운 중인 타이머. 남은 분과 같은 워클릿에서 바뀜 */
   countingMode: SharedValue<TimerMode>;
+  /** 진행/일시정지 중 단축어 시작 요청을 거절했고 아직 닫지 않았으면 true */
+  isStartRequestRejected: boolean;
+  dismissStartRequestRejection: () => void;
   play: () => void;
   stop: () => void;
 }
@@ -81,6 +84,9 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
 
   // `consumeStoppedEndsAt`이 읽고 지운 값을 기억. `AppState` active와 `onStopped`가 겹쳐 나중 호출이 `null`을 읽어도 정지를 유지
   const stoppedEndsAt = useRef<number | null>(null);
+
+  const [isStartRequestRejected, setIsStartRequestRejected] = useState(false);
+  const dismissStartRequestRejection = useCallback(() => setIsStartRequestRejected(false), []);
 
   const remainingAtStart = useSharedValue(0);
   const startedAtUptime = useSharedValue(NOT_STARTED);
@@ -190,6 +196,29 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     });
   }, [running]);
 
+  const restMs = settingMinutes.rest * MINUTE_IN_MS;
+  const focusMs = settingMinutes.focus * MINUTE_IN_MS;
+
+  // 집중 타이머 시간 변경이 저장값 읽기 이펙트를 재실행하지 않도록 ref로 읽음
+  const focusMsRef = useRef(focusMs);
+
+  useEffect(() => {
+    focusMsRef.current = focusMs;
+  }, [focusMs]);
+
+  // 단축어 시작 요청이 있으면 읽어 삭제. 대기/완료 상태는 집중 타이머 진행으로 전환하고, 진행/일시정지 상태는 거절을 알리고 유지
+  const consumeStartRequest = useCallback((current: TimerSession, now: number): TimerSession => {
+    // 네이티브 모듈이 없는 빌드에서 `null`. 단축어도 없으므로 요청 없음으로 처리
+    if (!(liveActivity?.consumeStartRequested() ?? false)) return current;
+
+    if (current.phase !== 'ready' && current.phase !== 'completed') {
+      setIsStartRequestRejected(true);
+      return current;
+    }
+
+    return startTimer({ session: READY_SESSION, now, settingMs: focusMsRef.current });
+  }, []);
+
   const applySession = useCallback(
     (next: TimerSession, now: number) => {
       const remaining = sessionRemainingMs({ session: next, now }) ?? 0;
@@ -228,7 +257,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
         settled.current = true;
         setIsSettled(true);
 
-        const next = restoreSession({ stored, now, stopped: isStoppedOnLockScreen(stored) });
+        const next = consumeStartRequest(restoreSession({ stored, now, stopped: isStoppedOnLockScreen(stored) }), now);
 
         applySession(next, now);
         // 초기값 READY_SESSION과 같은 객체면 리렌더가 없어 [session] 이펙트가 돌지 않으므로 여기서 한 번 저장
@@ -238,7 +267,22 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     return () => {
       live = false;
     };
-  }, [applySession]);
+  }, [applySession, consumeStartRequest]);
+
+  useEffect(() => {
+    // 앱 실행 중 단축어 실행은 `AppState` 전환 없이 `StartFocusTimerIntent`의 저장만 발생
+    const subscription = liveActivity?.addListener('onStartRequested', () => {
+      // 저장값 읽기 전이면 요청이 유지되어 읽기 완료 시 처리됨
+      if (!settled.current) return;
+
+      const now = Date.now();
+      const next = consumeStartRequest(session, now);
+
+      if (next !== session) applySession(next, now);
+    });
+
+    return () => subscription?.remove();
+  }, [session, applySession, consumeStartRequest]);
 
   useEffect(() => {
     if (!settled.current) return;
@@ -246,9 +290,6 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     // 실패하면 앱을 다시 켤 때 이전 단계로 돌아감
     saveSession(session).catch(() => {});
   }, [session]);
-
-  const restMs = settingMinutes.rest * MINUTE_IN_MS;
-  const focusMs = settingMinutes.focus * MINUTE_IN_MS;
 
   const startsRestAutomatically = session.phase === 'completed' && session.mode === 'focus' && restMs > 0;
 
@@ -357,5 +398,5 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     return remaining === null ? null : toSeconds(remaining);
   }, [session, countedSeconds, toSeconds]);
 
-  return { session, isSettled, remainingSeconds, remainingMinutes, countingMode, play, stop };
+  return { session, isSettled, remainingSeconds, remainingMinutes, countingMode, isStartRequestRejected, dismissStartRequestRejection, play, stop };
 };
