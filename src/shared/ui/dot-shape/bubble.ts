@@ -1,13 +1,11 @@
-import { type DotCell, type DotRole, rowRunCells } from './cell';
+import { type DotCell, outlineCells } from './cell';
+import { isInRoundedRectangle } from './roundedRectangle';
 
 export type BubbleArrowDirection = 'up' | 'down' | 'left' | 'right';
 
 export type BubbleArrowAlign = 'start' | 'center' | 'end';
 
 const ARROW_LENGTH_IN_DOTS = 4;
-
-/** 콘텐츠 상단/하단 행부터 적용하는 모서리 들여쓰기 (dot) */
-const CORNER_INSETS = [3, 1, 1];
 
 /** `start`/`end` 정렬 화살표 직각 변과 콘텐츠 끝 사이 오프셋 (dot) */
 const ARROW_EDGE_OFFSET_IN_DOTS = { horizontal: 6, vertical: 4 };
@@ -108,16 +106,8 @@ export const bubbleShape = (requested: BubbleOptions): BubbleShape => {
   const layout = bubbleLayout(requested);
   const { contentWidthInDots, contentHeightInDots, contentColumn, contentRow } = layout;
 
-  const isInContent = (column: number, row: number): boolean => {
-    const localColumn = column - contentColumn;
-    const localRow = row - contentRow;
-
-    if (localRow < 0 || localRow >= contentHeightInDots) return false;
-
-    const inset = CORNER_INSETS[Math.min(localRow, contentHeightInDots - 1 - localRow)] ?? 0;
-
-    return inset <= localColumn && localColumn < contentWidthInDots - inset;
-  };
+  const isInContent = (column: number, row: number): boolean =>
+    isInRoundedRectangle({ column: column - contentColumn, row: row - contentRow, widthInDots: contentWidthInDots, heightInDots: contentHeightInDots });
 
   // 화살표가 붙는 변 기준 좌표. along: 변 방향 위치, depth: 변 바깥 방향 거리
   const toArrowAxis = (column: number, row: number): { along: number; depth: number } =>
@@ -143,13 +133,5 @@ export const bubbleShape = (requested: BubbleOptions): BubbleShape => {
 
   const isFilled = (column: number, row: number): boolean => isInContent(column, row) || isInArrow(column, row);
 
-  const roleAt = (column: number, row: number): DotRole | null => {
-    if (!isFilled(column, row)) return isFilled(column, row - 1) ? 'shadow' : null;
-
-    const isInner = isFilled(column - 1, row) && isFilled(column + 1, row) && isFilled(column, row - 1) && isFilled(column, row + 1);
-
-    return isInner ? 'face' : 'edge';
-  };
-
-  return { ...layout, cells: rowRunCells({ widthInDots: layout.widthInDots, heightInDots: layout.heightInDots, roleAt }) };
+  return { ...layout, cells: outlineCells({ widthInDots: layout.widthInDots, heightInDots: layout.heightInDots, isFilled }) };
 };

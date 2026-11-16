@@ -12,3 +12,4 @@ export { SOUND_OFF_ICON } from './soundOff';
 export { STOP_ICON } from './stop';
 export { type GridIcon, type RectIcon } from './types';
 export { VIBRATION_ICON } from './vibration';
+export { WARNING_ICON } from './warning';
