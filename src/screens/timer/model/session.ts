@@ -41,19 +41,6 @@ const isStoppedOnLockScreen = (stored: TimerSession | null): boolean => {
   return stoppedEndsAt !== null && stored?.phase === 'running' && stored.endsAt === stoppedEndsAt;
 };
 
-type StartFocusInput = {
-  session: TimerSession;
-  now: number;
-  focusMs: number;
-};
-
-// 단축어 시작 요청. 대기/완료 상태만 집중 타이머 진행으로 전환하고 진행/일시정지 상태는 유지
-const startFocusIfIdle = ({ session, now, focusMs }: StartFocusInput): TimerSession => {
-  if (session.phase !== 'ready' && session.phase !== 'completed') return session;
-
-  return startTimer({ session: READY_SESSION, now, settingMs: focusMs });
-};
-
 type TimerSessionInput = {
   settingMinutes: Record<TimerMode, number>;
   toSeconds?: (ms: number) => number;
@@ -70,8 +57,9 @@ interface TimerSessionState {
   remainingMinutes: SharedValue<number>;
   /** 카운트다운 중인 타이머. 남은 분과 같은 워클릿에서 바뀜 */
   countingMode: SharedValue<TimerMode>;
-  /** 진행/일시정지 중 단축어 시작 요청을 거절한 시각 (밀리초). 거절 이력이 없으면 `null` */
-  rejectedStartRequestAt: number | null;
+  /** 진행/일시정지 중 단축어 시작 요청을 거절했고 아직 닫지 않았으면 true */
+  isStartRequestRejected: boolean;
+  dismissStartRequestRejection: () => void;
   play: () => void;
   stop: () => void;
 }
@@ -97,7 +85,8 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   // `consumeStoppedEndsAt`이 읽고 지운 값을 기억. `AppState` active와 `onStopped`가 겹쳐 나중 호출이 `null`을 읽어도 정지를 유지
   const stoppedEndsAt = useRef<number | null>(null);
 
-  const [rejectedStartRequestAt, setRejectedStartRequestAt] = useState<number | null>(null);
+  const [isStartRequestRejected, setIsStartRequestRejected] = useState(false);
+  const dismissStartRequestRejection = useCallback(() => setIsStartRequestRejected(false), []);
 
   const remainingAtStart = useSharedValue(0);
   const startedAtUptime = useSharedValue(NOT_STARTED);
@@ -210,6 +199,26 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
   const restMs = settingMinutes.rest * MINUTE_IN_MS;
   const focusMs = settingMinutes.focus * MINUTE_IN_MS;
 
+  // 집중 타이머 시간 변경이 저장값 읽기 이펙트를 재실행하지 않도록 ref로 읽음
+  const focusMsRef = useRef(focusMs);
+
+  useEffect(() => {
+    focusMsRef.current = focusMs;
+  }, [focusMs]);
+
+  // 단축어 시작 요청이 있으면 읽어 삭제. 대기/완료 상태는 집중 타이머 진행으로 전환하고, 진행/일시정지 상태는 거절을 알리고 유지
+  const consumeStartRequest = useCallback((current: TimerSession, now: number): TimerSession => {
+    // 네이티브 모듈이 없는 빌드에서 `null`. 단축어도 없으므로 요청 없음으로 처리
+    if (!(liveActivity?.consumeStartRequested() ?? false)) return current;
+
+    if (current.phase !== 'ready' && current.phase !== 'completed') {
+      setIsStartRequestRejected(true);
+      return current;
+    }
+
+    return startTimer({ session: READY_SESSION, now, settingMs: focusMsRef.current });
+  }, []);
+
   const applySession = useCallback(
     (next: TimerSession, now: number) => {
       const remaining = sessionRemainingMs({ session: next, now }) ?? 0;
@@ -248,12 +257,7 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
         settled.current = true;
         setIsSettled(true);
 
-        const restored = restoreSession({ stored, now, stopped: isStoppedOnLockScreen(stored) });
-        // 네이티브 모듈이 없는 빌드에서 `null`. 단축어도 없으므로 요청 없음으로 처리
-        const requested = liveActivity?.consumeStartRequested() ?? false;
-        const next = requested ? startFocusIfIdle({ session: restored, now, focusMs }) : restored;
-
-        if (requested && next === restored) setRejectedStartRequestAt(now);
+        const next = consumeStartRequest(restoreSession({ stored, now, stopped: isStoppedOnLockScreen(stored) }), now);
 
         applySession(next, now);
         // 초기값 READY_SESSION과 같은 객체면 리렌더가 없어 [session] 이펙트가 돌지 않으므로 여기서 한 번 저장
@@ -263,24 +267,22 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     return () => {
       live = false;
     };
-  }, [applySession, focusMs]);
+  }, [applySession, consumeStartRequest]);
 
   useEffect(() => {
     // 앱 실행 중 단축어 실행은 `AppState` 전환 없이 `StartFocusTimerIntent`의 저장만 발생
     const subscription = liveActivity?.addListener('onStartRequested', () => {
       // 저장값 읽기 전이면 요청이 유지되어 읽기 완료 시 처리됨
       if (!settled.current) return;
-      if (!liveActivity?.consumeStartRequested()) return;
 
       const now = Date.now();
-      const next = startFocusIfIdle({ session, now, focusMs });
+      const next = consumeStartRequest(session, now);
 
-      if (next === session) setRejectedStartRequestAt(now);
-      else applySession(next, now);
+      if (next !== session) applySession(next, now);
     });
 
     return () => subscription?.remove();
-  }, [session, applySession, focusMs]);
+  }, [session, applySession, consumeStartRequest]);
 
   useEffect(() => {
     if (!settled.current) return;
@@ -396,5 +398,5 @@ export const useTimerSession = ({ settingMinutes, toSeconds = millisecondsToSeco
     return remaining === null ? null : toSeconds(remaining);
   }, [session, countedSeconds, toSeconds]);
 
-  return { session, isSettled, remainingSeconds, remainingMinutes, countingMode, rejectedStartRequestAt, play, stop };
+  return { session, isSettled, remainingSeconds, remainingMinutes, countingMode, isStartRequestRejected, dismissStartRequestRejection, play, stop };
 };

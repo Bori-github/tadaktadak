@@ -58,7 +58,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
   const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
   const { speed, setSpeed, realSettingMinutes, toSeconds, toMinutes } = useTimerSpeed(minutes);
-  const { session, isSettled, remainingSeconds, remainingMinutes, countingMode, rejectedStartRequestAt, play, stop } = useTimerSession({
+  const { session, isSettled, remainingSeconds, remainingMinutes, countingMode, isStartRequestRejected, dismissStartRequestRejection, play, stop } = useTimerSession({
     settingMinutes: realSettingMinutes,
     toSeconds,
     toMinutes,
@@ -133,12 +133,6 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   const ambientSoundLeft = notificationSettingsShown ? roundButtonLeft + ROUND_BUTTON_DIAMETER_IN_DOTS * layout.dotSize + layout.edgeMargin : roundButtonLeft;
   const ambientSoundStyle = useMemo(() => [styles.roundButton, { top: roundButtonTop, left: ambientSoundLeft }], [roundButtonTop, ambientSoundLeft]);
   const toastTop = roundButtonTop + ROUND_BUTTON_DIAMETER_IN_DOTS * layout.dotSize + layout.edgeMargin;
-
-  // 닫은 거절 시각과 비교해 같은 거절에 토스트를 재표시하지 않음
-  const [closedToastAt, setClosedToastAt] = useState<number | null>(null);
-  // 스플래시 중 거절된 요청은 스플래시 종료 시점부터 표시 시간 측정
-  const isStartRejectedToastVisible = isScreenVisible && rejectedStartRequestAt !== null && rejectedStartRequestAt !== closedToastAt;
-  const handleToastClose = useCallback(() => setClosedToastAt(rejectedStartRequestAt), [rejectedStartRequestAt]);
   const controlButtonsTop = layout.buttonCenterY - (BUTTON_SIZE_IN_DOTS * layout.dotSize) / 2;
   const controlButtonsShift = layout.buttonsCenterX - width / 2;
   const controlButtonsStyle = useMemo(
@@ -244,8 +238,8 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
             icon={WARNING_ICON}
             dotSize={layout.dotSize}
             top={toastTop}
-            isVisible={isStartRejectedToastVisible}
-            onClose={handleToastClose}
+            isVisible={isStartRequestRejected}
+            onClose={dismissStartRequestRejection}
           />
           {__DEV__ ? <DevPanel seconds={remainingSeconds} speed={speed} isSpeedEnabled={editing} onSelectSpeed={setSpeed} /> : null}
         </View>

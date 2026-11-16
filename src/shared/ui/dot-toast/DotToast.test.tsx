@@ -13,12 +13,12 @@ const TEXT = '이미 시작한 타이머가 있어요!';
 const METRICS = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } };
 const TOP = 111;
 
-const renderToast = async ({ isVisible = true }: { isVisible?: boolean } = {}) => {
+const renderToast = async ({ isVisible = true, isHostEnabled = true }: { isVisible?: boolean; isHostEnabled?: boolean } = {}) => {
   const onClose = jest.fn();
 
   await render(
     <SafeAreaProvider initialMetrics={METRICS}>
-      <PortalHost>
+      <PortalHost isEnabled={isHostEnabled}>
         <Text>화면</Text>
         <DotToast testID="toast" text={TEXT} icon={WARNING_ICON} dotSize={2} top={TOP} isVisible={isVisible} onClose={onClose} />
       </PortalHost>
@@ -103,5 +103,16 @@ describe('화면 위쪽 가운데에 표시하는 도트 토스트', () => {
       jest.advanceTimersByTime(1);
     });
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('스플래시로 PortalHost가 비활성인 동안은 표시 시간을 측정하지 않는다', async () => {
+    const onClose = await renderToast({ isHostEnabled: false });
+    await layoutText(80);
+
+    await act(() => {
+      jest.advanceTimersByTime(3500);
+    });
+
+    expect(onClose).not.toHaveBeenCalled();
   });
 });
