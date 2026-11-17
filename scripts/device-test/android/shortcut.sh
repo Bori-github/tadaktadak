@@ -42,7 +42,7 @@ ok=0
 [ "$shown" = 표시 ] || ok=1
 [ "$after" = 없음 ] || ok=1
 is_idle && ok=1
-[ "$(live_ends_at)" = "$ends_before" ] || ok=1
+{ [ -n "$ends_before" ] && [ "$(live_ends_at)" = "$ends_before" ]; } || ok=1
 report TC-TIMER-025 $ok "집중 타이머 진행 중 실행 후 토스트 $shown, 4초 뒤 $after, 끝날 시각 $(live_ends_at)(실행 전 $ends_before)"
 
 shown=$(shortcut_toast)
@@ -82,13 +82,15 @@ shown=$(shortcut_toast)
 sleep 4
 ok=0
 [ "$shown" = 표시 ] || ok=1
-[ "$(live_ends_at)" = "$ends_before" ] || ok=1
-[ "$(live_icon)" = "$icon_before" ] || ok=1
+{ [ -n "$ends_before" ] && [ "$(live_ends_at)" = "$ends_before" ]; } || ok=1
+{ [ -n "$icon_before" ] && [ "$(live_icon)" = "$icon_before" ]; } || ok=1
 report TC-TIMER-027 $ok "휴식 타이머 진행 중 실행 후 토스트 $shown, 끝날 시각 $(live_ends_at)(실행 전 $ends_before), 알림 아이콘 $(live_icon)(실행 전 $icon_before)"
 tap controls-stop
 
 tap readout-rest
 drag_minutes 1 0
+# 휴식 타이머 변경이라 집중 타이머 복원 표시 해제
+changed_minutes=
 changed_rest=1
 tap readout-focus
 tap controls-play
@@ -98,14 +100,17 @@ go_home
 wait_until_epoch $((start + 55))
 open_shortcut_menu 타닥타닥
 wait_until_epoch $((start + 61))
+tapped=$(($(now_epoch) - start - 60))
 tap_shortcut
 shown=$(toast_shown && echo 표시 || echo 없음)
 sleep 2
 ok=0
+# 연출이 끝난 대기 상태에서도 시작되어 결과가 같으므로 터치 시각으로 연출 중 실행 여부 판정
+[ "$tapped" -le 3 ] || ok=1
 [ "$shown" = 없음 ] || ok=1
 is_idle && ok=1
 [ "$(live_minutes)" = 1 ] || ok=1
-report TC-TIMER-028 $ok "휴식 타이머 0분, 집중 타이머 완료 1초 뒤 실행 후 토스트 $shown, 정지 버튼 $(is_idle && echo 비활성 || echo 활성), 실시간 업데이트 알림 $(live_minutes)분"
+report TC-TIMER-028 $ok "휴식 타이머 0분, 집중 타이머 완료 ${tapped}초 뒤 실행 후 토스트 $shown, 정지 버튼 $(is_idle && echo 비활성 || echo 활성), 실시간 업데이트 알림 $(live_minutes)분"
 restore_rest
 changed_rest=
 
