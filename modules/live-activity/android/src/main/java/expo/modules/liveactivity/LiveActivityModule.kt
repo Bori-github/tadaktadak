@@ -50,10 +50,9 @@ class LiveActivityModule : Module() {
     OnActivityEntersForeground {
       appContext.currentActivity?.intent?.let { intent ->
         if (saveStoppedEndsAt(intent)) sendEvent("onStopped")
-        // 재생성 직후 이전 화면 리스너의 요청 소비 방지로 이벤트 미전송
-        // 요청은 새 화면 마운트 시 `consumeStartRequested`로 조회
-        saveStartRequest(intent)
       }
+      // 재생성 직후 이전 화면 리스너의 요청 소비 방지로 시작 요청 미처리
+      // 시작 요청은 새 화면 마운트 시 `consumeStartRequested`로 조회
     }
 
     Property("isSupported") { true }
