@@ -1,4 +1,4 @@
-const { AndroidConfig, withAndroidManifest, withDangerousMod } = require('expo/config-plugins');
+const { AndroidConfig, CodeGenerator, withAndroidManifest, withDangerousMod, withMainActivity } = require('expo/config-plugins');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -35,6 +35,20 @@ module.exports = function withAndroidShortcuts(config) {
       '@xml/shortcuts',
       'resource',
     );
+
+    return config;
+  });
+
+  config = withMainActivity(config, (config) => {
+    config.modResults.contents = CodeGenerator.mergeContents({
+      src: config.modResults.contents,
+      comment: '    //',
+      tag: 'shortcut-start-restore',
+      offset: 0,
+      anchor: /super\.onCreate\((null|savedInstanceState)\)/,
+      // 프로세스 종료 후 복원된 Activity에는 처음 실행한 단축어 Intent가 다시 전달되어 시작 요청 제거
+      newSrc: `    if (savedInstanceState != null) intent.removeExtra("${EXTRA_START_REQUESTED}")`,
+    }).contents;
 
     return config;
   });
