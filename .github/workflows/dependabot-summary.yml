@@ -47,7 +47,7 @@ jobs:
             --max-turns 3
             --tools ""
 
-      # 요약 단계가 실패해도 실패 문구로 코멘트 작성
+      # 요약 단계가 실패해도 실패 문구 코멘트 작성
       - name: PR 코멘트 작성
         if: ${{ !cancelled() }}
         env:
@@ -57,7 +57,8 @@ jobs:
           NEEDS_SMOKE: ${{ startsWith(github.head_ref, 'dependabot/npm_and_yarn/') && steps.metadata.outputs.dependency-type == 'direct:production' }}
           EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
         run: |
-          SUMMARY=$(jq -r '[.[] | select(.type == "result")] | last | .result // empty' "$EXECUTION_FILE" 2> /dev/null || true)
+          # API 오류로 끝난 실행도 `result`에 오류 문구가 담겨 성공 결과만 사용
+          SUMMARY=$(jq -r '[.[] | select(.type == "result" and .subtype == "success" and (.is_error | not))] | last | .result // empty' "$EXECUTION_FILE" 2> /dev/null || true)
           {
             echo "### 변경 기록 요약"
             echo
@@ -66,6 +67,11 @@ jobs:
               [ "$NEEDS_SMOKE" = "true" ] && echo "> 머지 전 \`.maestro/smoke.yaml\` 통과 확인 필요"
               echo
             fi
-            echo "${SUMMARY:-요약을 생성하지 못함. 워크플로 실행 로그 확인 필요}"
+            printf '%s\n' "${SUMMARY:-요약을 생성하지 못함. 워크플로 실행 로그 확인 필요}"
           } > comment.md
-          gh pr comment "$PR_URL" --body-file comment.md --edit-last --create-if-none
+          # 실패 문구는 새 코멘트로 작성해 이전 실행의 요약 코멘트 유지
+          if [ -n "$SUMMARY" ]; then
+            gh pr comment "$PR_URL" --body-file comment.md --edit-last --create-if-none
+          else
+            gh pr comment "$PR_URL" --body-file comment.md
+          fi
