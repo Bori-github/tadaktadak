@@ -174,11 +174,16 @@ dial_point() {
 focus_minutes() {
   tap controls-play
   sleep 2
-  minutes=$(notification_extra live-activity android.title | grep -Eo '^[0-9]+' || true)
+  minutes=$(live_minutes)
   tap controls-stop
   sleep 1
   [ -n "$minutes" ] || { echo "실시간 업데이트 알림에서 타이머 시간을 읽지 못함" >&2; exit 1; }
   echo "$minutes"
+}
+
+# 실시간 업데이트 알림 제목의 분. 알림이 없으면 빈 값
+live_minutes() {
+  notification_extra live-activity android.title | grep -Eo '^[0-9]+' || true
 }
 
 tap() {
@@ -368,6 +373,54 @@ start_idle() {
 # 실행 직후 홈 화면으로 보내 백그라운드에서 완료되게 함
 go_home() {
   device shell input keyevent KEYCODE_HOME
+}
+
+# 앱 서랍에서 앱 아이콘을 길게 터치해 앱 아이콘 메뉴 표시. $1 앱 이름(시스템 언어 기준)
+# 측정 기기 홈 화면에 앱 아이콘이 없어 앱 서랍에서 조회
+# 드래그 좌표는 Galaxy S20+ One UI 런처 기준
+open_shortcut_menu() {
+  go_home
+  sleep 1
+  device shell input swipe 540 1700 540 600 300
+  sleep 2
+  dump_ui
+  # 알림 배지 표시 시 `content-desc`에 알림 개수가 추가되어 `text`로 조회
+  icon=$(center_of "text=\"$1\"")
+  [ -n "$icon" ] || { echo "앱 서랍에서 앱 아이콘을 찾지 못함" >&2; exit 1; }
+  # shellcheck disable=SC2086
+  set -- $icon
+  device shell input swipe "$1" "$2" "$1" "$2" 1000
+  sleep 2
+  dump_ui
+}
+
+# 앱 아이콘 메뉴의 단축어 문구. 메뉴가 없으면 빈 값
+shortcut_label() {
+  grep -o '<node[^>]*bubble_text[^>]*>' "$OUT/ui.xml" | head -1 | sed -E 's/.*text="([^"]*)".*resource-id.*/\1/'
+}
+
+# 표시된 앱 아이콘 메뉴에서 「타닥타닥 시작」 터치
+tap_shortcut() {
+  target=$(center_of 'text="타닥타닥 시작"')
+  [ -n "$target" ] || { echo "앱 아이콘 메뉴에서 단축어를 찾지 못함" >&2; exit 1; }
+  # shellcheck disable=SC2086
+  device shell input tap $target
+}
+
+run_shortcut() {
+  open_shortcut_menu 타닥타닥
+  tap_shortcut
+  wait_for controls-play
+  wait_until_gone splash
+}
+
+# 토스트는 3.5초만 표시되어 최대 3회 덤프
+toast_shown() {
+  for _ in 1 2 3; do
+    dump_ui
+    [ -n "$(center start-rejected-toast)" ] && return
+  done
+  return 1
 }
 
 # 배경음 플레이어의 `piid`와 상태(예: `1871 started`). 재생을 시작할 때마다 플레이어를 새로 만들어 `piid`가 가장 큰 것을 읽음. 플레이어가 없으면 빈 값
