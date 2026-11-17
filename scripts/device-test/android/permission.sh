@@ -5,9 +5,6 @@
 # - 알림 권한을 거부로 설정하고 끝나면 허용으로 복원
 . "$(dirname "$0")/lib.sh"
 
-grant() {
-  device shell pm grant "$PACKAGE" android.permission.POST_NOTIFICATIONS
-}
 trap '(grant); restore' EXIT
 
 set_ringer 2

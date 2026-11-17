@@ -7,13 +7,7 @@
 # - TC-TIMER-024는 앱 데이터를 삭제해 새로 설치한 상태로 초기화하고 끝나면 타이머 시간(분)을 1분으로 복원
 . "$(dirname "$0")/lib.sh"
 
-grant() {
-  device shell pm grant "$PACKAGE" android.permission.POST_NOTIFICATIONS
-}
-restore_rest() {
-  start_idle && tap readout-rest && drag_minutes 0 1 && tap readout-focus
-}
-trap '(grant); [ -z "${changed_rest:-}" ] || (restore_rest); restore' EXIT
+trap '(grant); restore' EXIT
 
 set_ringer 2
 start_idle
@@ -40,9 +34,7 @@ is_idle && ok=1
 report TC-TIMER-023 $ok "백그라운드에서 실행 후 정지 버튼 $(is_idle && echo 비활성 || echo 활성), 실시간 업데이트 알림 $(live_minutes)분"
 
 ends_before=$(live_ends_at)
-open_shortcut_menu 타닥타닥
-tap_shortcut
-shown=$(toast_shown && echo 표시 || echo 없음)
+shown=$(shortcut_toast)
 sleep 4
 dump_ui
 after=$(visible start-rejected-toast)
@@ -53,9 +45,7 @@ is_idle && ok=1
 [ "$(live_ends_at)" = "$ends_before" ] || ok=1
 report TC-TIMER-025 $ok "집중 타이머 진행 중 실행 후 토스트 $shown, 4초 뒤 $after, 끝날 시각 $(live_ends_at)(실행 전 $ends_before)"
 
-open_shortcut_menu 타닥타닥
-tap_shortcut
-shown=$(toast_shown && echo 표시 || echo 없음)
+shown=$(shortcut_toast)
 # 토스트가 사라지기 전에 터치하도록 `tap`의 화면 덤프 없이 마지막 덤프 좌표 사용
 # shellcheck disable=SC2046
 device shell input tap $(center controls-stop)
@@ -74,9 +64,7 @@ tap controls-play
 sleep 2
 tap controls-play
 sleep 1
-open_shortcut_menu 타닥타닥
-tap_shortcut
-shown=$(toast_shown && echo 표시 || echo 없음)
+shown=$(shortcut_toast)
 sleep 4
 ok=0
 [ "$shown" = 표시 ] || ok=1
@@ -90,9 +78,7 @@ start=$(now_epoch)
 wait_until_epoch $((start + FOCUS_DONE))
 ends_before=$(live_ends_at)
 icon_before=$(live_icon)
-open_shortcut_menu 타닥타닥
-tap_shortcut
-shown=$(toast_shown && echo 표시 || echo 없음)
+shown=$(shortcut_toast)
 sleep 4
 ok=0
 [ "$shown" = 표시 ] || ok=1
