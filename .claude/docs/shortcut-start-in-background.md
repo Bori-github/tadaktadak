@@ -53,7 +53,7 @@ logcat 원문: `[DEBUG-161]` 줄은 측정용으로 임시로 추가한 JS 로�
 
 ## 해결
 
-`LiveActivityModule.kt`의 `OnActivityEntersForeground`에서 시작 요청을 저장만 하고 `onStartRequested` 이벤트는 전송하지 않는다. 재생성된 Activity에서는 새 `TimerScreen`이 저장값을 읽은 뒤 `consumeStartRequested()`로 요청을 확인한다. `OnNewIntent`는 기존 Activity를 재사용해 화면이 하나뿐이므로 이벤트를 유지한다.
+`LiveActivityModule.kt`의 `OnActivityEntersForeground`에서 시작 요청을 처리하지 않아 `onStartRequested` 이벤트가 전송되지 않는다. 재생성된 Activity에서는 새 `TimerScreen`이 저장값을 읽은 뒤 `consumeStartRequested()`로 요청을 확인한다. `OnNewIntent`는 기존 Activity를 재사용해 화면이 하나뿐이므로 이벤트를 유지한다.
 
 수정 후 같은 기기와 개발 빌드에서 확인한 결과는 아래와 같다.
 
