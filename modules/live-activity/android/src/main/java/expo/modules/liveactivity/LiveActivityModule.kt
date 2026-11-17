@@ -46,7 +46,12 @@ class LiveActivityModule : Module() {
 
     // Activity 재생성 시 `onNewIntent` 대신 `getIntent()`로 전달됨
     OnActivityEntersForeground {
-      appContext.currentActivity?.intent?.let { handleIntent(it) }
+      appContext.currentActivity?.intent?.let { intent ->
+        if (saveStoppedEndsAt(intent)) sendEvent("onStopped")
+        // 재생성 직후 이전 화면 리스너의 요청 소비 방지로 이벤트 미전송
+        // 요청은 새 화면 마운트 시 `consumeStartRequested`로 조회
+        saveStartRequest(intent)
+      }
     }
 
     Property("isSupported") { true }
