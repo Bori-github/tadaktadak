@@ -11,6 +11,7 @@ import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import expo.modules.kotlin.records.Field
 import expo.modules.kotlin.records.Record
+import java.util.concurrent.atomic.AtomicBoolean
 
 private const val STOPPED_PREFERENCES_NAME = "live-activity"
 private const val STOPPED_ENDS_AT_KEY = "stoppedEndsAt"
@@ -29,7 +30,8 @@ class LiveActivityContentRecord : Record {
 }
 
 class LiveActivityModule : Module() {
-  private var isStartRequested = false
+  // `onNewIntent`는 UI 스레드, `consumeStartRequested`는 JavaScript 스레드에서 접근
+  private val isStartRequested = AtomicBoolean(false)
 
   private val context: Context
     get() = requireNotNull(appContext.reactContext)
@@ -46,7 +48,11 @@ class LiveActivityModule : Module() {
 
     // Activity 재생성 시 `onNewIntent` 대신 `getIntent()`로 전달됨
     OnActivityEntersForeground {
-      appContext.currentActivity?.intent?.let { handleIntent(it) }
+      appContext.currentActivity?.intent?.let { intent ->
+        if (saveStoppedEndsAt(intent)) sendEvent("onStopped")
+      }
+      // 재생성 직후 이전 화면 리스너의 요청 소비 방지로 시작 요청 미처리
+      // 시작 요청은 새 화면 마운트 시 `consumeStartRequested`로 조회
     }
 
     Property("isSupported") { true }
@@ -80,10 +86,7 @@ class LiveActivityModule : Module() {
     Function("consumeStartRequested") {
       appContext.currentActivity?.intent?.let { saveStartRequest(it) }
 
-      val requested = isStartRequested
-      isStartRequested = false
-
-      requested
+      isStartRequested.getAndSet(false)
     }
   }
 
@@ -101,7 +104,7 @@ class LiveActivityModule : Module() {
     // Recents 재전달 Intent 무시
     if ((intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0) return false
 
-    isStartRequested = true
+    isStartRequested.set(true)
 
     return true
   }

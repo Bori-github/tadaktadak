@@ -93,10 +93,14 @@ launch() {
   wait_until_gone splash
 }
 
+grant() {
+  device shell pm grant "$PACKAGE" android.permission.POST_NOTIFICATIONS
+}
+
 # `pm clear`가 알림 권한도 회수해 삭제 직후 다시 허용
 clear_app() {
   device shell pm clear "$PACKAGE" > /dev/null
-  device shell pm grant "$PACKAGE" android.permission.POST_NOTIFICATIONS
+  grant
   cleared_app=1
 }
 
@@ -174,11 +178,16 @@ dial_point() {
 focus_minutes() {
   tap controls-play
   sleep 2
-  minutes=$(notification_extra live-activity android.title | grep -Eo '^[0-9]+' || true)
+  minutes=$(live_minutes)
   tap controls-stop
   sleep 1
   [ -n "$minutes" ] || { echo "실시간 업데이트 알림에서 타이머 시간을 읽지 못함" >&2; exit 1; }
   echo "$minutes"
+}
+
+# 실시간 업데이트 알림 제목의 분. 알림이 없으면 빈 값
+live_minutes() {
+  notification_extra live-activity android.title | grep -Eo '^[0-9]+' || true
 }
 
 tap() {
@@ -370,6 +379,61 @@ go_home() {
   device shell input keyevent KEYCODE_HOME
 }
 
+# 앱 서랍에서 앱 아이콘을 길게 터치해 앱 아이콘 메뉴 표시. $1 앱 이름(시스템 언어 기준)
+# 측정 기기 홈 화면에 앱 아이콘이 없어 앱 서랍에서 조회
+# 드래그 좌표는 Galaxy S20+ One UI 런처 기준
+open_shortcut_menu() {
+  go_home
+  sleep 1
+  device shell input swipe 540 1700 540 600 300
+  sleep 2
+  dump_ui
+  # 알림 배지 표시 시 `content-desc`에 알림 개수가 추가되어 `text`로 조회
+  icon=$(center_of "text=\"$1\"")
+  [ -n "$icon" ] || { echo "앱 서랍에서 앱 아이콘을 찾지 못함" >&2; exit 1; }
+  # shellcheck disable=SC2086
+  set -- $icon
+  device shell input swipe "$1" "$2" "$1" "$2" 1000
+  sleep 2
+  dump_ui
+}
+
+# 앱 아이콘 메뉴의 단축어 문구. 메뉴가 없으면 빈 값
+shortcut_label() {
+  grep -o '<node[^>]*bubble_text[^>]*>' "$OUT/ui.xml" | head -1 | sed -E 's/.*text="([^"]*)".*resource-id.*/\1/'
+}
+
+# 표시된 앱 아이콘 메뉴에서 「타닥타닥 시작」 터치
+tap_shortcut() {
+  target=$(center_of 'text="타닥타닥 시작"')
+  [ -n "$target" ] || { echo "앱 아이콘 메뉴에서 단축어를 찾지 못함" >&2; exit 1; }
+  # shellcheck disable=SC2086
+  device shell input tap $target
+}
+
+run_shortcut() {
+  open_shortcut_menu 타닥타닥
+  tap_shortcut
+  wait_for controls-play
+  wait_until_gone splash
+}
+
+# 토스트는 3.5초만 표시되어 최대 3회 덤프
+toast_shown() {
+  for _ in 1 2 3; do
+    dump_ui
+    [ -n "$(center start-rejected-toast)" ] && return
+  done
+  return 1
+}
+
+# 앱 아이콘 메뉴로 단축어를 실행하고 토스트 표시 여부 출력
+shortcut_toast() {
+  open_shortcut_menu 타닥타닥
+  tap_shortcut
+  toast_shown && echo 표시 || echo 없음
+}
+
 # 배경음 플레이어의 `piid`와 상태(예: `1871 started`). 재생을 시작할 때마다 플레이어를 새로 만들어 `piid`가 가장 큰 것을 읽음. 플레이어가 없으면 빈 값
 ambient_state() {
   uid=$(device shell dumpsys package "$PACKAGE" | grep -m1 -o 'userId=[0-9]*' | sed 's/userId=//')
@@ -434,6 +498,11 @@ report() {
   printf '%s\t%s\t%s\n' "$1" "$([ "$2" = 0 ] && echo 통과 || echo 불일치)" "$3"
 }
 
+# 휴식 타이머 시간(분)을 0분에서 전제 조건인 1분으로 되돌림
+restore_rest() {
+  start_idle && tap readout-rest && drag_minutes 0 1 && tap readout-focus
+}
+
 original_ringer=$(ringer)
 original_stay_on=$(device shell settings get global stay_on_while_plugged_in | tr -d '\r')
 original_airplane=$(device shell settings get global airplane_mode_on | tr -d '\r')
@@ -445,6 +514,7 @@ restore() {
   # 앱 데이터 삭제로 타이머 시간(분)이 기본값 집중 25분/휴식 5분이 되어 여기서 1분으로 되돌림
   [ -z "${cleared_app:-}" ] || (start_idle && close_tooltip && drag_minutes 25 1 && tap readout-rest && drag_minutes 5 1 && tap readout-focus)
   [ -z "${changed_minutes:-}" ] || (start_idle && minutes=$(focus_minutes) && drag_minutes "$minutes" 1)
+  [ -z "${changed_rest:-}" ] || (restore_rest)
   [ -z "${changed_vibration:-}" ] || (start_idle && set_vibration 1)
   [ -z "${changed_language:-}" ] || (start_idle && select_language system)
   [ -z "${changed_ambient:-}" ] || (start_idle && set_ambient 0)
