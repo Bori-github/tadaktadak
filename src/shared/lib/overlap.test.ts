@@ -6,14 +6,18 @@ import { BONFIRE_COLD_7, BONFIRE_COLD_9, BONFIRE_HOT_A_7, BONFIRE_HOT_A_9, BONFI
 import { DEVICE_NAMES, DEVICES, type DeviceName } from './devices';
 import { MIN_ITEM_RADIUS, resolveLayout, type FormFactor } from './responsive';
 
-const LOG_FRAMES = [LOG_COLD, LOG_HOT_A, LOG_HOT_B];
-const BONFIRE_FRAMES: Record<BonfireHeightInDots, string[][]> = {
-  7: [BONFIRE_COLD_7, BONFIRE_HOT_A_7, BONFIRE_HOT_B_7],
-  9: [BONFIRE_COLD_9, BONFIRE_HOT_A_9, BONFIRE_HOT_B_9],
-};
-
 /** 최대 투영 `max(폭, 높이)` (dot). 프레임 중 가장 큰 값. `DESIGN.md` §4 */
 const maxProjection = (frames: string[][]) => Math.max(...frames.map((rows) => Math.max(rows.length, ...rows.map((row) => row.length))));
+
+const LOG_PROJECTION = maxProjection([LOG_COLD, LOG_HOT_A, LOG_HOT_B]);
+const BONFIRE_PROJECTION: Record<BonfireHeightInDots, number> = {
+  7: maxProjection([BONFIRE_COLD_7, BONFIRE_HOT_A_7, BONFIRE_HOT_B_7]),
+  9: maxProjection([BONFIRE_COLD_9, BONFIRE_HOT_A_9, BONFIRE_HOT_B_9]),
+};
+
+type ItemKind = 'log' | 'bonfire';
+
+const projectionOf = (kind: ItemKind, bonfireHeightInDots: BonfireHeightInDots) => (kind === 'log' ? LOG_PROJECTION : BONFIRE_PROJECTION[bonfireHeightInDots]);
 
 /** 모닥불 사이 눈금 수. 5분 배수 눈금에만 있음 */
 const BONFIRE_TICK_DISTANCE = 5;
@@ -49,55 +53,48 @@ const PORTRAIT_WIDTHS = [320, 360, 375, 390, 430];
 const LAYOUT_CASES = [
   ...DEVICE_NAMES.map((name) => {
     const { shortSide, topEdge, bottomEdge, formFactor } = DEVICES[name];
-    return { label: name, input: { shortSide, safeAreaTopEdge: topEdge, safeAreaBottomEdge: bottomEdge, formFactor }, isNarrow: false };
+    return { label: name, input: { shortSide, safeAreaTopEdge: topEdge, safeAreaBottomEdge: bottomEdge, formFactor } };
   }),
   ...range(250, 500).flatMap((height) =>
     LANDSCAPE_WIDTHS.map((width) => ({
       label: `가로 ${width}×${height}`,
       input: { shortSide: height, safeAreaTopEdge: 0, safeAreaBottomEdge: height, safeAreaLeftEdge: 0, safeAreaRightEdge: width },
-      isNarrow: false,
     })),
   ),
   ...range(250, 1400).flatMap((height) =>
     PORTRAIT_WIDTHS.map((width) => ({
       label: `세로 ${width}×${height}`,
       input: { shortSide: Math.min(width, height), safeAreaTopEdge: 0, safeAreaBottomEdge: height, safeAreaLeftEdge: 0, safeAreaRightEdge: width },
-      isNarrow: true,
     })),
   ),
 ];
 
-type ProjectionPair = (bonfireHeightInDots: BonfireHeightInDots) => [number, number];
-
-// 배치는 개체 쌍과 무관해서 창마다 한 번만 계산
-const RESOLVED_LAYOUTS = LAYOUT_CASES.map(({ label, input, isNarrow }) => ({ label, isNarrow, ...resolveLayout(input) }));
+// 버튼 회피로 하한보다 작아진 창은 겹침이 있으므로 검사 제외
+// 버튼과 떨어진 창의 하한 유지는 `responsive.test.ts`가 검사
+const CHECKED_LAYOUTS = LAYOUT_CASES.map(({ label, input }) => ({ label, ...resolveLayout(input) })).filter(
+  ({ itemRadius, scale }) => itemRadius / scale >= MIN_ITEM_RADIUS - FLOAT_TOLERANCE,
+);
 
 /** 여유가 0 미만인 화면 목록 */
-const overlappingLayouts = (tickDistance: number, projectionsOf: ProjectionPair) =>
-  RESOLVED_LAYOUTS.flatMap((resolved) => {
-    const { label, isNarrow, itemRadius, scale, bonfireHeightInDots } = resolved;
-    // 좁은 창은 버튼 회피로 하한보다 작아져 겹침이 있으므로 검사 제외
-    const isButtonAvoided = isNarrow && itemRadius / scale < MIN_ITEM_RADIUS - FLOAT_TOLERANCE;
-    if (isButtonAvoided) return [];
-    const margin = minuteGap(resolved) * tickDistance - needed(...projectionsOf(bonfireHeightInDots));
+const overlappingLayouts = (tickDistance: number, first: ItemKind, second: ItemKind) =>
+  CHECKED_LAYOUTS.flatMap((checked) => {
+    const { label, bonfireHeightInDots } = checked;
+    const margin = minuteGap(checked) * tickDistance - needed(projectionOf(first, bonfireHeightInDots), projectionOf(second, bonfireHeightInDots));
     return margin < -FLOAT_TOLERANCE ? [`${label}: 여유 ${round(margin)}`] : [];
   });
 
 describe('원주 방향으로 이웃한 개체', () => {
-  const log = maxProjection(LOG_FRAMES);
-  const bonfireOf = (bonfireHeightInDots: BonfireHeightInDots) => maxProjection(BONFIRE_FRAMES[bonfireHeightInDots]);
-
   // 모닥불 + 기준 표식은 12시에서 반 눈금만 떨어져 겹치므로 검사 제외. `DESIGN.md` §5
   it('장작과 장작이 겹치지 않는다', () => {
-    expect(overlappingLayouts(1, () => [log, log])).toEqual([]);
+    expect(overlappingLayouts(1, 'log', 'log')).toEqual([]);
   });
 
   it('모닥불과 장작이 겹치지 않는다', () => {
-    expect(overlappingLayouts(1, (bonfireHeightInDots) => [bonfireOf(bonfireHeightInDots), log])).toEqual([]);
+    expect(overlappingLayouts(1, 'bonfire', 'log')).toEqual([]);
   });
 
   it('모닥불과 모닥불이 겹치지 않는다', () => {
-    expect(overlappingLayouts(BONFIRE_TICK_DISTANCE, (bonfireHeightInDots) => [bonfireOf(bonfireHeightInDots), bonfireOf(bonfireHeightInDots)])).toEqual([]);
+    expect(overlappingLayouts(BONFIRE_TICK_DISTANCE, 'bonfire', 'bonfire')).toEqual([]);
   });
 });
 
