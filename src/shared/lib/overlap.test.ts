@@ -4,7 +4,7 @@ import { BUTTON_SIZE_IN_DOTS, type BonfireHeightInDots } from '@/shared/constant
 import { BONFIRE_COLD_7, BONFIRE_COLD_9, BONFIRE_HOT_A_7, BONFIRE_HOT_A_9, BONFIRE_HOT_B_7, BONFIRE_HOT_B_9, LOG_COLD, LOG_HOT_A, LOG_HOT_B } from '@/shared/ui/dot-sprite';
 
 import { DEVICE_NAMES, DEVICES, type DeviceName } from './devices';
-import { resolveLayout, type FormFactor } from './responsive';
+import { MIN_ITEM_RADIUS, resolveLayout, type FormFactor } from './responsive';
 
 const LOG_FRAMES = [LOG_COLD, LOG_HOT_A, LOG_HOT_B];
 const BONFIRE_FRAMES: Record<BonfireHeightInDots, string[][]> = {
@@ -27,14 +27,8 @@ const HEIGHT = { bonfire: 9, thumb: 7, numeral: 7, button: BUTTON_SIZE_IN_DOTS }
 // 큰 짧은 변에서도 세로 배치를 유지하려고 safe area 아래 끝을 짧은 변의 2배 이상으로 설정
 const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: 47, safeAreaBottomEdge: Math.max(810, shortSide * 2) });
 
-/** 화면 반지름에서 배율을 나눈 값 (px). 도트 수는 배율과 무관하므로 도트 단위 검산은 이 값으로 계산 */
-const baseItemRadius = (shortSide: number) => {
-  const { itemRadius, scale } = layout(shortSide);
-  return itemRadius / scale;
-};
-
-/** 1분 간격 (dot). `DESIGN.md` §7 계산 순서 7 */
-const minuteGap = (shortSide: number) => (Math.PI * baseItemRadius(shortSide)) / 60;
+/** 1분 간격 (dot). 원주를 60으로 나눈 길이를 도트 크기로 나눔. `DESIGN.md` §7 계산 순서 7 */
+const minuteGap = ({ itemRadius, dotSize }: { itemRadius: number; dotSize: number }) => (2 * Math.PI * itemRadius) / 60 / dotSize;
 
 const needed = (a: number, b: number) => (a + b) / 2;
 
@@ -42,7 +36,7 @@ const round = (value: number) => Math.round(value * 100) / 100;
 
 describe('1분 간격', () => {
   it('기준 화면 390에서 반지름 153의 원주를 60으로 나눈 8.01 도트다', () => {
-    expect(round(minuteGap(390))).toBe(8.01);
+    expect(round(minuteGap(layout(390)))).toBe(8.01);
   });
 });
 
@@ -75,18 +69,17 @@ const LAYOUT_CASES = [
 
 type ProjectionPair = (bonfireHeightInDots: BonfireHeightInDots) => [number, number];
 
-/** 개체 중심 반지름 하한 (배율 1). `DESIGN.md` §5 */
-const MIN_ITEM_RADIUS = 118.1;
+// 배치는 개체 쌍과 무관해서 창마다 한 번만 계산
+const RESOLVED_LAYOUTS = LAYOUT_CASES.map(({ label, input, isNarrow }) => ({ label, isNarrow, ...resolveLayout(input) }));
 
 /** 여유가 0 미만인 화면 목록 */
 const overlappingLayouts = (tickDistance: number, projectionsOf: ProjectionPair) =>
-  LAYOUT_CASES.flatMap(({ label, input, isNarrow }) => {
-    const { itemRadius, scale, bonfireHeightInDots } = resolveLayout(input);
+  RESOLVED_LAYOUTS.flatMap((resolved) => {
+    const { label, isNarrow, itemRadius, scale, bonfireHeightInDots } = resolved;
     // 좁은 창은 버튼 회피로 하한보다 작아져 겹침이 있으므로 검사 제외
     const isButtonAvoided = isNarrow && itemRadius / scale < MIN_ITEM_RADIUS - FLOAT_TOLERANCE;
     if (isButtonAvoided) return [];
-    const gapInDots = ((Math.PI * itemRadius) / scale / 60) * tickDistance;
-    const margin = gapInDots - needed(...projectionsOf(bonfireHeightInDots));
+    const margin = minuteGap(resolved) * tickDistance - needed(...projectionsOf(bonfireHeightInDots));
     return margin < -FLOAT_TOLERANCE ? [`${label}: 여유 ${round(margin)}`] : [];
   });
 

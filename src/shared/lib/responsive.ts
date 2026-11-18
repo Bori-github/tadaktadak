@@ -10,7 +10,7 @@ const REFERENCE_SHORT_SIDE = 390;
 const REFERENCE_ITEM_RADIUS = 153;
 
 /** 축소된 개체 중심 반지름 하한 (배율 1). `DESIGN.md` §5 겹침 검산 */
-const MIN_ITEM_RADIUS = 118.1;
+export const MIN_ITEM_RADIUS = 118.1;
 /** 태블릿에서 시계판 지름이 짧은 변에서 차지하는 비율 */
 const TABLET_DIAL_RATIO = 0.7;
 /** 1분 간격이 모닥불 + 장작 필요 간격 6.5 도트가 되는 반지름. 미만이면 모닥불을 7 도트로 그림 (배율 1). `DESIGN.md` §5 겹침 검산 */
