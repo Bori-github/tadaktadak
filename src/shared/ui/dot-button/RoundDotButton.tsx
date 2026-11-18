@@ -2,7 +2,8 @@ import { memo } from 'react';
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 
-import { COLORS, DOT_SIZE, ROUND_BUTTON_DIAMETER_IN_DOTS } from '@/shared/constants';
+import { DOT_SIZE, ROUND_BUTTON_DIAMETER_IN_DOTS } from '@/shared/constants';
+import { usePalette } from '@/shared/lib';
 
 import { RectIconShape, type RectIcon } from '@/shared/ui/dot-icon';
 import { circleCells, DotCells } from '@/shared/ui/dot-shape';
@@ -25,9 +26,10 @@ type RoundDotButtonProps = {
 };
 
 export const RoundDotButton = memo(({ dotSize, icon, disabled = false, onPress, onPressIn, style, testID }: RoundDotButtonProps) => {
+  const palette = usePalette();
   const size = ROUND_BUTTON_DIAMETER_IN_DOTS * dotSize;
 
-  const iconColor = disabled ? COLORS.icon.disabled : COLORS.icon.default;
+  const iconColor = disabled ? palette.icon.disabled : palette.icon.default;
 
   // 아이콘 좌표가 배율 1 기준. 지금 도트 크기가 배율 1의 몇 배인지가 곱할 값
   const scale = dotSize / DOT_SIZE;
@@ -41,7 +43,7 @@ export const RoundDotButton = memo(({ dotSize, icon, disabled = false, onPress, 
         return (
           // active 상태의 y 오프셋만큼 캔버스 높이를 늘려 하단 클리핑 방지
           <Canvas style={[styles.canvas, { width: size, height: size + dotSize }]} pointerEvents="none">
-            <DotCells cells={CELLS} dotSize={dotSize} colors={getRoleColors({ disabled, active })} offsetY={offsetY} />
+            <DotCells cells={CELLS} dotSize={dotSize} colors={getRoleColors({ palette, disabled, active })} offsetY={offsetY} />
             <RectIconShape icon={icon} left={iconOffset} top={offsetY + iconOffset} dotSize={dotSize} color={iconColor} />
           </Canvas>
         );
