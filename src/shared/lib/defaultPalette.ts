@@ -1,4 +1,4 @@
-export const COLORS = {
+export const DEFAULT_PALETTE = {
   canvas: '#141021',
 
   fire: {

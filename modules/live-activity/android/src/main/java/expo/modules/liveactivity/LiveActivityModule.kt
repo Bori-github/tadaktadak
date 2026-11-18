@@ -19,7 +19,7 @@ private const val STOPPED_ENDS_AT_KEY = "stoppedEndsAt"
 // `plugins/withAndroidShortcuts.js`와 같은 값
 internal const val EXTRA_START_REQUESTED = "expo.modules.liveactivity.START_REQUESTED"
 
-// `src/shared/constants/colors.ts`의 `canvas`
+// `src/shared/lib/defaultPalette.ts`의 `canvas`
 private const val CANVAS_COLOR = 0xFF141021.toInt()
 
 class LiveActivityContentRecord : Record {
