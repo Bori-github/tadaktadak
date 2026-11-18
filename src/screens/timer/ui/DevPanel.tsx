@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RemainingSeconds } from './RemainingSeconds';
 import { SpeedControl } from './SpeedControl';
 
-import { COLORS } from '@/shared/constants';
+import { usePalette } from '@/shared/lib';
 
 type DevPanelProps = {
   /** 대기 상태에서는 남은 시간이 없어 `null` */
@@ -18,6 +18,7 @@ type DevPanelProps = {
 /** 개발 빌드용 패널 */
 export const DevPanel = ({ seconds, speed, isSpeedEnabled, onSelectSpeed }: DevPanelProps): JSX.Element => {
   const insets = useSafeAreaInsets();
+  const palette = usePalette();
   const [hasThrown, setHasThrown] = useState(false);
 
   // Error Boundary가 이벤트 핸들러 에러를 잡지 않아 렌더 중 throw
@@ -28,8 +29,8 @@ export const DevPanel = ({ seconds, speed, isSpeedEnabled, onSelectSpeed }: DevP
       {seconds === null ? null : <RemainingSeconds seconds={seconds} />}
       <View style={styles.row}>
         <SpeedControl speed={speed} enabled={isSpeedEnabled} onSelect={onSelectSpeed} />
-        <Pressable testID="throw-error" style={styles.errorButton} onPress={() => setHasThrown(true)}>
-          <Text style={styles.label}>에러</Text>
+        <Pressable testID="throw-error" style={[styles.errorButton, { backgroundColor: palette.fire.base }]} onPress={() => setHasThrown(true)}>
+          <Text style={[styles.label, { color: palette.focus.text }]}>에러</Text>
         </Pressable>
       </View>
     </View>
@@ -52,10 +53,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 4,
-    backgroundColor: COLORS.fire.base,
   },
   label: {
-    color: COLORS.focus.text,
     fontSize: 12,
   },
 });

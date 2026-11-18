@@ -4,7 +4,8 @@ import { Canvas } from '@shopify/react-native-skia';
 
 import { SettingsRow } from './SettingsRow';
 
-import { COLORS, DOT_SIZE } from '@/shared/constants';
+import { DOT_SIZE } from '@/shared/constants';
+import { usePalette } from '@/shared/lib';
 
 import { CHECK_ICON } from '@/shared/ui/dot-icon';
 import { DotSprite } from '@/shared/ui/dot-sprite';
@@ -19,6 +20,7 @@ type LanguageRowProps = {
 };
 
 export const LanguageRow = ({ dotSize, name, description, checked, onPress, testID }: LanguageRowProps): JSX.Element => {
+  const palette = usePalette();
   const scale = dotSize / DOT_SIZE;
 
   const checkWidth = (CHECK_ICON[0]?.length ?? 0) * dotSize;
@@ -32,14 +34,14 @@ export const LanguageRow = ({ dotSize, name, description, checked, onPress, test
           <View style={{ width: checkWidth, height: checkHeight, marginRight: checkToName }}>
             {!checked ? null : (
               <Canvas style={StyleSheet.absoluteFill}>
-                <DotSprite grid={CHECK_ICON} centerX={checkWidth / 2} centerY={checkHeight / 2} dotSize={dotSize} colors={{ I: COLORS.icon.check }} />
+                <DotSprite grid={CHECK_ICON} centerX={checkWidth / 2} centerY={checkHeight / 2} dotSize={dotSize} colors={{ I: palette.icon.check }} />
               </Canvas>
             )}
           </View>
-          <Text style={[styles.name, { fontSize: 16 * scale, color: checked ? COLORS.text.primary : COLORS.text.secondary }]}>{name}</Text>
+          <Text style={[styles.name, { fontSize: 16 * scale, color: checked ? palette.text.primary : palette.text.secondary }]}>{name}</Text>
         </View>
         {description === undefined ? null : (
-          <Text style={[styles.description, { fontSize: 13 * scale, marginTop: 4 * scale, marginLeft: checkWidth + checkToName }]}>{description}</Text>
+          <Text style={{ color: palette.text.tertiary, fontSize: 13 * scale, marginTop: 4 * scale, marginLeft: checkWidth + checkToName }}>{description}</Text>
         )}
       </View>
     </SettingsRow>
@@ -56,8 +58,5 @@ const styles = StyleSheet.create({
   },
   name: {
     flex: 1,
-  },
-  description: {
-    color: COLORS.text.tertiary,
   },
 });

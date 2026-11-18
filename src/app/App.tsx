@@ -17,8 +17,7 @@ import { useAdvertisementInitialization } from '@/entities/advertisement';
 import { restoreAmbientSoundEnabled, useAmbientSoundPlayback } from '@/entities/ambient-sound';
 import { initLocalization, restoreLanguage } from '@/entities/language';
 import { canVibrate, prepareVibration, restoreVibrationEnabled, TAP_PATTERN } from '@/entities/vibration';
-import { COLORS } from '@/shared/constants';
-import { type RootStackParamList, SplashVisibleContext } from '@/shared/lib';
+import { type RootStackParamList, SplashVisibleContext, usePalette } from '@/shared/lib';
 
 prepareVibration(TAP_PATTERN);
 initLocalization();
@@ -35,6 +34,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export const App = (): JSX.Element => {
   const [isSplashVisible, setIsSplashVisible] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const palette = usePalette();
 
   useAmbientSoundPlayback({ canPlay: !isSplashVisible && !hasError });
 
@@ -48,7 +48,7 @@ export const App = (): JSX.Element => {
         <Sentry.ErrorBoundary fallback={<RootErrorScreen />} onError={() => setHasError(true)}>
           <SplashVisibleContext.Provider value={isSplashVisible}>
             <NavigationContainer>
-              <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.canvas } }}>
+              <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.canvas } }}>
                 <Stack.Screen name="timer" component={TimerScreen} />
                 <Stack.Screen name="settings" component={SettingsScreen} options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
               </Stack.Navigator>

@@ -38,7 +38,7 @@ import { AMBIENT_SOUND_TOOLTIP_DISMISSED_KEY, setAmbientSoundEnabled, useAmbient
 import { translate, useLanguage } from '@/entities/language';
 import { isReadyPhase, type TimerMode } from '@/entities/timer';
 import { playVibration } from '@/entities/vibration';
-import { BUTTON_SIZE_IN_DOTS, COLORS, ROUND_BUTTON_DIAMETER_IN_DOTS } from '@/shared/constants';
+import { BUTTON_SIZE_IN_DOTS, ROUND_BUTTON_DIAMETER_IN_DOTS } from '@/shared/constants';
 import { resolveLayout, getFormFactor, useDismissibleNotice, useIsScreenVisible, usePalette, type RootStackParamList } from '@/shared/lib';
 import { RoundDotButton } from '@/shared/ui/dot-button';
 import { NOTIFICATION_OFF_ICON, SETTINGS_ICON, SOUND_ICON, SOUND_OFF_ICON, WARNING_ICON } from '@/shared/ui/dot-icon';
@@ -167,9 +167,9 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   return (
     <PortalHost isEnabled={isScreenVisible}>
       <GestureDetector gesture={gesture}>
-        <View style={styles.root}>
+        <View style={[styles.root, { backgroundColor: palette.canvas }]}>
           <Canvas style={StyleSheet.absoluteFill}>
-            <Fill color={COLORS.canvas} />
+            <Fill color={palette.canvas} />
             <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} palette={palette} />
             <DialItems
               centerX={centerX}
@@ -264,7 +264,6 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: COLORS.canvas,
   },
   roundButton: {
     position: 'absolute',
