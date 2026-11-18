@@ -2,7 +2,8 @@ import { memo, useEffect, useState, type JSX } from 'react';
 import { StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 
-import { COLORS, DOT_SIZE } from '@/shared/constants';
+import { DOT_SIZE } from '@/shared/constants';
+import { usePalette } from '@/shared/lib';
 
 import { type RectIcon, RectIconShape } from '@/shared/ui/dot-icon';
 import { DotCells, type DotRole, roundedRectangleShape } from '@/shared/ui/dot-shape';
@@ -15,9 +16,6 @@ const DURATION_MS = 3500;
 const PADDING_X = 14;
 const PADDING_Y = 10;
 const ICON_GAP = 10;
-
-// `roundedRectangleShape`가 highlight 역할을 생성하지 않아 `DotCells` 색 타입 충족용으로 face 색 지정
-const TOAST_COLORS: Record<DotRole, string> = { ...COLORS.toast, highlight: COLORS.toast.face };
 
 type DotToastProps = {
   text: string;
@@ -44,6 +42,7 @@ type TextSize = { width: number; height: number };
 const DotToastContent = ({ text, icon, dotSize, top, isVisible, onClose, testID }: DotToastProps): JSX.Element | null => {
   const [textSize, setTextSize] = useState<TextSize | null>(null);
   const { hostWidth, isEnabled } = usePortalHost();
+  const palette = usePalette();
 
   // 몸통 렌더링 시점부터 표시 시간 측정. 스플래시로 `PortalHost`가 비활성인 동안은 측정하지 않음
   const isShown = isVisible && textSize !== null && isEnabled;
@@ -59,7 +58,7 @@ const DotToastContent = ({ text, icon, dotSize, top, isVisible, onClose, testID 
   if (!isVisible) return null;
 
   const scale = dotSize / DOT_SIZE;
-  const textStyle = [styles.text, { fontSize: 16 * scale, lineHeight: 20 * scale }];
+  const textStyle = { color: palette.text.primary, fontSize: 16 * scale, lineHeight: 20 * scale };
 
   const handleTextLayout = (event: LayoutChangeEvent) => {
     const { layout } = event.nativeEvent;
@@ -87,6 +86,8 @@ const DotToastContent = ({ text, icon, dotSize, top, isVisible, onClose, testID 
   const iconLeft = PADDING_X * scale;
   const iconTop = PADDING_Y * scale;
   const textBoxStyle = { left: iconLeft + iconSize + ICON_GAP * scale, top: (bodyHeightInDots * dotSize - textSize.height) / 2 };
+  // `roundedRectangleShape`가 highlight 역할을 생성하지 않아 `DotCells` 색 타입 충족용으로 face 색 지정
+  const toastColors: Record<DotRole, string> = { ...palette.toast, highlight: palette.toast.face };
 
   return (
     <>
@@ -94,8 +95,8 @@ const DotToastContent = ({ text, icon, dotSize, top, isVisible, onClose, testID 
       <Portal onDismiss={onClose}>
         <View testID={testID} style={[styles.toast, { left: (hostWidth - width) / 2, top, width, height: shape.heightInDots * dotSize }]} pointerEvents="none">
           <Canvas style={StyleSheet.absoluteFill}>
-            <DotCells cells={shape.cells} dotSize={dotSize} colors={TOAST_COLORS} />
-            <RectIconShape icon={icon} left={iconLeft} top={iconTop} dotSize={dotSize} color={COLORS.toast.edge} />
+            <DotCells cells={shape.cells} dotSize={dotSize} colors={toastColors} />
+            <RectIconShape icon={icon} left={iconLeft} top={iconTop} dotSize={dotSize} color={palette.toast.edge} />
           </Canvas>
           <Text style={[textStyle, styles.toastText, textBoxStyle]}>{text}</Text>
         </View>
@@ -107,9 +108,6 @@ const DotToastContent = ({ text, icon, dotSize, top, isVisible, onClose, testID 
 export const DotToast = memo(DotToastContent);
 
 const styles = StyleSheet.create({
-  text: {
-    color: COLORS.text.primary,
-  },
   measurer: {
     position: 'absolute',
     alignItems: 'flex-start',

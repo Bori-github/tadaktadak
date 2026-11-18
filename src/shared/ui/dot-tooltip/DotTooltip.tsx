@@ -3,15 +3,13 @@ import { StyleSheet, Text, View, type LayoutChangeEvent, type LayoutRectangle, t
 import { Canvas } from '@shopify/react-native-skia';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { COLORS, DOT_SIZE } from '@/shared/constants';
+import { DOT_SIZE } from '@/shared/constants';
+import { usePalette } from '@/shared/lib';
 
 import { bubbleShape, DotCells, type BubbleArrowAlign, type BubbleArrowDirection, type DotRole } from '@/shared/ui/dot-shape';
 import { Portal, usePortalHost } from '@/shared/ui/portal';
 
 import { bubbleOrigin, maxContentWidthInDots } from './placement';
-
-// `bubbleShape`가 highlight 역할을 생성하지 않아 `DotCells` 색 타입 충족용으로 face 색 지정
-const BUBBLE_COLORS: Record<DotRole, string> = { ...COLORS.tooltip, highlight: COLORS.tooltip.face };
 
 type BubbleProps = {
   /** 줄바꿈은 `\n` */
@@ -88,11 +86,14 @@ const Bubble = ({
   const [textSize, setTextSize] = useState<TextSize | null>(null);
   const { hostWidth } = usePortalHost();
   const insets = useSafeAreaInsets();
+  const palette = usePalette();
 
   const scale = dotSize / DOT_SIZE;
   const paddingX = 14 * scale;
   const paddingY = 10 * scale;
-  const textStyle = [styles.text, { fontSize: 16 * scale, lineHeight: 20 * scale, textAlign }];
+  const textStyle = { color: palette.text.primary, fontSize: 16 * scale, lineHeight: 20 * scale, textAlign };
+  // `bubbleShape`가 highlight 역할을 생성하지 않아 `DotCells` 색 타입 충족용으로 face 색 지정
+  const bubbleColors: Record<DotRole, string> = { ...palette.tooltip, highlight: palette.tooltip.face };
 
   const arrow = { arrowDirection, arrowAlign };
   const maxContentWidth = maxContentWidthInDots({
@@ -141,7 +142,7 @@ const Bubble = ({
       <Portal onDismiss={onClose}>
         <View testID={testID} style={[styles.bubble, origin, { width: shape.widthInDots * dotSize, height: shape.heightInDots * dotSize }]} pointerEvents="none">
           <Canvas style={StyleSheet.absoluteFill}>
-            <DotCells cells={shape.cells} dotSize={dotSize} colors={BUBBLE_COLORS} />
+            <DotCells cells={shape.cells} dotSize={dotSize} colors={bubbleColors} />
           </Canvas>
           <Text style={[textStyle, styles.bubbleText, textBoxStyle]}>{text}</Text>
         </View>
@@ -151,9 +152,6 @@ const Bubble = ({
 };
 
 const styles = StyleSheet.create({
-  text: {
-    color: COLORS.text.primary,
-  },
   measurer: {
     position: 'absolute',
     alignItems: 'flex-start',

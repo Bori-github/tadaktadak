@@ -2,7 +2,8 @@ import { useEffect, type JSX, type ReactNode } from 'react';
 import { BackHandler, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { COLORS, DOT_SIZE } from '@/shared/constants';
+import { DOT_SIZE } from '@/shared/constants';
+import { usePalette } from '@/shared/lib';
 
 import { BACK_ICON, CLOSE_ICON, IconButton } from '@/shared/ui/icon-button';
 
@@ -26,6 +27,7 @@ type DotModalProps = {
 export const DotModal = ({ dotSize, onClose, onBack, children, footer }: DotModalProps): JSX.Element => {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
+  const palette = usePalette();
   const scale = dotSize / DOT_SIZE;
 
   const hasFooter = footer !== undefined;
@@ -46,7 +48,7 @@ export const DotModal = ({ dotSize, onClose, onBack, children, footer }: DotModa
   }, [onBack, onClose]);
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: palette.modal.face }]}>
       <ScrollView testID="modal-scroll" style={scrollStyle} contentContainerStyle={[styles.content, contentStyle]}>
         {children}
       </ScrollView>
@@ -64,7 +66,6 @@ export const DotModal = ({ dotSize, onClose, onBack, children, footer }: DotModa
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: COLORS.modal.face,
   },
   content: {
     alignSelf: 'center',

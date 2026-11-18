@@ -3,11 +3,11 @@ import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-nat
 import { Canvas, Group, Rect } from '@shopify/react-native-skia';
 import { Easing, useDerivedValue, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
 
-import { COLORS } from '@/shared/constants';
+import { usePalette, type Palette } from '@/shared/lib';
 
 import { DotCells, type DotRole } from '@/shared/ui/dot-shape';
 
-import { EASE_OUT, EMBER_RISE_IN_DOTS, emberAt, totalDurationMs, TURN_OFF, TURN_ON } from './embers';
+import { EASE_OUT, EMBER_RISE_IN_DOTS, emberAt, totalDurationMs, TURN_OFF, TURN_ON, type EmberColor } from './embers';
 
 const WIDTH_IN_DOTS = 22;
 const HEIGHT_IN_DOTS = 12;
@@ -29,32 +29,24 @@ const KNOB_CELLS = [
   { key: 'knob-highlight', column: 2, row: 2, widthInDots: 8, heightInDots: 1, role: 'highlight' },
 ] as const;
 
-const ON_COLORS: Record<DotRole, string> = {
-  edge: COLORS.fire.mid,
-  face: COLORS.focus.thumbCore,
-  highlight: COLORS.focus.thumbCore,
-  shadow: COLORS.focus.thumbCore,
-};
-
-const OFF_COLORS: Record<DotRole, string> = {
-  edge: COLORS.button.edge,
-  face: COLORS.button.face,
-  highlight: COLORS.button.highlight,
-  shadow: COLORS.button.shadow,
-};
+const getLayerColors = ({ fire, focus, button }: Palette): Record<'on' | 'off', Record<DotRole, string>> => ({
+  on: { edge: fire.mid, face: focus.thumbCore, highlight: focus.thumbCore, shadow: focus.thumbCore },
+  off: { edge: button.edge, face: button.face, highlight: button.highlight, shadow: button.shadow },
+});
 
 type ToggleEmberProps = {
   index: number;
   dotSize: number;
+  emberColors: Record<EmberColor, string>;
   isTurningOn: SharedValue<boolean>;
   elapsedMs: SharedValue<number>;
 };
 
-const ToggleEmber = ({ index, dotSize, isTurningOn, elapsedMs }: ToggleEmberProps) => {
+const ToggleEmber = ({ index, dotSize, emberColors, isTurningOn, elapsedMs }: ToggleEmberProps) => {
   const frame = useDerivedValue(() => emberAt(isTurningOn.value ? TURN_ON : TURN_OFF, index, elapsedMs.value));
   const x = useDerivedValue(() => (frame.value?.column ?? 0) * dotSize);
   const y = useDerivedValue(() => ((frame.value?.row ?? 0) + EMBER_RISE_IN_DOTS) * dotSize);
-  const color = useDerivedValue(() => frame.value?.color ?? 'transparent');
+  const color = useDerivedValue(() => (frame.value ? emberColors[frame.value.color] : 'transparent'));
 
   return <Rect x={x} y={y} width={dotSize} height={dotSize} color={color} />;
 };
@@ -76,6 +68,8 @@ type DotToggleProps = {
  * @returns 누르면 `onValueChange`에 반대 값을 넘기는 `Pressable`
  */
 export const DotToggle = memo(({ dotSize, value, onValueChange, onPressIn, style, testID }: DotToggleProps) => {
+  const palette = usePalette();
+  const layerColors = getLayerColors(palette);
   const knobColumn = useSharedValue(value ? KNOB_TRAVEL_IN_DOTS : 0);
   const isTurningOn = useSharedValue(value);
   // 첫 렌더링은 전 구간 종료 상태로 시작해 불티 미표시
@@ -109,8 +103,8 @@ export const DotToggle = memo(({ dotSize, value, onValueChange, onPressIn, style
       {/* 불티가 토글 위로 벗어나 캔버스를 위쪽으로 확장 */}
       <Canvas style={[styles.canvas, { top: -riseHeight, width: size.width, height: size.height + riseHeight }]} pointerEvents="none">
         {[
-          { key: 'on', colors: ON_COLORS, opacity: onOpacity },
-          { key: 'off', colors: OFF_COLORS, opacity: offOpacity },
+          { key: 'on', colors: layerColors.on, opacity: onOpacity },
+          { key: 'off', colors: layerColors.off, opacity: offOpacity },
         ].map((layer) => (
           <Group key={layer.key} opacity={layer.opacity}>
             <DotCells cells={TRACK_CELLS} dotSize={dotSize} colors={layer.colors} offsetY={riseHeight} />
@@ -121,7 +115,7 @@ export const DotToggle = memo(({ dotSize, value, onValueChange, onPressIn, style
         ))}
         <Group antiAlias={false}>
           {Array.from({ length: EMBER_COUNT }, (_, index) => (
-            <ToggleEmber key={index} index={index} dotSize={dotSize} isTurningOn={isTurningOn} elapsedMs={elapsedMs} />
+            <ToggleEmber key={index} index={index} dotSize={dotSize} emberColors={palette.fire} isTurningOn={isTurningOn} elapsedMs={elapsedMs} />
           ))}
         </Group>
       </Canvas>
