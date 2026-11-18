@@ -82,6 +82,59 @@ const seedIos = (values, removedKeys) => {
   return deviceId;
 };
 
+/** 앱 데이터 폴더 기준 AsyncStorage 파일 경로 */
+const IOS_MANIFEST_PATH = `Library/Application Support/${BUNDLE_IDENTIFIER}/RCTAsyncLocalStorage_V1/manifest.json`;
+
+const devicectl = (...args) => {
+  try {
+    return execFileSync('xcrun', ['devicectl', ...args, '--quiet'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  } catch (error) {
+    throw new Error(`devicectl ${args.slice(0, 3).join(' ')} 실패: ${String(error.stderr).trim()}`);
+  }
+};
+
+const seedIosDevice = (values, removedKeys) => {
+  const deviceId = process.env.E2E_DEVICE_ID;
+
+  if (!deviceId) throw new Error('E2E_DEVICE_ID에 기기 UDID 지정 필요');
+
+  const workDirectory = mkdtempSync(join(tmpdir(), 'tadak-e2e-'));
+
+  try {
+    // 앱이 실행 중이면 AsyncStorage가 종료 시점에 메모리 값으로 파일을 덮어씀
+    const processesPath = join(workDirectory, 'processes.json');
+    devicectl('device', 'info', 'processes', '--device', deviceId, '--json-output', processesPath);
+    const running = JSON.parse(readFileSync(processesPath, 'utf8')).result.runningProcesses.filter((process) => String(process.executable).includes('/TadakTadak.app/'));
+    for (const { processIdentifier } of running) devicectl('device', 'process', 'terminate', '--device', deviceId, '--pid', String(processIdentifier));
+
+    const manifestPath = join(workDirectory, 'manifest.json');
+    const container = ['--device', deviceId, '--domain-type', 'appDataContainer', '--domain-identifier', BUNDLE_IDENTIFIER];
+
+    // `copy from` 실패는 파일 없음과 연결 오류를 구분할 수 없어 목록으로 파일 존재 확인
+    // 연결 오류를 파일 없음으로 처리하면 기존 저장값이 타이머 값만 남기고 지워짐
+    const filesPath = join(workDirectory, 'files.json');
+    devicectl('device', 'info', 'files', ...container, '--json-output', filesPath);
+    const hasManifest = JSON.parse(readFileSync(filesPath, 'utf8')).result.files.some((file) => file.relativePath === IOS_MANIFEST_PATH);
+
+    // 앱을 한 번도 실행하지 않았으면 파일 없음. `copy to`가 상위 폴더를 생성하고 앱이 첫 실행에서 읽음
+    let stored = {};
+    if (hasManifest) {
+      devicectl('device', 'copy', 'from', ...container, '--source', IOS_MANIFEST_PATH, '--destination', manifestPath);
+      stored = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    }
+
+    const seeded = { ...stored, ...values };
+    for (const key of removedKeys) delete seeded[key];
+
+    writeFileSync(manifestPath, JSON.stringify(seeded));
+    devicectl('device', 'copy', 'to', ...container, '--source', manifestPath, '--destination', IOS_MANIFEST_PATH);
+  } finally {
+    rmSync(workDirectory, { recursive: true, force: true });
+  }
+
+  return deviceId;
+};
+
 const adb = (args, options = {}) => {
   try {
     return execFileSync('adb', args, { stdio: ['pipe', 'pipe', 'pipe'], ...options });
@@ -151,7 +204,8 @@ const main = () => {
   const values = scenario === undefined ? { ...E2E_MINUTES, ...E2E_DISMISSED_NOTICES } : { ...E2E_MINUTES, ...SCENARIOS[scenario]() };
   // 이전 실행이 남긴 툴팁 닫기 기록이 시나리오 전제를 깨서 삭제
   const removedKeys = scenario === undefined ? [] : ['ambientSoundTooltipDismissed'];
-  const deviceId = argValue('--platform') === 'android' ? seedAndroid(values, removedKeys) : seedIos(values, removedKeys);
+  const seed = { android: seedAndroid, 'ios-device': seedIosDevice }[argValue('--platform')] ?? seedIos;
+  const deviceId = seed(values, removedKeys);
 
   console.log(`${deviceId}: 집중 ${E2E_MINUTES['timer.minutes.focus']}분, 휴식 ${E2E_MINUTES['timer.minutes.rest']}분${scenario === undefined ? '' : `, 시나리오 ${scenario}`}`);
 };

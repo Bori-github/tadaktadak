@@ -155,3 +155,38 @@ adb로 판정할 수 없어 수동 확인하는 항목.
 | `SET_RINGER`, `GET_RINGER` | 「기능 번호 확인」 절차로 조회. 측정 기기의 번호를 그대로 쓰면 다른 메서드가 호출됨                                                                                                         |
 | `DIAL_RADIUS`              | 반지름 후보마다 1분에서 5분으로 드래그한 뒤 `focus_minutes`가 5인 범위의 가운데 값을 사용. 실행 시 `DIAL_RADIUS` 환경 변수로 지정 가능                                                      |
 | `close_app`의 앱 카드 탐색 | 최근 앱 화면에서 `content-desc="타닥타닥"`으로 찾으므로 시스템 언어가 한국어여야 함. 최근 앱 화면 구조가 달라 카드를 찾지 못하면 `uiautomator dump`로 카드 속성을 확인해 `close_app`을 수정 |
+
+## iOS
+
+XCUITest 러너 앱을 기기에 설치해 앱, 단축어 앱, 홈 화면을 조작하고, 화면 요소로 결과를 확인한다.
+
+- 측정 기기: iPhone 12 mini, iOS 26.6.2
+- 실행: `sh scripts/device-test/ios/run.sh`. 기기는 `UDID`, 팀 ID는 `DEVELOPMENT_TEAM` 환경 변수로 지정하며, 없으면 연결된 첫 기기와 `.env`의 `EXPO_APPLE_TEAM_ID`를 사용
+
+### 조작
+
+| 동작             | 방법                                                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| 앱 실행          | `XCUIApplication(bundleIdentifier: "com.boriguri.tadaktadak").launch()`                                                   |
+| 다른 앱 조작     | 단축어 앱 `com.apple.shortcuts`, 홈 화면과 알림 센터 `com.apple.springboard`, Spotlight `com.apple.Spotlight`             |
+| 백그라운드       | `XCUIDevice.shared.press(.home)`                                                                                          |
+| 타이머 시간 설정 | `run.sh`가 `set-e2e-timer-minutes.mjs --platform ios-device`로 집중/휴식 타이머 1분 저장. `devicectl`로 앱 저장 파일 교체 |
+| 알림 권한 요청   | 앱 실행 직후 시스템 요청 창의 「허용」 터치                                                                               |
+| Spotlight 열기   | 홈 화면에서 `swipeDown()`                                                                                                 |
+| 알림 센터 열기   | 화면 위쪽 가장자리에서 아래로 빠르게 드래그. 열리지 않는 경우가 있어 찾는 요소가 보일 때까지 최대 3회 시도                |
+
+### 결과 확인
+
+| 확인 대상                | 방법                                                                                                                                                                         |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 단축어 Spotlight 표시    | 단축어 이름 전체로 검색. 앱 이름만 검색하면 단축어가 「더 보기」 안에 표시됨. 웹 검색 제안 셀도 라벨이 같아 식별자 `AppViewResultCell`로 구분                                |
+| Live Activity, 완료 알림 | 알림 센터에서 확인. Live Activity의 앱 이름은 `StaticText`, 홈 화면 앱 아이콘은 `Icon` 종류로 구분                                                                           |
+| 영어 문구                | 단축어 앱을 `launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]`로 실행. 기기 언어는 그대로 둠                                                           |
+| 앱 새로 설치             | `run.sh`를 `REINSTALL=1`로 실행. `xcrun devicectl device uninstall app`과 `install app`으로 재설치. TestFlight 설치본은 `.app` 파일이 없어 사용 불가                         |
+| 배경음 재생              | 테스트 러너의 `AVAudioSession.sharedInstance().isOtherAudioPlaying`. 배경음을 켜면 `true`, 끄면 `false`                                                                      |
+| 진동 요청                | 별도 터미널에서 `sudo log collect --device-udid <UDID> --last 5m --output <파일>.logarchive` 후 앱 프로세스의 `AVHapticPlayerChannel sendEvents` 기록 검색. 관리자 암호 필요 |
+
+### XCUITest로 확인 불가
+
+- 무음 스위치: 물리 스위치라 XCUITest로 조작 불가
+- 진동 세기와 촉감: 로그에는 요청 기록만 남음
