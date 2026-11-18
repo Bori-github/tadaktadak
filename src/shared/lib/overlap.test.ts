@@ -1,12 +1,29 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
+import { BUTTON_SIZE_IN_DOTS, type BonfireHeightInDots } from '@/shared/constants';
+import { BONFIRE_COLD_7, BONFIRE_COLD_9, BONFIRE_HOT_A_7, BONFIRE_HOT_A_9, BONFIRE_HOT_B_7, BONFIRE_HOT_B_9, LOG_COLD, LOG_HOT_A, LOG_HOT_B } from '@/shared/ui/dot-sprite';
 
-import { DEVICES, type DeviceName } from './devices';
-import { resolveLayout, type FormFactor } from './responsive';
+import { DEVICE_NAMES, DEVICES, type DeviceName } from './devices';
+import { MIN_ITEM_RADIUS, resolveLayout, type FormFactor } from './responsive';
 
-/** 최대 투영 (dot). `DESIGN.md` §4 */
-const PROJECTION = { log: 4, bonfire: 7 };
+/** 최대 투영 `max(폭, 높이)` (dot). 프레임 중 가장 큰 값. `DESIGN.md` §4 */
+const maxProjection = (frames: string[][]) => Math.max(...frames.map((rows) => Math.max(rows.length, ...rows.map((row) => row.length))));
+
+const LOG_PROJECTION = maxProjection([LOG_COLD, LOG_HOT_A, LOG_HOT_B]);
+const BONFIRE_PROJECTION: Record<BonfireHeightInDots, number> = {
+  7: maxProjection([BONFIRE_COLD_7, BONFIRE_HOT_A_7, BONFIRE_HOT_B_7]),
+  9: maxProjection([BONFIRE_COLD_9, BONFIRE_HOT_A_9, BONFIRE_HOT_B_9]),
+};
+
+type ItemKind = 'log' | 'bonfire';
+
+const projectionOf = (kind: ItemKind, bonfireHeightInDots: BonfireHeightInDots) => (kind === 'log' ? LOG_PROJECTION : BONFIRE_PROJECTION[bonfireHeightInDots]);
+
+/** 모닥불 사이 눈금 수. 5분 배수 눈금에만 있음 */
+const BONFIRE_TICK_DISTANCE = 5;
+
+/** 1분 간격이 필요 간격과 정확히 같은 경계에서 부동소수점 오차로 음수가 되는 것을 허용하는 범위 */
+const FLOAT_TOLERANCE = 1e-9;
 
 /** 개체 높이 (dot). `DESIGN.md` §4 */
 const HEIGHT = { bonfire: 9, thumb: 7, numeral: 7, button: BUTTON_SIZE_IN_DOTS };
@@ -14,14 +31,8 @@ const HEIGHT = { bonfire: 9, thumb: 7, numeral: 7, button: BUTTON_SIZE_IN_DOTS }
 // 큰 짧은 변에서도 세로 배치를 유지하려고 safe area 아래 끝을 짧은 변의 2배 이상으로 설정
 const layout = (shortSide: number) => resolveLayout({ shortSide, safeAreaTopEdge: 47, safeAreaBottomEdge: Math.max(810, shortSide * 2) });
 
-/** 화면 반지름에서 배율을 나눈 값 (px). 도트 수는 배율과 무관하므로 도트 단위 검산은 이 값으로 계산 */
-const baseItemRadius = (shortSide: number) => {
-  const { itemRadius, scale } = layout(shortSide);
-  return itemRadius / scale;
-};
-
-/** 1분 간격 (dot). `DESIGN.md` §7 계산 순서 7 */
-const minuteGap = (shortSide: number) => (Math.PI * baseItemRadius(shortSide)) / 60;
+/** 1분 간격 (dot). 원주를 60으로 나눈 길이를 도트 크기로 나눔. `DESIGN.md` §7 계산 순서 7 */
+const minuteGap = ({ itemRadius, dotSize }: { itemRadius: number; dotSize: number }) => (2 * Math.PI * itemRadius) / 60 / dotSize;
 
 const needed = (a: number, b: number) => (a + b) / 2;
 
@@ -29,22 +40,61 @@ const round = (value: number) => Math.round(value * 100) / 100;
 
 describe('1분 간격', () => {
   it('기준 화면 390에서 반지름 153의 원주를 60으로 나눈 8.01 도트다', () => {
-    expect(round(minuteGap(390))).toBe(8.01);
+    expect(round(minuteGap(layout(390)))).toBe(8.01);
   });
 });
 
-describe('개체 중심 반지름 하한 118.1의 원주 방향 겹침', () => {
-  // 가로 배치에서 safe area 높이가 낮아 하한까지 축소되고 버튼과는 떨어진 창
-  const { itemRadius, bonfireHeightInDots } = resolveLayout({ shortSide: 300, safeAreaTopEdge: 0, safeAreaBottomEdge: 300, safeAreaLeftEdge: 0, safeAreaRightEdge: 844 });
-  const gap = (Math.PI * itemRadius) / 60;
+const range = (start: number, end: number) => Array.from({ length: end - start + 1 }, (_, index) => start + index);
 
-  it('1분 간격 최솟값은 6.18 도트이고 모닥불은 7 도트다', () => {
-    expect(round(gap)).toBe(6.18);
-    expect(bonfireHeightInDots).toBe(7);
+const LANDSCAPE_WIDTHS = [667, 844, 932];
+const PORTRAIT_WIDTHS = [320, 360, 375, 390, 430];
+
+/** 기기 목록과 safe area 높이를 1씩 바꾼 창. 높이가 낮은 창은 반지름이 하한 118.1과 모닥불 크기 경계 124.1을 지남 */
+const LAYOUT_CASES = [
+  ...DEVICE_NAMES.map((name) => {
+    const { shortSide, topEdge, bottomEdge, formFactor } = DEVICES[name];
+    return { label: name, input: { shortSide, safeAreaTopEdge: topEdge, safeAreaBottomEdge: bottomEdge, formFactor } };
+  }),
+  ...range(250, 500).flatMap((height) =>
+    LANDSCAPE_WIDTHS.map((width) => ({
+      label: `가로 ${width}×${height}`,
+      input: { shortSide: height, safeAreaTopEdge: 0, safeAreaBottomEdge: height, safeAreaLeftEdge: 0, safeAreaRightEdge: width },
+    })),
+  ),
+  ...range(250, 1400).flatMap((height) =>
+    PORTRAIT_WIDTHS.map((width) => ({
+      label: `세로 ${width}×${height}`,
+      input: { shortSide: Math.min(width, height), safeAreaTopEdge: 0, safeAreaBottomEdge: height, safeAreaLeftEdge: 0, safeAreaRightEdge: width },
+    })),
+  ),
+];
+
+// 버튼 회피로 하한보다 작아진 창은 겹침이 있으므로 검사 제외
+// 버튼과 떨어진 창의 하한 유지는 `responsive.test.ts`가 검사
+const CHECKED_LAYOUTS = LAYOUT_CASES.map(({ label, input }) => ({ label, ...resolveLayout(input) })).filter(
+  ({ itemRadius, scale }) => itemRadius / scale >= MIN_ITEM_RADIUS - FLOAT_TOLERANCE,
+);
+
+/** 여유가 0 미만인 화면 목록 */
+const overlappingLayouts = (tickDistance: number, first: ItemKind, second: ItemKind) =>
+  CHECKED_LAYOUTS.flatMap((checked) => {
+    const { label, bonfireHeightInDots } = checked;
+    const margin = minuteGap(checked) * tickDistance - needed(projectionOf(first, bonfireHeightInDots), projectionOf(second, bonfireHeightInDots));
+    return margin < -FLOAT_TOLERANCE ? [`${label}: 여유 ${round(margin)}`] : [];
   });
 
-  it('7 도트 모닥불 + 장작 여유는 0.68 도트다 (간격 6.18, 필요 5.5)', () => {
-    expect(round(gap - needed(PROJECTION.bonfire, PROJECTION.log))).toBe(0.68);
+describe('원주 방향으로 이웃한 개체', () => {
+  // 모닥불 + 기준 표식은 12시에서 반 눈금만 떨어져 겹치므로 검사 제외. `DESIGN.md` §5
+  it('장작과 장작이 겹치지 않는다', () => {
+    expect(overlappingLayouts(1, 'log', 'log')).toEqual([]);
+  });
+
+  it('모닥불과 장작이 겹치지 않는다', () => {
+    expect(overlappingLayouts(1, 'bonfire', 'log')).toEqual([]);
+  });
+
+  it('모닥불과 모닥불이 겹치지 않는다', () => {
+    expect(overlappingLayouts(BONFIRE_TICK_DISTANCE, 'bonfire', 'bonfire')).toEqual([]);
   });
 });
 
