@@ -1,4 +1,4 @@
-import { COLORS } from '@/shared/constants';
+import { type Palette } from '@/shared/lib';
 
 /** 불티 하나가 노출될 때의 위치·속도·수명. `DESIGN.md` §9 완료 */
 export type Ember = {
@@ -39,8 +39,15 @@ export const EMBER_COUNT = 80;
 export const EMBER_GLOW_RADIUS = 3;
 export const EMBER_GLOW_ALPHA = 0.15;
 
-/** 수명이 높은 쪽부터 늘어놓은 불티 색. `DESIGN.md` §9 */
-export const EMBER_COLORS = [COLORS.fire.core, COLORS.fire.mid, COLORS.fire.base];
+/** 불티 색 수. `emberColorIndex` 반환값 0~2와 대응 */
+export const EMBER_COLOR_COUNT = 3;
+
+/**
+ * 수명이 높은 쪽부터 늘어놓은 불티 색. `DESIGN.md` §9
+ *
+ * @returns `EMBER_COLOR_COUNT`개의 색
+ */
+export const getEmberColors = ({ fire }: Palette): readonly [string, string, string] => [fire.core, fire.mid, fire.base];
 
 const LIFE_MS = 2800;
 const LIFE_SPREAD: Spread = { min: 0.75, max: 1.25 };
@@ -112,7 +119,7 @@ export const emberAt = (ember: Ember, elapsedMs: number): EmberState => {
 };
 
 /**
- * 남은 수명이 가리키는 `EMBER_COLORS` 위치. `DESIGN.md` §9
+ * 남은 수명이 가리키는 `getEmberColors` 결과의 위치. `DESIGN.md` §9
  *
  * @returns 수명 0.66 위가 0, 0.33 위가 1, 그 아래가 2
  */

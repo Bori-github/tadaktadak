@@ -1,20 +1,24 @@
-import { COLORS } from '@/shared/constants';
+import { type Palette } from '@/shared/lib';
 
-/** 격자 글자와 색. 표에 없는 글자(`.`)는 그리지 않는다 */
-export const SPRITE_COLORS: Record<string, string | undefined> = {
-  f: COLORS.fire.igniteBright,
-  F: COLORS.fire.igniteMid,
-  y: COLORS.fire.core,
-  o: COLORS.fire.mid,
-  r: COLORS.fire.base,
-  W: COLORS.fire.log,
-  D: COLORS.fire.logShade,
-  h: COLORS.focus.thumbArm,
-  H: COLORS.focus.thumbCore,
-  k: COLORS.rest.thumbArm,
-  K: COLORS.rest.thumbCore,
-  m: COLORS.focus.marker,
-};
+/**
+ * 격자 글자와 색. 표에 없는 글자(`.`)는 그리지 않는다
+ *
+ * @returns 글자별 색
+ */
+export const getSpriteColors = ({ fire, focus, rest }: Palette): Record<string, string | undefined> => ({
+  f: fire.igniteBright,
+  F: fire.igniteMid,
+  y: fire.core,
+  o: fire.mid,
+  r: fire.base,
+  W: fire.log,
+  D: fire.logShade,
+  h: focus.thumbArm,
+  H: focus.thumbCore,
+  k: rest.thumbArm,
+  K: rest.thumbCore,
+  m: focus.marker,
+});
 
 export const LOG_COLD = ['.W.', 'DWD', 'DWD', '.D.'];
 

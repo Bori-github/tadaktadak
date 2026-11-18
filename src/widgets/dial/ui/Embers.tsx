@@ -3,9 +3,10 @@ import { memo, useEffect, useMemo, useState } from 'react';
 import { useDerivedValue, useFrameCallback, useSharedValue } from 'react-native-reanimated';
 
 import { DOT_SAMPLING, SOFT_SAMPLING } from '../lib/atlas';
-import { BLOOM_GRADIENT } from '../lib/bloom';
-import { EMBER_COLORS, EMBER_COUNT, EMBER_GLOW_ALPHA, EMBER_GLOW_RADIUS, emberAt, emberColorIndex, spawnEmbers, type Ember } from '../lib/ember';
+import { getBloomGradient } from '../lib/bloom';
+import { EMBER_COLOR_COUNT, EMBER_COUNT, EMBER_GLOW_ALPHA, EMBER_GLOW_RADIUS, emberAt, emberColorIndex, getEmberColors, spawnEmbers, type Ember } from '../lib/ember';
 import { DOT_SIZE } from '@/shared/constants';
+import { type Palette } from '@/shared/lib';
 
 type EmbersProps = {
   centerX: number;
@@ -14,19 +15,20 @@ type EmbersProps = {
   radius: number;
   dotSize: number;
   effectStartedAt: number | null;
+  palette: Palette;
 };
 
 /** 잔광 텍스처 반지름 (px) */
 const GLOW_TEXTURE_RADIUS = 8;
 
-const GLOW_SPRITE = Skia.XYWHRect(EMBER_COLORS.length, 0, GLOW_TEXTURE_RADIUS * 2, GLOW_TEXTURE_RADIUS * 2);
+const GLOW_SPRITE = Skia.XYWHRect(EMBER_COLOR_COUNT, 0, GLOW_TEXTURE_RADIUS * 2, GLOW_TEXTURE_RADIUS * 2);
 
 /** 시작 시각이 비었다는 표식. 첫 프레임에서 기기 가동 시간으로 채우고, 완료마다 되돌림 */
 const NOT_STARTED = -1;
 
 /** 불티 색마다 도트 하나와 잔광 한 장을 담은 아틀라스 */
-const drawEmbers = (): SkImage | null => {
-  const surface = Skia.Surface.Make(EMBER_COLORS.length + GLOW_TEXTURE_RADIUS * 2, GLOW_TEXTURE_RADIUS * 2);
+const drawEmbers = (palette: Palette): SkImage | null => {
+  const surface = Skia.Surface.Make(EMBER_COLOR_COUNT + GLOW_TEXTURE_RADIUS * 2, GLOW_TEXTURE_RADIUS * 2);
   if (!surface) return null;
 
   const canvas = surface.getCanvas();
@@ -34,7 +36,7 @@ const drawEmbers = (): SkImage | null => {
 
   canvas.clear(Skia.Color('transparent'));
 
-  for (const [index, color] of EMBER_COLORS.entries()) {
+  for (const [index, color] of getEmberColors(palette).entries()) {
     paint.setColor(Skia.Color(color));
     canvas.drawRect(Skia.XYWHRect(index, 0, 1, 1), paint);
   }
@@ -42,7 +44,7 @@ const drawEmbers = (): SkImage | null => {
   const glow = Skia.Paint();
   const center = { x: GLOW_SPRITE.x + GLOW_TEXTURE_RADIUS, y: GLOW_TEXTURE_RADIUS };
 
-  glow.setShader(Skia.Shader.MakeRadialGradient(center, GLOW_TEXTURE_RADIUS, BLOOM_GRADIENT, [0, 1], TileMode.Clamp));
+  glow.setShader(Skia.Shader.MakeRadialGradient(center, GLOW_TEXTURE_RADIUS, getBloomGradient(palette.fire.bloom), [0, 1], TileMode.Clamp));
   canvas.drawRect(GLOW_SPRITE, glow);
 
   surface.flush();
@@ -50,8 +52,8 @@ const drawEmbers = (): SkImage | null => {
   return surface.makeImageSnapshot();
 };
 
-export const Embers = memo(({ centerX, centerY, radius, dotSize, effectStartedAt }: EmbersProps) => {
-  const image = useMemo(() => drawEmbers(), []);
+export const Embers = memo(({ centerX, centerY, radius, dotSize, effectStartedAt, palette }: EmbersProps) => {
+  const image = useMemo(() => drawEmbers(palette), [palette]);
   const glowSprites = useMemo(() => Array.from({ length: EMBER_COUNT }, () => GLOW_SPRITE), []);
   const [embers, setEmbers] = useState<Ember[]>([]);
 

@@ -181,9 +181,19 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
               settingMinutes={itemMinutes}
               isPaused={session.phase === 'paused'}
               isReady={editing}
+              palette={palette}
             />
-            <Embers centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} effectStartedAt={effectStartedAt} />
-            <Thumb centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} isTwinkling={twinkling} />
+            <Embers centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} effectStartedAt={effectStartedAt} palette={palette} />
+            <Thumb
+              centerX={centerX}
+              centerY={centerY}
+              radius={layout.arcRadius}
+              dotSize={layout.dotSize}
+              minutes={dialMinutes}
+              mode={paintedMode}
+              isTwinkling={twinkling}
+              palette={palette}
+            />
             <Numerals centerX={centerX} centerY={centerY} radius={layout.numeralRadius} dotSize={layout.dotSize} palette={palette} />
             <DialReadout
               centerX={centerX}

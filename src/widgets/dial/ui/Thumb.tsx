@@ -1,13 +1,13 @@
 import { Group } from '@shopify/react-native-skia';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
 
 import { pointOnDial } from '../lib/geometry';
 import { thumbGrid } from '../lib/twinkle';
 import { useFlickerStep } from '../model/flicker';
 import { type TimerMode } from '@/entities/timer';
-import { topLeftOnGrid } from '@/shared/lib';
-import { DotSprite } from '@/shared/ui/dot-sprite';
+import { topLeftOnGrid, type Palette } from '@/shared/lib';
+import { DotSprite, getSpriteColors } from '@/shared/ui/dot-sprite';
 
 type ThumbProps = {
   centerX: number;
@@ -19,9 +19,11 @@ type ThumbProps = {
   mode: TimerMode;
   /** 반짝임 여부. `DESIGN.md` §8 손잡이 색과 움직임 */
   isTwinkling: boolean;
+  palette: Palette;
 };
 
-export const Thumb = memo(({ centerX, centerY, radius, dotSize, minutes, mode, isTwinkling }: ThumbProps) => {
+export const Thumb = memo(({ centerX, centerY, radius, dotSize, minutes, mode, isTwinkling, palette }: ThumbProps) => {
+  const spriteColors = useMemo(() => getSpriteColors(palette), [palette]);
   const step = useFlickerStep(isTwinkling);
   const grid = thumbGrid({ mode, isTwinkling, step });
   const widthInDots = grid[0]?.length ?? 0;
@@ -40,7 +42,7 @@ export const Thumb = memo(({ centerX, centerY, radius, dotSize, minutes, mode, i
 
   return (
     <Group transform={transform}>
-      <DotSprite grid={grid} centerX={centerX} centerY={centerY} dotSize={dotSize} />
+      <DotSprite grid={grid} centerX={centerX} centerY={centerY} dotSize={dotSize} colors={spriteColors} />
     </Group>
   );
 });
