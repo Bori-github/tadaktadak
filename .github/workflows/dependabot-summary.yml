@@ -43,9 +43,10 @@ jobs:
 
             본문:
             ${{ github.event.pull_request.body }}
+          # 액션이 `claude_args`의 빈 문자열 인자를 버려 `--tools=`로 빈 값 전달
           claude_args: |
             --max-turns 3
-            --tools ""
+            --tools=
 
       # 요약 단계가 실패해도 실패 문구 코멘트 작성
       - name: PR 코멘트 작성
