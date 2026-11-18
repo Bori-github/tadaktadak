@@ -7,7 +7,8 @@ private func report(_ id: String, _ ok: Bool, _ evidence: String) {
 
 private let SHORTCUT_LABEL = "타닥타닥 시작"
 private let SHORTCUT_LABEL_EN = "Start Tadak Tadak"
-private let APP_NAME = "타닥타닥"
+private let ALL_SHORTCUTS = "모든 단축어"
+private let ALL_SHORTCUTS_EN = "All Shortcuts"
 private let FOCUS_DONE_TEXT = "집중 끝!"
 // 집중 타이머 1분 전제에 완료 처리 여유 5초
 private let FOCUS_DONE_SECONDS: UInt32 = 65
@@ -38,21 +39,28 @@ final class ShortcutUITests: XCTestCase {
         let allow = springboard.alerts.buttons["허용"]
         if allow.waitForExistence(timeout: 5) { allow.tap() }
         // 스플래시가 재생 버튼을 덮는 동안의 터치는 무시됨
-        let splash = element("splash")
-        for _ in 0..<40 where splash.exists { usleep(500_000) }
+        _ = element("splash").waitForNonExistence(timeout: 20)
         let stop = element("controls-stop")
-        if stop.isEnabled {
+        if stop.exists && stop.isEnabled {
             stop.tap()
             sleep(1)
         }
     }
 
     /// 단축어 앱의 단축어 타일. 「모든 단축어」 화면에서 앱별 단축어 영역이 아래쪽이라 보일 때까지 스크롤
-    private func shortcutTile(_ label: String = SHORTCUT_LABEL) -> XCUIElement {
+    private func shortcutTile(_ label: String = SHORTCUT_LABEL, folder: String = ALL_SHORTCUTS) -> XCUIElement {
         shortcuts.activate()
+        // 단축어 앱은 마지막으로 연 화면에서 시작되어, 다른 화면이면 첫 번째 탭(보관함)을 거쳐 「모든 단축어」로 이동
+        if !shortcuts.navigationBars[folder].waitForExistence(timeout: 3) {
+            let library = shortcuts.tabBars.buttons.element(boundBy: 0)
+            library.tap()
+            library.tap()
+            shortcuts.staticTexts[folder].tap()
+        }
         let tile = shortcuts.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", label)).firstMatch
         _ = tile.waitForExistence(timeout: 5)
-        for _ in 0..<8 where !tile.exists || !tile.isHittable {
+        for _ in 0..<8 {
+            if tile.exists && tile.isHittable { break }
             shortcuts.swipeUp()
             sleep(1)
         }
@@ -97,7 +105,7 @@ final class ShortcutUITests: XCTestCase {
         shortcuts.terminate()
         shortcuts.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         shortcuts.launch()
-        let inEnglish = shortcutTile(SHORTCUT_LABEL_EN).exists
+        let inEnglish = shortcutTile(SHORTCUT_LABEL_EN, folder: ALL_SHORTCUTS_EN).exists
         // 다음 테스트가 한국어로 열도록 종료 후 실행 인자 제거
         shortcuts.terminate()
         shortcuts.launchArguments = []
@@ -116,14 +124,13 @@ final class ShortcutUITests: XCTestCase {
         shortcutTile().tap()
         let started = Date()
         // 단축어 실행 후 앱 전환과 스플래시를 지나 진행 상태가 될 때까지 대기
-        let stop = element("controls-stop")
-        for _ in 0..<20 where !stop.isEnabled { usleep(500_000) }
-        let running = stop.isEnabled
+        let enabled = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == true AND isEnabled == true"), object: element("controls-stop"))
+        let running = XCTWaiter.wait(for: [enabled], timeout: 10) == .completed
         // 완료 시점에 앱이 포그라운드면 알림 대신 진동만 재생되어 홈 화면으로 이동
         XCUIDevice.shared.press(.home)
         sleep(1)
-        // Live Activity의 앱 이름은 `StaticText`, 홈 화면 앱 아이콘은 `Icon`이라 종류로 구분
-        let liveActivity = inNotificationCenter(springboard.staticTexts[APP_NAME])
+        // Live Activity 정지 버튼 라벨은 `targets/widget/TimerLiveActivity.swift`의 이미지 이름
+        let liveActivity = inNotificationCenter(springboard.buttons.matching(NSPredicate(format: "label CONTAINS 'icon-stop'")).firstMatch)
         let remaining = FOCUS_DONE_SECONDS - min(FOCUS_DONE_SECONDS, UInt32(Date().timeIntervalSince(started)))
         sleep(remaining)
         let completion = inNotificationCenter(springboardText(FOCUS_DONE_TEXT))

@@ -110,12 +110,17 @@ const seedIosDevice = (values, removedKeys) => {
     const manifestPath = join(workDirectory, 'manifest.json');
     const container = ['--device', deviceId, '--domain-type', 'appDataContainer', '--domain-identifier', BUNDLE_IDENTIFIER];
 
+    // `copy from` 실패는 파일 없음과 연결 오류를 구분할 수 없어 목록으로 파일 존재 확인
+    // 연결 오류를 파일 없음으로 처리하면 기존 저장값이 타이머 값만 남기고 지워짐
+    const filesPath = join(workDirectory, 'files.json');
+    devicectl('device', 'info', 'files', ...container, '--json-output', filesPath);
+    const hasManifest = JSON.parse(readFileSync(filesPath, 'utf8')).result.files.some((file) => file.relativePath === IOS_MANIFEST_PATH);
+
+    // 앱을 한 번도 실행하지 않았으면 파일 없음. `copy to`가 상위 폴더를 생성하고 앱이 첫 실행에서 읽음
     let stored = {};
-    try {
+    if (hasManifest) {
       devicectl('device', 'copy', 'from', ...container, '--source', IOS_MANIFEST_PATH, '--destination', manifestPath);
       stored = JSON.parse(readFileSync(manifestPath, 'utf8'));
-    } catch {
-      // 앱을 한 번도 실행하지 않았으면 파일 없음. 새로 생성하면 첫 실행에서 읽음
     }
 
     const seeded = { ...stored, ...values };

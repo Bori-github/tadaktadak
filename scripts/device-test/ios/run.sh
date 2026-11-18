@@ -42,4 +42,6 @@ xcodebuild test \
   -resultBundlePath "$OUT/result.xcresult" \
   DEVELOPMENT_TEAM="$TEAM" > "$OUT/xcodebuild.log" 2>&1 || true
 
-grep '^REPORT	' "$OUT/xcodebuild.log" | cut -f2- || { echo "결과 없음. 로그: $OUT/xcodebuild.log" >&2; exit 1; }
+# 파이프라인 종료 코드는 마지막 명령 기준이라 `grep` 결과를 파일로 받아 판정
+grep '^REPORT	' "$OUT/xcodebuild.log" > "$OUT/report.tsv" || { echo "결과 없음. 로그: $OUT/xcodebuild.log" >&2; exit 1; }
+cut -f2- "$OUT/report.tsv"
