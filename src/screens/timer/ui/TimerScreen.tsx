@@ -39,7 +39,7 @@ import { translate, useLanguage } from '@/entities/language';
 import { isReadyPhase, type TimerMode } from '@/entities/timer';
 import { playVibration } from '@/entities/vibration';
 import { BUTTON_SIZE_IN_DOTS, COLORS, ROUND_BUTTON_DIAMETER_IN_DOTS } from '@/shared/constants';
-import { resolveLayout, getFormFactor, useDismissibleNotice, useIsScreenVisible, type RootStackParamList } from '@/shared/lib';
+import { resolveLayout, getFormFactor, useDismissibleNotice, useIsScreenVisible, usePalette, type RootStackParamList } from '@/shared/lib';
 import { RoundDotButton } from '@/shared/ui/dot-button';
 import { NOTIFICATION_OFF_ICON, SETTINGS_ICON, SOUND_ICON, SOUND_OFF_ICON, WARNING_ICON } from '@/shared/ui/dot-icon';
 import { DotToast } from '@/shared/ui/dot-toast';
@@ -55,6 +55,8 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   const insets = useSafeAreaInsets();
   const windowControlsLeftInset = useWindowControlsLeftInset();
   const isFocused = useIsFocused();
+  // Skia `Canvas` 안에는 React context가 전달되지 않아 밖에서 읽어 props로 전달
+  const palette = usePalette();
   const [editTarget, setEditTarget] = useState<TimerMode>('focus');
   const { minutes, changeMinutes, storeMinutes } = useStoredMinutes();
   const { speed, setSpeed, realSettingMinutes, toSeconds, toMinutes } = useTimerSpeed(minutes);
@@ -168,7 +170,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
         <View style={styles.root}>
           <Canvas style={StyleSheet.absoluteFill}>
             <Fill color={COLORS.canvas} />
-            <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} />
+            <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} palette={palette} />
             <DialItems
               centerX={centerX}
               centerY={centerY}
@@ -182,7 +184,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
             />
             <Embers centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} effectStartedAt={effectStartedAt} />
             <Thumb centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} isTwinkling={twinkling} />
-            <Numerals centerX={centerX} centerY={centerY} radius={layout.numeralRadius} dotSize={layout.dotSize} />
+            <Numerals centerX={centerX} centerY={centerY} radius={layout.numeralRadius} dotSize={layout.dotSize} palette={palette} />
             <DialReadout
               centerX={centerX}
               centerY={centerY}
@@ -191,6 +193,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
               restMinutes={minutes.rest}
               active={shownMode}
               remainingSeconds={remainingSeconds}
+              palette={palette}
             />
           </Canvas>
           {editing ? <ReadoutButtons centerX={centerX} centerY={centerY} dotSize={layout.dotSize} onSelect={setEditTarget} /> : null}

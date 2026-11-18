@@ -3,7 +3,7 @@ import { memo, useMemo } from 'react';
 import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
 
 import { type TimerMode } from '@/entities/timer';
-import { COLORS } from '@/shared/constants';
+import { type Palette } from '@/shared/lib';
 
 /** 호 두께 (dot) */
 const ARC_WIDTH_IN_DOTS = 3;
@@ -19,9 +19,10 @@ type DialArcProps = {
   /** 12시부터 minutes만큼 시계 방향으로 그린다 */
   minutes: SharedValue<number>;
   mode: TimerMode;
+  palette: Palette;
 };
 
-export const DialArc = memo(({ centerX, centerY, radius, dotSize, minutes, mode }: DialArcProps) => {
+export const DialArc = memo(({ centerX, centerY, radius, dotSize, minutes, mode, palette }: DialArcProps) => {
   // 프레임마다 만들면 UI 스레드가 밀려, 호 한 바퀴를 미리 만들고 끝점만 옮김
   const turn = useMemo(() => {
     // addArc에서 0도는 3시 방향이라 보정
@@ -35,7 +36,7 @@ export const DialArc = memo(({ centerX, centerY, radius, dotSize, minutes, mode 
     return minutes.value / MINUTES_IN_TURN;
   });
 
-  return <Path path={turn} start={0} end={end} color={COLORS[mode].arc} style="stroke" strokeWidth={ARC_WIDTH_IN_DOTS * dotSize} />;
+  return <Path path={turn} start={0} end={end} color={palette[mode].arc} style="stroke" strokeWidth={ARC_WIDTH_IN_DOTS * dotSize} />;
 });
 
 DialArc.displayName = 'DialArc';
