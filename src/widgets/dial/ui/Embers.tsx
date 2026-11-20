@@ -44,7 +44,7 @@ const drawEmbers = (palette: Palette): SkImage | null => {
   const glow = Skia.Paint();
   const center = { x: GLOW_SPRITE.x + GLOW_TEXTURE_RADIUS, y: GLOW_TEXTURE_RADIUS };
 
-  glow.setShader(Skia.Shader.MakeRadialGradient(center, GLOW_TEXTURE_RADIUS, getBloomGradient(palette.fire.bloom), [0, 1], TileMode.Clamp));
+  glow.setShader(Skia.Shader.MakeRadialGradient(center, GLOW_TEXTURE_RADIUS, getBloomGradient(palette.glow), [0, 1], TileMode.Clamp));
   canvas.drawRect(GLOW_SPRITE, glow);
 
   surface.flush();

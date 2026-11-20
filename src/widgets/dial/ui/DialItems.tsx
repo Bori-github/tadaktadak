@@ -137,7 +137,7 @@ const drawBloom = (gradient: SkColor[]): SkImage | null => {
 };
 
 export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeightInDots, remainingMinutes, settingMinutes, isPaused, isReady, palette }: DialItemsProps) => {
-  const bloomGradient = useMemo(() => getBloomGradient(palette.fire.bloom), [palette]);
+  const bloomGradient = useMemo(() => getBloomGradient(palette.glow), [palette]);
   const grids = useMemo(() => {
     const bonfire = BONFIRE_SPRITES[bonfireHeightInDots];
     return [LOG_COLD, bonfire.cold, MARKER, LOG_HOT_A, LOG_HOT_B, bonfire.hotA, bonfire.hotB];

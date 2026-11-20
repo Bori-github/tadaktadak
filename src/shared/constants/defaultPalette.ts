@@ -11,7 +11,6 @@ export const DEFAULT_PALETTE = {
     base: '#e04a2b',
     igniteBright: '#ffd94a',
     igniteMid: '#ff9d2e',
-    bloom: '#ff9d2e',
   },
 
   focus: {
