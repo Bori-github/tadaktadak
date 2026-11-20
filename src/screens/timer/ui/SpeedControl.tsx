@@ -1,7 +1,7 @@
 import { type JSX } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { COLORS } from '@/shared/constants';
+import { usePalette } from '@/shared/lib';
 
 const TIMER_SPEEDS = [1, 5, 10, 50];
 
@@ -12,15 +12,24 @@ type SpeedControlProps = {
   onSelect: (speed: number) => void;
 };
 
-export const SpeedControl = ({ speed, enabled, onSelect }: SpeedControlProps): JSX.Element => (
-  <View style={[styles.row, enabled ? null : styles.disabled]} pointerEvents={enabled ? 'auto' : 'none'}>
-    {TIMER_SPEEDS.map((option) => (
-      <Pressable key={option} testID={`speed-${option}x`} style={[styles.item, option === speed && styles.selected]} onPress={() => onSelect(option)}>
-        <Text style={styles.label}>{option}×</Text>
-      </Pressable>
-    ))}
-  </View>
-);
+export const SpeedControl = ({ speed, enabled, onSelect }: SpeedControlProps): JSX.Element => {
+  const palette = usePalette();
+
+  return (
+    <View style={[styles.row, enabled ? null : styles.disabled]} pointerEvents={enabled ? 'auto' : 'none'}>
+      {TIMER_SPEEDS.map((option) => (
+        <Pressable
+          key={option}
+          testID={`speed-${option}x`}
+          style={[styles.item, { backgroundColor: option === speed ? palette.focus.arc : palette.button.disabledFace }]}
+          onPress={() => onSelect(option)}
+        >
+          <Text style={[styles.label, { color: palette.focus.text }]}>{option}×</Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   row: {
@@ -31,16 +40,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 4,
-    backgroundColor: COLORS.button.disabledFace,
-  },
-  selected: {
-    backgroundColor: COLORS.focus.arc,
   },
   disabled: {
     opacity: 0.4,
   },
   label: {
-    color: COLORS.focus.text,
     fontSize: 12,
   },
 });

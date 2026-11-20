@@ -25,7 +25,7 @@ private const val NOTIFICATION_ID = 1
 private const val SECOND_IN_MS = 1_000.0
 private const val MINUTE_IN_MS = 60_000.0
 
-// `src/shared/constants/colors.ts`의 `focus.arc`
+// `src/shared/constants/defaultPalette.ts`의 `focus.arc`
 private const val FOCUS_COLOR = 0xFF6A5B9C.toInt()
 
 // `rest.arc`는 흰 아이콘과 대비가 4.5:1 미만이라 OS가 어둡게 바꿔 칠해서, 대비가 넘는 `rest.thumbArm`을 씀

@@ -7,7 +7,7 @@ import { cancelAnimation, Easing, useSharedValue, withRepeat, withTiming } from 
 import errorAnimation from './error.json';
 
 import { translate, useLanguage } from '@/entities/language';
-import { COLORS } from '@/shared/constants';
+import { usePalette } from '@/shared/lib';
 import { DotTextButton } from '@/shared/ui/dot-button';
 
 const LAST_FRAME = errorAnimation.op - 1;
@@ -24,6 +24,7 @@ const BUTTON_HEIGHT_IN_DOTS = 24;
  */
 export const RootErrorScreen = (): JSX.Element => {
   const language = useLanguage();
+  const palette = usePalette();
   // 언마운트 뒤 GC 대상이 되도록 컴포넌트 안에서 생성
   // Skottie.Make는 JSON 파싱 실패 시 null을 반환하는데 반환 타입에 빠져 있어서 null 포함으로 선언
   const animation = useMemo<SkSkottieAnimation | null>(() => Skia.Skottie.Make(JSON.stringify(errorAnimation)), []);
@@ -42,14 +43,14 @@ export const RootErrorScreen = (): JSX.Element => {
   };
 
   return (
-    <View style={styles.root} testID="root-error-screen">
+    <View style={[styles.root, { backgroundColor: palette.canvas }]} testID="root-error-screen">
       <View style={styles.stage}>
         {animation === null ? null : (
           <Canvas style={styles.canvas} pointerEvents="none">
             <Skottie animation={animation} frame={frame} />
           </Canvas>
         )}
-        <Text style={styles.message}>{translate('error.message', language)}</Text>
+        <Text style={[styles.message, { color: palette.text.primary }]}>{translate('error.message', language)}</Text>
         <DotTextButton
           dotSize={BUTTON_DOT_SIZE}
           widthInDots={BUTTON_WIDTH_IN_DOTS}
@@ -68,7 +69,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.canvas,
   },
   stage: {
     width: errorAnimation.w,
@@ -82,7 +82,6 @@ const styles = StyleSheet.create({
     top: 452,
     left: 0,
     right: 0,
-    color: COLORS.text.primary,
     fontSize: 16,
     textAlign: 'center',
   },

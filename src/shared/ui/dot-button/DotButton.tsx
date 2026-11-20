@@ -2,7 +2,8 @@ import { memo } from 'react';
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 
-import { BUTTON_SIZE_IN_DOTS, COLORS } from '@/shared/constants';
+import { BUTTON_SIZE_IN_DOTS } from '@/shared/constants';
+import { usePalette } from '@/shared/lib';
 
 import { type GridIcon } from '@/shared/ui/dot-icon';
 import { DotCells, rectangleCells } from '@/shared/ui/dot-shape';
@@ -13,9 +14,6 @@ import { getRoleColors } from './roleColors';
 
 const CELLS = rectangleCells({ widthInDots: BUTTON_SIZE_IN_DOTS, heightInDots: BUTTON_SIZE_IN_DOTS });
 
-const ICON_COLORS = { I: COLORS.icon.default };
-const DISABLED_ICON_COLORS = { I: COLORS.icon.disabled };
-
 type DotButtonFaceProps = {
   dotSize: number;
   icon: GridIcon;
@@ -24,14 +22,16 @@ type DotButtonFaceProps = {
 };
 
 const DotButtonFace = memo(({ dotSize, icon, disabled, active }: DotButtonFaceProps) => {
+  const palette = usePalette();
   const size = BUTTON_SIZE_IN_DOTS * dotSize;
   const offsetY = active ? dotSize : 0;
+  const iconColors = { I: disabled ? palette.icon.disabled : palette.icon.default };
 
   return (
     // active 상태의 y 오프셋만큼 캔버스 높이를 늘려 하단 클리핑 방지
     <Canvas style={[styles.canvas, { width: size, height: size + dotSize }]} pointerEvents="none">
-      <DotCells cells={CELLS} dotSize={dotSize} colors={getRoleColors({ disabled, active })} offsetY={offsetY} />
-      <DotSprite grid={icon} centerX={size / 2} centerY={offsetY + size / 2} dotSize={dotSize} colors={disabled ? DISABLED_ICON_COLORS : ICON_COLORS} />
+      <DotCells cells={CELLS} dotSize={dotSize} colors={getRoleColors({ button: palette.button, disabled, active })} offsetY={offsetY} />
+      <DotSprite grid={icon} centerX={size / 2} centerY={offsetY + size / 2} dotSize={dotSize} colors={iconColors} />
     </Canvas>
   );
 });

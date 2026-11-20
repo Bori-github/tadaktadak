@@ -2,13 +2,11 @@ import { type JSX } from 'react';
 import { type StyleProp, type ViewStyle } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 
-import { COLORS } from '@/shared/constants';
+import { usePalette } from '@/shared/lib';
 
 import { DotSprite } from '@/shared/ui/dot-sprite';
 
 import { CHEVRON_ICON } from './chevron';
-
-const CHEVRON_COLORS = { I: COLORS.icon.secondary };
 
 type ChevronIconProps = {
   dotSize: number;
@@ -16,12 +14,13 @@ type ChevronIconProps = {
 };
 
 export const ChevronIcon = ({ dotSize, style }: ChevronIconProps): JSX.Element => {
+  const palette = usePalette();
   const width = (CHEVRON_ICON[0]?.length ?? 0) * dotSize;
   const height = CHEVRON_ICON.length * dotSize;
 
   return (
     <Canvas style={[{ width, height }, style]}>
-      <DotSprite grid={CHEVRON_ICON} centerX={width / 2} centerY={height / 2} dotSize={dotSize} colors={CHEVRON_COLORS} />
+      <DotSprite grid={CHEVRON_ICON} centerX={width / 2} centerY={height / 2} dotSize={dotSize} colors={{ I: palette.icon.secondary }} />
     </Canvas>
   );
 };

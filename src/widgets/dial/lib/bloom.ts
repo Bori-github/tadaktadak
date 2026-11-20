@@ -1,15 +1,20 @@
 import { Skia, type SkColor } from '@shopify/react-native-skia';
 
-import { COLORS, DOT_SIZE } from '@/shared/constants';
+import { DOT_SIZE } from '@/shared/constants';
 
-/** 빛 번짐 그러데이션 */
-export const BLOOM_GRADIENT: SkColor[] = (() => {
-  const core = Skia.Color(COLORS.fire.bloom);
+/**
+ * 빛 번짐 그러데이션
+ *
+ * @param color - 가운데 색. 바깥쪽은 같은 색의 알파 0
+ * @returns 가운데에서 바깥쪽 순서의 색
+ */
+export const getBloomGradient = (color: string): SkColor[] => {
+  const core = Skia.Color(color);
   const fade = core.slice();
   fade[3] = 0;
 
   return [core, fade];
-})();
+};
 
 /** 가운데 빛 번짐 반지름. 개체 반지름에 곱함. `DESIGN.md` §6 */
 export const CENTER_BLOOM_RATIO = 0.95;

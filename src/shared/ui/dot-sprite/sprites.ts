@@ -1,20 +1,28 @@
-import { COLORS } from '@/shared/constants';
+import { type Palette } from '@/shared/lib';
 
-/** 격자 글자와 색. 표에 없는 글자(`.`)는 그리지 않는다 */
-export const SPRITE_COLORS: Record<string, string | undefined> = {
-  f: COLORS.fire.igniteBright,
-  F: COLORS.fire.igniteMid,
-  y: COLORS.fire.core,
-  o: COLORS.fire.mid,
-  r: COLORS.fire.base,
-  W: COLORS.fire.log,
-  D: COLORS.fire.logShade,
-  h: COLORS.focus.thumbArm,
-  H: COLORS.focus.thumbCore,
-  k: COLORS.rest.thumbArm,
-  K: COLORS.rest.thumbCore,
-  m: COLORS.focus.marker,
+/** 모닥불 스프라이트 글자별 색. 피그마 `fire/*` */
+export const CAMPFIRE_SPRITE_COLORS: Record<string, string> = {
+  f: '#ffd94a',
+  F: '#ff9d2e',
+  y: '#fff2a8',
+  o: '#ffb43c',
+  r: '#e04a2b',
+  W: '#8a6238',
+  D: '#4a3220',
 };
+
+/**
+ * 공통 팔레트 기반 스프라이트 글자별 색(손잡이, 기준 표식). 미정의 글자(`.`)는 렌더링 제외
+ *
+ * @returns 글자별 색
+ */
+export const getSpriteColors = ({ focus, rest }: Palette): Record<string, string | undefined> => ({
+  h: focus.thumbArm,
+  H: focus.thumbCore,
+  k: rest.thumbArm,
+  K: rest.thumbCore,
+  m: focus.marker,
+});
 
 export const LOG_COLD = ['.W.', 'DWD', 'DWD', '.D.'];
 

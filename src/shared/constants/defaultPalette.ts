@@ -1,16 +1,7 @@
-export const COLORS = {
+export const DEFAULT_PALETTE = {
   canvas: '#141021',
 
-  fire: {
-    log: '#8a6238',
-    logShade: '#4a3220',
-    core: '#fff2a8',
-    mid: '#ffb43c',
-    base: '#e04a2b',
-    igniteBright: '#ffd94a',
-    igniteMid: '#ff9d2e',
-    bloom: '#ff9d2e',
-  },
+  glow: '#ff9d2e',
 
   focus: {
     arc: '#6a5b9c',
@@ -54,8 +45,6 @@ export const COLORS = {
   modal: {
     edge: '#2b2638',
     face: '#3f3550',
-    highlight: '#4a4360',
-    shadow: '#332a42',
     skeleton: '#f4ead614',
   },
 
@@ -69,5 +58,15 @@ export const COLORS = {
     edge: '#ffb43c',
     face: '#3f3550',
     shadow: '#08060d',
+  },
+
+  toggle: {
+    on: '#ffb43c',
+  },
+
+  particle: {
+    start: '#fff2a8',
+    middle: '#ffb43c',
+    end: '#e04a2b',
   },
 } as const;

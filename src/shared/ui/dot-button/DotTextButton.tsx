@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 
-import { COLORS } from '@/shared/constants';
+import { usePalette } from '@/shared/lib';
 
 import { DotCells, rectangleCells } from '@/shared/ui/dot-shape';
 
@@ -27,6 +27,7 @@ type DotTextButtonProps = {
  * @returns 누르는 동안 한 도트 내려가는 `DotPressable`
  */
 export const DotTextButton = memo(({ dotSize, widthInDots, heightInDots, label, onPress, style, testID }: DotTextButtonProps) => {
+  const palette = usePalette();
   const width = widthInDots * dotSize;
   const height = heightInDots * dotSize;
   const cells = rectangleCells({ widthInDots, heightInDots });
@@ -40,10 +41,10 @@ export const DotTextButton = memo(({ dotSize, widthInDots, heightInDots, label, 
           <>
             {/* active 상태의 y 오프셋만큼 캔버스 높이를 늘려 하단 클리핑 방지 */}
             <Canvas style={[styles.canvas, { width, height: height + dotSize }]} pointerEvents="none">
-              <DotCells cells={cells} dotSize={dotSize} colors={getRoleColors({ disabled: false, active })} offsetY={offsetY} />
+              <DotCells cells={cells} dotSize={dotSize} colors={getRoleColors({ button: palette.button, disabled: false, active })} offsetY={offsetY} />
             </Canvas>
             <View style={[styles.labelBox, { width, height, top: offsetY }]} pointerEvents="none">
-              <Text style={styles.label}>{label}</Text>
+              <Text style={[styles.label, { color: palette.text.primary }]}>{label}</Text>
             </View>
           </>
         );
@@ -67,7 +68,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    color: COLORS.text.primary,
     fontSize: 16,
   },
 });

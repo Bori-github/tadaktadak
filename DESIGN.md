@@ -2,7 +2,7 @@
 id: tadaktadak
 name: "Tadak Tadak"
 figma: "https://www.figma.com/design/qmtzKbnYAsTAXvn0CBbfo2/tadaktadak"
-updated: 2026-11-16
+updated: 2026-11-20
 category: personal-tool
 bundle_id: "com.boriguri.tadaktadak"
 primary_color: "#ffb43c"
@@ -22,7 +22,11 @@ tokens:
     fire-base: "#e04a2b"
     ignite-bright: "#ffd94a"
     ignite-mid: "#ff9d2e"
-    bloom: "#ff9d2e"
+    glow: "#ff9d2e"
+    toggle-on: "#ffb43c"
+    particle-start: "#fff2a8"
+    particle-middle: "#ffb43c"
+    particle-end: "#e04a2b"
     focus-arc: "#6a5b9c"
     focus-text: "#f4ead6"
     rest-arc: "#3f9aa6"
@@ -65,19 +69,34 @@ tokens:
 
 ## 2. Color Palette & Roles
 
-### 장작과 모닥불
+키는 피그마 변수 이름이다.
 
-| 역할              | 값        | 쓰는 곳                    |
-| ----------------- | --------- | -------------------------- |
-| 배경              | `#141021` | 화면 전체                  |
-| 장작              | `#8a6238` | 타지 않은 장작 몸통        |
-| 장작 그늘         | `#4a3220` | 장작 아랫면                |
-| 불 심             | `#fff2a8` | 불꽃 가장 안쪽, 갓 튄 불티 |
-| 불 가운데         | `#ffb43c` | 불꽃 중간, 식어가는 불티   |
-| 불 아래           | `#e04a2b` | 불꽃 밑동, 꺼지는 불티     |
-| 장작 점화 밝은 쪽 | `#ffd94a` | 불붙은 장작 윗면           |
-| 장작 점화 중간    | `#ff9d2e` | 불붙은 장작 몸통           |
-| 빛 번짐           | `#ff9d2e` | 부드러운 레이어의 광원     |
+### 공통
+
+모든 테마가 같은 키를 사용하며, 테마마다 값만 다르다. 코드 팔레트 `DEFAULT_PALETTE`는 같은 키의 `/`를 `.`으로 바꿔 사용한다.
+
+| 역할      | 키                | 값        | 사용처                 |
+| --------- | ----------------- | --------- | ---------------------- |
+| 배경      | `canvas`          | `#141021` | 화면 전체              |
+| 빛 번짐   | `glow`            | `#ff9d2e` | 부드러운 레이어의 광원 |
+| 토글 켜짐 | `toggle/on`       | `#ffb43c` | 토글 켜짐 트랙         |
+| 입자 시작 | `particle/start`  | `#fff2a8` | 갓 튄 불티             |
+| 입자 중간 | `particle/middle` | `#ffb43c` | 식어가는 불티          |
+| 입자 끝   | `particle/end`    | `#e04a2b` | 꺼지는 불티            |
+
+### 모닥불 그림
+
+모닥불 테마의 장작/모닥불 스프라이트에서만 사용하며, 코드는 `CAMPFIRE_SPRITE_COLORS`의 격자 글자별 색으로 사용한다.
+
+| 역할              | 키                   | 값        | 사용처              |
+| ----------------- | -------------------- | --------- | ------------------- |
+| 장작              | `fire/log`           | `#8a6238` | 타지 않은 장작 몸통 |
+| 장작 그늘         | `fire/log-shade`     | `#4a3220` | 장작 아랫면         |
+| 불 심             | `fire/core`          | `#fff2a8` | 불꽃 가장 안쪽      |
+| 불 가운데         | `fire/mid`           | `#ffb43c` | 불꽃 중간           |
+| 불 아래           | `fire/base`          | `#e04a2b` | 불꽃 밑동           |
+| 장작 점화 밝은 쪽 | `fire/ignite-bright` | `#ffd94a` | 불붙은 장작 윗면    |
+| 장작 점화 중간    | `fire/ignite-mid`    | `#ff9d2e` | 불붙은 장작 몸통    |
 
 ### 집중
 
@@ -544,7 +563,7 @@ hHHHHHh     .hHHHh.     kKKKKKk
 | 불티 상승 속도 | 0.60 도트/프레임 (0.55~1.45배 편차)                                      |
 | 불티 좌우 퍼짐 | ±0.22 도트/프레임. 여기에 시계판 바깥 방향으로 0.10 도트/프레임을 더한다 |
 | 불티 감쇠      | 프레임마다 세로 속도에 0.994, 가로 속도에 0.985를 곱한다                 |
-| 불티 색        | 수명 0.66 위는 불 심, 0.33 위는 불 가운데, 아래는 불 아래                |
+| 불티 색        | 수명 0.66 위는 입자 시작, 0.33 위는 입자 중간, 아래는 입자 끝            |
 | 불티 잔광      | 반지름 3 논리 픽셀, 알파 `0.15 × 수명`                                   |
 
 ### 일시정지

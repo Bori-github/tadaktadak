@@ -5,7 +5,8 @@ import Animated, { cancelAnimation, Easing, useAnimatedStyle, useSharedValue, wi
 
 import { useCanShowAdvertisement } from '@/entities/advertisement';
 
-import { COLORS, DOT_SIZE, ENV } from '@/shared/constants';
+import { DOT_SIZE, ENV } from '@/shared/constants';
+import { usePalette } from '@/shared/lib';
 
 // 개발 빌드에서 실제 광고 노출/클릭이 무효 트래픽으로 집계되지 않도록 `TestIds` 사용
 const BANNER_UNIT_ID = __DEV__ ? TestIds.ADAPTIVE_BANNER : Platform.select({ ios: ENV.ADMOB_IOS_BANNER_UNIT_ID, default: ENV.ADMOB_ANDROID_BANNER_UNIT_ID });
@@ -25,6 +26,7 @@ const SKELETON_HALF_PERIOD_MS = 800;
  * @returns opacity 1 ↔ `SKELETON_MIN_OPACITY` 무한 반복 `Animated.View`
  */
 const AdvertisementSkeleton = (): JSX.Element => {
+  const palette = usePalette();
   const opacity = useSharedValue(1);
 
   useEffect(() => {
@@ -40,7 +42,7 @@ const AdvertisementSkeleton = (): JSX.Element => {
 
   const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
-  return <Animated.View testID="advertisement-skeleton" style={[styles.skeleton, animatedStyle]} />;
+  return <Animated.View testID="advertisement-skeleton" style={[styles.skeleton, { backgroundColor: palette.modal.skeleton }, animatedStyle]} />;
 };
 
 type AdvertisementFooterProps = {
@@ -59,17 +61,18 @@ export const AdvertisementFooter = ({ dotSize, width }: AdvertisementFooterProps
   const canShowAdvertisement = useCanShowAdvertisement();
   const [hasLoaded, setHasLoaded] = useState(false);
   const [hasLoadFailed, setHasLoadFailed] = useState(false);
+  const palette = usePalette();
   // 릴리스 빌드에서 `TestIds` 요청을 막기 위해 광고 단위 ID가 없으면 렌더링하지 않음
   if (BANNER_UNIT_ID === undefined || !canShowAdvertisement || hasLoadFailed) return null;
 
   const scale = dotSize / DOT_SIZE;
 
-  const dividerStyle = { height: dotSize, marginBottom: 16 * scale };
+  const dividerStyle = { backgroundColor: palette.modal.edge, height: dotSize, marginBottom: 16 * scale };
   const bannerAreaStyle = { width, minHeight: BANNER_HEIGHT, marginBottom: 16 * scale };
 
   return (
     <View testID="advertisement-footer">
-      <View style={[styles.divider, dividerStyle]} />
+      <View style={dividerStyle} />
       <View testID="advertisement-banner-area" style={[styles.bannerArea, bannerAreaStyle]}>
         {hasLoaded ? null : <AdvertisementSkeleton />}
         <BannerAd
@@ -89,14 +92,10 @@ export const AdvertisementFooter = ({ dotSize, width }: AdvertisementFooterProps
 };
 
 const styles = StyleSheet.create({
-  divider: {
-    backgroundColor: COLORS.modal.edge,
-  },
   bannerArea: {
     alignSelf: 'center',
   },
   skeleton: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: COLORS.modal.skeleton,
   },
 });

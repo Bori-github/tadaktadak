@@ -1,5 +1,3 @@
-import { COLORS } from '@/shared/constants';
-
 /** 불티 하나가 노출될 때의 위치·속도·수명. `DESIGN.md` §9 완료 */
 export type Ember = {
   /** 노출 위치 (dot) */
@@ -39,8 +37,8 @@ export const EMBER_COUNT = 80;
 export const EMBER_GLOW_RADIUS = 3;
 export const EMBER_GLOW_ALPHA = 0.15;
 
-/** 수명이 높은 쪽부터 늘어놓은 불티 색. `DESIGN.md` §9 */
-export const EMBER_COLORS = [COLORS.fire.core, COLORS.fire.mid, COLORS.fire.base];
+/** 불티 색 `particle` 키, 수명 내림차순. 길이 변경 시 `emberColorIndex` 구간 수정. `DESIGN.md` §9 */
+export const EMBER_COLOR_KEYS = ['start', 'middle', 'end'] as const;
 
 const LIFE_MS = 2800;
 const LIFE_SPREAD: Spread = { min: 0.75, max: 1.25 };
@@ -112,9 +110,9 @@ export const emberAt = (ember: Ember, elapsedMs: number): EmberState => {
 };
 
 /**
- * 남은 수명이 가리키는 `EMBER_COLORS` 위치. `DESIGN.md` §9
+ * 남은 수명에 대응하는 `EMBER_COLOR_KEYS` 인덱스. `DESIGN.md` §9
  *
- * @returns 수명 0.66 위가 0, 0.33 위가 1, 그 아래가 2
+ * @returns 수명 > 0.66이면 0, > 0.33이면 1, 그 외 2
  */
 export const emberColorIndex = (life: number): number => {
   'worklet';

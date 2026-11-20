@@ -3,8 +3,6 @@ import { Group, Rect } from '@shopify/react-native-skia';
 
 import { topLeftOnGrid } from '@/shared/lib';
 
-import { SPRITE_COLORS } from './sprites';
-
 type DotSpriteProps = {
   grid: readonly string[];
   /** 시계판 좌표계의 중심 (px) */
@@ -12,7 +10,7 @@ type DotSpriteProps = {
   centerY: number;
   /** 도트 한 변 (px) */
   dotSize: number;
-  colors?: Record<string, string | undefined>;
+  colors: Record<string, string | undefined>;
   opacity?: number;
 };
 
@@ -21,7 +19,7 @@ type DotSpriteProps = {
  *
  * @returns 색이 지정된 글자마다 도트 하나를 그린 Skia `Group`
  */
-export const DotSprite = ({ grid, centerX, centerY, dotSize, colors = SPRITE_COLORS, opacity = 1 }: DotSpriteProps): JSX.Element => {
+export const DotSprite = ({ grid, centerX, centerY, dotSize, colors, opacity = 1 }: DotSpriteProps): JSX.Element => {
   const width = grid[0]?.length ?? 0;
 
   const { left, top } = topLeftOnGrid({ centerX, centerY, widthInDots: width, heightInDots: grid.length, dotSize });

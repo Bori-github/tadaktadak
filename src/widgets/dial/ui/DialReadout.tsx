@@ -3,7 +3,7 @@ import { FOCUS_GLYPH_SCALE, REST_OFFSET_IN_DOTS } from '../config/readout';
 import { formatSecondsToClock } from '../lib/clock';
 import { countdownSeconds } from '../lib/countdown';
 import { type TimerMode } from '@/entities/timer';
-import { COLORS } from '@/shared/constants';
+import { type Palette } from '@/shared/lib';
 import { DotNumber } from '@/shared/ui/dot-number';
 
 const INACTIVE_OPACITY = 0.4;
@@ -18,9 +18,10 @@ type DialReadoutProps = {
   active: TimerMode;
   /** 카운트다운 중인 남은 시간(초). 대기에서는 `null` */
   remainingSeconds: number | null;
+  palette: Palette;
 };
 
-export const DialReadout = ({ centerX, centerY, dotSize, focusMinutes, restMinutes, active, remainingSeconds }: DialReadoutProps): JSX.Element => {
+export const DialReadout = ({ centerX, centerY, dotSize, focusMinutes, restMinutes, active, remainingSeconds, palette }: DialReadoutProps): JSX.Element => {
   const seconds = (mode: TimerMode, minutes: number) => countdownSeconds({ mode, active, minutes, remainingSeconds });
 
   return (
@@ -29,7 +30,7 @@ export const DialReadout = ({ centerX, centerY, dotSize, focusMinutes, restMinut
         text={formatSecondsToClock(seconds('focus', focusMinutes))}
         centerX={centerX}
         centerY={centerY}
-        color={COLORS.focus.text}
+        color={palette.focus.text}
         dotSize={dotSize}
         glyphScale={FOCUS_GLYPH_SCALE}
         opacity={active === 'focus' ? 1 : INACTIVE_OPACITY}
@@ -38,7 +39,7 @@ export const DialReadout = ({ centerX, centerY, dotSize, focusMinutes, restMinut
         text={formatSecondsToClock(seconds('rest', restMinutes))}
         centerX={centerX}
         centerY={centerY + REST_OFFSET_IN_DOTS * dotSize}
-        color={COLORS.rest.text}
+        color={palette.rest.text}
         dotSize={dotSize}
         opacity={active === 'rest' ? 1 : INACTIVE_OPACITY}
       />
