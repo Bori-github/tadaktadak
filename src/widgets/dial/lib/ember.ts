@@ -39,15 +39,17 @@ export const EMBER_COUNT = 80;
 export const EMBER_GLOW_RADIUS = 3;
 export const EMBER_GLOW_ALPHA = 0.15;
 
-/** 불티 색 수. `emberColorIndex` 반환값 0~2와 대응 */
-export const EMBER_COLOR_COUNT = 3;
+/** 불티 색 `fire` 키, 수명 내림차순. 길이 변경 시 `emberColorIndex` 구간 수정. `DESIGN.md` §9 */
+const EMBER_COLOR_KEYS = ['core', 'mid', 'base'] as const;
+
+export const EMBER_COLOR_COUNT = EMBER_COLOR_KEYS.length;
 
 /**
- * 수명이 높은 쪽부터 늘어놓은 불티 색. `DESIGN.md` §9
+ * 수명 내림차순 불티 색
  *
- * @returns `EMBER_COLOR_COUNT`개의 색
+ * @returns `EMBER_COLOR_KEYS` 순서의 색
  */
-export const getEmberColors = ({ fire }: Palette): readonly [string, string, string] => [fire.core, fire.mid, fire.base];
+export const getEmberColors = ({ fire }: Palette): string[] => EMBER_COLOR_KEYS.map((key) => fire[key]);
 
 const LIFE_MS = 2800;
 const LIFE_SPREAD: Spread = { min: 0.75, max: 1.25 };
@@ -119,9 +121,9 @@ export const emberAt = (ember: Ember, elapsedMs: number): EmberState => {
 };
 
 /**
- * 남은 수명이 가리키는 `getEmberColors` 결과의 위치. `DESIGN.md` §9
+ * 남은 수명에 대응하는 `getEmberColors` 인덱스. `DESIGN.md` §9
  *
- * @returns 수명 0.66 위가 0, 0.33 위가 1, 그 아래가 2
+ * @returns 수명 > 0.66이면 0, > 0.33이면 1, 그 외 2
  */
 export const emberColorIndex = (life: number): number => {
   'worklet';
