@@ -1,6 +1,8 @@
 export const DEFAULT_PALETTE = {
   canvas: '#141021',
 
+  glow: '#ff9d2e',
+
   fire: {
     log: '#8a6238',
     logShade: '#4a3220',
@@ -69,5 +71,15 @@ export const DEFAULT_PALETTE = {
     edge: '#ffb43c',
     face: '#3f3550',
     shadow: '#08060d',
+  },
+
+  toggle: {
+    on: '#ffb43c',
+  },
+
+  particle: {
+    start: '#fff2a8',
+    middle: '#ffb43c',
+    end: '#e04a2b',
   },
 } as const;
