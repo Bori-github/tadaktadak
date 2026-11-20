@@ -41,7 +41,7 @@ export const DotTextButton = memo(({ dotSize, widthInDots, heightInDots, label, 
           <>
             {/* active 상태의 y 오프셋만큼 캔버스 높이를 늘려 하단 클리핑 방지 */}
             <Canvas style={[styles.canvas, { width, height: height + dotSize }]} pointerEvents="none">
-              <DotCells cells={cells} dotSize={dotSize} colors={getRoleColors({ palette, disabled: false, active })} offsetY={offsetY} />
+              <DotCells cells={cells} dotSize={dotSize} colors={getRoleColors({ button: palette.button, disabled: false, active })} offsetY={offsetY} />
             </Canvas>
             <View style={[styles.labelBox, { width, height, top: offsetY }]} pointerEvents="none">
               <Text style={[styles.label, { color: palette.text.primary }]}>{label}</Text>

@@ -2,7 +2,7 @@ import { type Palette } from '@/shared/lib';
 import { type DotRole } from '@/shared/ui/dot-shape';
 
 type ButtonState = {
-  palette: Palette;
+  button: Palette['button'];
   disabled: boolean;
   active: boolean;
 };
@@ -12,7 +12,7 @@ type ButtonState = {
  *
  * @returns 역할별 색
  */
-export const getRoleColors = ({ palette: { button }, disabled, active }: ButtonState): Record<DotRole, string> => {
+export const getRoleColors = ({ button, disabled, active }: ButtonState): Record<DotRole, string> => {
   const colors: Record<DotRole, string> = disabled
     ? { edge: button.disabledEdge, face: button.disabledFace, highlight: button.disabledFace, shadow: button.disabledShadow }
     : { edge: button.edge, face: button.face, highlight: button.highlight, shadow: button.shadow };

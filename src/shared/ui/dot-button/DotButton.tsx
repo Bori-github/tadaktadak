@@ -30,7 +30,7 @@ const DotButtonFace = memo(({ dotSize, icon, disabled, active }: DotButtonFacePr
   return (
     // active 상태의 y 오프셋만큼 캔버스 높이를 늘려 하단 클리핑 방지
     <Canvas style={[styles.canvas, { width: size, height: size + dotSize }]} pointerEvents="none">
-      <DotCells cells={CELLS} dotSize={dotSize} colors={getRoleColors({ palette, disabled, active })} offsetY={offsetY} />
+      <DotCells cells={CELLS} dotSize={dotSize} colors={getRoleColors({ button: palette.button, disabled, active })} offsetY={offsetY} />
       <DotSprite grid={icon} centerX={size / 2} centerY={offsetY + size / 2} dotSize={dotSize} colors={iconColors} />
     </Canvas>
   );
