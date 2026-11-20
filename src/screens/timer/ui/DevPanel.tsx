@@ -29,7 +29,7 @@ export const DevPanel = ({ seconds, speed, isSpeedEnabled, onSelectSpeed }: DevP
       {seconds === null ? null : <RemainingSeconds seconds={seconds} />}
       <View style={styles.row}>
         <SpeedControl speed={speed} enabled={isSpeedEnabled} onSelect={onSelectSpeed} />
-        <Pressable testID="throw-error" style={[styles.errorButton, { backgroundColor: palette.fire.base }]} onPress={() => setHasThrown(true)}>
+        <Pressable testID="throw-error" style={[styles.errorButton, { backgroundColor: palette.particle.end }]} onPress={() => setHasThrown(true)}>
           <Text style={[styles.label, { color: palette.focus.text }]}>에러</Text>
         </Pressable>
       </View>

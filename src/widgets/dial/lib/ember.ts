@@ -37,8 +37,8 @@ export const EMBER_COUNT = 80;
 export const EMBER_GLOW_RADIUS = 3;
 export const EMBER_GLOW_ALPHA = 0.15;
 
-/** 불티 색 `fire` 키, 수명 내림차순. 길이 변경 시 `emberColorIndex` 구간 수정. `DESIGN.md` §9 */
-export const EMBER_COLOR_KEYS = ['core', 'mid', 'base'] as const;
+/** 불티 색 `particle` 키, 수명 내림차순. 길이 변경 시 `emberColorIndex` 구간 수정. `DESIGN.md` §9 */
+export const EMBER_COLOR_KEYS = ['start', 'middle', 'end'] as const;
 
 const LIFE_MS = 2800;
 const LIFE_SPREAD: Spread = { min: 0.75, max: 1.25 };

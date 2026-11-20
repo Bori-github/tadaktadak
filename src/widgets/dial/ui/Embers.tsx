@@ -37,7 +37,7 @@ const drawEmbers = (palette: Palette): SkImage | null => {
   canvas.clear(Skia.Color('transparent'));
 
   for (const [index, key] of EMBER_COLOR_KEYS.entries()) {
-    paint.setColor(Skia.Color(palette.fire[key]));
+    paint.setColor(Skia.Color(palette.particle[key]));
     canvas.drawRect(Skia.XYWHRect(index, 0, 1, 1), paint);
   }
 

@@ -30,8 +30,8 @@ const KNOB_CELLS = [
   { key: 'knob-highlight', column: 2, row: 2, widthInDots: 8, heightInDots: 1, role: 'highlight' },
 ] as const;
 
-const getLayerColors = ({ fire, focus, button }: Palette): Record<'on' | 'off', Record<DotRole, string>> => ({
-  on: { edge: fire.mid, face: focus.thumbCore, highlight: focus.thumbCore, shadow: focus.thumbCore },
+const getLayerColors = ({ toggle, focus, button }: Palette): Record<'on' | 'off', Record<DotRole, string>> => ({
+  on: { edge: toggle.on, face: focus.thumbCore, highlight: focus.thumbCore, shadow: focus.thumbCore },
   off: getRoleColors({ button, disabled: false, active: false }),
 });
 
@@ -116,7 +116,7 @@ export const DotToggle = memo(({ dotSize, value, onValueChange, onPressIn, style
         ))}
         <Group antiAlias={false}>
           {Array.from({ length: EMBER_COUNT }, (_, index) => (
-            <ToggleEmber key={index} index={index} dotSize={dotSize} emberColors={palette.fire} isTurningOn={isTurningOn} elapsedMs={elapsedMs} />
+            <ToggleEmber key={index} index={index} dotSize={dotSize} emberColors={palette.particle} isTurningOn={isTurningOn} elapsedMs={elapsedMs} />
           ))}
         </Group>
       </Canvas>

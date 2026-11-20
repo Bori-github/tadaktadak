@@ -1,10 +1,11 @@
 import { Easing } from 'react-native-reanimated';
 
+import { type Palette } from '@/shared/lib';
+
 /** 토글 왼쪽 위 기준 불티 위치 `[column, row]` (dot). 음수 row는 토글 위쪽 */
 type EmberPoint = readonly [number, number];
 
-/** 팔레트 `fire`에서 불티 색으로 사용하는 키 */
-export type EmberColor = 'core' | 'mid' | 'base';
+export type EmberColor = keyof Palette['particle'];
 
 type EmberSegment = {
   durationMs: number;
@@ -71,16 +72,16 @@ const OFF_END: readonly EmberPoint[] = [
 
 /** 켜짐 전환 구간. 첫 구간 시간 = 손잡이 이동 시간 */
 export const TURN_ON: readonly EmberSegment[] = [
-  { durationMs: 150, easing: EASE_OUT, from: ON_START, to: ON_START, color: 'core' },
+  { durationMs: 150, easing: EASE_OUT, from: ON_START, to: ON_START, color: 'start' },
   // 피그마 ease-out·ease-in 연결은 구간 경계 속도가 0이라 불티가 정지해 두 구간 모두 linear 적용
-  { durationMs: 300, easing: Easing.linear, from: ON_START, to: ON_MIDDLE, color: 'mid' },
-  { durationMs: 400, easing: Easing.linear, from: ON_MIDDLE, to: ON_END, color: 'base' },
+  { durationMs: 300, easing: Easing.linear, from: ON_START, to: ON_MIDDLE, color: 'middle' },
+  { durationMs: 400, easing: Easing.linear, from: ON_MIDDLE, to: ON_END, color: 'end' },
 ];
 
 /** 꺼짐 전환 구간. 첫 구간 시간 = 손잡이 이동 시간 */
 export const TURN_OFF: readonly EmberSegment[] = [
-  { durationMs: 150, easing: EASE_OUT, from: OFF_START, to: OFF_START, color: 'base' },
-  { durationMs: 300, easing: EASE_OUT, from: OFF_START, to: OFF_END, color: 'base' },
+  { durationMs: 150, easing: EASE_OUT, from: OFF_START, to: OFF_START, color: 'end' },
+  { durationMs: 300, easing: EASE_OUT, from: OFF_START, to: OFF_END, color: 'end' },
 ];
 
 /**
