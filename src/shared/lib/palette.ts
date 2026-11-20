@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import { DEFAULT_PALETTE } from './defaultPalette';
+import { DEFAULT_PALETTE } from '@/shared/constants';
 
 type WidenColors<TColors> = { readonly [TKey in keyof TColors]: TColors[TKey] extends string ? string : WidenColors<TColors[TKey]> };
 
