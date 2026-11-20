@@ -17,6 +17,7 @@ import {
   BONFIRE_HOT_A_9,
   BONFIRE_HOT_B_7,
   BONFIRE_HOT_B_9,
+  CAMPFIRE_SPRITE_COLORS,
   LOG_COLD,
   LOG_HOT_A,
   LOG_HOT_B,
@@ -144,7 +145,7 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
   }, [bonfireHeightInDots]);
 
   const packed = useMemo(() => packSprites(grids), [grids]);
-  const image = useMemo(() => drawAtlas(grids, packed, getSpriteColors(palette)), [grids, packed, palette]);
+  const image = useMemo(() => drawAtlas(grids, packed, { ...CAMPFIRE_SPRITE_COLORS, ...getSpriteColors(palette) }), [grids, packed, palette]);
   const bloomImage = useMemo(() => drawBloom(bloomGradient), [bloomGradient]);
 
   // 스프라이트 사각형과 좌표는 시계판 크기로만 정해지므로 미리 만들어 두고 고르기만 함

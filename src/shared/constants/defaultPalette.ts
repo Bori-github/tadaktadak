@@ -3,16 +3,6 @@ export const DEFAULT_PALETTE = {
 
   glow: '#ff9d2e',
 
-  fire: {
-    log: '#8a6238',
-    logShade: '#4a3220',
-    core: '#fff2a8',
-    mid: '#ffb43c',
-    base: '#e04a2b',
-    igniteBright: '#ffd94a',
-    igniteMid: '#ff9d2e',
-  },
-
   focus: {
     arc: '#6a5b9c',
     text: '#f4ead6',

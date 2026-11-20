@@ -1,18 +1,22 @@
 import { type Palette } from '@/shared/lib';
 
+/** 모닥불 스프라이트 글자별 색. 피그마 `fire/*` */
+export const CAMPFIRE_SPRITE_COLORS: Record<string, string> = {
+  f: '#ffd94a',
+  F: '#ff9d2e',
+  y: '#fff2a8',
+  o: '#ffb43c',
+  r: '#e04a2b',
+  W: '#8a6238',
+  D: '#4a3220',
+};
+
 /**
- * 격자 글자와 색. 표에 없는 글자(`.`)는 그리지 않는다
+ * 공통 팔레트 기반 스프라이트 글자별 색(손잡이, 기준 표식). 미정의 글자(`.`)는 렌더링 제외
  *
  * @returns 글자별 색
  */
-export const getSpriteColors = ({ fire, focus, rest }: Palette): Record<string, string | undefined> => ({
-  f: fire.igniteBright,
-  F: fire.igniteMid,
-  y: fire.core,
-  o: fire.mid,
-  r: fire.base,
-  W: fire.log,
-  D: fire.logShade,
+export const getSpriteColors = ({ focus, rest }: Palette): Record<string, string | undefined> => ({
   h: focus.thumbArm,
   H: focus.thumbCore,
   k: rest.thumbArm,
