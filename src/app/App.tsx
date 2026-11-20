@@ -17,7 +17,8 @@ import { useAdvertisementInitialization } from '@/entities/advertisement';
 import { restoreAmbientSoundEnabled, useAmbientSoundPlayback } from '@/entities/ambient-sound';
 import { initLocalization, restoreLanguage } from '@/entities/language';
 import { canVibrate, prepareVibration, restoreVibrationEnabled, TAP_PATTERN } from '@/entities/vibration';
-import { type RootStackParamList, SplashVisibleContext, usePalette } from '@/shared/lib';
+import { DEFAULT_PALETTE } from '@/shared/constants';
+import { PaletteContext, type RootStackParamList, SplashVisibleContext } from '@/shared/lib';
 
 prepareVibration(TAP_PATTERN);
 initLocalization();
@@ -34,7 +35,6 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export const App = (): JSX.Element => {
   const [isSplashVisible, setIsSplashVisible] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const palette = usePalette();
 
   useAmbientSoundPlayback({ canPlay: !isSplashVisible && !hasError });
 
@@ -45,16 +45,20 @@ export const App = (): JSX.Element => {
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <StatusBar style="light" />
-        <Sentry.ErrorBoundary fallback={<RootErrorScreen />} onError={() => setHasError(true)}>
-          <SplashVisibleContext.Provider value={isSplashVisible}>
-            <NavigationContainer>
-              <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.canvas } }}>
-                <Stack.Screen name="timer" component={TimerScreen} />
-                <Stack.Screen name="settings" component={SettingsScreen} options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
-              </Stack.Navigator>
-            </NavigationContainer>
-          </SplashVisibleContext.Provider>
-        </Sentry.ErrorBoundary>
+        {/* 참조가 바뀌면 시계판 텍스처를 다시 생성하므로 상수 객체 전달 */}
+        <PaletteContext.Provider value={DEFAULT_PALETTE}>
+          <Sentry.ErrorBoundary fallback={<RootErrorScreen />} onError={() => setHasError(true)}>
+            <SplashVisibleContext.Provider value={isSplashVisible}>
+              <NavigationContainer>
+                {/* `App`은 Provider 바깥이라 `DEFAULT_PALETTE` 직접 사용 */}
+                <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: DEFAULT_PALETTE.canvas } }}>
+                  <Stack.Screen name="timer" component={TimerScreen} />
+                  <Stack.Screen name="settings" component={SettingsScreen} options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
+                </Stack.Navigator>
+              </NavigationContainer>
+            </SplashVisibleContext.Provider>
+          </Sentry.ErrorBoundary>
+        </PaletteContext.Provider>
         {isSplashVisible ? <Splash onHidden={() => setIsSplashVisible(false)} /> : null}
       </SafeAreaProvider>
     </GestureHandlerRootView>
