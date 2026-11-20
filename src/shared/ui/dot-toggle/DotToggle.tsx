@@ -5,6 +5,7 @@ import { Easing, useDerivedValue, useSharedValue, withTiming, type SharedValue }
 
 import { usePalette, type Palette } from '@/shared/lib';
 
+import { getRoleColors } from '@/shared/ui/dot-button';
 import { DotCells, type DotRole } from '@/shared/ui/dot-shape';
 
 import { EASE_OUT, EMBER_RISE_IN_DOTS, emberAt, totalDurationMs, TURN_OFF, TURN_ON, type EmberColor } from './embers';
@@ -31,7 +32,7 @@ const KNOB_CELLS = [
 
 const getLayerColors = ({ fire, focus, button }: Palette): Record<'on' | 'off', Record<DotRole, string>> => ({
   on: { edge: fire.mid, face: focus.thumbCore, highlight: focus.thumbCore, shadow: focus.thumbCore },
-  off: { edge: button.edge, face: button.face, highlight: button.highlight, shadow: button.shadow },
+  off: getRoleColors({ button, disabled: false, active: false }),
 });
 
 type ToggleEmberProps = {
