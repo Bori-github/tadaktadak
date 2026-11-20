@@ -4,7 +4,7 @@ import { useDerivedValue, useFrameCallback, useSharedValue } from 'react-native-
 
 import { DOT_SAMPLING, SOFT_SAMPLING } from '../lib/atlas';
 import { getBloomGradient } from '../lib/bloom';
-import { EMBER_COLOR_COUNT, EMBER_COUNT, EMBER_GLOW_ALPHA, EMBER_GLOW_RADIUS, emberAt, emberColorIndex, getEmberColors, spawnEmbers, type Ember } from '../lib/ember';
+import { EMBER_COLOR_KEYS, EMBER_COUNT, EMBER_GLOW_ALPHA, EMBER_GLOW_RADIUS, emberAt, emberColorIndex, spawnEmbers, type Ember } from '../lib/ember';
 import { DOT_SIZE } from '@/shared/constants';
 import { type Palette } from '@/shared/lib';
 
@@ -21,14 +21,14 @@ type EmbersProps = {
 /** 잔광 텍스처 반지름 (px) */
 const GLOW_TEXTURE_RADIUS = 8;
 
-const GLOW_SPRITE = Skia.XYWHRect(EMBER_COLOR_COUNT, 0, GLOW_TEXTURE_RADIUS * 2, GLOW_TEXTURE_RADIUS * 2);
+const GLOW_SPRITE = Skia.XYWHRect(EMBER_COLOR_KEYS.length, 0, GLOW_TEXTURE_RADIUS * 2, GLOW_TEXTURE_RADIUS * 2);
 
 /** 시작 시각이 비었다는 표식. 첫 프레임에서 기기 가동 시간으로 채우고, 완료마다 되돌림 */
 const NOT_STARTED = -1;
 
 /** 불티 색마다 도트 하나와 잔광 한 장을 담은 아틀라스 */
 const drawEmbers = (palette: Palette): SkImage | null => {
-  const surface = Skia.Surface.Make(EMBER_COLOR_COUNT + GLOW_TEXTURE_RADIUS * 2, GLOW_TEXTURE_RADIUS * 2);
+  const surface = Skia.Surface.Make(EMBER_COLOR_KEYS.length + GLOW_TEXTURE_RADIUS * 2, GLOW_TEXTURE_RADIUS * 2);
   if (!surface) return null;
 
   const canvas = surface.getCanvas();
@@ -36,8 +36,8 @@ const drawEmbers = (palette: Palette): SkImage | null => {
 
   canvas.clear(Skia.Color('transparent'));
 
-  for (const [index, color] of getEmberColors(palette).entries()) {
-    paint.setColor(Skia.Color(color));
+  for (const [index, key] of EMBER_COLOR_KEYS.entries()) {
+    paint.setColor(Skia.Color(palette.fire[key]));
     canvas.drawRect(Skia.XYWHRect(index, 0, 1, 1), paint);
   }
 
