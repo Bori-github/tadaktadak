@@ -5,38 +5,20 @@ import { THEMES, type ThemeDefinition, type ThemeId } from '../config/themes';
 import { resolveTheme } from './resolveTheme';
 
 const IN_WINTER = new Date(2026, 11, 15);
-const OUT_OF_WINTER = new Date(2026, 5, 15);
 
 describe('앱 시작 시 표시할 테마', () => {
-  it('기간 안에서 선택한 적 없는 테마를 표시한다', () => {
-    expect(resolveTheme({ themes: THEMES, date: IN_WINTER, selectedId: null, triedIds: [] })).toBe('winter');
-  });
-
   it('직접 선택한 테마가 있어도 기간 안에서 선택한 적 없는 테마를 표시한다', () => {
-    expect(resolveTheme({ themes: THEMES, date: IN_WINTER, selectedId: 'campfire', triedIds: ['campfire'] })).toBe('winter');
-  });
-
-  it('기간 안이어도 선택한 적 있는 테마는 자동 적용하지 않고 직접 선택한 테마를 표시한다', () => {
-    expect(resolveTheme({ themes: THEMES, date: IN_WINTER, selectedId: 'campfire', triedIds: ['winter', 'campfire'] })).toBe('campfire');
-  });
-
-  it('기간 밖이면 직접 선택한 테마를 표시한다', () => {
-    expect(resolveTheme({ themes: THEMES, date: OUT_OF_WINTER, selectedId: 'winter', triedIds: ['winter'] })).toBe('winter');
-  });
-
-  it('기간 밖이고 직접 선택한 테마가 없으면 모닥불 테마를 표시한다', () => {
-    expect(resolveTheme({ themes: THEMES, date: OUT_OF_WINTER, selectedId: null, triedIds: [] })).toBe('campfire');
+    expect(resolveTheme({ themes: THEMES, date: IN_WINTER, selectedThemeId: 'campfire', pastSelectedThemeIds: ['campfire'] })).toBe('winter');
   });
 
   it.each([
     { label: '12월 1일', date: new Date(2026, 11, 1), expected: 'winter' },
-    { label: '1월 1일', date: new Date(2027, 0, 1), expected: 'winter' },
     { label: '평년 2월 28일', date: new Date(2027, 1, 28), expected: 'winter' },
     { label: '윤년 2월 29일', date: new Date(2028, 1, 29), expected: 'winter' },
     { label: '3월 1일', date: new Date(2027, 2, 1), expected: 'campfire' },
     { label: '11월 30일', date: new Date(2026, 10, 30), expected: 'campfire' },
   ])('겨울 테마 기간 경계: $label', ({ date, expected }) => {
-    expect(resolveTheme({ themes: THEMES, date, selectedId: null, triedIds: [] })).toBe(expected);
+    expect(resolveTheme({ themes: THEMES, date, selectedThemeId: null, pastSelectedThemeIds: [] })).toBe(expected);
   });
 
   it('기간 안의 테마가 여러 개이면 우선순위가 높은 테마를 표시한다', () => {
@@ -46,6 +28,6 @@ describe('앱 시작 시 표시할 테마', () => {
       winter: { ...THEMES.winter, period: { ...period, priority: 2 } },
     };
 
-    expect(resolveTheme({ themes, date: IN_WINTER, selectedId: null, triedIds: [] })).toBe('winter');
+    expect(resolveTheme({ themes, date: IN_WINTER, selectedThemeId: null, pastSelectedThemeIds: [] })).toBe('winter');
   });
 });

@@ -13,7 +13,7 @@ interface MonthDay {
 
 export interface Period {
   start: MonthDay;
-  /** 시작보다 앞선 월일이면 다음 해의 월일 */
+  /** `start`보다 이른 월일이면 다음 해 날짜 */
   end: MonthDay;
   /** 기간이 겹치면 값이 큰 테마 표시 */
   priority: number;
@@ -21,7 +21,7 @@ export interface Period {
 
 export interface ThemeDefinition {
   palette: Palette;
-  /** 선택한 적 없으면 자동 적용하는 기간. 없으면 자동 적용하지 않음 */
+  /** 자동 적용 기간. 미지정 시 자동 적용 제외 */
   period?: Period;
 }
 
@@ -33,7 +33,7 @@ export const THEMES: Record<ThemeId, ThemeDefinition> = {
   },
   winter: {
     palette: DEFAULT_PALETTE,
-    // 2월 29일까지로 두어 윤년 포함
+    // 종료일 2월 29일로 윤년 포함
     period: { start: { month: 12, day: 1 }, end: { month: 2, day: 29 }, priority: 1 },
   },
 };

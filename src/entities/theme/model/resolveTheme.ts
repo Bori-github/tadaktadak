@@ -11,17 +11,15 @@ const isInPeriod = ({ start, end }: Period, date: Date): boolean => {
 
   if (startKey <= endKey) return startKey <= today && today <= endKey;
 
-  // 해를 넘기는 기간
+  // 연도를 넘는 기간
   return startKey <= today || today <= endKey;
 };
 
 interface ResolveThemeParams {
   themes: Record<ThemeId, ThemeDefinition>;
-  /** 기기 날짜 */
   date: Date;
-  selectedId: ThemeId | null;
-  /** 선택한 적 있는 테마 */
-  triedIds: readonly ThemeId[];
+  selectedThemeId: ThemeId | null;
+  pastSelectedThemeIds: readonly ThemeId[];
 }
 
 /**
@@ -29,17 +27,17 @@ interface ResolveThemeParams {
  *
  * @param params.themes - 테마 정의
  * @param params.date - 기기 날짜
- * @param params.selectedId - 직접 선택한 테마. 없으면 `null`
- * @param params.triedIds - 선택한 적 있는 테마
- * @returns 기간 안에서 선택한 적 없는 테마 중 우선순위가 가장 높은 테마. 없으면 직접 선택한 테마, 그것도 없으면 `DEFAULT_THEME_ID`
+ * @param params.selectedThemeId - 사용자가 직접 선택한 테마. 미선택 시 `null`
+ * @param params.pastSelectedThemeIds - 선택 이력
+ * @returns 기간 안 미선택 테마 중 최고 우선순위 테마. 없으면 `selectedThemeId`, `null`이면 `DEFAULT_THEME_ID`
  */
-export const resolveTheme = ({ themes, date, selectedId, triedIds }: ResolveThemeParams): ThemeId => {
-  const autoApplied = THEME_IDS.filter((id) => !triedIds.includes(id))
+export const resolveTheme = ({ themes, date, selectedThemeId, pastSelectedThemeIds }: ResolveThemeParams): ThemeId => {
+  const autoApplied = THEME_IDS.filter((id) => !pastSelectedThemeIds.includes(id))
     .flatMap((id) => {
       const { period } = themes[id];
       return period !== undefined && isInPeriod(period, date) ? [{ id, priority: period.priority }] : [];
     })
     .sort((a, b) => b.priority - a.priority)[0];
 
-  return autoApplied?.id ?? selectedId ?? DEFAULT_THEME_ID;
+  return autoApplied?.id ?? selectedThemeId ?? DEFAULT_THEME_ID;
 };
