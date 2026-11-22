@@ -10,6 +10,7 @@ import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Color
 import androidx.core.app.AlarmManagerCompat
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
@@ -25,15 +26,6 @@ private const val NOTIFICATION_ID = 1
 private const val SECOND_IN_MS = 1_000.0
 private const val MINUTE_IN_MS = 60_000.0
 
-// `src/shared/constants/defaultPalette.ts`의 `focus.arc`
-private const val FOCUS_COLOR = 0xFF6A5B9C.toInt()
-
-// `rest.arc`는 흰 아이콘과 대비가 4.5:1 미만이라 OS가 어둡게 바꿔 칠해서, 대비가 넘는 `rest.thumbArm`을 씀
-private const val REST_COLOR = 0xFF2F7B85.toInt()
-
-// `rest.arc`
-private const val REST_PROGRESS_COLOR = 0xFF3F9AA6.toInt()
-
 private const val CONTENT_PREFERENCES_NAME = "live-activity-content"
 private const val PROGRESS_STEP_RATIO = 0.01
 
@@ -47,7 +39,14 @@ private const val STOP_REQUEST_CODE = 1
 private const val SPRITE_ROWS = 9
 private const val LARGE_ICON_HEIGHT_RATIO = 0.6
 
-internal data class TimerContent(val mode: String, val progressStartsAt: Double, val endsAt: Double, val language: String?)
+internal data class TimerContent(
+  val mode: String,
+  val progressStartsAt: Double,
+  val endsAt: Double,
+  val language: String?,
+  val accent: String,
+  val arc: String
+)
 
 // `ProgressUpdateReceiver`(main)와 Expo `AsyncFunction` 스레드의 동시 실행 방지로 public 함수는 `@Synchronized`
 internal object TimerNotification {
@@ -78,7 +77,7 @@ internal object TimerNotification {
 
     val notification = NotificationCompat.Builder(context, CHANNEL_ID)
       .setSmallIcon(if (isFocus) R.drawable.ic_notification_focus else R.drawable.ic_notification_rest)
-      .setColor(if (isFocus) FOCUS_COLOR else REST_COLOR)
+      .setColor(Color.parseColor(content.accent))
       .setLargeIcon(largeIcon(context, if (isFocus) R.drawable.bonfire_hot_still_9 else R.drawable.bonfire_cold_9))
       .setContentTitle(localized.getString(R.string.live_activity_title, minutes))
       .setContentIntent(openAppIntent(context))
@@ -89,7 +88,7 @@ internal object TimerNotification {
       .setWhen(endsAt)
       .setUsesChronometer(true)
       .setChronometerCountDown(true)
-      .setStyle(progressStyle(content, if (isFocus) FOCUS_COLOR else REST_PROGRESS_COLOR))
+      .setStyle(progressStyle(content, Color.parseColor(content.arc)))
       // 끝날 시각에 시스템이 알림을 지움. 앱 프로세스가 없어도 동작
       .setTimeoutAfter((endsAt - System.currentTimeMillis()).coerceAtLeast(0))
       .build()
@@ -151,18 +150,25 @@ internal object TimerNotification {
       putLong("progressStartsAt", content.progressStartsAt.toLong())
       putLong("endsAt", content.endsAt.toLong())
       putString("language", content.language)
+      putString("accent", content.accent)
+      putString("arc", content.arc)
     }
   }
 
   private fun loadContent(context: Context): TimerContent? {
     val preferences = preferences(context)
     val mode = preferences.getString("mode", null) ?: return null
+    // 색 필드 없는 이전 버전 저장값은 진행률 갱신 생략
+    val accent = preferences.getString("accent", null) ?: return null
+    val arc = preferences.getString("arc", null) ?: return null
 
     return TimerContent(
       mode,
       preferences.getLong("progressStartsAt", 0).toDouble(),
       preferences.getLong("endsAt", 0).toDouble(),
-      preferences.getString("language", null)
+      preferences.getString("language", null),
+      accent,
+      arc
     )
   }
 

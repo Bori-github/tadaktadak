@@ -36,6 +36,8 @@ export const activityContent = ({ session, settingMinutes, language, palette, no
       text: palette[session.mode].text,
       arc: palette[session.mode].arc,
       close: palette.text.primary,
+      // 흰 알림 아이콘 대비 확보로 휴식은 `rest.thumbArm` 사용
+      accent: session.mode === 'focus' ? palette.focus.arc : palette.rest.thumbArm,
     },
     // `resumeTimer`가 `startedAt`에 최초 시작 시각을 남겨, 일시정지한 시간을 빼려고 끝날 시각에서 역산
     progressStartsAt: session.endsAt - settingMinutes[session.mode] * MINUTE_IN_MS,

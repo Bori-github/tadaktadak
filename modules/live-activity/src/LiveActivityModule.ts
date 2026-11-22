@@ -9,6 +9,8 @@ export type LiveActivityColors = {
   text: string;
   arc: string;
   close: string;
+  /** Android 알림 아이콘 색 */
+  accent: string;
 };
 
 export type LiveActivityContent = {

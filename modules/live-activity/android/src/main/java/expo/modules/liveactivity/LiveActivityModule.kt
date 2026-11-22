@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Color
 import android.os.Build
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.edit
@@ -19,11 +20,15 @@ private const val STOPPED_ENDS_AT_KEY = "stoppedEndsAt"
 // `plugins/withAndroidShortcuts.js`와 같은 값
 internal const val EXTRA_START_REQUESTED = "expo.modules.liveactivity.START_REQUESTED"
 
-// `src/shared/constants/defaultPalette.ts`의 `canvas`
-private const val CANVAS_COLOR = 0xFF141021.toInt()
+class LiveActivityColorsRecord : Record {
+  @Field val canvas: String = "#000000"
+  @Field val arc: String = "#000000"
+  @Field val accent: String = "#000000"
+}
 
 class LiveActivityContentRecord : Record {
   @Field val mode: String = "focus"
+  @Field val colors: LiveActivityColorsRecord = LiveActivityColorsRecord()
   @Field val progressStartsAt: Double = 0.0
   @Field val endsAt: Double = 0.0
   @Field val language: String? = null
@@ -62,12 +67,15 @@ class LiveActivityModule : Module() {
     }
 
     AsyncFunction("startAsync") { content: LiveActivityContentRecord ->
-      setRecentsScreenshotEnabled(false)
-      TimerNotification.show(context, TimerContent(content.mode, content.progressStartsAt, content.endsAt, content.language))
+      setRecentsScreenshotEnabled(false, Color.parseColor(content.colors.canvas))
+      TimerNotification.show(
+        context,
+        TimerContent(content.mode, content.progressStartsAt, content.endsAt, content.language, content.colors.accent, content.colors.arc)
+      )
     }
 
     AsyncFunction("endAsync") {
-      setRecentsScreenshotEnabled(true)
+      setRecentsScreenshotEnabled(true, null)
       TimerNotification.cancel(context)
     }
 
@@ -110,13 +118,13 @@ class LiveActivityModule : Module() {
   }
 
   // 진행 중 스냅샷은 잠금화면 정지로 앱이 열릴 때 지난 남은 시간을 먼저 보여서, 진행 중에는 배경색 단색으로 대체
-  private fun setRecentsScreenshotEnabled(enabled: Boolean) {
+  private fun setRecentsScreenshotEnabled(enabled: Boolean, canvas: Int?) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
 
     val activity = appContext.currentActivity ?: return
     activity.runOnUiThread {
       // 지정하지 않으면 단색이 테마 기본값 `#FAFAFA`라 어두운 화면 사이에 흰 화면이 끼어서 `canvas`로 지정
-      activity.setTaskDescription(ActivityManager.TaskDescription.Builder().setBackgroundColor(CANVAS_COLOR).build())
+      if (canvas != null) activity.setTaskDescription(ActivityManager.TaskDescription.Builder().setBackgroundColor(canvas).build())
       activity.setRecentsScreenshotEnabled(enabled)
     }
   }
