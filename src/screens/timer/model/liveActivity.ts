@@ -52,7 +52,6 @@ export const useLiveActivity = ({ session, settingMinutes, isSettled, notificati
     settingMinutes,
     isSettled,
     language,
-    // 테마 복원 전에 시작한 Live Activity를 복원된 팔레트 색으로 재시작
     palette,
     // Android 진행 중 알림은 알림 권한이 필요해 권한 변경 시 재호출
     notificationPermission,

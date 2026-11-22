@@ -1,4 +1,4 @@
-import { type JSX, useState } from 'react';
+import { type JSX, useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Sentry from '@sentry/react-native';
@@ -25,7 +25,7 @@ initLocalization();
 restoreLanguage();
 restoreVibrationEnabled();
 restoreAmbientSoundEnabled();
-restoreTheme();
+const themeRestoring = restoreTheme();
 
 Notifications.setNotificationHandler({
   handleNotification: async () => completionNotificationBehavior({ canVibrate: canVibrate(), platform: Platform.OS }),
@@ -36,7 +36,13 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export const App = (): JSX.Element => {
   const [isSplashVisible, setIsSplashVisible] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [isThemeRestored, setIsThemeRestored] = useState(false);
   const { palette } = THEMES[useDisplayedTheme()];
+
+  useEffect(() => {
+    // reject 시 초기값으로 마운트
+    themeRestoring.finally(() => setIsThemeRestored(true));
+  }, []);
 
   useAmbientSoundPlayback({ canPlay: !isSplashVisible && !hasError });
 
@@ -51,12 +57,15 @@ export const App = (): JSX.Element => {
         <PaletteContext.Provider value={palette}>
           <Sentry.ErrorBoundary fallback={<RootErrorScreen />} onError={() => setHasError(true)}>
             <SplashVisibleContext.Provider value={isSplashVisible}>
-              <NavigationContainer>
-                <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.canvas } }}>
-                  <Stack.Screen name="timer" component={TimerScreen} />
-                  <Stack.Screen name="settings" component={SettingsScreen} options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
-                </Stack.Navigator>
-              </NavigationContainer>
+              {/* 복원 전 팔레트 사용 방지로 테마 복원 후 마운트 */}
+              {!isThemeRestored ? null : (
+                <NavigationContainer>
+                  <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.canvas } }}>
+                    <Stack.Screen name="timer" component={TimerScreen} />
+                    <Stack.Screen name="settings" component={SettingsScreen} options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
+                  </Stack.Navigator>
+                </NavigationContainer>
+              )}
             </SplashVisibleContext.Provider>
           </Sentry.ErrorBoundary>
         </PaletteContext.Provider>
