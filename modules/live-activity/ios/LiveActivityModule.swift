@@ -95,8 +95,7 @@ public class LiveActivityModule: Module {
 
       // 같은 값으로 다시 요청하면 잠금화면이 깜빡임
       if let activity = Activity<TimerActivityAttributes>.activities.first,
-         activity.attributes.mode == attributes.mode, activity.attributes.colors == attributes.colors,
-         activity.attributes.language == attributes.language, activity.content.state == state {
+         activity.attributes == attributes, activity.content.state == state {
         return
       }
 

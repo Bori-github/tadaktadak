@@ -4,7 +4,7 @@ import { THEME_IDS, type ThemeId } from '../config/themes';
 
 const THEME_KEY = 'theme';
 
-export interface ThemeSelection {
+interface ThemeSelection {
   /** 사용자가 직접 선택한 테마. 미선택 시 `null` */
   selectedThemeId: ThemeId | null;
   /** 선택 이력. 선택 시점에 자동 적용 중이던 테마 포함 */
