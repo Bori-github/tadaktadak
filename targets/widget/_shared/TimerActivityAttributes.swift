@@ -32,7 +32,8 @@ struct TimerActivityAttributes: ActivityAttributes {
 
     let mode: TimerActivityMode
 
-    let colors: TimerActivityColors
+    /// 이전 버전이 시작한 Activity는 `nil`
+    let colors: TimerActivityColors?
 
     /// 선택한 언어 태그. `nil`이면 위젯이 시스템 언어를 따름
     let language: String?

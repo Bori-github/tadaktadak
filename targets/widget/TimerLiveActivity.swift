@@ -5,7 +5,7 @@ import WidgetKit
 struct TimerLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: TimerActivityAttributes.self) { context in
-            let palette = Palette(context.attributes.colors)
+            let palette = Palette(context.attributes.colors ?? .campfire(context.attributes.mode))
 
             LockScreenView(mode: context.attributes.mode, palette: palette, state: context.state)
                 .environment(\.locale, context.attributes.language.map(Locale.init(identifier:)) ?? .current)
@@ -117,19 +117,22 @@ extension TimerActivityAttributes.ContentState {
     }
 }
 
-// Xcode 미리보기 전용. `src/shared/constants/defaultPalette.ts`의 `DEFAULT_PALETTE` 값 복제
+// `colors` 없는 Activity와 Xcode 미리보기용. `src/shared/constants/defaultPalette.ts`의 `DEFAULT_PALETTE` 값 복제
 extension TimerActivityColors {
-    fileprivate static let previewFocus = Self(canvas: "#141021", appName: "#7a6ea8", text: "#f4ead6", arc: "#6a5b9c", close: "#f4ead6")
-    fileprivate static let previewRest = Self(canvas: "#141021", appName: "#7a6ea8", text: "#8fdbe4", arc: "#3f9aa6", close: "#f4ead6")
+    fileprivate static func campfire(_ mode: TimerActivityMode) -> Self {
+        mode == .focus
+            ? Self(canvas: "#141021", appName: "#7a6ea8", text: "#f4ead6", arc: "#6a5b9c", close: "#f4ead6")
+            : Self(canvas: "#141021", appName: "#7a6ea8", text: "#8fdbe4", arc: "#3f9aa6", close: "#f4ead6")
+    }
 }
 
-#Preview("집중", as: .content, using: TimerActivityAttributes(mode: .focus, colors: .previewFocus, language: nil)) {
+#Preview("집중", as: .content, using: TimerActivityAttributes(mode: .focus, colors: .campfire(.focus), language: nil)) {
     TimerLiveActivity()
 } contentStates: {
     TimerActivityAttributes.ContentState.running(minutes: 25)
 }
 
-#Preview("휴식", as: .content, using: TimerActivityAttributes(mode: .rest, colors: .previewRest, language: nil)) {
+#Preview("휴식", as: .content, using: TimerActivityAttributes(mode: .rest, colors: .campfire(.rest), language: nil)) {
     TimerLiveActivity()
 } contentStates: {
     TimerActivityAttributes.ContentState.running(minutes: 5)
