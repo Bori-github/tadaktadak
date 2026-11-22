@@ -60,7 +60,7 @@ describe('타이머 세션 값에 따라 Live Activity 시작/종료', () => {
 
     await render(session);
 
-    expect(mockStarted).toEqual([{ mode: 'focus', progressStartsAt: session.endsAt - FOCUS_MS, endsAt: session.endsAt, language: 'ko-KR' }]);
+    expect(mockStarted).toEqual([{ mode: 'focus', colors: expect.any(Object), progressStartsAt: session.endsAt - FOCUS_MS, endsAt: session.endsAt, language: 'ko-KR' }]);
   });
 
   it('진행이 아니면 끝낸다', async () => {

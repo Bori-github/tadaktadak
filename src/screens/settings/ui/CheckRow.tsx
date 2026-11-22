@@ -10,7 +10,7 @@ import { usePalette } from '@/shared/lib';
 import { CHECK_ICON } from '@/shared/ui/dot-icon';
 import { DotSprite } from '@/shared/ui/dot-sprite';
 
-type LanguageRowProps = {
+type CheckRowProps = {
   dotSize: number;
   name: string;
   description?: string;
@@ -19,7 +19,7 @@ type LanguageRowProps = {
   testID: string;
 };
 
-export const LanguageRow = ({ dotSize, name, description, checked, onPress, testID }: LanguageRowProps): JSX.Element => {
+export const CheckRow = ({ dotSize, name, description, checked, onPress, testID }: CheckRowProps): JSX.Element => {
   const palette = usePalette();
   const scale = dotSize / DOT_SIZE;
 

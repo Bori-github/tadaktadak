@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-import { LanguageRow } from './LanguageRow';
+import { CheckRow } from './CheckRow';
 
 import { selectLanguage, SUPPORTED_LANGUAGES, translate, useLanguage, useSelectedLanguage, type Language } from '@/entities/language';
 
@@ -18,7 +18,7 @@ export const LanguageList = memo(({ dotSize }: LanguageListProps) => {
   return (
     <>
       {LANGUAGE_OPTIONS.map((option) => (
-        <LanguageRow
+        <CheckRow
           key={option ?? 'system'}
           dotSize={dotSize}
           name={option === null ? translate('language.system', language) : translate('language.name', option)}

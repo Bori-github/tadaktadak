@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Color
 import android.os.Build
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.edit
@@ -19,11 +20,15 @@ private const val STOPPED_ENDS_AT_KEY = "stoppedEndsAt"
 // `plugins/withAndroidShortcuts.js`와 같은 값
 internal const val EXTRA_START_REQUESTED = "expo.modules.liveactivity.START_REQUESTED"
 
-// `src/shared/constants/defaultPalette.ts`의 `canvas`
-private const val CANVAS_COLOR = 0xFF141021.toInt()
+class LiveActivityColorsRecord : Record {
+  @Field val canvas: String = "#000000"
+  @Field val arc: String = "#000000"
+  @Field val accent: String = "#000000"
+}
 
 class LiveActivityContentRecord : Record {
   @Field val mode: String = "focus"
+  @Field val colors: LiveActivityColorsRecord = LiveActivityColorsRecord()
   @Field val progressStartsAt: Double = 0.0
   @Field val endsAt: Double = 0.0
   @Field val language: String? = null
@@ -62,8 +67,12 @@ class LiveActivityModule : Module() {
     }
 
     AsyncFunction("startAsync") { content: LiveActivityContentRecord ->
+      setRecentsBackgroundColor(Color.parseColor(content.colors.canvas))
       setRecentsScreenshotEnabled(false)
-      TimerNotification.show(context, TimerContent(content.mode, content.progressStartsAt, content.endsAt, content.language))
+      TimerNotification.show(
+        context,
+        TimerContent(content.mode, content.progressStartsAt, content.endsAt, content.language, content.colors.accent, content.colors.arc)
+      )
     }
 
     AsyncFunction("endAsync") {
@@ -114,11 +123,15 @@ class LiveActivityModule : Module() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
 
     val activity = appContext.currentActivity ?: return
-    activity.runOnUiThread {
-      // 지정하지 않으면 단색이 테마 기본값 `#FAFAFA`라 어두운 화면 사이에 흰 화면이 끼어서 `canvas`로 지정
-      activity.setTaskDescription(ActivityManager.TaskDescription.Builder().setBackgroundColor(CANVAS_COLOR).build())
-      activity.setRecentsScreenshotEnabled(enabled)
-    }
+    activity.runOnUiThread { activity.setRecentsScreenshotEnabled(enabled) }
+  }
+
+  // 지정하지 않으면 단색이 테마 기본값 `#FAFAFA`라 어두운 화면 사이에 흰 화면이 끼어서 `canvas`로 지정
+  private fun setRecentsBackgroundColor(color: Int) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+
+    val activity = appContext.currentActivity ?: return
+    activity.runOnUiThread { activity.setTaskDescription(ActivityManager.TaskDescription.Builder().setBackgroundColor(color).build()) }
   }
 
   // 같은 Intent 재처리 방지로 extra 제거

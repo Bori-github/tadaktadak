@@ -8,18 +8,20 @@ import { AdvertisementFooter } from './AdvertisementFooter';
 import { LanguageList } from './LanguageList';
 import { MoreList } from './MoreList';
 import { SettingsRow } from './SettingsRow';
+import { ThemeList } from './ThemeList';
 
 import { translate, useLanguage, useSelectedLanguage } from '@/entities/language';
+import { useDisplayedTheme } from '@/entities/theme';
 import { isHapticsSupported, previewVibration, setVibrationEnabled, TOGGLE_PATTERN, useVibrationEnabled } from '@/entities/vibration';
 
 import { DOT_SIZE } from '@/shared/constants';
 import { resolveLayout, getFormFactor, usePalette, type RootStackParamList } from '@/shared/lib';
 
-import { ChevronIcon, LANGUAGE_ICON, MORE_ICON, RectIconShape, VIBRATION_ICON } from '@/shared/ui/dot-icon';
+import { ChevronIcon, LANGUAGE_ICON, MORE_ICON, RectIconShape, THEME_ICON, VIBRATION_ICON } from '@/shared/ui/dot-icon';
 import { DotModalStack, MODAL_CONTENT_WIDTH, type DotModalScreen } from '@/shared/ui/dot-modal';
 import { DotToggle } from '@/shared/ui/dot-toggle';
 
-type SettingsView = 'settings' | 'language' | 'more';
+type SettingsView = 'settings' | 'language' | 'theme' | 'more';
 
 type SettingsScreenProps = NativeStackScreenProps<RootStackParamList, 'settings'>;
 
@@ -39,6 +41,7 @@ export const SettingsScreen = ({ navigation }: SettingsScreenProps): JSX.Element
   });
   const language = useLanguage();
   const selected = useSelectedLanguage();
+  const displayedTheme = useDisplayedTheme();
   const isVibrationEnabled = useVibrationEnabled();
   const palette = usePalette();
   const scale = dotSize / DOT_SIZE;
@@ -55,6 +58,13 @@ export const SettingsScreen = ({ navigation }: SettingsScreenProps): JSX.Element
               <RectIconShape icon={LANGUAGE_ICON} left={0} top={0} dotSize={dotSize} color={palette.icon.default} />
             </Canvas>
             <Text style={[styles.value, valueStyle]}>{selected === null ? translate('language.system', language) : translate('language.name', selected)}</Text>
+            <ChevronIcon dotSize={dotSize} />
+          </SettingsRow>
+          <SettingsRow dotSize={dotSize} testID="settings-theme" onPress={() => open('theme')}>
+            <Canvas style={{ width: iconSize, height: iconSize }}>
+              <RectIconShape icon={THEME_ICON} left={0} top={0} dotSize={dotSize} color={palette.icon.default} />
+            </Canvas>
+            <Text style={[styles.value, valueStyle]}>{translate(`theme.${displayedTheme}`, language)}</Text>
             <ChevronIcon dotSize={dotSize} />
           </SettingsRow>
           {isHapticsSupported() ? (
@@ -84,6 +94,9 @@ export const SettingsScreen = ({ navigation }: SettingsScreenProps): JSX.Element
     },
     language: {
       render: () => <LanguageList dotSize={dotSize} />,
+    },
+    theme: {
+      render: () => <ThemeList dotSize={dotSize} />,
     },
     more: {
       render: () => <MoreList dotSize={dotSize} />,

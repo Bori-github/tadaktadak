@@ -9,7 +9,15 @@ enum TimerActivityMode: String, Codable, Hashable {
     case rest
 }
 
-struct TimerActivityAttributes: ActivityAttributes {
+struct TimerActivityColors: Codable, Hashable {
+    let canvas: String
+    let appName: String
+    let text: String
+    let arc: String
+    let close: String
+}
+
+struct TimerActivityAttributes: ActivityAttributes, Hashable {
     struct ContentState: Codable, Hashable {
         /// (endsAt - 타이머 시간) = progressStartsAt
         var progressStartsAt: Date
@@ -23,6 +31,9 @@ struct TimerActivityAttributes: ActivityAttributes {
     }
 
     let mode: TimerActivityMode
+
+    /// 이전 버전이 시작한 Activity는 `nil`
+    let colors: TimerActivityColors?
 
     /// 선택한 언어 태그. `nil`이면 위젯이 시스템 언어를 따름
     let language: String?
