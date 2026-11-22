@@ -5,10 +5,12 @@ import WidgetKit
 struct TimerLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: TimerActivityAttributes.self) { context in
-            LockScreenView(mode: context.attributes.mode, state: context.state)
+            let palette = Palette(context.attributes.colors)
+
+            LockScreenView(mode: context.attributes.mode, palette: palette, state: context.state)
                 .environment(\.locale, context.attributes.language.map(Locale.init(identifier:)) ?? .current)
-                .activityBackgroundTint(Palette.canvas)
-                .activitySystemActionForegroundColor(Palette.text(context.attributes.mode))
+                .activityBackgroundTint(palette.canvas)
+                .activitySystemActionForegroundColor(palette.text)
         } dynamicIsland: { _ in
             // 시작 직후 `end`로 종료 상태가 되어 Dynamic Island에 표시되지 않음. `ActivityConfiguration`이 `dynamicIsland`를 요구해 빈 뷰로 채움
             DynamicIsland {
@@ -29,26 +31,27 @@ struct TimerLiveActivity: Widget {
 }
 
 private struct RemainingTimeText: View {
-    let mode: TimerActivityMode
+    let palette: Palette
     let state: TimerActivityAttributes.ContentState
 
     var body: some View {
         Text(timerInterval: state.progressStartsAt...state.endsAt, countsDown: true)
             .monospacedDigit()
-            .foregroundStyle(Palette.text(mode))
+            .foregroundStyle(palette.text)
     }
 }
 
 /// Live Activity · 잠금화면 프레임 배치
 private struct LockScreenView: View {
     let mode: TimerActivityMode
+    let palette: Palette
     let state: TimerActivityAttributes.ContentState
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Tadak Tadak")
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(Palette.appName)
+                .foregroundStyle(palette.appName)
 
             HStack(spacing: 20) {
                 Button(intent: StopTimerIntent()) {
@@ -57,7 +60,7 @@ private struct LockScreenView: View {
                 }
                 .buttonStyle(.plain)
 
-                RemainingTimeText(mode: mode, state: state)
+                RemainingTimeText(palette: palette, state: state)
                     .font(.system(size: 34, weight: .medium))
             }
             .padding(.top, 11)
@@ -69,7 +72,7 @@ private struct LockScreenView: View {
                     EmptyView()
                 }
                 .progressViewStyle(.linear)
-                .tint(Palette.arc(mode))
+                .tint(palette.arc)
 
                 Image(mode == .focus ? "bonfire-hot-still-9" : "bonfire-cold-9")
             }
@@ -79,7 +82,7 @@ private struct LockScreenView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .overlay(alignment: .topTrailing) {
             Button(intent: DismissLiveActivityIntent()) {
-                CloseMark()
+                CloseMark(palette: palette)
             }
             .buttonStyle(.plain)
             .padding(.top, 7)
@@ -90,14 +93,16 @@ private struct LockScreenView: View {
 
 /// 잠금화면 닫기 버튼
 private struct CloseMark: View {
+    let palette: Palette
+
     var body: some View {
         ZStack {
             Circle()
-                .fill(Palette.closeCircle)
+                .fill(palette.closeCircle)
 
             ForEach([45.0, -45.0], id: \.self) { degrees in
                 RoundedRectangle(cornerRadius: 0.75)
-                    .fill(Palette.closeMark)
+                    .fill(palette.closeMark)
                     .frame(width: 10, height: 1.5)
                     .rotationEffect(.degrees(degrees))
             }
@@ -112,13 +117,19 @@ extension TimerActivityAttributes.ContentState {
     }
 }
 
-#Preview("집중", as: .content, using: TimerActivityAttributes(mode: .focus, language: nil)) {
+// Xcode 미리보기 전용. `src/shared/constants/defaultPalette.ts`의 `DEFAULT_PALETTE` 값 복제
+extension TimerActivityColors {
+    fileprivate static let previewFocus = Self(canvas: "#141021", appName: "#7a6ea8", text: "#f4ead6", arc: "#6a5b9c", close: "#f4ead6")
+    fileprivate static let previewRest = Self(canvas: "#141021", appName: "#7a6ea8", text: "#8fdbe4", arc: "#3f9aa6", close: "#f4ead6")
+}
+
+#Preview("집중", as: .content, using: TimerActivityAttributes(mode: .focus, colors: .previewFocus, language: nil)) {
     TimerLiveActivity()
 } contentStates: {
     TimerActivityAttributes.ContentState.running(minutes: 25)
 }
 
-#Preview("휴식", as: .content, using: TimerActivityAttributes(mode: .rest, language: nil)) {
+#Preview("휴식", as: .content, using: TimerActivityAttributes(mode: .rest, colors: .previewRest, language: nil)) {
     TimerLiveActivity()
 } contentStates: {
     TimerActivityAttributes.ContentState.running(minutes: 5)

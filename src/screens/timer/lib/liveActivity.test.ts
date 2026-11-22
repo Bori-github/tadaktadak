@@ -3,6 +3,7 @@ import { describe, expect, it } from '@jest/globals';
 import { activityContent } from './liveActivity';
 
 import { MINUTE_IN_MS, NOW, type TimerMode, type TimerSession } from '@/entities/timer';
+import { DEFAULT_PALETTE } from '@/shared/constants';
 
 const SETTING_MINUTES: Record<TimerMode, number> = { focus: 25, rest: 5 };
 
@@ -16,7 +17,7 @@ const NOT_RUNNING: { situation: string; session: TimerSession }[] = [
   { situation: '완료', session: { phase: 'completed', mode: 'focus', completedAt: NOW } },
 ];
 
-const contentAt = (session: TimerSession, now: number) => activityContent({ session, settingMinutes: SETTING_MINUTES, language: 'ko-KR', now });
+const contentAt = (session: TimerSession, now: number) => activityContent({ session, settingMinutes: SETTING_MINUTES, language: 'ko-KR', palette: DEFAULT_PALETTE, now });
 
 describe('잠금화면에 표시할 내용', () => {
   it('일시정지했다 재개해도 진행 막대가 타이머 시간만큼만 찬다', () => {
