@@ -2,42 +2,23 @@ import { Atlas, Circle, Group, RadialGradient, Skia, TileMode, vec, type SkColor
 import { memo, useEffect, useMemo } from 'react';
 import { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 
+import { DIAL_ITEM_STYLES } from '../config/items';
 import { DOT_SAMPLING, SOFT_SAMPLING, packSprites, type PackedSprites } from '../lib/atlas';
 import { TICK_NUMBERS } from '../config/ticks';
 import { BLOOM_ALPHA, BLOOM_RADIUS, CENTER_BLOOM_ALPHA, CENTER_BLOOM_RATIO, bloomRadius, getBloomGradient } from '../lib/bloom';
 import { pointOnDial } from '../lib/geometry';
 import { useFlickerStep } from '../model/flicker';
+import { useDisplayedTheme } from '@/entities/theme';
 import { ignitionProgress } from '@/entities/timer';
-import { type BonfireHeightInDots } from '@/shared/constants';
+import { DOT_SIZE, type BonfireHeightInDots } from '@/shared/constants';
 import { topLeftOnGrid, type Palette } from '@/shared/lib';
-import {
-  BONFIRE_COLD_7,
-  BONFIRE_COLD_9,
-  BONFIRE_HOT_A_7,
-  BONFIRE_HOT_A_9,
-  BONFIRE_HOT_B_7,
-  BONFIRE_HOT_B_9,
-  CAMPFIRE_SPRITE_COLORS,
-  LOG_COLD,
-  LOG_HOT_A,
-  LOG_HOT_B,
-  MARKER,
-  getSpriteColors,
-} from '@/shared/ui/dot-sprite';
+import { MARKER, getSpriteColors } from '@/shared/ui/dot-sprite';
 
-const BONFIRE_SPRITES: Record<BonfireHeightInDots, { cold: string[]; hotA: string[]; hotB: string[] }> = {
-  7: { cold: BONFIRE_COLD_7, hotA: BONFIRE_HOT_A_7, hotB: BONFIRE_HOT_B_7 },
-  9: { cold: BONFIRE_COLD_9, hotA: BONFIRE_HOT_A_9, hotB: BONFIRE_HOT_B_9 },
-};
-
-/** 이미지에 담은 순서 */
+/** 아틀라스 내 스프라이트 인덱스. `FIRST_FRAME`부터 1분 눈금, 5분 눈금 `frames` 순 */
 const LOG = 0;
 const BONFIRE = 1;
 const START_MARKER = 2;
-const LOG_A = 3;
-const LOG_B = 4;
-const BONFIRE_A = 5;
-const BONFIRE_B = 6;
+const FIRST_FRAME = 3;
 
 type DialItemsProps = {
   centerX: number;
@@ -138,14 +119,17 @@ const drawBloom = (gradient: SkColor[]): SkImage | null => {
 };
 
 export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeightInDots, remainingMinutes, settingMinutes, isPaused, isReady, palette }: DialItemsProps) => {
-  const bloomGradient = useMemo(() => getBloomGradient(palette.glow), [palette]);
+  // `useSyncExternalStore` 기반이라 Skia `Canvas` 내부에서도 조회 가능
+  const style = DIAL_ITEM_STYLES[useDisplayedTheme()];
+  const centerBloomGradient = useMemo(() => getBloomGradient(palette.glow), [palette]);
+  const bloomGradient = useMemo(() => getBloomGradient(style.bloomColor ?? palette.glow), [style, palette]);
   const grids = useMemo(() => {
-    const bonfire = BONFIRE_SPRITES[bonfireHeightInDots];
-    return [LOG_COLD, bonfire.cold, MARKER, LOG_HOT_A, LOG_HOT_B, bonfire.hotA, bonfire.hotB];
-  }, [bonfireHeightInDots]);
+    const major = style.major[bonfireHeightInDots];
+    return [style.minor.base, major.base, MARKER, ...style.minor.frames, ...major.frames];
+  }, [style, bonfireHeightInDots]);
 
   const packed = useMemo(() => packSprites(grids), [grids]);
-  const image = useMemo(() => drawAtlas(grids, packed, { ...CAMPFIRE_SPRITE_COLORS, ...getSpriteColors(palette) }), [grids, packed, palette]);
+  const image = useMemo(() => drawAtlas(grids, packed, { ...style.colors, ...getSpriteColors(palette) }), [grids, packed, style, palette]);
   const bloomImage = useMemo(() => drawBloom(bloomGradient), [bloomGradient]);
 
   // 스프라이트 사각형과 좌표는 시계판 크기로만 정해지므로 미리 만들어 두고 고르기만 함
@@ -163,23 +147,26 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
       return Skia.RSXform(dotSize, 0, left * dotSize, top * dotSize);
     };
 
+    const minorFrames = style.minor.frames.map((_, index) => spriteOf(FIRST_FRAME + index));
+    const majorFrames = style.major[bonfireHeightInDots].frames.map((_, index) => spriteOf(FIRST_FRAME + minorFrames.length + index));
+
     const base: Placement[] = [];
     const perTick = TICK_NUMBERS.map((tick) => {
       const isMajorTick = tick % 5 === 0;
-      const point = pointOnDial(centerX, centerY, radius, (tick - 0.5) * 6);
+      const offset = style.offsetOf?.(tick) ?? { degrees: 0, distance: 0 };
+      const point = pointOnDial(centerX, centerY, radius + (offset.distance * dotSize) / DOT_SIZE, (tick - 0.5) * 6 + offset.degrees);
       const transform = transformOf(isMajorTick ? BONFIRE : LOG, point.x, point.y);
 
       base.push({ sprite: spriteOf(isMajorTick ? BONFIRE : LOG), transform });
 
-      // 홀짝으로 A와 B를 구분함
-      return { tick, point, transform, hot: [spriteOf(isMajorTick ? BONFIRE_A : LOG_A), spriteOf(isMajorTick ? BONFIRE_B : LOG_B)] };
+      return { tick, point, transform, hot: isMajorTick ? majorFrames : minorFrames };
     });
 
     // 불붙은 모닥불과 한 도트 겹치므로 나중에 그려 덮음. `DESIGN.md` §5 겹침 검산
     const marker = toBatch([{ sprite: spriteOf(START_MARKER), transform: transformOf(START_MARKER, centerX, centerY - radius) }]);
 
     return { base: toBatch(base), marker, perTick };
-  }, [packed, dotSize, centerX, centerY, radius]);
+  }, [packed, style, bonfireHeightInDots, dotSize, centerX, centerY, radius]);
 
   const { baseInSetting, baseOutOfSetting } = useMemo(
     () => ({
@@ -191,7 +178,7 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
 
   const lit = useMemo(() => TICK_NUMBERS.map((tick) => ignitionProgress({ tick, remainingMinutes, settingMinutes })), [remainingMinutes, settingMinutes]);
 
-  const step = useFlickerStep(!isPaused && lit.some((progress) => progress > 0));
+  const step = useFlickerStep(!isPaused && lit.some((progress) => progress > 0), style.frameMs);
 
   const brightness = useSharedValue(1);
 
@@ -217,7 +204,9 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
       const progress = lit[index] ?? 0;
       if (progress === 0) continue;
 
-      const sprite = item.hot[(item.tick + step) % 2] ?? item.hot[0];
+      // `step` 증가 시 프레임이 시계 방향 다음 눈금으로 이동. 프레임 2개면 홀짝 교대
+      const frameCount = item.hot.length;
+      const sprite = item.hot[(((step - item.tick) % frameCount) + frameCount) % frameCount] ?? item.hot[0];
       if (!sprite) continue;
 
       if (progress === 1) burning.push({ sprite, transform: item.transform });
@@ -260,7 +249,7 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
           {isReady ? null : (
             <Group opacity={centerBloom}>
               <Circle cx={centerX} cy={centerY} r={radius * CENTER_BLOOM_RATIO}>
-                <RadialGradient c={vec(centerX, centerY)} r={radius * CENTER_BLOOM_RATIO} colors={bloomGradient} />
+                <RadialGradient c={vec(centerX, centerY)} r={radius * CENTER_BLOOM_RATIO} colors={centerBloomGradient} />
               </Circle>
             </Group>
           )}
@@ -284,7 +273,7 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
       {baseInSetting.sprites.length === 0 ? null : (
         <Atlas image={image} sprites={baseInSetting.sprites} transforms={baseInSetting.transforms} sampling={DOT_SAMPLING} antiAlias={false} />
       )}
-      {baseOutOfSetting.sprites.length === 0 ? null : (
+      {!style.isOutOfSettingVisible || baseOutOfSetting.sprites.length === 0 ? null : (
         <Group opacity={OUT_OF_SETTING_ALPHA}>
           <Atlas image={image} sprites={baseOutOfSetting.sprites} transforms={baseOutOfSetting.transforms} sampling={DOT_SAMPLING} antiAlias={false} />
         </Group>

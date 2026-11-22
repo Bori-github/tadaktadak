@@ -11,6 +11,20 @@ export const CAMPFIRE_SPRITE_COLORS: Record<string, string> = {
   D: '#4a3220',
 };
 
+/** 전구 스프라이트 글자별 색. 피그마 `bulb/*`. 소문자 꺼짐, 대문자 켜짐 */
+export const WINTER_SPRITE_COLORS: Record<string, string> = {
+  g: '#c9a55a',
+  G: '#6e5426',
+  a: '#7a6440',
+  b: '#5e4a2c',
+  d: '#4e3c24',
+  e: '#3a2c1a',
+  A: '#ffffff',
+  B: '#fffae0',
+  D: '#ffeaa6',
+  E: '#ffcf70',
+};
+
 /**
  * 공통 팔레트 기반 스프라이트 글자별 색(손잡이, 기준 표식). 미정의 글자(`.`)는 렌더링 제외
  *
@@ -43,6 +57,19 @@ export const BONFIRE_HOT_B_9 = ['..y....', '.yoyo..', '.yoooy.', 'rooooor', '.rr
 export const BONFIRE_HOT_A_7 = ['.yoooy.', '.roooor', '.rroorr', '..rrr..', '..DDD..', '.DWWWD.', 'DWWWWWD'];
 
 export const BONFIRE_HOT_B_7 = ['.yoooy.', 'rooooor', '.rroorr', '..rrr..', '..DDD..', '.DWWWD.', 'DWWWWWD'];
+
+export const BULB_OFF = ['.g.', 'GgG', 'abd', 'bde', '.e.'];
+
+export const BULB_ON = ['.g.', 'GgG', 'ABD', 'BDE', '.E.'];
+
+/** 켜진 전구의 반사광 소등 프레임 */
+export const BULB_BLINK = ['.g.', 'GgG', 'BBD', 'BDE', '.E.'];
+
+export const BULB_BIG_OFF = ['.ggg.', '.GgG.', '.abd.', 'abbde', 'bbbde', '.bde.', '..e..'];
+
+export const BULB_BIG_ON = ['.ggg.', '.GgG.', '.ABD.', 'ABBDE', 'BBBDE', '.BDE.', '..E..'];
+
+export const BULB_BIG_BLINK = ['.ggg.', '.GgG.', '.BBD.', 'BBBDE', 'BBBDE', '.BDE.', '..E..'];
 
 /** 손잡이. A와 B를 번갈아 그림. 반짝이지 않는 동안은 A. `DESIGN.md` §4 */
 export const SPARK_A = ['...h...', '...h...', '..hHh..', 'hHHHHHh', '..hHh..', '...h...', '...h...'];
