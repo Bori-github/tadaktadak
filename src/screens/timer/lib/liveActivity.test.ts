@@ -3,6 +3,7 @@ import { describe, expect, it } from '@jest/globals';
 import { activityContent } from './liveActivity';
 
 import { MINUTE_IN_MS, NOW, type TimerMode, type TimerSession } from '@/entities/timer';
+import { THEME_IDS, THEMES } from '@/entities/theme';
 import { DEFAULT_PALETTE } from '@/shared/constants';
 
 const SETTING_MINUTES: Record<TimerMode, number> = { focus: 25, rest: 5 };
@@ -47,4 +48,17 @@ describe('잠금화면에 표시할 내용', () => {
   it('끝날 시각이 1밀리초 남았으면 시작한다', () => {
     expect(contentAt(RUNNING, NOW + FOCUS_MS - 1)).not.toBeNull();
   });
+
+  // iOS `Color(hex:)`, Android `Color.parseColor` 공통 지원 형식
+  it.each(THEME_IDS.flatMap((theme) => (['focus', 'rest'] as const).map((mode) => ({ theme, mode }))))(
+    '모든 테마에서 Live Activity 색을 6자리 hex로 전달한다: $theme $mode',
+    ({ theme, mode }) => {
+      const session: TimerSession = { phase: 'running', mode, startedAt: NOW, endsAt: NOW + MINUTE_IN_MS };
+      const content = activityContent({ session, settingMinutes: SETTING_MINUTES, language: 'ko-KR', palette: THEMES[theme].palette, now: NOW });
+
+      Object.values(content?.colors ?? {}).forEach((color) => {
+        expect(color).toMatch(/^#[0-9a-f]{6}$/i);
+      });
+    },
+  );
 });
