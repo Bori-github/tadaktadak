@@ -1,3 +1,4 @@
+import { WINTER_PALETTE } from './winterPalette';
 import { DEFAULT_PALETTE } from '@/shared/constants';
 import { type Palette } from '@/shared/lib';
 
@@ -32,7 +33,7 @@ export const THEMES: Record<ThemeId, ThemeDefinition> = {
     palette: DEFAULT_PALETTE,
   },
   winter: {
-    palette: DEFAULT_PALETTE,
+    palette: WINTER_PALETTE,
     // 종료일 2월 29일로 윤년 포함
     period: { start: { month: 12, day: 1 }, end: { month: 2, day: 29 }, priority: 1 },
   },
