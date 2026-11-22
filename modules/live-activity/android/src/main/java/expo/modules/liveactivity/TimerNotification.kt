@@ -113,7 +113,12 @@ internal object TimerNotification {
   }
 
   @Synchronized
-  fun activeEndsAt(context: Context): Long? = loadContent(context)?.endsAt?.toLong()
+  fun activeEndsAt(context: Context): Long? {
+    val preferences = preferences(context)
+    if (!preferences.contains("mode")) return null
+
+    return preferences.getLong("endsAt", 0)
+  }
 
   @Synchronized
   fun cancel(context: Context) {
