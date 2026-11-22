@@ -16,8 +16,8 @@ import { completionNotificationBehavior, TimerScreen } from '@/screens/timer';
 import { useAdvertisementInitialization } from '@/entities/advertisement';
 import { restoreAmbientSoundEnabled, useAmbientSoundPlayback } from '@/entities/ambient-sound';
 import { initLocalization, restoreLanguage } from '@/entities/language';
+import { restoreTheme, THEMES, useDisplayedTheme } from '@/entities/theme';
 import { canVibrate, prepareVibration, restoreVibrationEnabled, TAP_PATTERN } from '@/entities/vibration';
-import { DEFAULT_PALETTE } from '@/shared/constants';
 import { PaletteContext, type RootStackParamList, SplashVisibleContext } from '@/shared/lib';
 
 prepareVibration(TAP_PATTERN);
@@ -25,6 +25,7 @@ initLocalization();
 restoreLanguage();
 restoreVibrationEnabled();
 restoreAmbientSoundEnabled();
+restoreTheme();
 
 Notifications.setNotificationHandler({
   handleNotification: async () => completionNotificationBehavior({ canVibrate: canVibrate(), platform: Platform.OS }),
@@ -35,6 +36,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export const App = (): JSX.Element => {
   const [isSplashVisible, setIsSplashVisible] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const { palette } = THEMES[useDisplayedTheme()];
 
   useAmbientSoundPlayback({ canPlay: !isSplashVisible && !hasError });
 
@@ -46,12 +48,11 @@ export const App = (): JSX.Element => {
       <SafeAreaProvider>
         <StatusBar style="light" />
         {/* 참조가 바뀌면 시계판 텍스처를 다시 생성하므로 상수 객체 전달 */}
-        <PaletteContext.Provider value={DEFAULT_PALETTE}>
+        <PaletteContext.Provider value={palette}>
           <Sentry.ErrorBoundary fallback={<RootErrorScreen />} onError={() => setHasError(true)}>
             <SplashVisibleContext.Provider value={isSplashVisible}>
               <NavigationContainer>
-                {/* `App`은 Provider 바깥이라 `DEFAULT_PALETTE` 직접 사용 */}
-                <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: DEFAULT_PALETTE.canvas } }}>
+                <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.canvas } }}>
                   <Stack.Screen name="timer" component={TimerScreen} />
                   <Stack.Screen name="settings" component={SettingsScreen} options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
                 </Stack.Navigator>
