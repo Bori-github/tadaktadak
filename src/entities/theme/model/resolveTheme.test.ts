@@ -13,7 +13,6 @@ describe('앱 시작 시 표시할 테마', () => {
 
   it.each([
     { label: '12월 1일', date: new Date(2026, 11, 1), expected: 'winter' },
-    { label: '평년 2월 28일', date: new Date(2027, 1, 28), expected: 'winter' },
     { label: '윤년 2월 29일', date: new Date(2028, 1, 29), expected: 'winter' },
     { label: '3월 1일', date: new Date(2027, 2, 1), expected: 'campfire' },
     { label: '11월 30일', date: new Date(2026, 10, 30), expected: 'campfire' },

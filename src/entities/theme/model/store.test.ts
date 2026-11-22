@@ -37,16 +37,6 @@ describe('표시 중인 테마', () => {
     expect(result.current).toBe('winter');
   });
 
-  it('테마를 선택하면 바로 표시한다', async () => {
-    const { result } = await renderHook(() => useDisplayedTheme());
-
-    await act(async () => {
-      selectTheme('winter');
-    });
-
-    expect(result.current).toBe('winter');
-  });
-
   it('자동 적용 중에 다른 테마를 선택하면 다음 해 기간에도 자동 적용하지 않는다', async () => {
     const { result } = await renderHook(() => useDisplayedTheme());
 

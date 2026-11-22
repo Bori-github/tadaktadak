@@ -21,6 +21,10 @@
     "system": "시스템(기본)",
     "systemDescription": "지원하지 않는 언어는 영어로 표시"
   },
+  "theme": {
+    "campfire": "모닥불(기본)",
+    "winter": "겨울"
+  },
   "more": {
     "appVersion": "버전",
     "privacyPolicy": "개인정보처리방침",

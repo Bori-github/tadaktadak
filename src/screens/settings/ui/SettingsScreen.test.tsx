@@ -2,7 +2,7 @@ import { beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals
 import type * as ReactNative from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, within } from '@testing-library/react-native';
 
 import { SettingsScreen } from './SettingsScreen';
 
@@ -14,6 +14,10 @@ jest.mock('@/shared/ui/dot-toggle', () => {
   const { View } = jest.requireActual<typeof ReactNative>('react-native');
   return { DotToggle: ({ testID }: { testID?: string }) => <View testID={testID} /> };
 });
+
+jest.mock('expo-localization', () => ({
+  useLocales: () => [{ languageCode: 'ko' }],
+}));
 
 let mockSupportsHaptics = true;
 
@@ -105,6 +109,16 @@ describe('설정 화면', () => {
     await fireEvent.press(screen.getByTestId('settings-more'));
 
     expect(screen.queryByTestId('advertisement-footer')).toBeNull();
+  });
+
+  it('테마를 선택하면 설정 화면의 테마 행에 선택한 테마를 표시한다', async () => {
+    await renderSettingsScreen();
+
+    await fireEvent.press(screen.getByTestId('settings-theme'));
+    await fireEvent.press(screen.getByTestId('theme-winter'));
+    await fireEvent.press(screen.getByTestId('modal-back'));
+
+    expect(within(screen.getByTestId('settings-theme')).queryByText('겨울')).not.toBeNull();
   });
 
   it('햅틱 지원 기기면 진동 토글을 렌더링한다', async () => {
