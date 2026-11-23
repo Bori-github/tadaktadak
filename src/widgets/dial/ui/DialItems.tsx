@@ -101,7 +101,7 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
   // `useSyncExternalStore` 기반이라 Skia `Canvas` 내부에서도 조회 가능
   const style = DIAL_ITEM_STYLES[useDisplayedTheme()];
   const centerBloomGradient = useMemo(() => getBloomGradient(palette.glow), [palette]);
-  const bloomGradient = useMemo(() => getBloomGradient(style.bloomColor ?? palette.glow), [style, palette]);
+  const bloomGradient = useMemo(() => (style.bloomColor ? getBloomGradient(style.bloomColor) : centerBloomGradient), [style, centerBloomGradient]);
   const grids = useMemo(() => {
     const major = style.major[bonfireHeightInDots];
     return [style.minor.base, major.base, MARKER, ...style.minor.frames, ...major.frames];

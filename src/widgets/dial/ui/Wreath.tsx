@@ -1,4 +1,4 @@
-import { Atlas, Skia, type SkImage } from '@shopify/react-native-skia';
+import { Atlas, Skia, type SkImage, type SkRect, type SkRSXform } from '@shopify/react-native-skia';
 import { memo, useMemo } from 'react';
 
 import { DIAL_ITEM_STYLES } from '../config/items';
@@ -14,40 +14,36 @@ type WreathProps = {
   dotSize: number;
 };
 
-const drawWreath = (dots: ColoredDot[]): { image: SkImage; left: number; top: number } | null => {
+const drawWreath = (dots: ColoredDot[], dotSize: number): { image: SkImage; sprites: SkRect[]; transforms: SkRSXform[] } | null => {
   if (dots.length === 0) return null;
 
-  const left = Math.min(...dots.map((dot) => dot.x));
-  const top = Math.min(...dots.map((dot) => dot.y));
-  const width = Math.max(...dots.map((dot) => dot.x)) - left + 1;
-  const height = Math.max(...dots.map((dot) => dot.y)) - top + 1;
+  let [left, top, right, bottom] = [Infinity, Infinity, -Infinity, -Infinity];
+  for (const { x, y } of dots) {
+    [left, top, right, bottom] = [Math.min(left, x), Math.min(top, y), Math.max(right, x), Math.max(bottom, y)];
+  }
+
   const image = drawDots(
-    width,
-    height,
+    right - left + 1,
+    bottom - top + 1,
     dots.map((dot) => ({ ...dot, x: dot.x - left, y: dot.y - top })),
   );
+  if (!image) return null;
 
-  return image ? { image, left, top } : null;
+  return {
+    image,
+    sprites: [Skia.XYWHRect(0, 0, image.width(), image.height())],
+    transforms: [Skia.RSXform(dotSize, 0, left * dotSize, top * dotSize)],
+  };
 };
 
 export const Wreath = memo(({ centerX, centerY, radius, dotSize }: WreathProps) => {
   // `useSyncExternalStore` 기반이라 Skia `Canvas` 내부에서도 조회 가능
   const { hasWreath } = DIAL_ITEM_STYLES[useDisplayedTheme()];
-  const drawn = useMemo(() => (hasWreath ? drawWreath(wreathDots({ centerX, centerY, radius, dotSize })) : null), [hasWreath, centerX, centerY, radius, dotSize]);
+  const drawn = useMemo(() => (hasWreath ? drawWreath(wreathDots({ centerX, centerY, radius, dotSize }), dotSize) : null), [hasWreath, centerX, centerY, radius, dotSize]);
 
   if (!drawn) return null;
 
-  const { image, left, top } = drawn;
-
-  return (
-    <Atlas
-      image={image}
-      sprites={[Skia.XYWHRect(0, 0, image.width(), image.height())]}
-      transforms={[Skia.RSXform(dotSize, 0, left * dotSize, top * dotSize)]}
-      sampling={DOT_SAMPLING}
-      antiAlias={false}
-    />
-  );
+  return <Atlas image={drawn.image} sprites={drawn.sprites} transforms={drawn.transforms} sampling={DOT_SAMPLING} antiAlias={false} />;
 });
 
 Wreath.displayName = 'Wreath';

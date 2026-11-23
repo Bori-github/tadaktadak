@@ -74,7 +74,7 @@ export const gridDots = (grid: readonly string[], colors: Record<string, string 
  *
  * @param widthInDots - 이미지 너비 (dot)
  * @param heightInDots - 이미지 높이 (dot)
- * @param dots - 채울 도트. 나머지 투명
+ * @param dots - 채울 도트. 좌표 중복 없음, 나머지 투명
  * @returns 표면 생성 실패 시 `null`
  */
 export const drawDots = (widthInDots: number, heightInDots: number, dots: readonly ColoredDot[]): SkImage | null => {
@@ -87,9 +87,17 @@ export const drawDots = (widthInDots: number, heightInDots: number, dots: readon
   // `Surface.Make` 표면이 초기화되지 않아 이전 내용 노출 방지
   canvas.clear(Skia.Color('transparent'));
 
+  // 색 변환과 `setColor`를 도트마다가 아니라 색마다 1회 호출
+  const dotsByColor = new Map<string, ColoredDot[]>();
   for (const dot of dots) {
-    paint.setColor(Skia.Color(dot.color));
-    canvas.drawRect(Skia.XYWHRect(dot.x, dot.y, 1, 1), paint);
+    const sameColorDots = dotsByColor.get(dot.color);
+    if (sameColorDots) sameColorDots.push(dot);
+    else dotsByColor.set(dot.color, [dot]);
+  }
+
+  for (const [color, sameColorDots] of dotsByColor) {
+    paint.setColor(Skia.Color(color));
+    for (const dot of sameColorDots) canvas.drawRect(Skia.XYWHRect(dot.x, dot.y, 1, 1), paint);
   }
 
   surface.flush();

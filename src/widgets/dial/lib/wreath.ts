@@ -78,7 +78,7 @@ const drawLeaf = ({ degrees, ring, center, origin, ringRadius, put }: LeafInput)
       const v = inside(x, y);
       if (v === null) continue;
 
-      const isRim = [inside(x + 1, y), inside(x - 1, y), inside(x, y + 1), inside(x, y - 1)].includes(null);
+      const isRim = inside(x + 1, y) === null || inside(x - 1, y) === null || inside(x, y + 1) === null || inside(x, y - 1) === null;
       if (isRim) put(x, y, OUTLINE);
       else if (v < -ring.width * 0.15 && shade >= 2) put(x, y, HIGHLIGHT);
       else put(x, y, NEEDLE[v < 0 ? shade : Math.max(0, shade - 1)] ?? NEEDLE[0]);
