@@ -39,6 +39,7 @@ export interface DialItemStyle {
   bloomColor?: string;
   isOutOfSettingVisible: boolean;
   offsetOf?: (tick: number) => BulbOffset;
+  hasWreath: boolean;
 }
 
 const BULB_MAJOR: TickSprites = { base: BULB_BIG_OFF, frames: [BULB_BIG_ON, BULB_BIG_ON, BULB_BIG_ON, BULB_BIG_BLINK] };
@@ -53,6 +54,7 @@ export const DIAL_ITEM_STYLES: Record<ThemeId, DialItemStyle> = {
     },
     colors: CAMPFIRE_SPRITE_COLORS,
     isOutOfSettingVisible: true,
+    hasWreath: false,
   },
   winter: {
     minor: { base: BULB_OFF, frames: [BULB_ON, BULB_ON, BULB_ON, BULB_BLINK] },
@@ -62,5 +64,6 @@ export const DIAL_ITEM_STYLES: Record<ThemeId, DialItemStyle> = {
     bloomColor: '#ffc266',
     isOutOfSettingVisible: false,
     offsetOf: (tick) => bulbOffset(tick),
+    hasWreath: true,
   },
 };
