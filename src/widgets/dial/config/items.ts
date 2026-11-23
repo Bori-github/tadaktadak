@@ -1,6 +1,6 @@
-import { bulbOffset, type BulbOffset } from '../lib/bulb';
 import { type ThemeId } from '@/entities/theme';
 import { type BonfireHeightInDots } from '@/shared/constants';
+import { bulbOffset, type BulbOffset } from '@/shared/lib';
 import {
   BONFIRE_COLD_7,
   BONFIRE_COLD_9,

@@ -1,3 +1,4 @@
+export { bulbOffset, type BulbOffset } from './bulb';
 export { topLeftOnGrid } from './grid';
 export type { RootStackParamList } from './navigation';
 export { resolveLayout, getFormFactor } from './responsive';
