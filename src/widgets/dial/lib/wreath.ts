@@ -1,5 +1,6 @@
-import { type ColoredDot } from './atlas';
-import { noise } from '@/shared/lib';
+import { gridDots, type ColoredDot } from './atlas';
+import { pointOnDial } from './geometry';
+import { noise, topLeftOnGrid } from '@/shared/lib';
 
 /** 솔잎 4단계 색. 명도 오름차순. 피그마 `wreath/needle-*` */
 const NEEDLE = ['#16291f', '#1f3a2a', '#2a4f36', '#3a6a45'] as const;
@@ -9,6 +10,7 @@ const HIGHLIGHT = '#5f9e5c';
 /** 열매 스프라이트. o 테두리, H 반사광, B 몸통. 피그마 `berry/*` */
 const BERRY = ['.oo.', 'oHBo', 'oBBo', '.oo.'];
 const BERRY_COLORS: Record<string, string> = { o: '#4a0f18', H: '#ff8a7a', B: '#b8303a' };
+const BERRY_SIZE = BERRY.length;
 
 /** 열매 묶음 내 3개 위치 (dot). 접선 방향, 안쪽 법선 방향 오프셋 순 */
 const BERRY_OFFSETS = [
@@ -110,32 +112,27 @@ export const wreathDots = ({ centerX, centerY, radius, dotSize }: WreathInput): 
   const put = (x: number, y: number, color: string) => {
     dots.set(`${x},${y}`, { x, y, color });
   };
-  const pointAt = (degrees: number, distance: number) => {
-    const radians = (degrees * Math.PI) / 180;
-    return { x: origin.x + distance * Math.sin(radians), y: origin.y - distance * Math.cos(radians) };
-  };
-
   for (const ring of LEAF_RINGS) {
     for (let degrees = ring.from; degrees < 360; degrees += ring.step) {
-      drawLeaf({ degrees, ring, center: pointAt(degrees, ringRadius + ring.offset), origin, ringRadius, put });
+      drawLeaf({ degrees, ring, center: pointOnDial(origin.x, origin.y, ringRadius + ring.offset, degrees), origin, ringRadius, put });
     }
   }
 
   for (let cluster = 0; cluster < 12; cluster++) {
     const degrees = cluster * 30 + 13.5;
     const radians = (degrees * Math.PI) / 180;
-    const center = pointAt(degrees, ringRadius + 2);
+    const center = pointOnDial(origin.x, origin.y, ringRadius + 2, degrees);
 
     for (const [along, across] of BERRY_OFFSETS) {
-      const left = Math.round(center.x + along * Math.cos(radians) - across * Math.sin(radians)) - 2;
-      const top = Math.round(center.y + along * Math.sin(radians) + across * Math.cos(radians)) - 2;
+      const { left, top } = topLeftOnGrid({
+        centerX: center.x + along * Math.cos(radians) - across * Math.sin(radians),
+        centerY: center.y + along * Math.sin(radians) + across * Math.cos(radians),
+        widthInDots: BERRY_SIZE,
+        heightInDots: BERRY_SIZE,
+        dotSize: 1,
+      });
 
-      for (const [row, line] of BERRY.entries()) {
-        for (const [column, cell] of [...line].entries()) {
-          const color = BERRY_COLORS[cell];
-          if (color) put(left + column, top + row, color);
-        }
-      }
+      for (const dot of gridDots(BERRY, BERRY_COLORS, left, top)) put(dot.x, dot.y, dot.color);
     }
   }
 

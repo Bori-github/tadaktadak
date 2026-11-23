@@ -3,7 +3,7 @@ import { memo, useEffect, useMemo } from 'react';
 import { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { DIAL_ITEM_STYLES } from '../config/items';
-import { DOT_SAMPLING, SOFT_SAMPLING, drawDots, packSprites, type ColoredDot, type PackedSprites } from '../lib/atlas';
+import { DOT_SAMPLING, SOFT_SAMPLING, drawDots, gridDots, packSprites, type PackedSprites } from '../lib/atlas';
 import { TICK_NUMBERS } from '../config/ticks';
 import { BLOOM_ALPHA, BLOOM_RADIUS, CENTER_BLOOM_ALPHA, CENTER_BLOOM_RATIO, bloomRadius, getBloomGradient } from '../lib/bloom';
 import { pointOnDial } from '../lib/geometry';
@@ -63,19 +63,10 @@ const toBatch = (items: Placement[]): AtlasBatch => ({
 });
 
 const drawAtlas = (grids: readonly (readonly string[])[], packed: PackedSprites, colors: Record<string, string | undefined>): SkImage | null => {
-  const dots: ColoredDot[] = [];
-
-  for (const [index, grid] of grids.entries()) {
+  const dots = grids.flatMap((grid, index) => {
     const box = packed.boxes[index];
-    if (!box) continue;
-
-    for (const [row, line] of grid.entries()) {
-      for (let column = 0; column < box.widthInDots; column++) {
-        const color = colors[line[column] ?? ''];
-        if (color) dots.push({ x: box.left + column, y: box.top + row, color });
-      }
-    }
-  }
+    return box ? gridDots(grid, colors, box.left, box.top) : [];
+  });
 
   return drawDots(packed.image.widthInDots, packed.image.heightInDots, dots);
 };

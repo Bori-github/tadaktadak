@@ -53,6 +53,23 @@ export interface ColoredDot {
 }
 
 /**
+ * 격자 글자를 색 도트로 변환. 색이 없는 글자는 제외
+ *
+ * @param grid - 스프라이트 격자
+ * @param colors - 글자별 색
+ * @param left - 격자 왼쪽 위 x (dot)
+ * @param top - 격자 왼쪽 위 y (dot)
+ * @returns 칠할 도트 목록
+ */
+export const gridDots = (grid: readonly string[], colors: Record<string, string | undefined>, left: number, top: number): ColoredDot[] =>
+  grid.flatMap((line, row) =>
+    [...line].flatMap((cell, column) => {
+      const color = colors[cell];
+      return color ? [{ x: left + column, y: top + row, color }] : [];
+    }),
+  );
+
+/**
  * 도트 1개를 1px로 그린 이미지. 렌더링 시 `dotSize`배 확대
  *
  * @param widthInDots - 이미지 너비 (dot)
