@@ -5,13 +5,13 @@ import { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 import { DIAL_ITEM_STYLES } from '../config/items';
 import { DOT_SAMPLING, SOFT_SAMPLING, drawDots, gridDots, packSprites, type PackedSprites } from '../lib/atlas';
 import { TICK_NUMBERS } from '../config/ticks';
-import { BLOOM_ALPHA, BLOOM_RADIUS, CENTER_BLOOM_ALPHA, CENTER_BLOOM_RATIO, bloomRadius, getBloomGradient } from '../lib/bloom';
+import { BLOOM_ALPHA, BLOOM_RADIUS, CENTER_BLOOM_ALPHA, CENTER_BLOOM_RATIO, HALO_ALPHA, HALO_RADIUS, bloomRadius, getBloomGradient } from '../lib/bloom';
 import { pointOnDial } from '../lib/geometry';
 import { clockwisePhase } from '../lib/phase';
 import { useFlickerStep } from '../model/flicker';
 import { useDisplayedTheme } from '@/entities/theme';
 import { ignitionProgress } from '@/entities/timer';
-import { type BonfireHeightInDots } from '@/shared/constants';
+import { DOT_SIZE, type BonfireHeightInDots } from '@/shared/constants';
 import { topLeftOnGrid, type Palette } from '@/shared/lib';
 import { MARKER, getSpriteColors } from '@/shared/ui/dot-sprite';
 
@@ -42,10 +42,15 @@ type Placement = { sprite: SkRect; transform: SkRSXform };
 /** `Atlas`의 `sprites`·`transforms`에 그대로 넘길 두 배열 */
 type AtlasBatch = { sprites: SkRect[]; transforms: SkRSXform[] };
 
-const BLOOM_SPRITES = {
-  bonfire: Skia.XYWHRect(0, 0, BLOOM_RADIUS.bonfire * 2, BLOOM_RADIUS.bonfire * 2),
-  log: Skia.XYWHRect(BLOOM_RADIUS.bonfire * 2, 0, BLOOM_RADIUS.log * 2, BLOOM_RADIUS.log * 2),
-};
+type GlowRadius = { bonfire: number; log: number };
+
+const glowSprites = ({ bonfire, log }: GlowRadius): Record<keyof GlowRadius, SkRect> => ({
+  bonfire: Skia.XYWHRect(0, 0, bonfire * 2, bonfire * 2),
+  log: Skia.XYWHRect(bonfire * 2, 0, log * 2, log * 2),
+});
+
+const BLOOM_SPRITES = glowSprites(BLOOM_RADIUS);
+const HALO_SPRITES = glowSprites(HALO_RADIUS);
 
 /** 일시정지에서 잦아드는 불 밝기와 걸리는 시간. `DESIGN.md` §8 §9 */
 const PAUSED_BRIGHTNESS = 0.35;
@@ -72,8 +77,9 @@ const drawAtlas = (grids: readonly (readonly string[])[], packed: PackedSprites,
 };
 
 /** 반지름별 텍스처 두 장을 만든다. 매 프레임 부르지 않고, 그릴 때 알파와 스케일만 변경 `DESIGN.md` §6 */
-const drawBloom = (gradient: SkColor[]): SkImage | null => {
-  const { bonfire, log } = BLOOM_RADIUS;
+const drawBloom = (gradient: SkColor[], radius: GlowRadius): SkImage | null => {
+  const { bonfire, log } = radius;
+  const sprites = glowSprites(radius);
   const surface = Skia.Surface.Make((bonfire + log) * 2, bonfire * 2);
   if (!surface) return null;
 
@@ -82,8 +88,8 @@ const drawBloom = (gradient: SkColor[]): SkImage | null => {
   canvas.clear(Skia.Color('transparent'));
 
   for (const [rect, radius] of [
-    [BLOOM_SPRITES.bonfire, bonfire],
-    [BLOOM_SPRITES.log, log],
+    [sprites.bonfire, bonfire],
+    [sprites.log, log],
   ] as const) {
     const paint = Skia.Paint();
     const center = { x: rect.x + radius, y: rect.y + radius };
@@ -109,7 +115,8 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
 
   const packed = useMemo(() => packSprites(grids), [grids]);
   const image = useMemo(() => drawAtlas(grids, packed, { ...style.colors, ...getSpriteColors(palette) }), [grids, packed, style, palette]);
-  const bloomImage = useMemo(() => drawBloom(bloomGradient), [bloomGradient]);
+  const bloomImage = useMemo(() => drawBloom(bloomGradient, BLOOM_RADIUS), [bloomGradient]);
+  const haloImage = useMemo(() => (style.haloColor ? drawBloom(getBloomGradient(style.haloColor), HALO_RADIUS) : null), [style]);
 
   // 스프라이트 사각형과 좌표는 시계판 크기로만 정해지므로 미리 만들어 두고 고르기만 함
   const prepared = useMemo(() => {
@@ -135,9 +142,11 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
       const point = style.centerOf?.(tick, { centerX, centerY, radius, dotSize }) ?? pointOnDial(centerX, centerY, radius, (tick - 0.5) * 6);
       const transform = transformOf(isMajorTick ? BONFIRE : LOG, point.x, point.y);
 
+      const glow = { x: point.x, y: point.y + (style.glowOffsetInDots ?? 0) * dotSize };
+
       base.push({ sprite: spriteOf(isMajorTick ? BONFIRE : LOG), transform });
 
-      return { tick, point, transform, hot: isMajorTick ? majorFrames : minorFrames };
+      return { tick, glow, transform, hot: isMajorTick ? majorFrames : minorFrames };
     });
 
     // 불붙은 모닥불과 한 도트 겹치므로 나중에 그려 덮음. `DESIGN.md` §5 겹침 검산
@@ -205,7 +214,7 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
       const spread = bloomRadius({ tick: item.tick, isMajorTick, progress, step, dotSize });
       const sprite = isMajorTick ? BLOOM_SPRITES.bonfire : BLOOM_SPRITES.log;
       const source = isMajorTick ? BLOOM_RADIUS.bonfire : BLOOM_RADIUS.log;
-      const placement = { sprite, transform: Skia.RSXform(spread / source, 0, item.point.x - spread, item.point.y - spread) };
+      const placement = { sprite, transform: Skia.RSXform(spread / source, 0, item.glow.x - spread, item.glow.y - spread) };
       const alpha = isMajorTick ? BLOOM_ALPHA.bonfire : BLOOM_ALPHA.log;
 
       if (progress < 1) filling.push({ ...placement, alpha: alpha * progress, tick: item.tick });
@@ -215,6 +224,29 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
 
     return { bonfires: toBatch(bonfires), logs: toBatch(logs), filling };
   }, [prepared, lit, step, dotSize]);
+
+  const halo = useMemo(() => {
+    const scale = dotSize / DOT_SIZE;
+    const full: Placement[] = [];
+    const filling: (Placement & { alpha: number; tick: number })[] = [];
+
+    for (const [index, item] of prepared.perTick.entries()) {
+      const progress = lit[index] ?? 0;
+      if (progress === 0) continue;
+
+      const isMajorTick = item.tick % 5 === 0;
+      const spread = (isMajorTick ? HALO_RADIUS.bonfire : HALO_RADIUS.log) * scale;
+      const placement = {
+        sprite: isMajorTick ? HALO_SPRITES.bonfire : HALO_SPRITES.log,
+        transform: Skia.RSXform(scale, 0, item.glow.x - spread, item.glow.y - spread),
+      };
+
+      if (progress < 1) filling.push({ ...placement, alpha: HALO_ALPHA * progress, tick: item.tick });
+      else full.push(placement);
+    }
+
+    return { full: toBatch(full), filling };
+  }, [prepared, lit, dotSize]);
 
   if (!image) return null;
 
@@ -244,6 +276,18 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
               <Atlas image={bloomImage} sprites={[item.sprite]} transforms={[item.transform]} sampling={SOFT_SAMPLING} />
             </Group>
           ))}
+          {haloImage === null || halo.full.sprites.length === 0 ? null : (
+            <Group opacity={HALO_ALPHA}>
+              <Atlas image={haloImage} sprites={halo.full.sprites} transforms={halo.full.transforms} sampling={SOFT_SAMPLING} />
+            </Group>
+          )}
+          {haloImage === null
+            ? null
+            : halo.filling.map((item) => (
+                <Group key={item.tick} opacity={item.alpha}>
+                  <Atlas image={haloImage} sprites={[item.sprite]} transforms={[item.transform]} sampling={SOFT_SAMPLING} />
+                </Group>
+              ))}
         </Group>
       )}
       {baseInSetting.sprites.length === 0 ? null : (

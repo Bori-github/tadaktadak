@@ -29,6 +29,11 @@ export const BLOOM_RADIUS = { bonfire: 32, log: 16 };
 /** 빛 번짐 알파. `DESIGN.md` §6 */
 export const BLOOM_ALPHA = { bonfire: 0.55, log: 0.32 };
 
+/** 후광 반지름 (논리 픽셀, 배율 1) */
+export const HALO_RADIUS = { bonfire: 10, log: 6 };
+
+export const HALO_ALPHA = 0.7;
+
 type BloomRadiusInput = {
   tick: number;
   isMajorTick: boolean;

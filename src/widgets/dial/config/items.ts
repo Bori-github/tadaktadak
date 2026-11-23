@@ -36,6 +36,9 @@ export interface DialItemStyle {
   frameMs?: number;
   /** 눈금 빛 번짐 색. 미지정 시 팔레트 `glow` */
   bloomColor?: string;
+  haloColor?: string;
+  /** 빛 번짐/후광 중심의 y 오프셋 (dot) */
+  glowOffsetInDots?: number;
   isOutOfSettingVisible: boolean;
   /** 미지정 시 눈금 중심 */
   centerOf?: (tick: number, dial: DialPlacement) => { x: number; y: number };
@@ -61,6 +64,9 @@ export const DIAL_ITEM_STYLES: Record<ThemeId, DialItemStyle> = {
     colors: WINTER_SPRITE_COLORS,
     frameMs: 500,
     bloomColor: '#ffc266',
+    haloColor: '#fff0c0',
+    // 전구 유리 중심
+    glowOffsetInDots: 1,
     isOutOfSettingVisible: false,
     centerOf: (tick, dial) => bulbCenter(tick, dial),
     hasWreath: true,
