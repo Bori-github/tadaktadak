@@ -1,5 +1,6 @@
 import { memo, type ComponentType } from 'react';
 
+import { BulbChase } from './BulbChase';
 import { Embers } from './Embers';
 import { useDisplayedTheme, type ThemeId } from '@/entities/theme';
 import { type Palette } from '@/shared/lib';
@@ -10,13 +11,21 @@ type CompletedEffectProps = {
   /** 개체 중심 반지름 (px) */
   radius: number;
   dotSize: number;
+  settingMinutes: number;
   effectStartedAt: number | null;
   palette: Palette;
 };
 
+const WinterEffect = (props: CompletedEffectProps) => (
+  <>
+    <BulbChase {...props} />
+    <Embers {...props} />
+  </>
+);
+
 const EFFECTS: Record<ThemeId, ComponentType<CompletedEffectProps>> = {
   campfire: Embers,
-  winter: Embers,
+  winter: WinterEffect,
 };
 
 /** 완료 연출 중 눈금 위 테마 장식. `DESIGN.md` §9 완료 */

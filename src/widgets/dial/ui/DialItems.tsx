@@ -30,8 +30,8 @@ type DialItemsProps = {
   /** 남은 시간(분). 대기에서는 설정 시간이라 아무 눈금도 붙지 않음 */
   remainingMinutes: number;
   settingMinutes: number;
-  /** 일시정지 여부. 일시정지에서 불꽃이 멈춤. `DESIGN.md` §8 */
-  isPaused: boolean;
+  /** 점화 개체 밝기 감소 상태. 일시정지 시 불꽃 프레임 정지. `DESIGN.md` §8 */
+  dimming: 'none' | 'paused' | 'completed';
   /** 대기 상태 여부. 대기 상태에서 가운데 빛 번짐이 없음. `DESIGN.md` §6 */
   isReady: boolean;
   palette: Palette;
@@ -94,7 +94,7 @@ const drawBloom = (gradient: SkColor[], radius: GlowRadius): SkImage | null => {
   return surface.makeImageSnapshot();
 };
 
-export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeightInDots, remainingMinutes, settingMinutes, isPaused, isReady, palette }: DialItemsProps) => {
+export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeightInDots, remainingMinutes, settingMinutes, dimming, isReady, palette }: DialItemsProps) => {
   // `useSyncExternalStore` 기반이라 Skia `Canvas` 내부에서도 조회 가능
   const style = DIAL_ITEM_STYLES[useDisplayedTheme()];
   const centerBloomGradient = useMemo(() => getBloomGradient(palette.glow), [palette]);
@@ -156,15 +156,16 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
 
   const lit = useMemo(() => TICK_NUMBERS.map((tick) => ignitionProgress({ tick, remainingMinutes, settingMinutes })), [remainingMinutes, settingMinutes]);
 
-  const step = useFlickerStep(!isPaused && lit.some((progress) => progress > 0), style.frameMs);
+  const step = useFlickerStep(dimming !== 'paused' && lit.some((progress) => progress > 0), style.frameMs);
 
   const brightness = useSharedValue(1);
+  const targetBrightness = { none: 1, paused: PAUSED_BRIGHTNESS, completed: style.completedBrightness }[dimming];
 
   useEffect(() => {
-    brightness.value = withTiming(isPaused ? PAUSED_BRIGHTNESS : 1, { duration: FADE_MS, easing: Easing.inOut(Easing.quad) });
+    brightness.value = withTiming(targetBrightness, { duration: FADE_MS, easing: Easing.inOut(Easing.quad) });
     // `useSharedValue`가 준 값은 고정 참조라 뺌. 넣으면 React Compiler 린트가 안에서 쓰는 것을 막음
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPaused]);
+  }, [targetBrightness]);
 
   const centerBloom = useSharedValue(0);
 

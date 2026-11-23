@@ -40,6 +40,8 @@ export interface DialItemStyle {
   /** 빛 번짐/후광 중심의 y 오프셋 (dot) */
   glowOffsetInDots?: number;
   isOutOfSettingVisible: boolean;
+  /** 완료 연출 중 점화 개체 밝기 */
+  completedBrightness: number;
   /** 미지정 시 눈금 중심 */
   centerOf?: (tick: number, dial: DialPlacement) => { x: number; y: number };
 }
@@ -55,6 +57,7 @@ export const DIAL_ITEM_STYLES: Record<ThemeId, DialItemStyle> = {
     },
     colors: CAMPFIRE_SPRITE_COLORS,
     isOutOfSettingVisible: true,
+    completedBrightness: 1,
   },
   winter: {
     minor: { base: BULB_OFF, frames: [BULB_ON, BULB_ON, BULB_ON, BULB_BLINK] },
@@ -66,6 +69,8 @@ export const DIAL_ITEM_STYLES: Record<ThemeId, DialItemStyle> = {
     // 전구 유리 중심
     glowOffsetInDots: 1,
     isOutOfSettingVisible: false,
+    // 순환 빛과 대비되는 밝기
+    completedBrightness: 0.2,
     centerOf: (tick, dial) => bulbCenter(tick, dial),
   },
 };

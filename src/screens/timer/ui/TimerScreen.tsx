@@ -119,6 +119,12 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   // 휴식 타이머 시간을 넣으면 집중이 점화한 개체가 꺼짐
   const itemMinutes = resting ? minutes.focus : selected;
 
+  const itemDimming = (() => {
+    if (session.phase === 'paused') return 'paused';
+
+    return effectShown ? 'completed' : 'none';
+  })();
+
   // 대기 상태를 벗어나면 편집 대상이 집중 타이머로 돌아감
   const handlePlay = useCallback(() => {
     setEditTarget('focus');
@@ -181,11 +187,19 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
               bonfireHeightInDots={layout.bonfireHeightInDots}
               remainingMinutes={litMinutes}
               settingMinutes={itemMinutes}
-              isPaused={session.phase === 'paused'}
+              dimming={itemDimming}
               isReady={editing}
               palette={palette}
             />
-            <CompletedEffect centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} effectStartedAt={effectStartedAt} palette={palette} />
+            <CompletedEffect
+              centerX={centerX}
+              centerY={centerY}
+              radius={layout.itemRadius}
+              dotSize={layout.dotSize}
+              settingMinutes={itemMinutes}
+              effectStartedAt={effectStartedAt}
+              palette={palette}
+            />
             <Thumb
               centerX={centerX}
               centerY={centerY}
