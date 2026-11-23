@@ -105,6 +105,23 @@ export const drawDots = (widthInDots: number, heightInDots: number, dots: readon
   return surface.makeImageSnapshot();
 };
 
+/**
+ * `packSprites` 배치 격자의 단일 이미지 렌더링
+ *
+ * @param grids - `packSprites`에 넘긴 격자. 같은 순서
+ * @param packed - `packSprites` 결과
+ * @param colors - 글자별 색
+ * @returns 표면 생성 실패 시 `null`
+ */
+export const drawSprites = (grids: readonly (readonly string[])[], packed: PackedSprites, colors: Record<string, string | undefined>): SkImage | null => {
+  const dots = grids.flatMap((grid, index) => {
+    const box = packed.boxes[index];
+    return box ? gridDots(grid, colors, box.left, box.top) : [];
+  });
+
+  return drawDots(packed.image.widthInDots, packed.image.heightInDots, dots);
+};
+
 export interface PlacedDots {
   image: SkImage;
   sprites: SkRect[];

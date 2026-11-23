@@ -3,7 +3,7 @@ import { memo, useEffect, useMemo } from 'react';
 import { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { DIAL_ITEM_STYLES } from '../config/items';
-import { DOT_SAMPLING, SOFT_SAMPLING, drawDots, gridDots, packSprites, type PackedSprites } from '../lib/atlas';
+import { DOT_SAMPLING, SOFT_SAMPLING, drawSprites, packSprites } from '../lib/atlas';
 import { TICK_NUMBERS } from '../config/ticks';
 import { BLOOM_ALPHA, BLOOM_RADIUS, CENTER_BLOOM_ALPHA, CENTER_BLOOM_RATIO, HALO_ALPHA, HALO_RADIUS, bloomRadius, getBloomGradient } from '../lib/bloom';
 import { pointOnDial } from '../lib/geometry';
@@ -67,15 +67,6 @@ const toBatch = (items: Placement[]): AtlasBatch => ({
   transforms: items.map((item) => item.transform),
 });
 
-const drawAtlas = (grids: readonly (readonly string[])[], packed: PackedSprites, colors: Record<string, string | undefined>): SkImage | null => {
-  const dots = grids.flatMap((grid, index) => {
-    const box = packed.boxes[index];
-    return box ? gridDots(grid, colors, box.left, box.top) : [];
-  });
-
-  return drawDots(packed.image.widthInDots, packed.image.heightInDots, dots);
-};
-
 /** 반지름별 텍스처 두 장을 만든다. 매 프레임 부르지 않고, 그릴 때 알파와 스케일만 변경 `DESIGN.md` §6 */
 const drawBloom = (gradient: SkColor[], radius: GlowRadius): SkImage | null => {
   const { bonfire, log } = radius;
@@ -114,7 +105,7 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
   }, [style, bonfireHeightInDots]);
 
   const packed = useMemo(() => packSprites(grids), [grids]);
-  const image = useMemo(() => drawAtlas(grids, packed, { ...style.colors, ...getSpriteColors(palette) }), [grids, packed, style, palette]);
+  const image = useMemo(() => drawSprites(grids, packed, { ...style.colors, ...getSpriteColors(palette) }), [grids, packed, style, palette]);
   const bloomImage = useMemo(() => drawBloom(bloomGradient, BLOOM_RADIUS), [bloomGradient]);
   const haloImage = useMemo(() => (style.haloColor ? drawBloom(getBloomGradient(style.haloColor), HALO_RADIUS) : null), [style]);
 
