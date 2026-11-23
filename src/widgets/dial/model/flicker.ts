@@ -7,7 +7,7 @@ const FLICKER_MS = 125;
  * 불꽃 프레임 순서. `DESIGN.md` §8 층별 동작
  *
  * @param isFlickering - 불꽃이 도는지 여부. 일시정지이거나 붙은 눈금이 없으면 `false`
- * @param [intervalMs] - 증가 주기 (밀리초)
+ * @param [intervalMs=FLICKER_MS] - 증가 주기 (밀리초)
  * @returns `intervalMs`마다 1 증가하는 값. 홀짝이 A와 B를 정함. 멈추면 값이 유지됨
  */
 export const useFlickerStep = (isFlickering: boolean, intervalMs = FLICKER_MS): number => {
