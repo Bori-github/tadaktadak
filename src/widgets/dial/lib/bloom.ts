@@ -1,5 +1,6 @@
 import { Skia, type SkColor } from '@shopify/react-native-skia';
 
+import { clockwisePhase } from './phase';
 import { DOT_SIZE } from '@/shared/constants';
 
 /**
@@ -48,7 +49,7 @@ type BloomRadiusInput = {
  */
 export const bloomRadius = ({ tick, isMajorTick, progress, step, dotSize }: BloomRadiusInput): number => {
   const base = isMajorTick ? BLOOM_RADIUS.bonfire : BLOOM_RADIUS.log;
-  const flicker = 0.9 + 0.1 * ((tick + step) % 3);
+  const flicker = 0.9 + 0.1 * clockwisePhase(step, tick, 3);
 
   return base * (0.55 + 0.45 * progress) * flicker * (dotSize / DOT_SIZE);
 };

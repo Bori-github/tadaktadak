@@ -7,6 +7,7 @@ import { DOT_SAMPLING, SOFT_SAMPLING, packSprites, type PackedSprites } from '..
 import { TICK_NUMBERS } from '../config/ticks';
 import { BLOOM_ALPHA, BLOOM_RADIUS, CENTER_BLOOM_ALPHA, CENTER_BLOOM_RATIO, bloomRadius, getBloomGradient } from '../lib/bloom';
 import { pointOnDial } from '../lib/geometry';
+import { clockwisePhase } from '../lib/phase';
 import { useFlickerStep } from '../model/flicker';
 import { useDisplayedTheme } from '@/entities/theme';
 import { ignitionProgress } from '@/entities/timer';
@@ -204,9 +205,7 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
       const progress = lit[index] ?? 0;
       if (progress === 0) continue;
 
-      // `step` 증가 시 프레임이 시계 방향 다음 눈금으로 이동. 프레임 2개면 홀짝 교대
-      const frameCount = item.hot.length;
-      const sprite = item.hot[(((step - item.tick) % frameCount) + frameCount) % frameCount] ?? item.hot[0];
+      const sprite = item.hot[clockwisePhase(step, item.tick, item.hot.length)] ?? item.hot[0];
       if (!sprite) continue;
 
       if (progress === 1) burning.push({ sprite, transform: item.transform });
