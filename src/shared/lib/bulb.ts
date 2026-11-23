@@ -4,6 +4,14 @@ const noise = (x: number, y: number): number => {
   return value - Math.floor(value);
 };
 
+/** 5분 전구 바로 앞뒤 1분 전구는 5분 전구 반대쪽 각도만 사용. 작은 시계판에서 맞닿음 방지 */
+const awayFromMajorTick = (tick: number, degrees: number): number => {
+  if (tick % 5 === 1) return Math.abs(degrees);
+  if (tick % 5 === 4) return -Math.abs(degrees);
+
+  return degrees;
+};
+
 /** 눈금 중심 기준 전구 위치 오프셋 */
 export interface BulbOffset {
   degrees: number;
@@ -21,9 +29,10 @@ export const bulbOffset = (tick: number): BulbOffset => {
   if (tick % 5 === 0) return { degrees: 0, distance: 0 };
 
   const direction = tick % 2 === 1 ? 1 : -1;
+  const degrees = (noise(tick * 13.1, 3.7) - 0.5) * 3;
 
   return {
-    degrees: (noise(tick * 13.1, 3.7) - 0.5) * 3,
+    degrees: awayFromMajorTick(tick, degrees),
     distance: direction * (3 + 4 * noise(tick * 7.3, 11.9)),
   };
 };
