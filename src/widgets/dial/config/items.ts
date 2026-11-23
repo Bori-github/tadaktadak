@@ -1,6 +1,6 @@
 import { type ThemeId } from '@/entities/theme';
 import { type BonfireHeightInDots } from '@/shared/constants';
-import { bulbOffset, type BulbOffset } from '@/shared/lib';
+import { bulbCenter, type DialPlacement } from '@/shared/lib';
 import {
   BONFIRE_COLD_7,
   BONFIRE_COLD_9,
@@ -37,7 +37,8 @@ export interface DialItemStyle {
   /** 눈금 빛 번짐 색. 미지정 시 팔레트 `glow` */
   bloomColor?: string;
   isOutOfSettingVisible: boolean;
-  offsetOf?: (tick: number) => BulbOffset;
+  /** 미지정 시 눈금 중심 */
+  centerOf?: (tick: number, dial: DialPlacement) => { x: number; y: number };
   hasWreath: boolean;
 }
 
@@ -61,7 +62,7 @@ export const DIAL_ITEM_STYLES: Record<ThemeId, DialItemStyle> = {
     frameMs: 500,
     bloomColor: '#ffc266',
     isOutOfSettingVisible: false,
-    offsetOf: (tick) => bulbOffset(tick),
+    centerOf: (tick, dial) => bulbCenter(tick, dial),
     hasWreath: true,
   },
 };

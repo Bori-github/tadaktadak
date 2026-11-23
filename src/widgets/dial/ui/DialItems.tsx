@@ -11,7 +11,7 @@ import { clockwisePhase } from '../lib/phase';
 import { useFlickerStep } from '../model/flicker';
 import { useDisplayedTheme } from '@/entities/theme';
 import { ignitionProgress } from '@/entities/timer';
-import { DOT_SIZE, type BonfireHeightInDots } from '@/shared/constants';
+import { type BonfireHeightInDots } from '@/shared/constants';
 import { topLeftOnGrid, type Palette } from '@/shared/lib';
 import { MARKER, getSpriteColors } from '@/shared/ui/dot-sprite';
 
@@ -141,8 +141,7 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
     const base: Placement[] = [];
     const perTick = TICK_NUMBERS.map((tick) => {
       const isMajorTick = tick % 5 === 0;
-      const offset = style.offsetOf?.(tick) ?? { degrees: 0, distance: 0 };
-      const point = pointOnDial(centerX, centerY, radius + (offset.distance * dotSize) / DOT_SIZE, (tick - 0.5) * 6 + offset.degrees);
+      const point = style.centerOf?.(tick, { centerX, centerY, radius, dotSize }) ?? pointOnDial(centerX, centerY, radius, (tick - 0.5) * 6);
       const transform = transformOf(isMajorTick ? BONFIRE : LOG, point.x, point.y);
 
       base.push({ sprite: spriteOf(isMajorTick ? BONFIRE : LOG), transform });

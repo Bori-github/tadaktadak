@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { BUTTON_SIZE_IN_DOTS, DOT_SIZE, type BonfireHeightInDots } from '@/shared/constants';
+import { BUTTON_SIZE_IN_DOTS, type BonfireHeightInDots } from '@/shared/constants';
 import {
   BONFIRE_COLD_7,
   BONFIRE_COLD_9,
@@ -15,7 +15,7 @@ import {
   LOG_HOT_B,
 } from '@/shared/ui/dot-sprite';
 
-import { bulbOffset } from './bulb';
+import { bulbCenter } from './bulb';
 import { DEVICE_NAMES, DEVICES, type DeviceName } from './devices';
 import { topLeftOnGrid } from './grid';
 import { MIN_ITEM_RADIUS, resolveLayout, type FormFactor } from './responsive';
@@ -116,12 +116,10 @@ type BulbLayout = { itemRadius: number; dotSize: number; dialCenterX: number; di
 
 const bulbDots = (tick: number, { itemRadius, dotSize, dialCenterX, dialCenterY }: BulbLayout) => {
   const grid = tick % 5 === 0 ? BULB_BIG_OFF : BULB_OFF;
-  const { degrees, distance } = bulbOffset(tick);
-  const radius = itemRadius + (distance * dotSize) / DOT_SIZE;
-  const radians = (((tick - 0.5) * 6 + degrees) * Math.PI) / 180;
+  const center = bulbCenter(tick, { centerX: dialCenterX, centerY: dialCenterY, radius: itemRadius, dotSize });
   const { left, top } = topLeftOnGrid({
-    centerX: dialCenterX + radius * Math.sin(radians),
-    centerY: dialCenterY - radius * Math.cos(radians),
+    centerX: center.x,
+    centerY: center.y,
     widthInDots: Math.max(...grid.map((row) => row.length)),
     heightInDots: grid.length,
     dotSize,
