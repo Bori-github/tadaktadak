@@ -1,5 +1,6 @@
 export { bulbOffset, type BulbOffset } from './bulb';
 export { topLeftOnGrid } from './grid';
+export { noise } from './noise';
 export type { RootStackParamList } from './navigation';
 export { resolveLayout, getFormFactor } from './responsive';
 export { PaletteContext, usePalette, type Palette } from './palette';

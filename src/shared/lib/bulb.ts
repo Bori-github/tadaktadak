@@ -1,8 +1,4 @@
-/** [0, 1) 결정적 의사 난수. 실행마다 동일한 전구 위치 */
-const noise = (x: number, y: number): number => {
-  const value = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
-  return value - Math.floor(value);
-};
+import { noise } from './noise';
 
 /** 5분 전구 바로 앞뒤 1분 전구는 5분 전구 반대쪽 각도만 사용. 작은 시계판에서 맞닿음 방지 */
 const awayFromMajorTick = (tick: number, degrees: number): number => {
