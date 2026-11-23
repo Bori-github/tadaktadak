@@ -21,7 +21,6 @@ import {
   WINTER_SPRITE_COLORS,
 } from '@/shared/ui/dot-sprite';
 
-/** 눈금 스프라이트 */
 export interface TickSprites {
   /** 점화 전 */
   base: readonly string[];
@@ -44,7 +43,6 @@ export interface DialItemStyle {
 
 const BULB_MAJOR: TickSprites = { base: BULB_BIG_OFF, frames: [BULB_BIG_ON, BULB_BIG_ON, BULB_BIG_ON, BULB_BIG_BLINK] };
 
-/** 테마별 시계판 개체 스프라이트 설정 */
 export const DIAL_ITEM_STYLES: Record<ThemeId, DialItemStyle> = {
   campfire: {
     minor: { base: LOG_COLD, frames: [LOG_HOT_A, LOG_HOT_B] },

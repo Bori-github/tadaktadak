@@ -1,4 +1,4 @@
-import { FilterMode, MipmapMode } from '@shopify/react-native-skia';
+import { FilterMode, MipmapMode, Skia, type SkImage } from '@shopify/react-native-skia';
 
 /** 도트를 키워도 칸 사이가 흐려지지 않음. 가장 가까운 원본 픽셀 하나의 색을 그대로 씀. `DESIGN.md` §6 */
 export const DOT_SAMPLING = { filter: FilterMode.Nearest, mipmap: MipmapMode.None };
@@ -44,4 +44,38 @@ export const packSprites = (grids: readonly (readonly string[])[]): PackedSprite
     },
     boxes,
   };
+};
+
+export interface ColoredDot {
+  x: number;
+  y: number;
+  color: string;
+}
+
+/**
+ * 도트 1개를 1px로 그린 이미지. 렌더링 시 `dotSize`배 확대
+ *
+ * @param widthInDots - 이미지 너비 (dot)
+ * @param heightInDots - 이미지 높이 (dot)
+ * @param dots - 채울 도트. 나머지 투명
+ * @returns 표면 생성 실패 시 `null`
+ */
+export const drawDots = (widthInDots: number, heightInDots: number, dots: readonly ColoredDot[]): SkImage | null => {
+  const surface = Skia.Surface.Make(widthInDots, heightInDots);
+  if (!surface) return null;
+
+  const canvas = surface.getCanvas();
+  const paint = Skia.Paint();
+
+  // `Surface.Make` 표면이 초기화되지 않아 이전 내용 노출 방지
+  canvas.clear(Skia.Color('transparent'));
+
+  for (const dot of dots) {
+    paint.setColor(Skia.Color(dot.color));
+    canvas.drawRect(Skia.XYWHRect(dot.x, dot.y, 1, 1), paint);
+  }
+
+  surface.flush();
+
+  return surface.makeImageSnapshot();
 };

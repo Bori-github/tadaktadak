@@ -3,7 +3,7 @@ import { memo, useEffect, useMemo } from 'react';
 import { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { DIAL_ITEM_STYLES } from '../config/items';
-import { DOT_SAMPLING, SOFT_SAMPLING, packSprites, type PackedSprites } from '../lib/atlas';
+import { DOT_SAMPLING, SOFT_SAMPLING, drawDots, packSprites, type ColoredDot, type PackedSprites } from '../lib/atlas';
 import { TICK_NUMBERS } from '../config/ticks';
 import { BLOOM_ALPHA, BLOOM_RADIUS, CENTER_BLOOM_ALPHA, CENTER_BLOOM_RATIO, bloomRadius, getBloomGradient } from '../lib/bloom';
 import { pointOnDial } from '../lib/geometry';
@@ -62,16 +62,8 @@ const toBatch = (items: Placement[]): AtlasBatch => ({
   transforms: items.map((item) => item.transform),
 });
 
-/** 도트 하나를 픽셀 하나로 그린 작은 이미지. 그릴 때 dotSize배로 키워 씀 */
 const drawAtlas = (grids: readonly (readonly string[])[], packed: PackedSprites, colors: Record<string, string | undefined>): SkImage | null => {
-  const surface = Skia.Surface.Make(packed.image.widthInDots, packed.image.heightInDots);
-  if (!surface) return null;
-
-  const canvas = surface.getCanvas();
-  const paint = Skia.Paint();
-
-  // 새로 만든 표면이 비워진 채로 오지 않아, 격자에서 비워 둔 자리에 이전 내용이 비침
-  canvas.clear(Skia.Color('transparent'));
+  const dots: ColoredDot[] = [];
 
   for (const [index, grid] of grids.entries()) {
     const box = packed.boxes[index];
@@ -80,17 +72,12 @@ const drawAtlas = (grids: readonly (readonly string[])[], packed: PackedSprites,
     for (const [row, line] of grid.entries()) {
       for (let column = 0; column < box.widthInDots; column++) {
         const color = colors[line[column] ?? ''];
-        if (!color) continue;
-
-        paint.setColor(Skia.Color(color));
-        canvas.drawRect(Skia.XYWHRect(box.left + column, box.top + row, 1, 1), paint);
+        if (color) dots.push({ x: box.left + column, y: box.top + row, color });
       }
     }
   }
 
-  surface.flush();
-
-  return surface.makeImageSnapshot();
+  return drawDots(packed.image.widthInDots, packed.image.heightInDots, dots);
 };
 
 /** 반지름별 텍스처 두 장을 만든다. 매 프레임 부르지 않고, 그릴 때 알파와 스케일만 변경 `DESIGN.md` §6 */

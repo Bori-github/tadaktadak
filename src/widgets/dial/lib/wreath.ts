@@ -1,3 +1,4 @@
+import { type ColoredDot } from './atlas';
 import { noise } from '@/shared/lib';
 
 /** 솔잎 4단계 색. 명도 오름차순. 피그마 `wreath/needle-*` */
@@ -15,13 +16,6 @@ const BERRY_OFFSETS = [
   [3, 1],
   [1, 3.5],
 ] as const;
-
-/** 리스 도트. 좌표는 화면 도트 격자 기준 */
-export interface WreathDot {
-  x: number;
-  y: number;
-  color: string;
-}
 
 interface LeafRing {
   /** 첫 잎 각도와 간격 (도) */
@@ -63,7 +57,6 @@ const drawLeaf = ({ degrees, ring, center, origin, ringRadius, put }: LeafInput)
   const direction = [tangent[0] * Math.cos(tilt) + outward[0] * Math.sin(tilt), tangent[1] * Math.cos(tilt) + outward[1] * Math.sin(tilt)] as const;
   const across = [-direction[1], direction[0]] as const;
 
-  // 잎 내부면 잎 축 기준 수직 거리, 외부면 `null`
   const inside = (x: number, y: number): number | null => {
     const dx = x + 0.5 - center.x;
     const dy = y + 0.5 - center.y;
@@ -108,12 +101,12 @@ type WreathInput = {
  * @param input.centerY - 시계판 중심 y (px)
  * @param input.radius - 개체 중심 반지름 (px)
  * @param input.dotSize - 도트 한 변 (px)
- * @returns 좌표 중복 시 마지막 색만 유지한 도트 목록
+ * @returns 화면 도트 격자 좌표. 좌표 중복 시 마지막 색만 유지
  */
-export const wreathDots = ({ centerX, centerY, radius, dotSize }: WreathInput): WreathDot[] => {
+export const wreathDots = ({ centerX, centerY, radius, dotSize }: WreathInput): ColoredDot[] => {
   const origin = { x: centerX / dotSize, y: centerY / dotSize };
   const ringRadius = radius / dotSize;
-  const dots = new Map<string, WreathDot>();
+  const dots = new Map<string, ColoredDot>();
   const put = (x: number, y: number, color: string) => {
     dots.set(`${x},${y}`, { x, y, color });
   };
