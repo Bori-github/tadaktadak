@@ -6,6 +6,12 @@ export {
   BONFIRE_HOT_A_9,
   BONFIRE_HOT_B_7,
   BONFIRE_HOT_B_9,
+  BULB_BIG_BLINK,
+  BULB_BIG_OFF,
+  BULB_BIG_ON,
+  BULB_BLINK,
+  BULB_OFF,
+  BULB_ON,
   CAMPFIRE_SPRITE_COLORS,
   getSpriteColors,
   LOG_COLD,
@@ -15,4 +21,5 @@ export {
   SPARK_A,
   SPARK_B,
   SPARK_REST,
+  WINTER_SPRITE_COLORS,
 } from './sprites';

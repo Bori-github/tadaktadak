@@ -1,9 +1,23 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { BUTTON_SIZE_IN_DOTS, type BonfireHeightInDots } from '@/shared/constants';
-import { BONFIRE_COLD_7, BONFIRE_COLD_9, BONFIRE_HOT_A_7, BONFIRE_HOT_A_9, BONFIRE_HOT_B_7, BONFIRE_HOT_B_9, LOG_COLD, LOG_HOT_A, LOG_HOT_B } from '@/shared/ui/dot-sprite';
+import {
+  BONFIRE_COLD_7,
+  BONFIRE_COLD_9,
+  BONFIRE_HOT_A_7,
+  BONFIRE_HOT_A_9,
+  BONFIRE_HOT_B_7,
+  BONFIRE_HOT_B_9,
+  BULB_BIG_OFF,
+  BULB_OFF,
+  LOG_COLD,
+  LOG_HOT_A,
+  LOG_HOT_B,
+} from '@/shared/ui/dot-sprite';
 
+import { bulbCenter } from './bulb';
 import { DEVICE_NAMES, DEVICES, type DeviceName } from './devices';
+import { topLeftOnGrid } from './grid';
 import { MIN_ITEM_RADIUS, resolveLayout, type FormFactor } from './responsive';
 
 /** 최대 투영 `max(폭, 높이)` (dot). 프레임 중 가장 큰 값. `DESIGN.md` §4 */
@@ -95,6 +109,60 @@ describe('원주 방향으로 이웃한 개체', () => {
 
   it('모닥불과 모닥불이 겹치지 않는다', () => {
     expect(overlappingLayouts(BONFIRE_TICK_DISTANCE, 'bonfire', 'bonfire')).toEqual([]);
+  });
+});
+
+type BulbLayout = { itemRadius: number; dotSize: number; dialCenterX: number; dialCenterY: number };
+
+const bulbDots = (tick: number, { itemRadius, dotSize, dialCenterX, dialCenterY }: BulbLayout) => {
+  const grid = tick % 5 === 0 ? BULB_BIG_OFF : BULB_OFF;
+  const center = bulbCenter(tick, { centerX: dialCenterX, centerY: dialCenterY, radius: itemRadius, dotSize });
+  const { left, top } = topLeftOnGrid({
+    centerX: center.x,
+    centerY: center.y,
+    widthInDots: Math.max(...grid.map((row) => row.length)),
+    heightInDots: grid.length,
+    dotSize,
+  });
+
+  return grid.flatMap((row, y) => [...row].flatMap((cell, x) => (cell === '.' ? [] : [{ x: left + x, y: top + y }])));
+};
+
+const isTouching = (first: { x: number; y: number }[], second: { x: number; y: number }[]) => {
+  const [a0, b0] = [first[0], second[0]];
+  // 첫 도트 간 거리 9 초과 시 접촉 불가로 비교 생략. 전구 최대 5×7
+  if (!a0 || !b0 || Math.abs(a0.x - b0.x) > 9 || Math.abs(a0.y - b0.y) > 9) return false;
+
+  return first.some((a) => second.some((b) => Math.abs(a.x - b.x) <= 1 && Math.abs(a.y - b.y) <= 1));
+};
+
+const bulbLayoutKey = ({ itemRadius, dotSize, dialCenterX, dialCenterY }: BulbLayout) => [itemRadius, dotSize, dialCenterX % dotSize, dialCenterY % dotSize].join('/');
+
+const BULB_DOTS_BY_LAYOUT = [...new Map(CHECKED_LAYOUTS.map((checked) => [bulbLayoutKey(checked), checked])).values()].map((checked) => ({
+  label: checked.label,
+  dots: range(1, 60).map((tick) => bulbDots(tick, checked)),
+}));
+
+const touchingBulbs = (pairs: [number, number][]) =>
+  BULB_DOTS_BY_LAYOUT.flatMap(({ label, dots }) =>
+    pairs.flatMap(([first, second]) => (isTouching(dots[first - 1] ?? [], dots[second - 1] ?? []) ? [`${label}: 눈금 ${first}, ${second}`] : [])),
+  );
+
+const TICK_PAIRS = range(1, 60).map((tick): [number, number] => [tick, (tick % 60) + 1]);
+const isMajor = (tick: number) => tick % 5 === 0;
+
+describe('원주 방향으로 이웃한 전구', () => {
+  it('1분 전구와 1분 전구 사이가 1 도트 이상 떨어진다', () => {
+    expect(touchingBulbs(TICK_PAIRS.filter(([first, second]) => !isMajor(first) && !isMajor(second)))).toEqual([]);
+  });
+
+  it('5분 전구와 1분 전구 사이가 1 도트 이상 떨어진다', () => {
+    expect(touchingBulbs(TICK_PAIRS.filter(([first, second]) => isMajor(first) !== isMajor(second)))).toEqual([]);
+  });
+
+  it('5분 전구와 5분 전구 사이가 1 도트 이상 떨어진다', () => {
+    const majorPairs = range(1, 12).map((index): [number, number] => [index * 5, (index % 12) * 5 + 5]);
+    expect(touchingBulbs(majorPairs)).toEqual([]);
   });
 });
 

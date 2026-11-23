@@ -1,4 +1,4 @@
-import { FilterMode, MipmapMode } from '@shopify/react-native-skia';
+import { FilterMode, MipmapMode, Skia, type SkImage } from '@shopify/react-native-skia';
 
 /** 도트를 키워도 칸 사이가 흐려지지 않음. 가장 가까운 원본 픽셀 하나의 색을 그대로 씀. `DESIGN.md` §6 */
 export const DOT_SAMPLING = { filter: FilterMode.Nearest, mipmap: MipmapMode.None };
@@ -44,4 +44,63 @@ export const packSprites = (grids: readonly (readonly string[])[]): PackedSprite
     },
     boxes,
   };
+};
+
+export interface ColoredDot {
+  x: number;
+  y: number;
+  color: string;
+}
+
+/**
+ * 격자 글자를 색 도트로 변환. 색이 없는 글자는 제외
+ *
+ * @param grid - 스프라이트 격자
+ * @param colors - 글자별 색
+ * @param left - 격자 왼쪽 위 x (dot)
+ * @param top - 격자 왼쪽 위 y (dot)
+ * @returns 칠할 도트 목록
+ */
+export const gridDots = (grid: readonly string[], colors: Record<string, string | undefined>, left: number, top: number): ColoredDot[] =>
+  grid.flatMap((line, row) =>
+    [...line].flatMap((cell, column) => {
+      const color = colors[cell];
+      return color ? [{ x: left + column, y: top + row, color }] : [];
+    }),
+  );
+
+/**
+ * 도트 1개를 1px로 그린 이미지. 렌더링 시 `dotSize`배 확대
+ *
+ * @param widthInDots - 이미지 너비 (dot)
+ * @param heightInDots - 이미지 높이 (dot)
+ * @param dots - 채울 도트. 좌표 중복 없음, 나머지 투명
+ * @returns 표면 생성 실패 시 `null`
+ */
+export const drawDots = (widthInDots: number, heightInDots: number, dots: readonly ColoredDot[]): SkImage | null => {
+  const surface = Skia.Surface.Make(widthInDots, heightInDots);
+  if (!surface) return null;
+
+  const canvas = surface.getCanvas();
+  const paint = Skia.Paint();
+
+  // `Surface.Make` 표면이 초기화되지 않아 이전 내용 노출 방지
+  canvas.clear(Skia.Color('transparent'));
+
+  // 색 변환과 `setColor`를 도트마다가 아니라 색마다 1회 호출
+  const dotsByColor = new Map<string, ColoredDot[]>();
+  for (const dot of dots) {
+    const sameColorDots = dotsByColor.get(dot.color);
+    if (sameColorDots) sameColorDots.push(dot);
+    else dotsByColor.set(dot.color, [dot]);
+  }
+
+  for (const [color, sameColorDots] of dotsByColor) {
+    paint.setColor(Skia.Color(color));
+    for (const dot of sameColorDots) canvas.drawRect(Skia.XYWHRect(dot.x, dot.y, 1, 1), paint);
+  }
+
+  surface.flush();
+
+  return surface.makeImageSnapshot();
 };

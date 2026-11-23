@@ -7,18 +7,19 @@ const FLICKER_MS = 125;
  * 불꽃 프레임 순서. `DESIGN.md` §8 층별 동작
  *
  * @param isFlickering - 불꽃이 도는지 여부. 일시정지이거나 붙은 눈금이 없으면 `false`
- * @returns 125밀리초마다 1씩 느는 값. 홀짝이 A와 B를 정함. 멈추면 값이 유지됨
+ * @param [intervalMs=FLICKER_MS] - 증가 주기 (밀리초)
+ * @returns `intervalMs`마다 1 증가하는 값. 눈금별 프레임 위상 계산에 사용. 멈추면 값이 유지됨
  */
-export const useFlickerStep = (isFlickering: boolean): number => {
+export const useFlickerStep = (isFlickering: boolean, intervalMs = FLICKER_MS): number => {
   const [step, setStep] = useState(0);
 
   useEffect(() => {
     if (!isFlickering) return;
 
-    // 0으로 되돌리면 홀짝이 뒤집혀 타던 눈금의 프레임이 바뀌므로, 이어서 세고 멈출 때 값을 유지함
-    const ticking = setInterval(() => setStep((current) => current + 1), FLICKER_MS);
+    // 0 초기화 시 눈금별 프레임 위상이 바뀌므로 정지 시 값 유지 후 이어서 증가
+    const ticking = setInterval(() => setStep((current) => current + 1), intervalMs);
     return () => clearInterval(ticking);
-  }, [isFlickering]);
+  }, [isFlickering, intervalMs]);
 
   return step;
 };
