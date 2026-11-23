@@ -26,13 +26,13 @@ import {
   isThumbTwinkling,
   restDialMinutes,
   DialArc,
-  Embers,
+  CompletedEffect,
   Thumb,
   DialItems,
   DialReadout,
   ReadoutButtons,
   Numerals,
-  Wreath,
+  DialUnderlay,
   useDialDrag,
 } from '@/widgets/dial';
 import { AMBIENT_SOUND_TOOLTIP_DISMISSED_KEY, setAmbientSoundEnabled, useAmbientSoundEnabled } from '@/entities/ambient-sound';
@@ -171,7 +171,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
         <View style={[styles.root, { backgroundColor: palette.canvas }]}>
           <Canvas style={StyleSheet.absoluteFill}>
             <Fill color={palette.canvas} />
-            <Wreath centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} settingMinutes={itemMinutes} />
+            <DialUnderlay centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} settingMinutes={itemMinutes} />
             <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} palette={palette} />
             <DialItems
               centerX={centerX}
@@ -185,7 +185,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
               isReady={editing}
               palette={palette}
             />
-            <Embers centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} effectStartedAt={effectStartedAt} palette={palette} />
+            <CompletedEffect centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} effectStartedAt={effectStartedAt} palette={palette} />
             <Thumb
               centerX={centerX}
               centerY={centerY}

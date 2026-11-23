@@ -42,7 +42,6 @@ export interface DialItemStyle {
   isOutOfSettingVisible: boolean;
   /** 미지정 시 눈금 중심 */
   centerOf?: (tick: number, dial: DialPlacement) => { x: number; y: number };
-  hasWreath: boolean;
 }
 
 const BULB_MAJOR: TickSprites = { base: BULB_BIG_OFF, frames: [BULB_BIG_ON, BULB_BIG_ON, BULB_BIG_ON, BULB_BIG_BLINK] };
@@ -56,7 +55,6 @@ export const DIAL_ITEM_STYLES: Record<ThemeId, DialItemStyle> = {
     },
     colors: CAMPFIRE_SPRITE_COLORS,
     isOutOfSettingVisible: true,
-    hasWreath: false,
   },
   winter: {
     minor: { base: BULB_OFF, frames: [BULB_ON, BULB_ON, BULB_ON, BULB_BLINK] },
@@ -69,6 +67,5 @@ export const DIAL_ITEM_STYLES: Record<ThemeId, DialItemStyle> = {
     glowOffsetInDots: 1,
     isOutOfSettingVisible: false,
     centerOf: (tick, dial) => bulbCenter(tick, dial),
-    hasWreath: true,
   },
 };
