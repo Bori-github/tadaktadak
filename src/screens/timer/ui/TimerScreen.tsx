@@ -171,7 +171,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
         <View style={[styles.root, { backgroundColor: palette.canvas }]}>
           <Canvas style={StyleSheet.absoluteFill}>
             <Fill color={palette.canvas} />
-            <Wreath centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} />
+            <Wreath centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} settingMinutes={itemMinutes} />
             <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} palette={palette} />
             <DialItems
               centerX={centerX}

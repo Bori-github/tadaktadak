@@ -3,6 +3,7 @@ import { memo, useMemo } from 'react';
 
 import { DIAL_ITEM_STYLES } from '../config/items';
 import { DOT_SAMPLING, drawDots, type ColoredDot } from '../lib/atlas';
+import { wireDots } from '../lib/wire';
 import { wreathDots } from '../lib/wreath';
 import { useDisplayedTheme } from '@/entities/theme';
 
@@ -12,6 +13,7 @@ type WreathProps = {
   /** 개체 중심 반지름 (px) */
   radius: number;
   dotSize: number;
+  settingMinutes: number;
 };
 
 const drawWreath = (dots: ColoredDot[], dotSize: number): { image: SkImage; sprites: SkRect[]; transforms: SkRSXform[] } | null => {
@@ -36,14 +38,23 @@ const drawWreath = (dots: ColoredDot[], dotSize: number): { image: SkImage; spri
   };
 };
 
-export const Wreath = memo(({ centerX, centerY, radius, dotSize }: WreathProps) => {
+export const Wreath = memo(({ centerX, centerY, radius, dotSize, settingMinutes }: WreathProps) => {
   // `useSyncExternalStore` 기반이라 Skia `Canvas` 내부에서도 조회 가능
   const { hasWreath } = DIAL_ITEM_STYLES[useDisplayedTheme()];
   const drawn = useMemo(() => (hasWreath ? drawWreath(wreathDots({ centerX, centerY, radius, dotSize }), dotSize) : null), [hasWreath, centerX, centerY, radius, dotSize]);
+  const wire = useMemo(
+    () => (hasWreath ? drawWreath(wireDots(settingMinutes, { centerX, centerY, radius, dotSize }), dotSize) : null),
+    [hasWreath, settingMinutes, centerX, centerY, radius, dotSize],
+  );
 
   if (!drawn) return null;
 
-  return <Atlas image={drawn.image} sprites={drawn.sprites} transforms={drawn.transforms} sampling={DOT_SAMPLING} antiAlias={false} />;
+  return (
+    <>
+      <Atlas image={drawn.image} sprites={drawn.sprites} transforms={drawn.transforms} sampling={DOT_SAMPLING} antiAlias={false} />
+      {wire ? <Atlas image={wire.image} sprites={wire.sprites} transforms={wire.transforms} sampling={DOT_SAMPLING} antiAlias={false} /> : null}
+    </>
+  );
 });
 
 Wreath.displayName = 'Wreath';
