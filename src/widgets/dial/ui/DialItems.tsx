@@ -201,10 +201,13 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
     return { burning: toBatch(burning), filling };
   }, [prepared, lit, step]);
 
-  const bloom = useMemo(() => {
+  const { bloom, halo } = useMemo(() => {
+    const scale = dotSize / DOT_SIZE;
     const bonfires: Placement[] = [];
     const logs: Placement[] = [];
-    const filling: (Placement & { alpha: number; tick: number })[] = [];
+    const bloomFilling: (Placement & { alpha: number; tick: number })[] = [];
+    const halos: Placement[] = [];
+    const haloFilling: (Placement & { alpha: number; tick: number })[] = [];
 
     for (const [index, item] of prepared.perTick.entries()) {
       const progress = lit[index] ?? 0;
@@ -212,41 +215,32 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
 
       const isMajorTick = item.tick % 5 === 0;
       const spread = bloomRadius({ tick: item.tick, isMajorTick, progress, step, dotSize });
-      const sprite = isMajorTick ? BLOOM_SPRITES.bonfire : BLOOM_SPRITES.log;
       const source = isMajorTick ? BLOOM_RADIUS.bonfire : BLOOM_RADIUS.log;
-      const placement = { sprite, transform: Skia.RSXform(spread / source, 0, item.glow.x - spread, item.glow.y - spread) };
-      const alpha = isMajorTick ? BLOOM_ALPHA.bonfire : BLOOM_ALPHA.log;
-
-      if (progress < 1) filling.push({ ...placement, alpha: alpha * progress, tick: item.tick });
-      else if (isMajorTick) bonfires.push(placement);
-      else logs.push(placement);
-    }
-
-    return { bonfires: toBatch(bonfires), logs: toBatch(logs), filling };
-  }, [prepared, lit, step, dotSize]);
-
-  const halo = useMemo(() => {
-    const scale = dotSize / DOT_SIZE;
-    const full: Placement[] = [];
-    const filling: (Placement & { alpha: number; tick: number })[] = [];
-
-    for (const [index, item] of prepared.perTick.entries()) {
-      const progress = lit[index] ?? 0;
-      if (progress === 0) continue;
-
-      const isMajorTick = item.tick % 5 === 0;
-      const spread = (isMajorTick ? HALO_RADIUS.bonfire : HALO_RADIUS.log) * scale;
-      const placement = {
+      const bloomPlacement = {
+        sprite: isMajorTick ? BLOOM_SPRITES.bonfire : BLOOM_SPRITES.log,
+        transform: Skia.RSXform(spread / source, 0, item.glow.x - spread, item.glow.y - spread),
+      };
+      const haloSpread = (isMajorTick ? HALO_RADIUS.bonfire : HALO_RADIUS.log) * scale;
+      const haloPlacement = {
         sprite: isMajorTick ? HALO_SPRITES.bonfire : HALO_SPRITES.log,
-        transform: Skia.RSXform(scale, 0, item.glow.x - spread, item.glow.y - spread),
+        transform: Skia.RSXform(scale, 0, item.glow.x - haloSpread, item.glow.y - haloSpread),
       };
 
-      if (progress < 1) filling.push({ ...placement, alpha: HALO_ALPHA * progress, tick: item.tick });
-      else full.push(placement);
+      if (progress < 1) {
+        bloomFilling.push({ ...bloomPlacement, alpha: (isMajorTick ? BLOOM_ALPHA.bonfire : BLOOM_ALPHA.log) * progress, tick: item.tick });
+        haloFilling.push({ ...haloPlacement, alpha: HALO_ALPHA * progress, tick: item.tick });
+        continue;
+      }
+
+      (isMajorTick ? bonfires : logs).push(bloomPlacement);
+      halos.push(haloPlacement);
     }
 
-    return { full: toBatch(full), filling };
-  }, [prepared, lit, dotSize]);
+    return {
+      bloom: { bonfires: toBatch(bonfires), logs: toBatch(logs), filling: bloomFilling },
+      halo: { full: toBatch(halos), filling: haloFilling },
+    };
+  }, [prepared, lit, step, dotSize]);
 
   if (!image) return null;
 
