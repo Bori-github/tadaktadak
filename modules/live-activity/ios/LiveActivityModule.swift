@@ -11,6 +11,7 @@ struct LiveActivityColorsRecord: Record {
 
 struct LiveActivityContentRecord: Record {
   @Field var mode: String = "focus"
+  @Field var theme: String = "campfire"
   @Field var colors: LiveActivityColorsRecord = LiveActivityColorsRecord()
   @Field var progressStartsAt: Double = 0
   @Field var endsAt: Double = 0
@@ -23,6 +24,7 @@ struct LiveActivityContentRecord: Record {
   var attributes: TimerActivityAttributes {
     .init(
       mode: activityMode,
+      theme: TimerActivityTheme(rawValue: theme) ?? .campfire,
       colors: .init(canvas: colors.canvas, appName: colors.appName, text: colors.text, arc: colors.arc, close: colors.close),
       language: language
     )

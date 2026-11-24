@@ -3,6 +3,8 @@ import { NativeModule, requireOptionalNativeModule } from 'expo';
 /** 타이머 모드. `src/entities/timer`의 `TimerMode`와 같은 값 */
 export type LiveActivityMode = 'focus' | 'rest';
 
+export type LiveActivityTheme = 'campfire' | 'winter';
+
 export type LiveActivityColors = {
   canvas: string;
   appName: string;
@@ -15,6 +17,7 @@ export type LiveActivityColors = {
 
 export type LiveActivityContent = {
   mode: LiveActivityMode;
+  theme: LiveActivityTheme;
   colors: LiveActivityColors;
   /** 진행 막대가 0%인 시각. `endsAt - 타이머 시간` (밀리초) */
   progressStartsAt: number;

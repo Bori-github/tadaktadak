@@ -9,6 +9,11 @@ enum TimerActivityMode: String, Codable, Hashable {
     case rest
 }
 
+enum TimerActivityTheme: String, Codable, Hashable {
+    case campfire
+    case winter
+}
+
 struct TimerActivityColors: Codable, Hashable {
     let canvas: String
     let appName: String
@@ -31,6 +36,8 @@ struct TimerActivityAttributes: ActivityAttributes, Hashable {
     }
 
     let mode: TimerActivityMode
+
+    let theme: TimerActivityTheme?
 
     /// 이전 버전이 시작한 Activity는 `nil`
     let colors: TimerActivityColors?

@@ -7,7 +7,7 @@ import { activityContent } from '../lib/liveActivity';
 
 import { type TimerMode, type TimerSession } from '@/entities/timer';
 import { useLanguage } from '@/entities/language';
-import { usePalette } from '@/shared/lib';
+import { useDisplayedTheme } from '@/entities/theme';
 
 type LiveActivityParams = {
   session: TimerSession;
@@ -27,7 +27,7 @@ type LiveActivityParams = {
  */
 export const useLiveActivity = ({ session, settingMinutes, isSettled, notificationPermission }: LiveActivityParams): void => {
   const language = useLanguage();
-  const palette = usePalette();
+  const theme = useDisplayedTheme();
 
   useEffect(() => {
     const bridge = liveActivity;
@@ -35,7 +35,7 @@ export const useLiveActivity = ({ session, settingMinutes, isSettled, notificati
     // 저장값을 읽기 전에는 세션 값이 대기라, 진행 중에 종료됐던 Live Activity를 지우게 되므로 멈춤
     if (!isSettled || bridge === null) return;
 
-    const content = activityContent({ session, settingMinutes, language, palette, now: Date.now() });
+    const content = activityContent({ session, settingMinutes, language, theme, now: Date.now() });
 
     // 따로 호출하면 늦게 도착한 종료가 방금 시작한 Live Activity를 지우므로, 한 함수에서 이어 실행
     const apply = async (): Promise<void> => {
@@ -52,7 +52,7 @@ export const useLiveActivity = ({ session, settingMinutes, isSettled, notificati
     settingMinutes,
     isSettled,
     language,
-    palette,
+    theme,
     // Android 진행 중 알림은 알림 권한이 필요해 권한 변경 시 재호출
     notificationPermission,
   ]);
