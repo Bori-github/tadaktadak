@@ -33,6 +33,9 @@ export const CompletedEffect = memo((props: CompletedEffectProps) => {
   // `useSyncExternalStore` 기반이라 Skia `Canvas` 내부에서도 조회 가능
   const Effect = EFFECTS[useDisplayedTheme()];
 
+  // 완료 연출 중에만 렌더링. 드래그 중 설정 시간 변경에 따른 리렌더링 방지
+  if (props.effectStartedAt === null) return null;
+
   return <Effect {...props} />;
 });
 
