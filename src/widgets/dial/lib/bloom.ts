@@ -4,7 +4,7 @@ import { clockwisePhase } from './phase';
 import { DOT_SIZE } from '@/shared/constants';
 
 /** 5분 개체, 1분 개체 빛 반지름 (논리 픽셀, 배율 1) */
-export type GlowRadius = { bonfire: number; log: number };
+export type GlowRadius = { major: number; minor: number };
 
 /**
  * `drawBloom` 텍스처 안의 반지름별 사각형
@@ -12,9 +12,9 @@ export type GlowRadius = { bonfire: number; log: number };
  * @param radius - 5분 개체, 1분 개체 빛 반지름
  * @returns 5분 개체 사각형을 왼쪽, 1분 개체 사각형을 오른쪽에 둔 배치
  */
-export const glowSprites = ({ bonfire, log }: GlowRadius): Record<keyof GlowRadius, SkRect> => ({
-  bonfire: Skia.XYWHRect(0, 0, bonfire * 2, bonfire * 2),
-  log: Skia.XYWHRect(bonfire * 2, 0, log * 2, log * 2),
+export const glowSprites = ({ major, minor }: GlowRadius): Record<keyof GlowRadius, SkRect> => ({
+  major: Skia.XYWHRect(0, 0, major * 2, major * 2),
+  minor: Skia.XYWHRect(major * 2, 0, minor * 2, minor * 2),
 });
 
 /**
@@ -26,7 +26,7 @@ export const glowSprites = ({ bonfire, log }: GlowRadius): Record<keyof GlowRadi
  */
 export const drawBloom = (gradient: SkColor[], radius: GlowRadius): SkImage | null => {
   const sprites = glowSprites(radius);
-  const surface = Skia.Surface.Make((radius.bonfire + radius.log) * 2, radius.bonfire * 2);
+  const surface = Skia.Surface.Make((radius.major + radius.minor) * 2, radius.major * 2);
   if (!surface) return null;
 
   const canvas = surface.getCanvas();
@@ -34,8 +34,8 @@ export const drawBloom = (gradient: SkColor[], radius: GlowRadius): SkImage | nu
   canvas.clear(Skia.Color('transparent'));
 
   for (const [rect, spriteRadius] of [
-    [sprites.bonfire, radius.bonfire],
-    [sprites.log, radius.log],
+    [sprites.major, radius.major],
+    [sprites.minor, radius.minor],
   ] as const) {
     const paint = Skia.Paint();
     const center = { x: rect.x + spriteRadius, y: rect.y + spriteRadius };
@@ -70,13 +70,13 @@ export const CENTER_BLOOM_RATIO = 0.95;
 export const CENTER_BLOOM_ALPHA = 0.24;
 
 /** 빛 번짐 반지름 (논리 픽셀, 배율 1). `DESIGN.md` §6 */
-export const BLOOM_RADIUS = { bonfire: 32, log: 16 };
+export const BLOOM_RADIUS: GlowRadius = { major: 32, minor: 16 };
 
 /** 빛 번짐 알파. `DESIGN.md` §6 */
-export const BLOOM_ALPHA = { bonfire: 0.55, log: 0.32 };
+export const BLOOM_ALPHA = { major: 0.55, minor: 0.32 };
 
 /** 후광 반지름 (논리 픽셀, 배율 1) */
-export const HALO_RADIUS = { bonfire: 10, log: 6 };
+export const HALO_RADIUS: GlowRadius = { major: 10, minor: 6 };
 
 export const HALO_ALPHA = 0.7;
 
@@ -99,7 +99,7 @@ type BloomRadiusInput = {
  * @returns 붙은 정도와 깜빡임과 배율을 곱한 반지름
  */
 export const bloomRadius = ({ tick, isMajorTick, progress, step, dotSize }: BloomRadiusInput): number => {
-  const base = isMajorTick ? BLOOM_RADIUS.bonfire : BLOOM_RADIUS.log;
+  const base = isMajorTick ? BLOOM_RADIUS.major : BLOOM_RADIUS.minor;
   const flicker = 0.9 + 0.1 * clockwisePhase(step, tick, 3);
 
   return base * (0.55 + 0.45 * progress) * flicker * (dotSize / DOT_SIZE);

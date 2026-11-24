@@ -16,8 +16,8 @@ import { topLeftOnGrid, type Palette } from '@/shared/lib';
 import { MARKER, getSpriteColors } from '@/shared/ui/dot-sprite';
 
 /** 아틀라스 내 스프라이트 인덱스. `FIRST_FRAME`부터 1분 눈금, 5분 눈금 `frames` 순 */
-const LOG = 0;
-const BONFIRE = 1;
+const MINOR = 0;
+const MAJOR = 1;
 const START_MARKER = 2;
 const FIRST_FRAME = 3;
 
@@ -97,17 +97,17 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, majorItemHei
     const perTick = TICK_NUMBERS.map((tick) => {
       const isMajorTick = tick % 5 === 0;
       const point = style.centerOf?.(tick, { centerX, centerY, radius, dotSize }) ?? pointOnDial(centerX, centerY, radius, (tick - 0.5) * 6);
-      const transform = transformOf(isMajorTick ? BONFIRE : LOG, point.x, point.y);
+      const transform = transformOf(isMajorTick ? MAJOR : MINOR, point.x, point.y);
 
       const glow = { x: point.x, y: point.y + (style.glowOffsetInDots ?? 0) * dotSize };
       const haloScale = dotSize / DOT_SIZE;
-      const haloSpread = (isMajorTick ? HALO_RADIUS.bonfire : HALO_RADIUS.log) * haloScale;
+      const haloSpread = (isMajorTick ? HALO_RADIUS.major : HALO_RADIUS.minor) * haloScale;
       const halo: Placement = {
-        sprite: isMajorTick ? HALO_SPRITES.bonfire : HALO_SPRITES.log,
+        sprite: isMajorTick ? HALO_SPRITES.major : HALO_SPRITES.minor,
         transform: Skia.RSXform(haloScale, 0, glow.x - haloSpread, glow.y - haloSpread),
       };
 
-      base.push({ sprite: spriteOf(isMajorTick ? BONFIRE : LOG), transform });
+      base.push({ sprite: spriteOf(isMajorTick ? MAJOR : MINOR), transform });
 
       return { tick, glow, halo, transform, hot: isMajorTick ? majorFrames : minorFrames };
     });
@@ -166,8 +166,8 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, majorItemHei
   }, [prepared, lit, step]);
 
   const bloom = useMemo(() => {
-    const bonfires: Placement[] = [];
-    const logs: Placement[] = [];
+    const majors: Placement[] = [];
+    const minors: Placement[] = [];
     const filling: (Placement & { alpha: number; tick: number })[] = [];
 
     for (const [index, item] of prepared.perTick.entries()) {
@@ -176,17 +176,17 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, majorItemHei
 
       const isMajorTick = item.tick % 5 === 0;
       const spread = bloomRadius({ tick: item.tick, isMajorTick, progress, step, dotSize });
-      const source = isMajorTick ? BLOOM_RADIUS.bonfire : BLOOM_RADIUS.log;
+      const source = isMajorTick ? BLOOM_RADIUS.major : BLOOM_RADIUS.minor;
       const placement = {
-        sprite: isMajorTick ? BLOOM_SPRITES.bonfire : BLOOM_SPRITES.log,
+        sprite: isMajorTick ? BLOOM_SPRITES.major : BLOOM_SPRITES.minor,
         transform: Skia.RSXform(spread / source, 0, item.glow.x - spread, item.glow.y - spread),
       };
 
-      if (progress < 1) filling.push({ ...placement, alpha: (isMajorTick ? BLOOM_ALPHA.bonfire : BLOOM_ALPHA.log) * progress, tick: item.tick });
-      else (isMajorTick ? bonfires : logs).push(placement);
+      if (progress < 1) filling.push({ ...placement, alpha: (isMajorTick ? BLOOM_ALPHA.major : BLOOM_ALPHA.minor) * progress, tick: item.tick });
+      else (isMajorTick ? majors : minors).push(placement);
     }
 
-    return { bonfires: toBatch(bonfires), logs: toBatch(logs), filling };
+    return { majors: toBatch(majors), minors: toBatch(minors), filling };
   }, [prepared, lit, step, dotSize]);
 
   // 배치가 불꽃 프레임과 무관해 `step` 변경 시 재계산하지 않음
@@ -218,14 +218,14 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, majorItemHei
               </Circle>
             </Group>
           )}
-          {bloom.bonfires.sprites.length === 0 ? null : (
-            <Group opacity={BLOOM_ALPHA.bonfire}>
-              <Atlas image={bloomImage} sprites={bloom.bonfires.sprites} transforms={bloom.bonfires.transforms} sampling={SOFT_SAMPLING} />
+          {bloom.majors.sprites.length === 0 ? null : (
+            <Group opacity={BLOOM_ALPHA.major}>
+              <Atlas image={bloomImage} sprites={bloom.majors.sprites} transforms={bloom.majors.transforms} sampling={SOFT_SAMPLING} />
             </Group>
           )}
-          {bloom.logs.sprites.length === 0 ? null : (
-            <Group opacity={BLOOM_ALPHA.log}>
-              <Atlas image={bloomImage} sprites={bloom.logs.sprites} transforms={bloom.logs.transforms} sampling={SOFT_SAMPLING} />
+          {bloom.minors.sprites.length === 0 ? null : (
+            <Group opacity={BLOOM_ALPHA.minor}>
+              <Atlas image={bloomImage} sprites={bloom.minors.sprites} transforms={bloom.minors.transforms} sampling={SOFT_SAMPLING} />
             </Group>
           )}
           {bloom.filling.map((item) => (
