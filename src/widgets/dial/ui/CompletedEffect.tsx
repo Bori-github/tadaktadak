@@ -3,6 +3,7 @@ import { memo, type ComponentType } from 'react';
 import { BulbChase } from './BulbChase';
 import { Embers } from './Embers';
 import { useDisplayedTheme, type ThemeId } from '@/entities/theme';
+import { type BonfireHeightInDots } from '@/shared/constants';
 import { type Palette } from '@/shared/lib';
 
 type CompletedEffectProps = {
@@ -11,6 +12,7 @@ type CompletedEffectProps = {
   /** 개체 중심 반지름 (px) */
   radius: number;
   dotSize: number;
+  bonfireHeightInDots: BonfireHeightInDots;
   settingMinutes: number;
   effectStartedAt: number | null;
   palette: Palette;

@@ -1,12 +1,12 @@
-import { Atlas, Skia, useColorBuffer, useRSXformBuffer } from '@shopify/react-native-skia';
+import { Atlas, Skia, useColorBuffer } from '@shopify/react-native-skia';
 import { memo, useMemo } from 'react';
 
 import { DIAL_ITEM_STYLES } from '../config/items';
 import { TICK_NUMBERS } from '../config/ticks';
 import { DOT_SAMPLING, drawSprites, packSprites } from '../lib/atlas';
 import { useChaseBoosts } from '../model/chase';
+import { type BonfireHeightInDots } from '@/shared/constants';
 import { bulbCenter, topLeftOnGrid } from '@/shared/lib';
-import { BULB_BIG_ON, BULB_ON, WINTER_SPRITE_COLORS } from '@/shared/ui/dot-sprite';
 
 type BulbChaseProps = {
   centerX: number;
@@ -14,39 +14,33 @@ type BulbChaseProps = {
   /** 개체 중심 반지름 (px) */
   radius: number;
   dotSize: number;
+  bonfireHeightInDots: BonfireHeightInDots;
   settingMinutes: number;
   effectStartedAt: number | null;
 };
 
-const GRIDS = [BULB_ON, BULB_BIG_ON];
-const PACKED = packSprites(GRIDS);
-
-const { completedBrightness } = DIAL_ITEM_STYLES.winter;
+const { minor, major, colors: spriteColors, completedBrightness } = DIAL_ITEM_STYLES.winter;
 
 /** 완료 연출 중 전구 밝기 순환 */
-export const BulbChase = memo(({ centerX, centerY, radius, dotSize, settingMinutes, effectStartedAt }: BulbChaseProps) => {
-  const image = useMemo(() => drawSprites(GRIDS, PACKED, WINTER_SPRITE_COLORS), []);
+export const BulbChase = memo(({ centerX, centerY, radius, dotSize, bonfireHeightInDots, settingMinutes, effectStartedAt }: BulbChaseProps) => {
+  // 점화 후 첫 프레임. 1분 전구, 5분 전구 순
+  const grids = useMemo(() => [minor.frames[0] ?? minor.base, major[bonfireHeightInDots].frames[0] ?? major[bonfireHeightInDots].base], [bonfireHeightInDots]);
+  const packed = useMemo(() => packSprites(grids), [grids]);
+  const image = useMemo(() => drawSprites(grids, packed, spriteColors), [grids, packed]);
 
-  const placements = useMemo(
-    () =>
-      TICK_NUMBERS.map((tick) => {
-        const box = PACKED.boxes[tick % 5 === 0 ? 1 : 0] ?? { left: 0, top: 0, widthInDots: 0, heightInDots: 0 };
-        const center = bulbCenter(tick, { centerX, centerY, radius, dotSize });
-        const { left, top } = topLeftOnGrid({ centerX: center.x, centerY: center.y, widthInDots: box.widthInDots, heightInDots: box.heightInDots, dotSize });
+  const { sprites, transforms } = useMemo(() => {
+    const placements = TICK_NUMBERS.map((tick) => {
+      const box = packed.boxes[tick % 5 === 0 ? 1 : 0] ?? { left: 0, top: 0, widthInDots: 0, heightInDots: 0 };
+      const center = bulbCenter(tick, { centerX, centerY, radius, dotSize });
+      const { left, top } = topLeftOnGrid({ centerX: center.x, centerY: center.y, widthInDots: box.widthInDots, heightInDots: box.heightInDots, dotSize });
 
-        return { sprite: Skia.XYWHRect(box.left, box.top, box.widthInDots, box.heightInDots), x: left * dotSize, y: top * dotSize };
-      }),
-    [centerX, centerY, radius, dotSize],
-  );
-  const sprites = useMemo(() => placements.map((placement) => placement.sprite), [placements]);
+      return { sprite: Skia.XYWHRect(box.left, box.top, box.widthInDots, box.heightInDots), transform: Skia.RSXform(dotSize, 0, left * dotSize, top * dotSize) };
+    });
+
+    return { sprites: placements.map((placement) => placement.sprite), transforms: placements.map((placement) => placement.transform) };
+  }, [packed, centerX, centerY, radius, dotSize]);
 
   const boosts = useChaseBoosts(settingMinutes, effectStartedAt);
-
-  const transforms = useRSXformBuffer(TICK_NUMBERS.length, (transform, index) => {
-    'worklet';
-    const placement = placements[index];
-    if (placement) transform.set(dotSize, 0, placement.x, placement.y);
-  });
 
   // RGB 유지, 알파만 변조. 완료 밝기와 합산 시 최대 1
   const colors = useColorBuffer(TICK_NUMBERS.length, (color, index) => {
