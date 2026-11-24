@@ -1,5 +1,6 @@
 import { memo, type ComponentType } from 'react';
 
+import { PeakGlow } from './PeakGlow';
 import { Wire } from './Wire';
 import { Wreath } from './Wreath';
 import { useDisplayedTheme, type ThemeId } from '@/entities/theme';
@@ -11,12 +12,16 @@ type DialUnderlayProps = {
   radius: number;
   dotSize: number;
   settingMinutes: number;
+  effectStartedAt: number | null;
 };
 
-const WinterUnderlay = ({ centerX, centerY, radius, dotSize, settingMinutes }: DialUnderlayProps) => (
+const WinterUnderlay = ({ centerX, centerY, radius, dotSize, settingMinutes, effectStartedAt }: DialUnderlayProps) => (
   <>
     <Wreath centerX={centerX} centerY={centerY} radius={radius} dotSize={dotSize} />
     <Wire centerX={centerX} centerY={centerY} radius={radius} dotSize={dotSize} settingMinutes={settingMinutes} />
+    {effectStartedAt === null ? null : (
+      <PeakGlow centerX={centerX} centerY={centerY} radius={radius} dotSize={dotSize} settingMinutes={settingMinutes} effectStartedAt={effectStartedAt} />
+    )}
   </>
 );
 
