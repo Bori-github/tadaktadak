@@ -4,8 +4,8 @@ import { bulbCenter, type DialPlacement } from '@/shared/lib';
 
 const WIRE_COLOR = '#1c2a1a';
 
-/** 구간 길이 50 dot 초과 시 도트 누락 */
-const SAMPLE_STEP = 0.02;
+/** 구간당 표본 간격 수. 구간 길이 50 dot 초과 시 도트 누락 */
+const SAMPLES_PER_SEGMENT = 50;
 
 type Point = { x: number; y: number };
 
@@ -30,7 +30,8 @@ export const wireDots = (settingMinutes: number, dial: DialPlacement): ColoredDo
   for (let segment = 0; segment < points.length - 1; segment += 2) {
     const [p0, p1, p2, p3] = [at(segment - 1), at(segment), at(segment + 1), at(segment + 2)];
 
-    for (let t = 0; t <= 1; t += SAMPLE_STEP) {
+    for (let sample = 0; sample <= SAMPLES_PER_SEGMENT; sample++) {
+      const t = sample / SAMPLES_PER_SEGMENT;
       const x = Math.floor(catmullRom(p0.x, p1.x, p2.x, p3.x, t) / dial.dotSize);
       const y = Math.floor(catmullRom(p0.y, p1.y, p2.y, p3.y, t) / dial.dotSize);
       dots.set(`${x},${y}`, { x, y, color: WIRE_COLOR });
