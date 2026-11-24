@@ -11,5 +11,11 @@ module.exports = {
     'icon-stop': { '2x': './images/icon-stop@2x.png', '3x': './images/icon-stop@3x.png' },
     'bonfire-hot-still-9': { '2x': './images/bonfire-hot-still-9@2x.png', '3x': './images/bonfire-hot-still-9@3x.png' },
     'bonfire-cold-9': { '2x': './images/bonfire-cold-9@2x.png', '3x': './images/bonfire-cold-9@3x.png' },
+    'button-round-enabled-winter': {
+      '2x': './images/button-round-enabled-winter@2x.png',
+      '3x': './images/button-round-enabled-winter@3x.png',
+    },
+    'bulb-big-on': { '2x': './images/bulb-big-on@2x.png', '3x': './images/bulb-big-on@3x.png' },
+    'bulb-big-off': { '2x': './images/bulb-big-off@2x.png', '3x': './images/bulb-big-off@3x.png' },
   },
 };
