@@ -16,7 +16,7 @@ type BulbChaseProps = {
   dotSize: number;
   bonfireHeightInDots: BonfireHeightInDots;
   settingMinutes: number;
-  effectStartedAt: number | null;
+  effectStartedAt: number;
 };
 
 const { minor, major, colors: spriteColors, completedBrightness } = DIAL_ITEM_STYLES.winter;

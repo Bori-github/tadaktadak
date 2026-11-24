@@ -15,7 +15,7 @@ type EmbersProps = {
   /** 개체 중심 반지름 (px) */
   radius: number;
   dotSize: number;
-  effectStartedAt: number | null;
+  effectStartedAt: number;
   palette: Palette;
 };
 
@@ -58,12 +58,7 @@ export const Embers = memo(({ centerX, centerY, radius, dotSize, effectStartedAt
   const elapsed = useCompletedEffectElapsed(effectStartedAt);
 
   useEffect(() => {
-    if (effectStartedAt === null) {
-      setEmbers([]);
-      return;
-    }
-
-    // 연출이 끝나면 `useCompletedEffectStartedAt`이 `null`을 주고 위 분기가 지우므로, 여기서 따로 예약하지 않음
+    // 연출이 끝나면 `CompletedEffect`가 언마운트하므로 정리 예약 없음
     setEmbers(spawnEmbers({ centerX: centerX / dotSize, centerY: centerY / dotSize, radius: radius / dotSize, elapsedMs: Date.now() - effectStartedAt }));
   }, [effectStartedAt, centerX, centerY, radius, dotSize]);
 

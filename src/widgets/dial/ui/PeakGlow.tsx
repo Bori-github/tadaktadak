@@ -16,7 +16,7 @@ type PeakGlowProps = {
   radius: number;
   dotSize: number;
   settingMinutes: number;
-  effectStartedAt: number | null;
+  effectStartedAt: number;
 };
 
 /** 최대 밝기 전구 흰색 빛 번짐 최대 반지름 (논리 픽셀, 배율 1) */

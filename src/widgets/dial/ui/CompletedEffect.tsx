@@ -18,14 +18,16 @@ type CompletedEffectProps = {
   palette: Palette;
 };
 
-const WinterEffect = (props: CompletedEffectProps) => (
+type EffectProps = CompletedEffectProps & { effectStartedAt: number };
+
+const WinterEffect = (props: EffectProps) => (
   <>
     <BulbChase {...props} />
     <Embers {...props} />
   </>
 );
 
-const EFFECTS: Record<ThemeId, ComponentType<CompletedEffectProps>> = {
+const EFFECTS: Record<ThemeId, ComponentType<EffectProps>> = {
   campfire: Embers,
   winter: WinterEffect,
 };
@@ -36,9 +38,10 @@ export const CompletedEffect = memo((props: CompletedEffectProps) => {
   const Effect = EFFECTS[useDisplayedTheme()];
 
   // 완료 연출 중에만 렌더링. 드래그 중 설정 시간 변경에 따른 리렌더링 방지
-  if (props.effectStartedAt === null) return null;
+  const { effectStartedAt } = props;
+  if (effectStartedAt === null) return null;
 
-  return <Effect {...props} />;
+  return <Effect {...props} effectStartedAt={effectStartedAt} />;
 });
 
 CompletedEffect.displayName = 'CompletedEffect';
