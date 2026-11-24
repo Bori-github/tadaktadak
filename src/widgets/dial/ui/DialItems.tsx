@@ -134,10 +134,16 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
       const transform = transformOf(isMajorTick ? BONFIRE : LOG, point.x, point.y);
 
       const glow = { x: point.x, y: point.y + (style.glowOffsetInDots ?? 0) * dotSize };
+      const haloScale = dotSize / DOT_SIZE;
+      const haloSpread = (isMajorTick ? HALO_RADIUS.bonfire : HALO_RADIUS.log) * haloScale;
+      const halo: Placement = {
+        sprite: isMajorTick ? HALO_SPRITES.bonfire : HALO_SPRITES.log,
+        transform: Skia.RSXform(haloScale, 0, glow.x - haloSpread, glow.y - haloSpread),
+      };
 
       base.push({ sprite: spriteOf(isMajorTick ? BONFIRE : LOG), transform });
 
-      return { tick, glow, transform, hot: isMajorTick ? majorFrames : minorFrames };
+      return { tick, glow, halo, transform, hot: isMajorTick ? majorFrames : minorFrames };
     });
 
     // 불붙은 모닥불과 한 도트 겹치므로 나중에 그려 덮음. `DESIGN.md` §5 겹침 검산
@@ -193,13 +199,10 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
     return { burning: toBatch(burning), filling };
   }, [prepared, lit, step]);
 
-  const { bloom, halo } = useMemo(() => {
-    const scale = dotSize / DOT_SIZE;
+  const bloom = useMemo(() => {
     const bonfires: Placement[] = [];
     const logs: Placement[] = [];
-    const bloomFilling: (Placement & { alpha: number; tick: number })[] = [];
-    const halos: Placement[] = [];
-    const haloFilling: (Placement & { alpha: number; tick: number })[] = [];
+    const filling: (Placement & { alpha: number; tick: number })[] = [];
 
     for (const [index, item] of prepared.perTick.entries()) {
       const progress = lit[index] ?? 0;
@@ -208,31 +211,33 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
       const isMajorTick = item.tick % 5 === 0;
       const spread = bloomRadius({ tick: item.tick, isMajorTick, progress, step, dotSize });
       const source = isMajorTick ? BLOOM_RADIUS.bonfire : BLOOM_RADIUS.log;
-      const bloomPlacement = {
+      const placement = {
         sprite: isMajorTick ? BLOOM_SPRITES.bonfire : BLOOM_SPRITES.log,
         transform: Skia.RSXform(spread / source, 0, item.glow.x - spread, item.glow.y - spread),
       };
-      const haloSpread = (isMajorTick ? HALO_RADIUS.bonfire : HALO_RADIUS.log) * scale;
-      const haloPlacement = {
-        sprite: isMajorTick ? HALO_SPRITES.bonfire : HALO_SPRITES.log,
-        transform: Skia.RSXform(scale, 0, item.glow.x - haloSpread, item.glow.y - haloSpread),
-      };
 
-      if (progress < 1) {
-        bloomFilling.push({ ...bloomPlacement, alpha: (isMajorTick ? BLOOM_ALPHA.bonfire : BLOOM_ALPHA.log) * progress, tick: item.tick });
-        haloFilling.push({ ...haloPlacement, alpha: HALO_ALPHA * progress, tick: item.tick });
-        continue;
-      }
-
-      (isMajorTick ? bonfires : logs).push(bloomPlacement);
-      halos.push(haloPlacement);
+      if (progress < 1) filling.push({ ...placement, alpha: (isMajorTick ? BLOOM_ALPHA.bonfire : BLOOM_ALPHA.log) * progress, tick: item.tick });
+      else (isMajorTick ? bonfires : logs).push(placement);
     }
 
-    return {
-      bloom: { bonfires: toBatch(bonfires), logs: toBatch(logs), filling: bloomFilling },
-      halo: { full: toBatch(halos), filling: haloFilling },
-    };
+    return { bonfires: toBatch(bonfires), logs: toBatch(logs), filling };
   }, [prepared, lit, step, dotSize]);
+
+  // 배치가 불꽃 프레임과 무관해 `step` 변경 시 재계산하지 않음
+  const halo = useMemo(() => {
+    const full: Placement[] = [];
+    const filling: (Placement & { alpha: number; tick: number })[] = [];
+
+    for (const [index, item] of prepared.perTick.entries()) {
+      const progress = lit[index] ?? 0;
+      if (progress === 0) continue;
+
+      if (progress < 1) filling.push({ ...item.halo, alpha: HALO_ALPHA * progress, tick: item.tick });
+      else full.push(item.halo);
+    }
+
+    return { full: toBatch(full), filling };
+  }, [prepared, lit]);
 
   if (!image) return null;
 
