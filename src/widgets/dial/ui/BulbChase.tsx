@@ -1,12 +1,13 @@
 import { Atlas, Skia, TileMode, useColorBuffer, useRSXformBuffer, type SkImage, type SkRect } from '@shopify/react-native-skia';
-import { memo, useEffect, useMemo } from 'react';
-import { useDerivedValue, useFrameCallback, useSharedValue } from 'react-native-reanimated';
+import { memo, useMemo } from 'react';
+import { useDerivedValue } from 'react-native-reanimated';
 
 import { DIAL_ITEM_STYLES } from '../config/items';
 import { TICK_NUMBERS } from '../config/ticks';
 import { DOT_SAMPLING, SOFT_SAMPLING, drawSprites, packSprites } from '../lib/atlas';
 import { getBloomGradient } from '../lib/bloom';
 import { chaseBoost } from '../lib/chase';
+import { useCompletedEffectElapsed } from '../model/ember';
 import { DOT_SIZE } from '@/shared/constants';
 import { bulbCenter, topLeftOnGrid } from '@/shared/lib';
 import { BULB_BIG_ON, BULB_ON, WINTER_SPRITE_COLORS } from '@/shared/ui/dot-sprite';
@@ -32,9 +33,6 @@ const PEAK_GLOW_ALPHA = 0.6;
 const PEAK_GLOW_THRESHOLD = 0.5;
 
 const { completedBrightness, glowOffsetInDots = 0 } = DIAL_ITEM_STYLES.winter;
-
-/** 시작 시각 미설정 값. 첫 프레임에서 기기 가동 시간으로 설정 */
-const NOT_STARTED = -1;
 
 const drawPeakGlow = (): SkImage | null => {
   const radius = PEAK_GLOW_RADIUS.major;
@@ -77,24 +75,7 @@ export const BulbChase = memo(({ centerX, centerY, radius, dotSize, settingMinut
   const sprites = useMemo(() => placements.map((placement) => placement.sprite), [placements]);
   const glowSprites = useMemo<SkRect[]>(() => TICK_NUMBERS.map(() => Skia.XYWHRect(0, 0, PEAK_GLOW_RADIUS.major * 2, PEAK_GLOW_RADIUS.major * 2)), []);
 
-  const elapsed = useSharedValue(0);
-  const frameStartedAt = useSharedValue(NOT_STARTED);
-
-  const clock = useFrameCallback((frame) => {
-    'worklet';
-    if (frameStartedAt.value === NOT_STARTED) frameStartedAt.value = frame.timestamp - elapsed.value;
-
-    elapsed.value = frame.timestamp - frameStartedAt.value;
-  }, false);
-
-  useEffect(() => {
-    // 백그라운드 경과 시간 반영을 위해 첫 프레임 전 초기화
-    frameStartedAt.value = NOT_STARTED;
-    elapsed.value = effectStartedAt === null ? 0 : Date.now() - effectStartedAt;
-    clock.setActive(effectStartedAt !== null);
-    // `useSharedValue` 반환값은 고정 참조라 의존성에서 제외. 포함 시 React Compiler 린트가 내부 사용 차단
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clock, effectStartedAt]);
+  const elapsed = useCompletedEffectElapsed(effectStartedAt);
 
   const boosts = useDerivedValue(() => TICK_NUMBERS.map((tick) => (tick > settingMinutes ? 0 : chaseBoost({ tick, elapsedMs: elapsed.value, settingMinutes }))));
 

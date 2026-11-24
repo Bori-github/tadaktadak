@@ -1,6 +1,37 @@
 import { useEffect, useState } from 'react';
+import { useFrameCallback, useSharedValue, type SharedValue } from 'react-native-reanimated';
 
 import { completedEffectRemainingMs, completedEffectStartedAt, type TimerSession } from '@/entities/timer';
+
+/** 시작 시각 미설정 값. 첫 프레임에서 기기 가동 시간으로 설정 */
+const NOT_STARTED = -1;
+
+/**
+ * 완료 연출 시작 후 경과 시간 (밀리초). 프레임마다 갱신
+ *
+ * @param effectStartedAt - 완료 연출 시작 시각 (밀리초). `null`이면 갱신 정지
+ * @returns 경과 시간 공유 값. 백그라운드 경과 시간 포함
+ */
+export const useCompletedEffectElapsed = (effectStartedAt: number | null): SharedValue<number> => {
+  const elapsed = useSharedValue(0);
+  const frameStartedAt = useSharedValue(NOT_STARTED);
+
+  const clock = useFrameCallback((frame) => {
+    'worklet';
+    if (frameStartedAt.value === NOT_STARTED) frameStartedAt.value = frame.timestamp - elapsed.value;
+
+    elapsed.value = frame.timestamp - frameStartedAt.value;
+  }, false);
+
+  useEffect(() => {
+    // 백그라운드 경과 시간 반영을 위해 첫 프레임 전 초기화
+    frameStartedAt.set(NOT_STARTED);
+    elapsed.set(effectStartedAt === null ? 0 : Date.now() - effectStartedAt);
+    clock.setActive(effectStartedAt !== null);
+  }, [clock, effectStartedAt, elapsed, frameStartedAt]);
+
+  return elapsed;
+};
 
 /**
  * 완료 연출이 시작된 시각 (밀리초). `DESIGN.md` §9 완료
