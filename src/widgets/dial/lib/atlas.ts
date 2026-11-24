@@ -122,7 +122,7 @@ export const drawSprites = (grids: readonly (readonly string[])[], packed: Packe
   return drawDots(packed.image.widthInDots, packed.image.heightInDots, dots);
 };
 
-export interface PlacedDots {
+interface PlacedDots {
   image: SkImage;
   sprites: SkRect[];
   transforms: SkRSXform[];

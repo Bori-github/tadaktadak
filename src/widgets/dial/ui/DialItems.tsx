@@ -1,11 +1,11 @@
-import { Atlas, Circle, Group, RadialGradient, Skia, TileMode, vec, type SkColor, type SkImage, type SkRect, type SkRSXform } from '@shopify/react-native-skia';
+import { Atlas, Circle, Group, RadialGradient, Skia, vec, type SkRect, type SkRSXform } from '@shopify/react-native-skia';
 import { memo, useEffect, useMemo } from 'react';
 import { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { DIAL_ITEM_STYLES } from '../config/items';
 import { DOT_SAMPLING, SOFT_SAMPLING, drawSprites, packSprites } from '../lib/atlas';
 import { TICK_NUMBERS } from '../config/ticks';
-import { BLOOM_ALPHA, BLOOM_RADIUS, CENTER_BLOOM_ALPHA, CENTER_BLOOM_RATIO, HALO_ALPHA, HALO_RADIUS, bloomRadius, getBloomGradient } from '../lib/bloom';
+import { BLOOM_ALPHA, BLOOM_RADIUS, CENTER_BLOOM_ALPHA, CENTER_BLOOM_RATIO, HALO_ALPHA, HALO_RADIUS, bloomRadius, drawBloom, getBloomGradient, glowSprites } from '../lib/bloom';
 import { pointOnDial } from '../lib/geometry';
 import { clockwisePhase } from '../lib/phase';
 import { useFlickerStep } from '../model/flicker';
@@ -42,13 +42,6 @@ type Placement = { sprite: SkRect; transform: SkRSXform };
 /** `Atlas`의 `sprites`·`transforms`에 그대로 넘길 두 배열 */
 type AtlasBatch = { sprites: SkRect[]; transforms: SkRSXform[] };
 
-type GlowRadius = { bonfire: number; log: number };
-
-const glowSprites = ({ bonfire, log }: GlowRadius): Record<keyof GlowRadius, SkRect> => ({
-  bonfire: Skia.XYWHRect(0, 0, bonfire * 2, bonfire * 2),
-  log: Skia.XYWHRect(bonfire * 2, 0, log * 2, log * 2),
-});
-
 const BLOOM_SPRITES = glowSprites(BLOOM_RADIUS);
 const HALO_SPRITES = glowSprites(HALO_RADIUS);
 
@@ -66,33 +59,6 @@ const toBatch = (items: Placement[]): AtlasBatch => ({
   sprites: items.map((item) => item.sprite),
   transforms: items.map((item) => item.transform),
 });
-
-/** 반지름별 텍스처 두 장을 만든다. 매 프레임 부르지 않고, 그릴 때 알파와 스케일만 변경 `DESIGN.md` §6 */
-const drawBloom = (gradient: SkColor[], radius: GlowRadius): SkImage | null => {
-  const { bonfire, log } = radius;
-  const sprites = glowSprites(radius);
-  const surface = Skia.Surface.Make((bonfire + log) * 2, bonfire * 2);
-  if (!surface) return null;
-
-  const canvas = surface.getCanvas();
-
-  canvas.clear(Skia.Color('transparent'));
-
-  for (const [rect, radius] of [
-    [sprites.bonfire, bonfire],
-    [sprites.log, log],
-  ] as const) {
-    const paint = Skia.Paint();
-    const center = { x: rect.x + radius, y: rect.y + radius };
-
-    paint.setShader(Skia.Shader.MakeRadialGradient(center, radius, gradient, [0, 1], TileMode.Clamp));
-    canvas.drawRect(rect, paint);
-  }
-
-  surface.flush();
-
-  return surface.makeImageSnapshot();
-};
 
 export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeightInDots, remainingMinutes, settingMinutes, dimming, isReady, palette }: DialItemsProps) => {
   // `useSyncExternalStore` 기반이라 Skia `Canvas` 내부에서도 조회 가능
@@ -267,18 +233,20 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
               <Atlas image={bloomImage} sprites={[item.sprite]} transforms={[item.transform]} sampling={SOFT_SAMPLING} />
             </Group>
           ))}
-          {haloImage === null || halo.full.sprites.length === 0 ? null : (
-            <Group opacity={HALO_ALPHA}>
-              <Atlas image={haloImage} sprites={halo.full.sprites} transforms={halo.full.transforms} sampling={SOFT_SAMPLING} />
-            </Group>
-          )}
-          {haloImage === null
-            ? null
-            : halo.filling.map((item) => (
+          {haloImage === null ? null : (
+            <>
+              {halo.full.sprites.length === 0 ? null : (
+                <Group opacity={HALO_ALPHA}>
+                  <Atlas image={haloImage} sprites={halo.full.sprites} transforms={halo.full.transforms} sampling={SOFT_SAMPLING} />
+                </Group>
+              )}
+              {halo.filling.map((item) => (
                 <Group key={item.tick} opacity={item.alpha}>
                   <Atlas image={haloImage} sprites={[item.sprite]} transforms={[item.transform]} sampling={SOFT_SAMPLING} />
                 </Group>
               ))}
+            </>
+          )}
         </Group>
       )}
       {baseInSetting.sprites.length === 0 ? null : (
