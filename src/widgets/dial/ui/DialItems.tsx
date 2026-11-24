@@ -11,7 +11,7 @@ import { clockwisePhase } from '../lib/phase';
 import { useFlickerStep } from '../model/flicker';
 import { useDisplayedTheme } from '@/entities/theme';
 import { ignitionProgress } from '@/entities/timer';
-import { DOT_SIZE, type BonfireHeightInDots } from '@/shared/constants';
+import { DOT_SIZE, type MajorItemHeightInDots } from '@/shared/constants';
 import { topLeftOnGrid, type Palette } from '@/shared/lib';
 import { MARKER, getSpriteColors } from '@/shared/ui/dot-sprite';
 
@@ -26,7 +26,7 @@ type DialItemsProps = {
   centerY: number;
   radius: number;
   dotSize: number;
-  bonfireHeightInDots: BonfireHeightInDots;
+  majorItemHeightInDots: MajorItemHeightInDots;
   /** 남은 시간(분). 대기에서는 설정 시간이라 아무 눈금도 붙지 않음 */
   remainingMinutes: number;
   settingMinutes: number;
@@ -60,15 +60,15 @@ const toBatch = (items: Placement[]): AtlasBatch => ({
   transforms: items.map((item) => item.transform),
 });
 
-export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeightInDots, remainingMinutes, settingMinutes, dimming, isReady, palette }: DialItemsProps) => {
+export const DialItems = memo(({ centerX, centerY, radius, dotSize, majorItemHeightInDots, remainingMinutes, settingMinutes, dimming, isReady, palette }: DialItemsProps) => {
   // `useSyncExternalStore` 기반이라 Skia `Canvas` 내부에서도 조회 가능
   const style = DIAL_ITEM_STYLES[useDisplayedTheme()];
   const centerBloomGradient = useMemo(() => getBloomGradient(palette.glow), [palette]);
   const bloomGradient = useMemo(() => (style.bloomColor ? getBloomGradient(style.bloomColor) : centerBloomGradient), [style, centerBloomGradient]);
   const grids = useMemo(() => {
-    const major = style.major[bonfireHeightInDots];
+    const major = style.major[majorItemHeightInDots];
     return [style.minor.base, major.base, MARKER, ...style.minor.frames, ...major.frames];
-  }, [style, bonfireHeightInDots]);
+  }, [style, majorItemHeightInDots]);
 
   const packed = useMemo(() => packSprites(grids), [grids]);
   const image = useMemo(() => drawSprites(grids, packed, { ...style.colors, ...getSpriteColors(palette) }), [grids, packed, style, palette]);
@@ -91,7 +91,7 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
     };
 
     const minorFrames = style.minor.frames.map((_, index) => spriteOf(FIRST_FRAME + index));
-    const majorFrames = style.major[bonfireHeightInDots].frames.map((_, index) => spriteOf(FIRST_FRAME + minorFrames.length + index));
+    const majorFrames = style.major[majorItemHeightInDots].frames.map((_, index) => spriteOf(FIRST_FRAME + minorFrames.length + index));
 
     const base: Placement[] = [];
     const perTick = TICK_NUMBERS.map((tick) => {
@@ -116,7 +116,7 @@ export const DialItems = memo(({ centerX, centerY, radius, dotSize, bonfireHeigh
     const marker = toBatch([{ sprite: spriteOf(START_MARKER), transform: transformOf(START_MARKER, centerX, centerY - radius) }]);
 
     return { base: toBatch(base), marker, perTick };
-  }, [packed, style, bonfireHeightInDots, dotSize, centerX, centerY, radius]);
+  }, [packed, style, majorItemHeightInDots, dotSize, centerX, centerY, radius]);
 
   const { baseInSetting, baseOutOfSetting } = useMemo(
     () => ({

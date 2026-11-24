@@ -5,7 +5,7 @@ import { DIAL_ITEM_STYLES } from '../config/items';
 import { TICK_NUMBERS } from '../config/ticks';
 import { DOT_SAMPLING, drawSprites, packSprites } from '../lib/atlas';
 import { useChaseBoosts } from '../model/chase';
-import { type BonfireHeightInDots } from '@/shared/constants';
+import { type MajorItemHeightInDots } from '@/shared/constants';
 import { bulbCenter, topLeftOnGrid } from '@/shared/lib';
 
 type BulbChaseProps = {
@@ -14,7 +14,7 @@ type BulbChaseProps = {
   /** 개체 중심 반지름 (px) */
   radius: number;
   dotSize: number;
-  bonfireHeightInDots: BonfireHeightInDots;
+  majorItemHeightInDots: MajorItemHeightInDots;
   settingMinutes: number;
   effectStartedAt: number;
 };
@@ -22,9 +22,9 @@ type BulbChaseProps = {
 const { minor, major, colors: spriteColors, completedBrightness } = DIAL_ITEM_STYLES.winter;
 
 /** 완료 연출 중 전구 밝기 순환 */
-export const BulbChase = memo(({ centerX, centerY, radius, dotSize, bonfireHeightInDots, settingMinutes, effectStartedAt }: BulbChaseProps) => {
+export const BulbChase = memo(({ centerX, centerY, radius, dotSize, majorItemHeightInDots, settingMinutes, effectStartedAt }: BulbChaseProps) => {
   // 점화 후 첫 프레임. 1분 전구, 5분 전구 순
-  const grids = useMemo(() => [minor.frames[0] ?? minor.base, major[bonfireHeightInDots].frames[0] ?? major[bonfireHeightInDots].base], [bonfireHeightInDots]);
+  const grids = useMemo(() => [minor.frames[0] ?? minor.base, major[majorItemHeightInDots].frames[0] ?? major[majorItemHeightInDots].base], [majorItemHeightInDots]);
   const packed = useMemo(() => packSprites(grids), [grids]);
   const image = useMemo(() => drawSprites(grids, packed, spriteColors), [grids, packed]);
 

@@ -39,11 +39,11 @@ describe('등급별 모닥불', () => {
     { label: '지원 범위보다 작은', shortSide: 320 },
     { label: 'compact 최대', shortSide: 359 },
   ])('$label 짧은 변 $shortSide에서 모닥불은 7 도트다', ({ shortSide }) => {
-    expect(layout(shortSide).bonfireHeightInDots).toBe(7);
+    expect(layout(shortSide).majorItemHeightInDots).toBe(7);
   });
 
   it('medium 최소 짧은 변 360에서 모닥불은 9 도트다', () => {
-    expect(layout(360).bonfireHeightInDots).toBe(9);
+    expect(layout(360).majorItemHeightInDots).toBe(9);
   });
 });
 
@@ -221,7 +221,7 @@ describe('가로 배치 시계판 축소 하한', () => {
   it('개체 중심 반지름이 124.1 미만이면 모닥불이 7 도트다', () => {
     const l = narrowWindow(442);
     expect(l.itemRadius).toBeLessThan(124.1);
-    expect(l.bonfireHeightInDots).toBe(7);
+    expect(l.majorItemHeightInDots).toBe(7);
   });
 
   it('버튼과 떨어진 창에서 개체 중심 반지름은 118.1 미만으로 축소되지 않는다', () => {
