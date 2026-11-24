@@ -36,7 +36,7 @@ private const val MIN_PROGRESS_STEP_MS = 5_000L
 private const val OPEN_APP_REQUEST_CODE = 0
 private const val STOP_REQUEST_CODE = 1
 
-private const val SPRITE_ROWS = 9
+private const val BONFIRE_ROWS = 9
 private const val LARGE_ICON_HEIGHT_RATIO = 0.6
 
 internal data class TimerContent(
@@ -203,8 +203,8 @@ internal object TimerNotification {
   private fun createLargeIcon(context: Context, resourceId: Int): Bitmap {
     val sprite = BitmapFactory.decodeResource(context.resources, resourceId)
     val size = context.resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height)
-    val dot = (size * LARGE_ICON_HEIGHT_RATIO / SPRITE_ROWS).toInt().coerceAtLeast(1)
-    val scaledHeight = SPRITE_ROWS * dot
+    val dot = (size * LARGE_ICON_HEIGHT_RATIO / BONFIRE_ROWS).toInt().coerceAtLeast(1)
+    val scaledHeight = BONFIRE_ROWS * dot
     val scaled = Bitmap.createScaledBitmap(sprite, sprite.width * scaledHeight / sprite.height, scaledHeight, false)
 
     val icon = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
