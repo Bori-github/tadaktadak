@@ -3,8 +3,7 @@ import { describe, expect, it } from '@jest/globals';
 import { activityContent } from './liveActivity';
 
 import { MINUTE_IN_MS, NOW, TIMER_MODES, type TimerMode, type TimerSession } from '@/entities/timer';
-import { THEME_IDS, THEMES } from '@/entities/theme';
-import { DEFAULT_PALETTE } from '@/shared/constants';
+import { THEME_IDS } from '@/entities/theme';
 
 const SETTING_MINUTES: Record<TimerMode, number> = { focus: 25, rest: 5 };
 
@@ -18,7 +17,7 @@ const NOT_RUNNING: { situation: string; session: TimerSession }[] = [
   { situation: '완료', session: { phase: 'completed', mode: 'focus', completedAt: NOW } },
 ];
 
-const contentAt = (session: TimerSession, now: number) => activityContent({ session, settingMinutes: SETTING_MINUTES, language: 'ko-KR', palette: DEFAULT_PALETTE, now });
+const contentAt = (session: TimerSession, now: number) => activityContent({ session, settingMinutes: SETTING_MINUTES, language: 'ko-KR', theme: 'campfire', now });
 
 describe('잠금화면에 표시할 내용', () => {
   it('일시정지했다 재개해도 진행 막대가 타이머 시간만큼만 찬다', () => {
@@ -37,6 +36,12 @@ describe('잠금화면에 표시할 내용', () => {
     expect(contentAt(rest, NOW)?.mode).toBe('rest');
   });
 
+  it('표시 중인 테마를 Live Activity에 전달한다', () => {
+    const content = activityContent({ session: RUNNING, settingMinutes: SETTING_MINUTES, language: 'ko-KR', theme: 'winter', now: NOW });
+
+    expect(content?.theme).toBe('winter');
+  });
+
   it.each(NOT_RUNNING)('$situation 상태에서는 시작하지 않는다', ({ session }) => {
     expect(contentAt(session, NOW)).toBeNull();
   });
@@ -52,7 +57,7 @@ describe('잠금화면에 표시할 내용', () => {
   // iOS `Color(hex:)`, Android `Color.parseColor` 공통 지원 형식
   it.each(THEME_IDS.flatMap((theme) => TIMER_MODES.map((mode) => ({ theme, mode }))))('모든 테마에서 Live Activity 색을 6자리 hex로 전달한다: $theme $mode', ({ theme, mode }) => {
     const session: TimerSession = { phase: 'running', mode, startedAt: NOW, endsAt: NOW + MINUTE_IN_MS };
-    const content = activityContent({ session, settingMinutes: SETTING_MINUTES, language: 'ko-KR', palette: THEMES[theme].palette, now: NOW });
+    const content = activityContent({ session, settingMinutes: SETTING_MINUTES, language: 'ko-KR', theme, now: NOW });
 
     Object.values(content?.colors ?? {}).forEach((color) => {
       expect(color).toMatch(/^#[0-9a-f]{6}$/i);
