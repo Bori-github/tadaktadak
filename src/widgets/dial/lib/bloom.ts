@@ -1,7 +1,53 @@
-import { Skia, type SkColor } from '@shopify/react-native-skia';
+import { Skia, TileMode, type SkColor, type SkImage, type SkRect } from '@shopify/react-native-skia';
 
 import { clockwisePhase } from './phase';
 import { DOT_SIZE } from '@/shared/constants';
+
+/** 5분 개체, 1분 개체 빛 반지름 (논리 픽셀, 배율 1) */
+export type GlowRadius = { bonfire: number; log: number };
+
+/**
+ * `drawBloom` 텍스처 안의 반지름별 사각형
+ *
+ * @param radius - 5분 개체, 1분 개체 빛 반지름
+ * @returns 5분 개체 사각형을 왼쪽, 1분 개체 사각형을 오른쪽에 둔 배치
+ */
+export const glowSprites = ({ bonfire, log }: GlowRadius): Record<keyof GlowRadius, SkRect> => ({
+  bonfire: Skia.XYWHRect(0, 0, bonfire * 2, bonfire * 2),
+  log: Skia.XYWHRect(bonfire * 2, 0, log * 2, log * 2),
+});
+
+/**
+ * 반지름별 빛 번짐 텍스처 두 장. 그릴 때 알파와 스케일만 변경. `DESIGN.md` §6
+ *
+ * @param gradient - `getBloomGradient` 결과
+ * @param radius - 5분 개체, 1분 개체 빛 반지름
+ * @returns 표면 생성 실패 시 `null`
+ */
+export const drawBloom = (gradient: SkColor[], radius: GlowRadius): SkImage | null => {
+  const sprites = glowSprites(radius);
+  const surface = Skia.Surface.Make((radius.bonfire + radius.log) * 2, radius.bonfire * 2);
+  if (!surface) return null;
+
+  const canvas = surface.getCanvas();
+
+  canvas.clear(Skia.Color('transparent'));
+
+  for (const [rect, spriteRadius] of [
+    [sprites.bonfire, radius.bonfire],
+    [sprites.log, radius.log],
+  ] as const) {
+    const paint = Skia.Paint();
+    const center = { x: rect.x + spriteRadius, y: rect.y + spriteRadius };
+
+    paint.setShader(Skia.Shader.MakeRadialGradient(center, spriteRadius, gradient, [0, 1], TileMode.Clamp));
+    canvas.drawRect(rect, paint);
+  }
+
+  surface.flush();
+
+  return surface.makeImageSnapshot();
+};
 
 /**
  * 빛 번짐 그러데이션
@@ -28,6 +74,11 @@ export const BLOOM_RADIUS = { bonfire: 32, log: 16 };
 
 /** 빛 번짐 알파. `DESIGN.md` §6 */
 export const BLOOM_ALPHA = { bonfire: 0.55, log: 0.32 };
+
+/** 후광 반지름 (논리 픽셀, 배율 1) */
+export const HALO_RADIUS = { bonfire: 10, log: 6 };
+
+export const HALO_ALPHA = 0.7;
 
 type BloomRadiusInput = {
   tick: number;

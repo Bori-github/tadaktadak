@@ -1,4 +1,4 @@
-import { FilterMode, MipmapMode, Skia, type SkImage } from '@shopify/react-native-skia';
+import { FilterMode, MipmapMode, Skia, type SkImage, type SkRect, type SkRSXform } from '@shopify/react-native-skia';
 
 /** 도트를 키워도 칸 사이가 흐려지지 않음. 가장 가까운 원본 픽셀 하나의 색을 그대로 씀. `DESIGN.md` §6 */
 export const DOT_SAMPLING = { filter: FilterMode.Nearest, mipmap: MipmapMode.None };
@@ -103,4 +103,56 @@ export const drawDots = (widthInDots: number, heightInDots: number, dots: readon
   surface.flush();
 
   return surface.makeImageSnapshot();
+};
+
+/**
+ * `packSprites` 배치 격자의 단일 이미지 렌더링
+ *
+ * @param grids - `packSprites`에 넘긴 격자. 같은 순서
+ * @param packed - `packSprites` 결과
+ * @param colors - 글자별 색
+ * @returns 표면 생성 실패 시 `null`
+ */
+export const drawSprites = (grids: readonly (readonly string[])[], packed: PackedSprites, colors: Record<string, string | undefined>): SkImage | null => {
+  const dots = grids.flatMap((grid, index) => {
+    const box = packed.boxes[index];
+    return box ? gridDots(grid, colors, box.left, box.top) : [];
+  });
+
+  return drawDots(packed.image.widthInDots, packed.image.heightInDots, dots);
+};
+
+interface PlacedDots {
+  image: SkImage;
+  sprites: SkRect[];
+  transforms: SkRSXform[];
+}
+
+/**
+ * 화면 도트 격자 좌표의 도트를 이미지 한 장과 `Atlas` 배치로 변환
+ *
+ * @param dots - 화면 도트 격자 좌표. 좌표 중복 없음
+ * @param dotSize - 도트 한 변 (px)
+ * @returns 도트가 없거나 표면 생성 실패 시 `null`
+ */
+export const drawPlacedDots = (dots: readonly ColoredDot[], dotSize: number): PlacedDots | null => {
+  if (dots.length === 0) return null;
+
+  let [left, top, right, bottom] = [Infinity, Infinity, -Infinity, -Infinity];
+  for (const { x, y } of dots) {
+    [left, top, right, bottom] = [Math.min(left, x), Math.min(top, y), Math.max(right, x), Math.max(bottom, y)];
+  }
+
+  const image = drawDots(
+    right - left + 1,
+    bottom - top + 1,
+    dots.map((dot) => ({ ...dot, x: dot.x - left, y: dot.y - top })),
+  );
+  if (!image) return null;
+
+  return {
+    image,
+    sprites: [Skia.XYWHRect(0, 0, image.width(), image.height())],
+    transforms: [Skia.RSXform(dotSize, 0, left * dotSize, top * dotSize)],
+  };
 };

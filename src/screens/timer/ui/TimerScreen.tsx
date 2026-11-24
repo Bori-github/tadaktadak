@@ -26,13 +26,13 @@ import {
   isThumbTwinkling,
   restDialMinutes,
   DialArc,
-  Embers,
+  CompletedEffect,
   Thumb,
   DialItems,
   DialReadout,
   ReadoutButtons,
   Numerals,
-  Wreath,
+  DialUnderlay,
   useDialDrag,
 } from '@/widgets/dial';
 import { AMBIENT_SOUND_TOOLTIP_DISMISSED_KEY, setAmbientSoundEnabled, useAmbientSoundEnabled } from '@/entities/ambient-sound';
@@ -119,6 +119,12 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
   // 휴식 타이머 시간을 넣으면 집중이 점화한 개체가 꺼짐
   const itemMinutes = resting ? minutes.focus : selected;
 
+  const itemDimming = (() => {
+    if (session.phase === 'paused') return 'paused';
+
+    return effectShown ? 'completed' : 'none';
+  })();
+
   // 대기 상태를 벗어나면 편집 대상이 집중 타이머로 돌아감
   const handlePlay = useCallback(() => {
     setEditTarget('focus');
@@ -171,7 +177,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
         <View style={[styles.root, { backgroundColor: palette.canvas }]}>
           <Canvas style={StyleSheet.absoluteFill}>
             <Fill color={palette.canvas} />
-            <Wreath centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} />
+            <DialUnderlay centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} settingMinutes={itemMinutes} effectStartedAt={effectStartedAt} />
             <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} palette={palette} />
             <DialItems
               centerX={centerX}
@@ -181,11 +187,20 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
               bonfireHeightInDots={layout.bonfireHeightInDots}
               remainingMinutes={litMinutes}
               settingMinutes={itemMinutes}
-              isPaused={session.phase === 'paused'}
+              dimming={itemDimming}
               isReady={editing}
               palette={palette}
             />
-            <Embers centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} effectStartedAt={effectStartedAt} palette={palette} />
+            <CompletedEffect
+              centerX={centerX}
+              centerY={centerY}
+              radius={layout.itemRadius}
+              dotSize={layout.dotSize}
+              bonfireHeightInDots={layout.bonfireHeightInDots}
+              settingMinutes={itemMinutes}
+              effectStartedAt={effectStartedAt}
+              palette={palette}
+            />
             <Thumb
               centerX={centerX}
               centerY={centerY}
