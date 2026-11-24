@@ -25,10 +25,10 @@ type ActivityContentParams = {
 export const activityContent = ({ session, settingMinutes, language, theme, now }: ActivityContentParams): LiveActivityContent | null => {
   if (session.phase !== 'running') return null;
 
-  const { palette } = THEMES[theme];
-
   // 끝날 시각이 지난 뒤에는 Live Activity에 `0:00`만 표시되므로 시작하지 않음
   if (session.endsAt <= now) return null;
+
+  const { palette } = THEMES[theme];
 
   return {
     mode: session.mode,
