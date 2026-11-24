@@ -30,7 +30,7 @@ describe('잠금화면에 표시할 내용', () => {
     expect(content && content.endsAt - content.progressStartsAt).toBe(FOCUS_MS);
   });
 
-  it('타이머 모드를 그대로 쓴다', () => {
+  it('타이머 모드를 Live Activity에 전달한다', () => {
     const rest: TimerSession = { phase: 'running', mode: 'rest', startedAt: NOW, endsAt: NOW + MINUTE_IN_MS };
 
     expect(contentAt(rest, NOW)?.mode).toBe('rest');
