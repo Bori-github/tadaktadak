@@ -34,15 +34,15 @@ describe('배율', () => {
   });
 });
 
-describe('등급별 모닥불', () => {
+describe('등급별 5분 개체 높이', () => {
   it.each([
     { label: '지원 범위보다 작은', shortSide: 320 },
     { label: 'compact 최대', shortSide: 359 },
-  ])('$label 짧은 변 $shortSide에서 모닥불은 7 도트다', ({ shortSide }) => {
+  ])('$label 짧은 변 $shortSide에서 5분 개체는 7 도트다', ({ shortSide }) => {
     expect(layout(shortSide).majorItemHeightInDots).toBe(7);
   });
 
-  it('medium 최소 짧은 변 360에서 모닥불은 9 도트다', () => {
+  it('medium 최소 짧은 변 360에서 5분 개체는 9 도트다', () => {
     expect(layout(360).majorItemHeightInDots).toBe(9);
   });
 });
@@ -218,7 +218,7 @@ describe('가로 배치 시계판 축소 하한', () => {
   const narrowWindow = (safeAreaHeight: number) =>
     resolveLayout({ shortSide: Math.min(375, safeAreaHeight), safeAreaTopEdge: 0, safeAreaBottomEdge: safeAreaHeight, safeAreaLeftEdge: 0, safeAreaRightEdge: 375 });
 
-  it('개체 중심 반지름이 124.1 미만이면 모닥불이 7 도트다', () => {
+  it('개체 중심 반지름이 124.1 미만이면 5분 개체가 7 도트다', () => {
     const l = narrowWindow(442);
     expect(l.itemRadius).toBeLessThan(124.1);
     expect(l.majorItemHeightInDots).toBe(7);

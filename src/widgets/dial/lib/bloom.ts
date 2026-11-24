@@ -92,7 +92,7 @@ type BloomRadiusInput = {
  * 눈금 하나의 빛 번짐 반지름 (px). `DESIGN.md` §6
  *
  * @param input.tick - 시계판 눈금 번호. 12시 다음이 1
- * @param input.isMajorTick - 모닥불이 놓인 5분 배수 눈금인지 여부
+ * @param input.isMajorTick - 5분 개체 눈금 여부
  * @param input.progress - 불이 붙은 정도. 0은 꺼짐, 1은 다 붙음
  * @param input.step - 불꽃 프레임 순서. 눈금마다 세 단계로 어긋난 깜빡임을 만듦
  * @param input.dotSize - 도트 한 변 (px)
