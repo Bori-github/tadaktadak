@@ -20,7 +20,7 @@ type PeakGlowProps = {
 };
 
 /** 최대 밝기 전구 흰색 빛 번짐 최대 반지름 (논리 픽셀, 배율 1) */
-const PEAK_GLOW_RADIUS: GlowRadius = { bonfire: 22, log: 14 };
+const PEAK_GLOW_RADIUS: GlowRadius = { major: 22, minor: 14 };
 const PEAK_GLOW_ALPHA = 0.6;
 
 /** 흰색 빛 번짐 표시 기준 밝기. 이하 미표시 */
@@ -38,13 +38,13 @@ export const PeakGlow = memo(({ centerX, centerY, radius, dotSize, settingMinute
     () =>
       TICK_NUMBERS.map((tick) => {
         const center = bulbCenter(tick, { centerX, centerY, radius, dotSize });
-        const source = tick % 5 === 0 ? PEAK_GLOW_RADIUS.bonfire : PEAK_GLOW_RADIUS.log;
+        const source = tick % 5 === 0 ? PEAK_GLOW_RADIUS.major : PEAK_GLOW_RADIUS.minor;
 
         return { x: center.x, y: center.y + glowOffsetInDots * dotSize, source, radius: source * (dotSize / DOT_SIZE) };
       }),
     [centerX, centerY, radius, dotSize],
   );
-  const sprites = useMemo(() => TICK_NUMBERS.map((tick) => (tick % 5 === 0 ? PEAK_GLOW_SPRITES.bonfire : PEAK_GLOW_SPRITES.log)), []);
+  const sprites = useMemo(() => TICK_NUMBERS.map((tick) => (tick % 5 === 0 ? PEAK_GLOW_SPRITES.major : PEAK_GLOW_SPRITES.minor)), []);
 
   const boosts = useChaseBoosts(settingMinutes, effectStartedAt);
 

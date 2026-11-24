@@ -184,7 +184,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
               centerY={centerY}
               radius={layout.itemRadius}
               dotSize={layout.dotSize}
-              bonfireHeightInDots={layout.bonfireHeightInDots}
+              majorItemHeightInDots={layout.majorItemHeightInDots}
               remainingMinutes={litMinutes}
               settingMinutes={itemMinutes}
               dimming={itemDimming}
@@ -196,7 +196,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
               centerY={centerY}
               radius={layout.itemRadius}
               dotSize={layout.dotSize}
-              bonfireHeightInDots={layout.bonfireHeightInDots}
+              majorItemHeightInDots={layout.majorItemHeightInDots}
               settingMinutes={itemMinutes}
               effectStartedAt={effectStartedAt}
               palette={palette}

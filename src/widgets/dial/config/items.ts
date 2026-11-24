@@ -1,5 +1,5 @@
 import { type ThemeId } from '@/entities/theme';
-import { type BonfireHeightInDots } from '@/shared/constants';
+import { type MajorItemHeightInDots } from '@/shared/constants';
 import { bulbCenter, type DialPlacement } from '@/shared/lib';
 import {
   BONFIRE_COLD_7,
@@ -30,7 +30,7 @@ export interface TickSprites {
 
 export interface DialItemStyle {
   minor: TickSprites;
-  major: Record<BonfireHeightInDots, TickSprites>;
+  major: Record<MajorItemHeightInDots, TickSprites>;
   colors: Record<string, string>;
   /** `frames` 전환 주기 (밀리초). 미지정 시 `FLICKER_MS` */
   frameMs?: number;

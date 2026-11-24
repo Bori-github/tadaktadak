@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { BUTTON_SIZE_IN_DOTS, type BonfireHeightInDots } from '@/shared/constants';
+import { BUTTON_SIZE_IN_DOTS, type MajorItemHeightInDots } from '@/shared/constants';
 import {
   BONFIRE_COLD_7,
   BONFIRE_COLD_9,
@@ -24,14 +24,14 @@ import { MIN_ITEM_RADIUS, resolveLayout, type FormFactor } from './responsive';
 const maxProjection = (frames: string[][]) => Math.max(...frames.map((rows) => Math.max(rows.length, ...rows.map((row) => row.length))));
 
 const LOG_PROJECTION = maxProjection([LOG_COLD, LOG_HOT_A, LOG_HOT_B]);
-const BONFIRE_PROJECTION: Record<BonfireHeightInDots, number> = {
+const BONFIRE_PROJECTION: Record<MajorItemHeightInDots, number> = {
   7: maxProjection([BONFIRE_COLD_7, BONFIRE_HOT_A_7, BONFIRE_HOT_B_7]),
   9: maxProjection([BONFIRE_COLD_9, BONFIRE_HOT_A_9, BONFIRE_HOT_B_9]),
 };
 
 type ItemKind = 'log' | 'bonfire';
 
-const projectionOf = (kind: ItemKind, bonfireHeightInDots: BonfireHeightInDots) => (kind === 'log' ? LOG_PROJECTION : BONFIRE_PROJECTION[bonfireHeightInDots]);
+const projectionOf = (kind: ItemKind, majorItemHeightInDots: MajorItemHeightInDots) => (kind === 'log' ? LOG_PROJECTION : BONFIRE_PROJECTION[majorItemHeightInDots]);
 
 /** 모닥불 사이 눈금 수. 5분 배수 눈금에만 있음 */
 const BONFIRE_TICK_DISTANCE = 5;
@@ -92,8 +92,8 @@ const CHECKED_LAYOUTS = LAYOUT_CASES.map(({ label, input }) => ({ label, ...reso
 /** 여유가 0 미만인 화면 목록 */
 const overlappingLayouts = (tickDistance: number, first: ItemKind, second: ItemKind) =>
   CHECKED_LAYOUTS.flatMap((checked) => {
-    const { label, bonfireHeightInDots } = checked;
-    const margin = minuteGap(checked) * tickDistance - needed(projectionOf(first, bonfireHeightInDots), projectionOf(second, bonfireHeightInDots));
+    const { label, majorItemHeightInDots } = checked;
+    const margin = minuteGap(checked) * tickDistance - needed(projectionOf(first, majorItemHeightInDots), projectionOf(second, majorItemHeightInDots));
     return margin < -FLOAT_TOLERANCE ? [`${label}: 여유 ${round(margin)}`] : [];
   });
 

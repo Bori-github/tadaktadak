@@ -1,6 +1,6 @@
 import { Dimensions, Platform } from 'react-native';
 
-import { BUTTON_SIZE_IN_DOTS, DOT_SIZE, SCREEN_GRADES, type BonfireHeightInDots, type ScreenGrade } from '@/shared/constants';
+import { BUTTON_SIZE_IN_DOTS, DOT_SIZE, SCREEN_GRADES, type MajorItemHeightInDots, type ScreenGrade } from '@/shared/constants';
 
 const EDGE_MARGIN = 8;
 /** 시계판 바깥과 safe area 경계 사이 최소 간격 (px). 배율을 곱하지 않음 */
@@ -13,9 +13,9 @@ const REFERENCE_ITEM_RADIUS = 153;
 export const MIN_ITEM_RADIUS = 118.1;
 /** 태블릿에서 시계판 지름이 짧은 변에서 차지하는 비율 */
 const TABLET_DIAL_RATIO = 0.7;
-/** 1분 간격이 모닥불 + 장작 필요 간격 6.5 도트가 되는 반지름. 미만이면 모닥불을 7 도트로 그림 (배율 1). `DESIGN.md` §5 겹침 검산 */
-const LARGE_BONFIRE_MIN_ITEM_RADIUS = (6.5 * 60) / Math.PI;
-const SMALL_BONFIRE_HEIGHT_IN_DOTS = 7;
+/** 1분 간격이 모닥불 + 장작 필요 간격 6.5 도트가 되는 반지름. 미만이면 5분 개체를 7 도트로 그림 (배율 1). `DESIGN.md` §5 겹침 검산 */
+const LARGE_MAJOR_ITEM_MIN_ITEM_RADIUS = (6.5 * 60) / Math.PI;
+const SMALL_MAJOR_ITEM_HEIGHT_IN_DOTS = 7;
 
 const NUMERAL_GAP = 6;
 const NUMERAL_HALF_HEIGHT = 7;
@@ -31,7 +31,7 @@ const GRADES_FROM_LARGEST = (Object.keys(SCREEN_GRADES) as ScreenGrade[]).sort((
 const resolveScreenGrade = (shortSide: number): ScreenGrade => GRADES_FROM_LARGEST.find((grade) => shortSide >= SCREEN_GRADES[grade].minShortSide) ?? 'compact';
 
 /** 개체 중심 반지름에서 시계판 위 반높이까지 (배율 1) */
-const dialOuterOffset = (bonfireHeightInDots: number) => (bonfireHeightInDots * DOT_SIZE) / 2 + NUMERAL_GAP + NUMERAL_HALF_HEIGHT * 2;
+const dialOuterOffset = (majorItemHeightInDots: number) => (majorItemHeightInDots * DOT_SIZE) / 2 + NUMERAL_GAP + NUMERAL_HALF_HEIGHT * 2;
 
 const proportionalItemRadius = (shortSide: number, scale: number) => (shortSide * REFERENCE_ITEM_RADIUS) / REFERENCE_SHORT_SIDE / scale;
 
@@ -108,7 +108,7 @@ type Layout = {
   dotSize: number;
   /** 화면 가장자리 여백 (px). `DESIGN.md` §5 배치 순서 */
   edgeMargin: number;
-  bonfireHeightInDots: BonfireHeightInDots;
+  majorItemHeightInDots: MajorItemHeightInDots;
   isLandscape: boolean;
   itemRadius: number;
   arcRadius: number;
@@ -134,15 +134,15 @@ export const resolveLayout = ({
   const safeAreaHeight = safeArea.bottom - safeArea.top;
 
   const screenGrade = resolveScreenGrade(shortSide);
-  const { scale, bonfireHeightInDots: gradeBonfireHeight } = SCREEN_GRADES[screenGrade];
+  const { scale, majorItemHeightInDots: gradeMajorItemHeight } = SCREEN_GRADES[screenGrade];
   const buttonHalfHeight = (BUTTON_SIZE_IN_DOTS / 2) * DOT_SIZE * scale;
 
   // 1. 배치 선택. 짧은 변 비례 크기로 세로 배치가 들어가는지 확인
-  const phoneDialTopHalfHeight = (proportionalItemRadius(shortSide, scale) + dialOuterOffset(gradeBonfireHeight)) * scale;
+  const phoneDialTopHalfHeight = (proportionalItemRadius(shortSide, scale) + dialOuterOffset(gradeMajorItemHeight)) * scale;
   const tabletDialTopHalfHeight = (shortSide * TABLET_DIAL_RATIO) / 2;
   const targetDialTopHalfHeight = formFactor === 'tablet' ? tabletDialTopHalfHeight : phoneDialTopHalfHeight;
   // MIN_ITEM_RADIUS 미적용 크기로 isLandscape를 판정하면 세로 배치에서 시계판이 safe area 상단을 초과해서 판정 전에 적용
-  const minDialTopHalfHeight = (MIN_ITEM_RADIUS + dialOuterOffset(SMALL_BONFIRE_HEIGHT_IN_DOTS)) * scale;
+  const minDialTopHalfHeight = (MIN_ITEM_RADIUS + dialOuterOffset(SMALL_MAJOR_ITEM_HEIGHT_IN_DOTS)) * scale;
   const proportionalDialTopHalfHeight = Math.max(targetDialTopHalfHeight, minDialTopHalfHeight);
   const portraitHeight = proportionalDialTopHalfHeight * 2 + DIAL_TO_BUTTON_GAP + buttonHalfHeight * 2 + BUTTON_BOTTOM_MARGIN_MIN;
   const isLandscape = safeAreaHeight < portraitHeight;
@@ -157,13 +157,13 @@ export const resolveLayout = ({
 
   // 3. 반지름
   const itemRadius = Math.min(
-    Math.max(dialTopHalfHeight / scale - dialOuterOffset(gradeBonfireHeight), MIN_ITEM_RADIUS),
-    buttonsLimit / scale - dialOuterOffset(gradeBonfireHeight),
+    Math.max(dialTopHalfHeight / scale - dialOuterOffset(gradeMajorItemHeight), MIN_ITEM_RADIUS),
+    buttonsLimit / scale - dialOuterOffset(gradeMajorItemHeight),
   );
-  const bonfireHeightInDots = itemRadius < LARGE_BONFIRE_MIN_ITEM_RADIUS ? SMALL_BONFIRE_HEIGHT_IN_DOTS : gradeBonfireHeight;
-  const bonfireHalfHeight = (bonfireHeightInDots * DOT_SIZE) / 2;
-  const arcRadius = itemRadius - bonfireHalfHeight - ARC_GAP;
-  const numeralRadius = itemRadius + bonfireHalfHeight + NUMERAL_GAP + NUMERAL_HALF_HEIGHT;
+  const majorItemHeightInDots = itemRadius < LARGE_MAJOR_ITEM_MIN_ITEM_RADIUS ? SMALL_MAJOR_ITEM_HEIGHT_IN_DOTS : gradeMajorItemHeight;
+  const majorItemHalfHeight = (majorItemHeightInDots * DOT_SIZE) / 2;
+  const arcRadius = itemRadius - majorItemHalfHeight - ARC_GAP;
+  const numeralRadius = itemRadius + majorItemHalfHeight + NUMERAL_GAP + NUMERAL_HALF_HEIGHT;
 
   // 4. 위치
   const portrait = placePortrait({ safeArea, dialTopHalfHeight: (numeralRadius + NUMERAL_HALF_HEIGHT) * scale, buttonHalfHeight, formFactor });
@@ -172,7 +172,7 @@ export const resolveLayout = ({
     scale,
     dotSize: DOT_SIZE * scale,
     edgeMargin: EDGE_MARGIN * scale,
-    bonfireHeightInDots,
+    majorItemHeightInDots,
     isLandscape,
     itemRadius: itemRadius * scale,
     arcRadius: arcRadius * scale,

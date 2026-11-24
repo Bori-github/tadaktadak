@@ -9,19 +9,19 @@ export const DOT_SIZE = 2;
 
 export type ScreenGrade = 'compact' | 'medium' | 'expanded';
 
-export type BonfireHeightInDots = 7 | 9;
+export type MajorItemHeightInDots = 7 | 9;
 
 type ScreenGradeSpec = {
   minShortSide: number;
   scale: number;
-  bonfireHeightInDots: BonfireHeightInDots;
+  majorItemHeightInDots: MajorItemHeightInDots;
 };
 
 /** `DESIGN.md` §7 구간별 처리 */
 export const SCREEN_GRADES = {
-  compact: { minShortSide: 0, scale: 1, bonfireHeightInDots: 7 },
-  medium: { minShortSide: MEDIUM_MIN_SHORT_SIDE, scale: 1, bonfireHeightInDots: 9 },
-  expanded: { minShortSide: EXPANDED_MIN_SHORT_SIDE, scale: 1.5, bonfireHeightInDots: 9 },
+  compact: { minShortSide: 0, scale: 1, majorItemHeightInDots: 7 },
+  medium: { minShortSide: MEDIUM_MIN_SHORT_SIDE, scale: 1, majorItemHeightInDots: 9 },
+  expanded: { minShortSide: EXPANDED_MIN_SHORT_SIDE, scale: 1.5, majorItemHeightInDots: 9 },
 } as const satisfies Record<ScreenGrade, ScreenGradeSpec>;
 
 /** 조작 버튼 한 변 (dot). 피그마 `button-enabled` */
