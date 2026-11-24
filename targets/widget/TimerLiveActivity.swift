@@ -119,7 +119,10 @@ private struct CloseMark: View {
 
 extension TimerActivityTheme {
     fileprivate var stopButton: String {
-        self == .winter ? "button-round-enabled-winter" : "button-round-enabled"
+        switch self {
+        case .campfire: "button-round-enabled"
+        case .winter: "button-round-enabled-winter"
+        }
     }
 
     fileprivate func picture(_ mode: TimerActivityMode) -> String {
