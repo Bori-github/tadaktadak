@@ -7,7 +7,12 @@ struct TimerLiveActivity: Widget {
         ActivityConfiguration(for: TimerActivityAttributes.self) { context in
             let palette = Palette(context.attributes.colors ?? .campfire(context.attributes.mode))
 
-            LockScreenView(mode: context.attributes.mode, palette: palette, state: context.state)
+            LockScreenView(
+                mode: context.attributes.mode,
+                theme: context.attributes.theme ?? .campfire,
+                palette: palette,
+                state: context.state
+            )
                 .environment(\.locale, context.attributes.language.map(Locale.init(identifier:)) ?? .current)
                 .activityBackgroundTint(palette.canvas)
                 .activitySystemActionForegroundColor(palette.text)
@@ -44,6 +49,7 @@ private struct RemainingTimeText: View {
 /// Live Activity · 잠금화면 프레임 배치
 private struct LockScreenView: View {
     let mode: TimerActivityMode
+    let theme: TimerActivityTheme
     let palette: Palette
     let state: TimerActivityAttributes.ContentState
 
@@ -55,7 +61,7 @@ private struct LockScreenView: View {
 
             HStack(spacing: 20) {
                 Button(intent: StopTimerIntent()) {
-                    Image("button-round-enabled")
+                    Image(theme.stopButton)
                         .overlay { Image("icon-stop") }
                 }
                 .buttonStyle(.plain)
@@ -74,7 +80,7 @@ private struct LockScreenView: View {
                 .progressViewStyle(.linear)
                 .tint(palette.arc)
 
-                Image(mode == .focus ? "bonfire-hot-still-9" : "bonfire-cold-9")
+                Image(theme.picture(mode))
             }
             .padding(.top, 12)
         }
@@ -111,6 +117,19 @@ private struct CloseMark: View {
     }
 }
 
+extension TimerActivityTheme {
+    fileprivate var stopButton: String {
+        self == .winter ? "button-round-enabled-winter" : "button-round-enabled"
+    }
+
+    fileprivate func picture(_ mode: TimerActivityMode) -> String {
+        switch self {
+        case .campfire: mode == .focus ? "bonfire-hot-still-9" : "bonfire-cold-9"
+        case .winter: mode == .focus ? "bulb-big-on" : "bulb-big-off"
+        }
+    }
+}
+
 extension TimerActivityAttributes.ContentState {
     fileprivate static func running(minutes: Double) -> Self {
         .init(progressStartsAt: .now, endsAt: .now.addingTimeInterval(minutes * 60))
@@ -126,13 +145,13 @@ extension TimerActivityColors {
     }
 }
 
-#Preview("집중", as: .content, using: TimerActivityAttributes(mode: .focus, colors: .campfire(.focus), language: nil)) {
+#Preview("집중", as: .content, using: TimerActivityAttributes(mode: .focus, theme: .campfire, colors: .campfire(.focus), language: nil)) {
     TimerLiveActivity()
 } contentStates: {
     TimerActivityAttributes.ContentState.running(minutes: 25)
 }
 
-#Preview("휴식", as: .content, using: TimerActivityAttributes(mode: .rest, colors: .campfire(.rest), language: nil)) {
+#Preview("휴식", as: .content, using: TimerActivityAttributes(mode: .rest, theme: .campfire, colors: .campfire(.rest), language: nil)) {
     TimerLiveActivity()
 } contentStates: {
     TimerActivityAttributes.ContentState.running(minutes: 5)

@@ -39,8 +39,12 @@ private const val STOP_REQUEST_CODE = 1
 private const val BONFIRE_ROWS = 9
 private const val LARGE_ICON_HEIGHT_RATIO = 0.6
 
+// `drawable-nodpi` PNG가 3배율이라 도트 한 칸 6px
+private const val SPRITE_DOT_PIXELS = 6
+
 internal data class TimerContent(
   val mode: String,
+  val theme: String,
   val progressStartsAt: Double,
   val endsAt: Double,
   val language: String?,
@@ -78,7 +82,7 @@ internal object TimerNotification {
     val notification = NotificationCompat.Builder(context, CHANNEL_ID)
       .setSmallIcon(if (isFocus) R.drawable.ic_notification_focus else R.drawable.ic_notification_rest)
       .setColor(Color.parseColor(content.accent))
-      .setLargeIcon(largeIcon(context, if (isFocus) R.drawable.bonfire_hot_still_9 else R.drawable.bonfire_cold_9))
+      .setLargeIcon(largeIcon(context, pictureResource(content.theme, isFocus)))
       .setContentTitle(localized.getString(R.string.live_activity_title, minutes))
       .setContentIntent(openAppIntent(context))
       .addAction(0, localized.getString(R.string.live_activity_stop), stopIntent(context, endsAt))
@@ -152,6 +156,7 @@ internal object TimerNotification {
   private fun saveContent(context: Context, content: TimerContent) {
     preferences(context).edit {
       putString("mode", content.mode)
+      putString("theme", content.theme)
       putLong("progressStartsAt", content.progressStartsAt.toLong())
       putLong("endsAt", content.endsAt.toLong())
       putString("language", content.language)
@@ -169,6 +174,7 @@ internal object TimerNotification {
 
     return TimerContent(
       mode,
+      preferences.getString("theme", null) ?: "campfire",
       preferences.getLong("progressStartsAt", 0).toDouble(),
       preferences.getLong("endsAt", 0).toDouble(),
       preferences.getString("language", null),
@@ -197,6 +203,12 @@ internal object TimerNotification {
     return context.createConfigurationContext(configuration)
   }
 
+  private fun pictureResource(theme: String, isFocus: Boolean): Int =
+    when (theme) {
+      "winter" -> if (isFocus) R.drawable.bulb_big_on else R.drawable.bulb_big_off
+      else -> if (isFocus) R.drawable.bonfire_hot_still_9 else R.drawable.bonfire_cold_9
+    }
+
   // 도트 한 칸을 정수 픽셀로 맞춰 nearest-neighbor로 키워 정사각형 가운데에 둠. 칸 크기가 달라지면 도트가 번짐
   private fun largeIcon(context: Context, resourceId: Int): Bitmap = largeIcons.getOrPut(resourceId) { createLargeIcon(context, resourceId) }
 
@@ -204,7 +216,7 @@ internal object TimerNotification {
     val sprite = BitmapFactory.decodeResource(context.resources, resourceId)
     val size = context.resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height)
     val dot = (size * LARGE_ICON_HEIGHT_RATIO / BONFIRE_ROWS).toInt().coerceAtLeast(1)
-    val scaledHeight = BONFIRE_ROWS * dot
+    val scaledHeight = sprite.height / SPRITE_DOT_PIXELS * dot
     val scaled = Bitmap.createScaledBitmap(sprite, sprite.width * scaledHeight / sprite.height, scaledHeight, false)
 
     val icon = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)

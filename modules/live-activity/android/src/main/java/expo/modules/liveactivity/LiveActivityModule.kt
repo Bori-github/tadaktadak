@@ -28,6 +28,7 @@ class LiveActivityColorsRecord : Record {
 
 class LiveActivityContentRecord : Record {
   @Field val mode: String = "focus"
+  @Field val theme: String = "campfire"
   @Field val colors: LiveActivityColorsRecord = LiveActivityColorsRecord()
   @Field val progressStartsAt: Double = 0.0
   @Field val endsAt: Double = 0.0
@@ -71,7 +72,7 @@ class LiveActivityModule : Module() {
       setRecentsScreenshotEnabled(false)
       TimerNotification.show(
         context,
-        TimerContent(content.mode, content.progressStartsAt, content.endsAt, content.language, content.colors.accent, content.colors.arc)
+        TimerContent(content.mode, content.theme, content.progressStartsAt, content.endsAt, content.language, content.colors.accent, content.colors.arc)
       )
     }
 
