@@ -6,7 +6,7 @@ import { cancelAnimation, Easing, useSharedValue, withRepeat, withTiming } from 
 import campfireError from '@assets/lottie/error-campfire.json';
 import winterError from '@assets/lottie/error-winter.json';
 
-import { getLottieDotBottom } from './lottieDotBottom';
+import { getLottieDotBottom } from '../../lib/lottieDotBottom';
 
 import { translate, useLanguage } from '@/entities/language';
 import { type ThemeId, useDisplayedTheme } from '@/entities/theme';
