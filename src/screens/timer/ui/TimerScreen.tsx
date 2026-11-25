@@ -178,7 +178,7 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
         <View style={[styles.root, { backgroundColor: palette.canvas }]}>
           <Canvas style={StyleSheet.absoluteFill}>
             <Fill color={palette.canvas} />
-            <Backdrop width={width} height={height} scale={layout.scale} dotSize={layout.dotSize} dialBottomY={layout.dialBottomY} />
+            <Backdrop width={width} height={height} scale={layout.scale} dotSize={layout.dotSize} dialBottomY={layout.dialBottomY} isPaused={session.phase === 'paused'} />
             <DialUnderlay centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} settingMinutes={itemMinutes} effectStartedAt={effectStartedAt} />
             <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} palette={palette} />
             <DialItems

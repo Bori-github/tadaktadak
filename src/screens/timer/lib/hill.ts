@@ -1,4 +1,4 @@
-import { gridDots, topLeftOnGrid, type ColoredDot } from '@/shared/lib';
+import { gridDots, noise, topLeftOnGrid, type ColoredDot } from '@/shared/lib';
 
 /** 화면 하단에서 뒤 언덕 평균선까지 거리 (배율 1). 390×844 기준 */
 const BASELINE_FROM_BOTTOM = 102;
@@ -51,6 +51,9 @@ type BaselineInput = {
 export const hillBaseline = ({ height, scale, dialBottomY }: BaselineInput): number =>
   Math.min(Math.max(height - BASELINE_FROM_BOTTOM * scale, dialBottomY + BASELINE_BELOW_DIAL * scale), height - MIN_VISIBLE_HEIGHT * scale);
 
+const frontHillTop = (x: number, baseline: number, scale: number) =>
+  baseline + FRONT_HILL_OFFSET * scale + scale * (12 * Math.sin(x / (55 * scale)) + 5 * Math.sin(x / (19 * scale) + 1));
+
 type HillInput = {
   width: number;
   height: number;
@@ -74,7 +77,7 @@ export const hillDots = ({ width, height, scale, dotSize, baseline }: HillInput)
   const columns = Math.ceil(width / dotSize);
   const bottomRow = Math.ceil(height / dotSize);
   const backTop = (x: number) => baseline + scale * (16 * Math.sin(x / (70 * scale) + 2) + 6 * Math.sin(x / (27 * scale)));
-  const frontTop = (x: number) => baseline + FRONT_HILL_OFFSET * scale + scale * (12 * Math.sin(x / (55 * scale)) + 5 * Math.sin(x / (19 * scale) + 1));
+  const frontTop = (x: number) => frontHillTop(x, baseline, scale);
   const toRow = (y: number) => Math.round(y / dotSize);
 
   // 같은 좌표는 마지막에 추가한 도트로 대체
@@ -114,4 +117,44 @@ export const hillDots = ({ width, height, scale, dotSize, baseline }: HillInput)
   }
 
   return [...dots.values()];
+};
+
+export const GLINT_COUNT = 14;
+export const GLINT_STEP_MS = 500;
+const GLINT_CYCLE = 5;
+
+type GlintInput = {
+  width: number;
+  scale: number;
+  dotSize: number;
+  baseline: number;
+};
+
+/**
+ * 앞 언덕 반짝임 좌표. x 좌우 여백 10, y 앞 언덕 윗변 기준 +14~+44 (배율 1)
+ *
+ * @param input - 화면 너비와 평균선
+ * @param input.width - 화면 너비 (px)
+ * @param input.scale - 배율
+ * @param input.dotSize - 도트 한 변 (px)
+ * @param input.baseline - `hillBaseline` 결과 (px)
+ * @returns 화면 도트 격자 좌표. 개수 `GLINT_COUNT`
+ */
+export const glintPositions = ({ width, scale, dotSize, baseline }: GlintInput): { x: number; y: number }[] =>
+  Array.from({ length: GLINT_COUNT }, (_, index) => {
+    const x = (10 + noise(index, 8.1) * (width / scale - 20)) * scale;
+    const y = frontHillTop(x, baseline, scale) + (14 + noise(index, 9.3) * 30) * scale;
+    return { x: Math.round(x / dotSize), y: Math.round(y / dotSize) };
+  });
+
+/**
+ * 반짝임 점등 여부
+ *
+ * @param index - 반짝임 인덱스
+ * @param step - `GLINT_STEP_MS` 단위 경과 시간
+ * @returns 인덱스마다 위상 3 차이. `GLINT_CYCLE` 스텝 중 1스텝만 `true`
+ */
+export const isGlintLit = (index: number, step: number): boolean => {
+  'worklet';
+  return (index * 3 + step) % GLINT_CYCLE === 0;
 };
