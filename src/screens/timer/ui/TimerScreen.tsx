@@ -17,6 +17,7 @@ import { useTimerSession } from '../model/session';
 import { useTimerSpeed } from '../model/speed';
 import { useWindowControlsLeftInset } from '../model/windowControls';
 
+import { Backdrop } from './Backdrop';
 import { DevPanel } from './DevPanel';
 
 import { ControlButtons } from '@/widgets/controls';
@@ -177,6 +178,14 @@ export const TimerScreen = ({ navigation }: TimerScreenProps): JSX.Element => {
         <View style={[styles.root, { backgroundColor: palette.canvas }]}>
           <Canvas style={StyleSheet.absoluteFill}>
             <Fill color={palette.canvas} />
+            <Backdrop
+              width={width}
+              height={height}
+              scale={layout.scale}
+              dotSize={layout.dotSize}
+              dialBottomY={layout.dialBottomY}
+              isAnimating={session.phase !== 'paused' && isScreenVisible}
+            />
             <DialUnderlay centerX={centerX} centerY={centerY} radius={layout.itemRadius} dotSize={layout.dotSize} settingMinutes={itemMinutes} effectStartedAt={effectStartedAt} />
             <DialArc centerX={centerX} centerY={centerY} radius={layout.arcRadius} dotSize={layout.dotSize} minutes={dialMinutes} mode={paintedMode} palette={palette} />
             <DialItems

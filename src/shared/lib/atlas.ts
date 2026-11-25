@@ -1,6 +1,6 @@
 import { FilterMode, MipmapMode, Skia, type SkImage, type SkRect, type SkRSXform } from '@shopify/react-native-skia';
 
-/** 도트를 키워도 칸 사이가 흐려지지 않음. 가장 가까운 원본 픽셀 하나의 색을 그대로 씀. `DESIGN.md` §6 */
+/** 도트를 키워도 칸 사이가 흐려지지 않음. 가장 가까운 원본 픽셀 하나의 색을 그대로 사용. `DESIGN.md` §6 */
 export const DOT_SAMPLING = { filter: FilterMode.Nearest, mipmap: MipmapMode.None };
 
 /** 빛 번짐을 키울 때는 가장자리를 흐림. 가까운 원본 픽셀 넷을 거리 비율로 섞음. `DESIGN.md` §6 */
@@ -75,9 +75,12 @@ export const gridDots = (grid: readonly string[], colors: Record<string, string 
  * @param widthInDots - 이미지 너비 (dot)
  * @param heightInDots - 이미지 높이 (dot)
  * @param dots - 채울 도트. 좌표 중복 없음, 나머지 투명
+ * @param [origin] - 이미지 (0, 0)에 대응하는 `dots` 좌표. 각 도트를 이 값만큼 빼서 그림
+ * @param origin.left - x (dot)
+ * @param origin.top - y (dot)
  * @returns 표면 생성 실패 시 `null`
  */
-export const drawDots = (widthInDots: number, heightInDots: number, dots: readonly ColoredDot[]): SkImage | null => {
+export const drawDots = (widthInDots: number, heightInDots: number, dots: readonly ColoredDot[], origin = { left: 0, top: 0 }): SkImage | null => {
   const surface = Skia.Surface.Make(widthInDots, heightInDots);
   if (!surface) return null;
 
@@ -86,6 +89,7 @@ export const drawDots = (widthInDots: number, heightInDots: number, dots: readon
 
   // `Surface.Make` 표면이 초기화되지 않아 이전 내용 노출 방지
   canvas.clear(Skia.Color('transparent'));
+  canvas.translate(-origin.left, -origin.top);
 
   // 색 변환과 `setColor`를 도트마다가 아니라 색마다 1회 호출
   const dotsByColor = new Map<string, ColoredDot[]>();
@@ -97,7 +101,18 @@ export const drawDots = (widthInDots: number, heightInDots: number, dots: readon
 
   for (const [color, sameColorDots] of dotsByColor) {
     paint.setColor(Skia.Color(color));
-    for (const dot of sameColorDots) canvas.drawRect(Skia.XYWHRect(dot.x, dot.y, 1, 1), paint);
+
+    // x가 같고 y가 연속인 도트를 1×n 사각형으로 병합해 `drawRect` 호출 수 감소
+    sameColorDots.sort((a, b) => a.x - b.x || a.y - b.y);
+    let runStart = sameColorDots[0];
+    for (let index = 1; index <= sameColorDots.length; index += 1) {
+      const previous = sameColorDots[index - 1];
+      const current = sameColorDots[index];
+      if (current && previous && current.x === previous.x && current.y === previous.y + 1) continue;
+
+      if (runStart && previous) canvas.drawRect(Skia.XYWHRect(runStart.x, runStart.y, 1, previous.y - runStart.y + 1), paint);
+      runStart = current;
+    }
   }
 
   surface.flush();
@@ -140,14 +155,13 @@ export const drawPlacedDots = (dots: readonly ColoredDot[], dotSize: number): Pl
 
   let [left, top, right, bottom] = [Infinity, Infinity, -Infinity, -Infinity];
   for (const { x, y } of dots) {
-    [left, top, right, bottom] = [Math.min(left, x), Math.min(top, y), Math.max(right, x), Math.max(bottom, y)];
+    left = Math.min(left, x);
+    top = Math.min(top, y);
+    right = Math.max(right, x);
+    bottom = Math.max(bottom, y);
   }
 
-  const image = drawDots(
-    right - left + 1,
-    bottom - top + 1,
-    dots.map((dot) => ({ ...dot, x: dot.x - left, y: dot.y - top })),
-  );
+  const image = drawDots(right - left + 1, bottom - top + 1, dots, { left, top });
   if (!image) return null;
 
   return {
