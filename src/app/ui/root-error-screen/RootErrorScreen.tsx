@@ -4,7 +4,7 @@ import { reloadAppAsync } from 'expo';
 import { StyleSheet, Text, View } from 'react-native';
 import { cancelAnimation, Easing, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 
-import errorAnimation from './error.json';
+import errorAnimation from '@assets/lottie/error-campfire.json';
 
 import { translate, useLanguage } from '@/entities/language';
 import { usePalette } from '@/shared/lib';

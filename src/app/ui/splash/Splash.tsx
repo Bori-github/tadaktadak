@@ -5,7 +5,7 @@ import BootSplash, { type Manifest } from 'react-native-bootsplash';
 import Animated, { useAnimatedStyle, useFrameCallback, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import splash from './splash.json';
+import splash from '@assets/lottie/splash-campfire.json';
 
 const manifest: Manifest = require('../../../../assets/bootsplash/manifest.json');
 
