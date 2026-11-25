@@ -46,7 +46,8 @@ export const RootErrorScreen = (): JSX.Element => {
   const animation = useMemo<SkSkottieAnimation | null>(() => Skia.Skottie.Make(JSON.stringify(errorAnimation)), [errorAnimation]);
   const frame = useSharedValue(0);
   const { fr: frameRate, op: endFrame, w: stageWidth, h: stageHeight } = errorAnimation;
-  const messageTop = useMemo(() => getLottieDotBottom(errorAnimation) + MESSAGE_GAP, [errorAnimation]);
+  // 그림 하단을 계산할 수 없는 Lottie에서도 문구와 버튼이 화면 안에 놓이도록 무대 세로 가운데를 기준으로 사용
+  const messageTop = useMemo(() => (getLottieDotBottom(errorAnimation) ?? stageHeight / 2) + MESSAGE_GAP, [errorAnimation, stageHeight]);
 
   useEffect(() => {
     const durationMs = (endFrame / frameRate) * 1000;
