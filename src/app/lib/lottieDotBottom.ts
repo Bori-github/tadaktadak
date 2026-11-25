@@ -18,7 +18,7 @@ interface LottieLayer {
   shapes?: LottieShape[];
 }
 
-interface Lottie {
+export interface DotLottie {
   layers: LottieLayer[];
 }
 
@@ -49,7 +49,7 @@ const getRectBottoms = (shapes: LottieShape[]): number[] =>
  * @param lottie.layers - 레이어 목록
  * @returns 모든 키프레임 중 가장 아래 사각형 도트의 하단 y
  */
-export const getLottieDotBottom = ({ layers }: Lottie): number =>
+export const getLottieDotBottom = ({ layers }: DotLottie): number =>
   Math.max(
     ...layers.flatMap((layer) => {
       const rectBottoms = getRectBottoms(layer.shapes ?? []);

@@ -3,19 +3,25 @@ import { Canvas, Skia, type SkSkottieAnimation, Skottie } from '@shopify/react-n
 import { reloadAppAsync } from 'expo';
 import { StyleSheet, Text, View } from 'react-native';
 import { cancelAnimation, Easing, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
-import campfireError from '@assets/lottie/error-campfire.json';
-import winterError from '@assets/lottie/error-winter.json';
 
-import { getLottieDotBottom } from '../../lib/lottieDotBottom';
+import { type DotLottie, getLottieDotBottom } from '../../lib/lottieDotBottom';
 
 import { translate, useLanguage } from '@/entities/language';
 import { type ThemeId, useDisplayedTheme } from '@/entities/theme';
 import { usePalette } from '@/shared/lib';
 import { DotTextButton } from '@/shared/ui/dot-button';
 
-const ERROR_ANIMATIONS: Record<ThemeId, typeof campfireError | typeof winterError> = {
-  campfire: campfireError,
-  winter: winterError,
+interface ErrorLottie extends DotLottie {
+  fr: number;
+  op: number;
+  w: number;
+  h: number;
+}
+
+// 표시하지 않는 테마의 Lottie는 평가하지 않도록 테마별 require
+const ERROR_ANIMATIONS: Record<ThemeId, () => ErrorLottie> = {
+  campfire: () => require('@assets/lottie/error-campfire.json'),
+  winter: () => require('@assets/lottie/error-winter.json'),
 };
 
 // 그림 하단에서 문구 상단까지, 문구 상단에서 버튼 상단까지
@@ -34,7 +40,7 @@ const BUTTON_HEIGHT_IN_DOTS = 24;
 export const RootErrorScreen = (): JSX.Element => {
   const language = useLanguage();
   const palette = usePalette();
-  const errorAnimation = ERROR_ANIMATIONS[useDisplayedTheme()];
+  const errorAnimation = ERROR_ANIMATIONS[useDisplayedTheme()]();
   // 언마운트 뒤 GC 대상이 되도록 컴포넌트 안에서 생성
   // Skottie.Make는 JSON 파싱 실패 시 null을 반환하는데 반환 타입에 빠져 있어서 null 포함으로 선언
   const animation = useMemo<SkSkottieAnimation | null>(() => Skia.Skottie.Make(JSON.stringify(errorAnimation)), [errorAnimation]);
