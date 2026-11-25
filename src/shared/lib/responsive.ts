@@ -118,6 +118,8 @@ type Layout = {
   buttonsCenterX: number;
   dialCenterX: number;
   dialCenterY: number;
+  /** 숫자 라벨 하단 y */
+  dialBottomY: number;
 };
 
 // 좌우 경계를 생략하면 세로 화면으로 보고 너비를 짧은 변으로 사용
@@ -166,7 +168,9 @@ export const resolveLayout = ({
   const numeralRadius = itemRadius + majorItemHalfHeight + NUMERAL_GAP + NUMERAL_HALF_HEIGHT;
 
   // 4. 위치
-  const portrait = placePortrait({ safeArea, dialTopHalfHeight: (numeralRadius + NUMERAL_HALF_HEIGHT) * scale, buttonHalfHeight, formFactor });
+  const dialTopHalfHeightFromNumerals = (numeralRadius + NUMERAL_HALF_HEIGHT) * scale;
+  const portrait = placePortrait({ safeArea, dialTopHalfHeight: dialTopHalfHeightFromNumerals, buttonHalfHeight, formFactor });
+  const dialCenterY = isLandscape ? landscapeDialCenterY : portrait.dialCenterY;
 
   return {
     scale,
@@ -180,6 +184,7 @@ export const resolveLayout = ({
     buttonCenterY: isLandscape ? landscapeButtons.centerY : portrait.buttonCenterY,
     buttonsCenterX: isLandscape ? landscapeButtons.centerX : dialCenterX,
     dialCenterX,
-    dialCenterY: isLandscape ? landscapeDialCenterY : portrait.dialCenterY,
+    dialCenterY,
+    dialBottomY: dialCenterY + dialTopHalfHeightFromNumerals,
   };
 };
