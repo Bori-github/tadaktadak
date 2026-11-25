@@ -51,6 +51,8 @@ type BaselineInput = {
 export const hillBaseline = ({ height, scale, dialBottomY }: BaselineInput): number =>
   Math.min(Math.max(height - BASELINE_FROM_BOTTOM * scale, dialBottomY + BASELINE_BELOW_DIAL * scale), height - MIN_VISIBLE_HEIGHT * scale);
 
+const backHillTop = (x: number, baseline: number, scale: number) => baseline + scale * (16 * Math.sin(x / (70 * scale) + 2) + 6 * Math.sin(x / (27 * scale)));
+
 const frontHillTop = (x: number, baseline: number, scale: number) =>
   baseline + FRONT_HILL_OFFSET * scale + scale * (12 * Math.sin(x / (55 * scale)) + 5 * Math.sin(x / (19 * scale) + 1));
 
@@ -76,8 +78,6 @@ type HillInput = {
 export const hillDots = ({ width, height, scale, dotSize, baseline }: HillInput): ColoredDot[] => {
   const columns = Math.ceil(width / dotSize);
   const bottomRow = Math.ceil(height / dotSize);
-  const backTop = (x: number) => baseline + scale * (16 * Math.sin(x / (70 * scale) + 2) + 6 * Math.sin(x / (27 * scale)));
-  const frontTop = (x: number) => frontHillTop(x, baseline, scale);
   const toRow = (y: number) => Math.round(y / dotSize);
 
   // 같은 좌표는 마지막에 추가한 도트로 대체
@@ -86,13 +86,15 @@ export const hillDots = ({ width, height, scale, dotSize, baseline }: HillInput)
     if (x < 0 || x >= columns || y >= bottomRow) return;
     dots.set(y * columns + x, { x, y, color });
   };
-  const fillBelow = (column: number, row: number, color: string) => {
-    for (let y = row; y < bottomRow; y += 1) put(column, y, color);
+  const fill = (column: number, fromRow: number, toRowExclusive: number, color: string) => {
+    for (let y = fromRow; y < toRowExclusive; y += 1) put(column, y, color);
   };
 
   for (let column = 0; column < columns; column += 1) {
-    const row = toRow(backTop(column * dotSize));
-    fillBelow(column, row, BACK.body);
+    const x = column * dotSize;
+    const row = toRow(backHillTop(x, baseline, scale));
+    // 앞 언덕 윗변 아래는 앞 언덕 몸체가 덮으므로 생략
+    fill(column, row, toRow(frontHillTop(x, baseline, scale)), BACK.body);
     put(column, row, BACK.rim);
     if ((column + row) % 2 === 0) put(column, row + 1, BACK.shade);
   }
@@ -100,17 +102,17 @@ export const hillDots = ({ width, height, scale, dotSize, baseline }: HillInput)
   PINE_POSITIONS.forEach((position, index) => {
     const grid = index % 2 === 0 ? PINE_BIG : PINE_SMALL;
     const centerX = position >= 0 ? position * scale : width + position * scale;
-    const bottom = backTop(centerX) + PINE_SINK * scale;
+    const bottom = backHillTop(centerX, baseline, scale) + PINE_SINK * scale;
     const { left, top } = topLeftOnGrid({ centerX, centerY: bottom - (grid.length * dotSize) / 2, widthInDots: grid[0]?.length ?? 0, heightInDots: grid.length, dotSize });
     gridDots(grid, PINE_COLORS, left, top).forEach(({ x, y, color }) => put(x, y, color));
   });
 
   for (let column = 0; column < columns; column += 1) {
     const x = column * dotSize;
-    const row = toRow(frontTop(x));
+    const row = toRow(frontHillTop(x, baseline, scale));
     // 광원이 왼쪽 위라서 오른쪽 상승 구간을 밝은 색으로 표시
-    const isLit = frontTop(x + dotSize) < frontTop(x - dotSize);
-    fillBelow(column, row, FRONT.body);
+    const isLit = frontHillTop(x + dotSize, baseline, scale) < frontHillTop(x - dotSize, baseline, scale);
+    fill(column, row, bottomRow, FRONT.body);
     put(column, row, isLit ? FRONT.litRim : FRONT.rim);
     put(column, row + 1, isLit ? FRONT.litShade : FRONT.shade);
     FRONT_DITHER.filter(({ every, at }) => column % every === at).forEach(({ rows, color }) => put(column, row + rows, color));

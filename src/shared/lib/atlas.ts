@@ -75,9 +75,12 @@ export const gridDots = (grid: readonly string[], colors: Record<string, string 
  * @param widthInDots - 이미지 너비 (dot)
  * @param heightInDots - 이미지 높이 (dot)
  * @param dots - 채울 도트. 좌표 중복 없음, 나머지 투명
+ * @param [origin] - 이미지 (0, 0)에 대응하는 `dots` 좌표. 각 도트를 이 값만큼 빼서 그림
+ * @param origin.left - x (dot)
+ * @param origin.top - y (dot)
  * @returns 표면 생성 실패 시 `null`
  */
-export const drawDots = (widthInDots: number, heightInDots: number, dots: readonly ColoredDot[]): SkImage | null => {
+export const drawDots = (widthInDots: number, heightInDots: number, dots: readonly ColoredDot[], origin = { left: 0, top: 0 }): SkImage | null => {
   const surface = Skia.Surface.Make(widthInDots, heightInDots);
   if (!surface) return null;
 
@@ -86,6 +89,7 @@ export const drawDots = (widthInDots: number, heightInDots: number, dots: readon
 
   // `Surface.Make` 표면이 초기화되지 않아 이전 내용 노출 방지
   canvas.clear(Skia.Color('transparent'));
+  canvas.translate(-origin.left, -origin.top);
 
   // 색 변환과 `setColor`를 도트마다가 아니라 색마다 1회 호출
   const dotsByColor = new Map<string, ColoredDot[]>();
@@ -151,14 +155,13 @@ export const drawPlacedDots = (dots: readonly ColoredDot[], dotSize: number): Pl
 
   let [left, top, right, bottom] = [Infinity, Infinity, -Infinity, -Infinity];
   for (const { x, y } of dots) {
-    [left, top, right, bottom] = [Math.min(left, x), Math.min(top, y), Math.max(right, x), Math.max(bottom, y)];
+    left = Math.min(left, x);
+    top = Math.min(top, y);
+    right = Math.max(right, x);
+    bottom = Math.max(bottom, y);
   }
 
-  const image = drawDots(
-    right - left + 1,
-    bottom - top + 1,
-    dots.map((dot) => ({ ...dot, x: dot.x - left, y: dot.y - top })),
-  );
+  const image = drawDots(right - left + 1, bottom - top + 1, dots, { left, top });
   if (!image) return null;
 
   return {
