@@ -3,6 +3,8 @@ import { useFrameCallback, useSharedValue, type SharedValue } from 'react-native
 
 /** 경과 시간 갱신 주기 (밀리초). 갱신마다 Skia `Canvas` 전체를 다시 그리므로 10fps로 제한 */
 const BACKDROP_STEP_MS = 100;
+/** 프레임 간격 상한 (밀리초). 백그라운드 복귀 첫 프레임에 백그라운드 시간 전체가 더해져 눈송이가 이동하는 현상 방지 */
+const MAX_FRAME_MS = 100;
 
 /**
  * 배경 연출 경과 시간 (밀리초)
@@ -16,7 +18,7 @@ export const useBackdropElapsed = (isAnimating: boolean): SharedValue<number> =>
 
   const clock = useFrameCallback((frame) => {
     'worklet';
-    total.value += frame.timeSincePreviousFrame ?? 0;
+    total.value += Math.min(frame.timeSincePreviousFrame ?? 0, MAX_FRAME_MS);
 
     const stepped = Math.floor(total.value / BACKDROP_STEP_MS) * BACKDROP_STEP_MS;
     if (stepped !== elapsed.value) elapsed.value = stepped;

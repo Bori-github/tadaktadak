@@ -5,7 +5,7 @@ import { GLINT_COUNT, GLINT_STEP_MS, glintPositions, hillBaseline, hillDots, isG
 import { FLAKE_COUNT, createFlakes, flakePosition } from '../lib/snow';
 import { useBackdropElapsed } from '../model/backdrop';
 import { useDisplayedTheme, type ThemeId } from '@/entities/theme';
-import { DOT_SAMPLING, drawPlacedDots } from '@/shared/lib';
+import { DOT_SAMPLING, drawPlacedDots, drawSprites, packSprites } from '@/shared/lib';
 
 type BackdropProps = {
   width: number;
@@ -16,20 +16,19 @@ type BackdropProps = {
   isAnimating: boolean;
 };
 
-/** 파티클 아틀라스 픽셀. x 0 눈송이, 1 반짝임 점등, 2 반짝임 소등. 눈송이 알파는 `colors`로 적용 */
-const PARTICLE_DOTS = [
-  { x: 0, y: 0, color: '#dfe8f5' },
-  { x: 1, y: 0, color: '#f2f6ff' },
-  { x: 2, y: 0, color: '#5a6a92' },
-];
-const FLAKE_SPRITES = Array.from({ length: FLAKE_COUNT }, () => Skia.XYWHRect(0, 0, 1, 1));
-const LIT_GLINT_LEFT = 1;
-const DIM_GLINT_LEFT = 2;
+/** 파티클 격자. f 눈송이, l 반짝임 점등, d 반짝임 소등. 눈송이 알파는 `colors`로 적용 */
+const PARTICLE_GRIDS = [['f'], ['l'], ['d']];
+const PARTICLE_COLORS: Record<string, string> = { f: '#dfe8f5', l: '#f2f6ff', d: '#5a6a92' };
+const PACKED_PARTICLES = packSprites(PARTICLE_GRIDS);
+const particleLeft = (index: number) => PACKED_PARTICLES.boxes[index]?.left ?? 0;
+const LIT_GLINT_LEFT = particleLeft(1);
+const DIM_GLINT_LEFT = particleLeft(2);
+const FLAKE_SPRITES = Array.from({ length: FLAKE_COUNT }, () => Skia.XYWHRect(particleLeft(0), 0, 1, 1));
 
 const WinterBackdrop = ({ width, height, scale, dotSize, dialBottomY, isAnimating }: BackdropProps) => {
   const baseline = hillBaseline({ height, scale, dialBottomY });
   const hills = useMemo(() => drawPlacedDots(hillDots({ width, height, scale, dotSize, baseline }), dotSize), [width, height, scale, dotSize, baseline]);
-  const particles = useMemo(() => drawPlacedDots(PARTICLE_DOTS, 1)?.image ?? null, []);
+  const particles = useMemo(() => drawSprites(PARTICLE_GRIDS, PACKED_PARTICLES, PARTICLE_COLORS), []);
   const flakes = useMemo(() => createFlakes({ width, height, scale }), [width, height, scale]);
   const glintTransforms = useMemo(
     () => glintPositions({ width, scale, dotSize, baseline }).map(({ x, y }) => Skia.RSXform(dotSize, 0, x * dotSize, y * dotSize)),
