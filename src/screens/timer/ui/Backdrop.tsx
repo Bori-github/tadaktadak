@@ -13,7 +13,7 @@ type BackdropProps = {
   scale: number;
   dotSize: number;
   dialBottomY: number;
-  isPaused: boolean;
+  isAnimating: boolean;
 };
 
 /** 파티클 아틀라스 픽셀. x 0 눈송이, 1 반짝임 점등, 2 반짝임 소등. 눈송이 알파는 `colors`로 적용 */
@@ -26,7 +26,7 @@ const FLAKE_SPRITES = Array.from({ length: FLAKE_COUNT }, () => Skia.XYWHRect(0,
 const LIT_GLINT_LEFT = 1;
 const DIM_GLINT_LEFT = 2;
 
-const WinterBackdrop = ({ width, height, scale, dotSize, dialBottomY, isPaused }: BackdropProps) => {
+const WinterBackdrop = ({ width, height, scale, dotSize, dialBottomY, isAnimating }: BackdropProps) => {
   const baseline = hillBaseline({ height, scale, dialBottomY });
   const hills = useMemo(() => drawPlacedDots(hillDots({ width, height, scale, dotSize, baseline }), dotSize), [width, height, scale, dotSize, baseline]);
   const particles = useMemo(() => drawPlacedDots(PARTICLE_DOTS, 1)?.image ?? null, []);
@@ -36,7 +36,7 @@ const WinterBackdrop = ({ width, height, scale, dotSize, dialBottomY, isPaused }
     [width, scale, dotSize, baseline],
   );
 
-  const elapsed = useBackdropElapsed(isPaused);
+  const elapsed = useBackdropElapsed(isAnimating);
 
   const flakeTransforms = useRSXformBuffer(FLAKE_COUNT, (transform, index) => {
     'worklet';
