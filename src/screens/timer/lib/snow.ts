@@ -39,10 +39,12 @@ type FlakeInput = {
  * @param input.scale - 배율
  * @returns `FLAKE_COUNT`개. 같은 입력에 같은 결과
  */
-export const createFlakes = ({ width, height, scale }: FlakeInput): Flake[] =>
-  Array.from({ length: FLAKE_COUNT }, (_, index) => {
+export const createFlakes = ({ width, height, scale }: FlakeInput): Flake[] => {
+  const margin = FLAKE_MARGIN * scale;
+  const fallHeight = height + margin * 2;
+
+  return Array.from({ length: FLAKE_COUNT }, (_, index) => {
     const isBig = noise(index, 4.9) < BIG_FLAKE_RATIO;
-    const fallHeight = height + FLAKE_MARGIN * 2 * scale;
 
     return {
       x: noise(index, 1.3) * width,
@@ -52,11 +54,12 @@ export const createFlakes = ({ width, height, scale }: FlakeInput): Flake[] =>
       frequency: 0.3 + noise(index, 7.7) * 0.5,
       phase: index,
       fallHeight,
-      margin: FLAKE_MARGIN * scale,
+      margin,
       isBig,
       alpha: 0.3 + noise(index, 5.3) * 0.4,
     };
   });
+};
 
 /**
  * 경과 시간 기준 눈송이 좌표

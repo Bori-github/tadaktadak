@@ -1,7 +1,7 @@
 import { Atlas, Skia, useColorBuffer, useRSXformBuffer, useRectBuffer } from '@shopify/react-native-skia';
 import { memo, useMemo, type ComponentType } from 'react';
 
-import { GLINT_COUNT, GLINT_STEP_MS, glintPositions, hillBaseline, hillDots, isGlintLit } from '../lib/hill';
+import { GLINT_COUNT, glintPositions, hillBaseline, hillDots, isGlintLit } from '../lib/hill';
 import { FLAKE_COUNT, createFlakes, flakePosition } from '../lib/snow';
 import { useBackdropElapsed } from '../model/backdrop';
 import { useDisplayedTheme, type ThemeId } from '@/entities/theme';
@@ -60,7 +60,7 @@ const WinterBackdrop = ({ width, height, scale, dotSize, dialBottomY, isAnimatin
 
   const glintSprites = useRectBuffer(GLINT_COUNT, (sprite, index) => {
     'worklet';
-    sprite.setXYWH(isGlintLit(index, Math.floor(elapsed.value / GLINT_STEP_MS)) ? LIT_GLINT_LEFT : DIM_GLINT_LEFT, 0, 1, 1);
+    sprite.setXYWH(isGlintLit(index, elapsed.value) ? LIT_GLINT_LEFT : DIM_GLINT_LEFT, 0, 1, 1);
   });
 
   if (!hills || !particles) return null;

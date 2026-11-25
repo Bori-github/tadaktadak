@@ -122,7 +122,7 @@ export const hillDots = ({ width, height, scale, dotSize, baseline }: HillInput)
 };
 
 export const GLINT_COUNT = 14;
-export const GLINT_STEP_MS = 500;
+const GLINT_STEP_MS = 500;
 const GLINT_CYCLE = 5;
 
 type GlintInput = {
@@ -153,10 +153,10 @@ export const glintPositions = ({ width, scale, dotSize, baseline }: GlintInput):
  * 반짝임 점등 여부
  *
  * @param index - 반짝임 인덱스
- * @param step - `GLINT_STEP_MS` 단위 경과 시간
- * @returns 인덱스마다 위상 3 차이. `GLINT_CYCLE` 스텝 중 1스텝만 `true`
+ * @param elapsedMs - 경과 시간
+ * @returns 점등 시 `true`
  */
-export const isGlintLit = (index: number, step: number): boolean => {
+export const isGlintLit = (index: number, elapsedMs: number): boolean => {
   'worklet';
-  return (index * 3 + step) % GLINT_CYCLE === 0;
+  return (index * 3 + Math.floor(elapsedMs / GLINT_STEP_MS)) % GLINT_CYCLE === 0;
 };
