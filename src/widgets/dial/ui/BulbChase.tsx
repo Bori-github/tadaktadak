@@ -3,10 +3,9 @@ import { memo, useMemo } from 'react';
 
 import { DIAL_ITEM_STYLES } from '../config/items';
 import { TICK_NUMBERS } from '../config/ticks';
-import { DOT_SAMPLING, drawSprites, packSprites } from '../lib/atlas';
 import { useChaseBoosts } from '../model/chase';
 import { type MajorItemHeightInDots } from '@/shared/constants';
-import { bulbCenter, topLeftOnGrid } from '@/shared/lib';
+import { DOT_SAMPLING, bulbCenter, drawSprites, packSprites, topLeftOnGrid } from '@/shared/lib';
 
 type BulbChaseProps = {
   centerX: number;

@@ -1,3 +1,4 @@
+export { DOT_SAMPLING, SOFT_SAMPLING, drawPlacedDots, drawSprites, gridDots, packSprites, type ColoredDot } from './atlas';
 export { bulbCenter, type DialPlacement } from './bulb';
 export { topLeftOnGrid } from './grid';
 export { noise } from './noise';

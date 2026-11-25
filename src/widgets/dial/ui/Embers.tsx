@@ -2,12 +2,11 @@ import { Atlas, Skia, TileMode, useColorBuffer, useRSXformBuffer, useRectBuffer,
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useDerivedValue } from 'react-native-reanimated';
 
-import { DOT_SAMPLING, SOFT_SAMPLING } from '../lib/atlas';
 import { getBloomGradient } from '../lib/bloom';
 import { EMBER_COLOR_KEYS, EMBER_COUNT, EMBER_GLOW_ALPHA, EMBER_GLOW_RADIUS, emberAt, emberColorIndex, spawnEmbers, type Ember } from '../lib/ember';
 import { useCompletedEffectElapsed } from '../model/ember';
 import { DOT_SIZE } from '@/shared/constants';
-import { type Palette } from '@/shared/lib';
+import { DOT_SAMPLING, SOFT_SAMPLING, type Palette } from '@/shared/lib';
 
 type EmbersProps = {
   centerX: number;

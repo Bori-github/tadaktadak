@@ -3,11 +3,10 @@ import { memo, useMemo } from 'react';
 
 import { DIAL_ITEM_STYLES } from '../config/items';
 import { TICK_NUMBERS } from '../config/ticks';
-import { SOFT_SAMPLING } from '../lib/atlas';
 import { drawBloom, getBloomGradient, glowSprites, type GlowRadius } from '../lib/bloom';
 import { useChaseBoosts } from '../model/chase';
 import { DOT_SIZE } from '@/shared/constants';
-import { bulbCenter } from '@/shared/lib';
+import { SOFT_SAMPLING, bulbCenter } from '@/shared/lib';
 
 type PeakGlowProps = {
   centerX: number;

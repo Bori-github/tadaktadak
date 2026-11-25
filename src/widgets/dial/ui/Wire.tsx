@@ -1,8 +1,8 @@
 import { Atlas } from '@shopify/react-native-skia';
 import { memo, useMemo } from 'react';
 
-import { DOT_SAMPLING, drawPlacedDots } from '../lib/atlas';
 import { wireDots } from '../lib/wire';
+import { DOT_SAMPLING, drawPlacedDots } from '@/shared/lib';
 
 type WireProps = {
   centerX: number;

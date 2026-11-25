@@ -1,6 +1,5 @@
-import { type ColoredDot } from './atlas';
 import { pointOnDial } from './geometry';
-import { bulbCenter, type DialPlacement } from '@/shared/lib';
+import { bulbCenter, type ColoredDot, type DialPlacement } from '@/shared/lib';
 
 const WIRE_COLOR = '#1c2a1a';
 

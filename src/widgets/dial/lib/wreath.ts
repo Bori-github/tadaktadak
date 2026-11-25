@@ -1,6 +1,5 @@
-import { gridDots, type ColoredDot } from './atlas';
 import { pointOnDial } from './geometry';
-import { noise, topLeftOnGrid } from '@/shared/lib';
+import { gridDots, noise, topLeftOnGrid, type ColoredDot } from '@/shared/lib';
 
 /** 솔잎 4단계 색. 명도 오름차순. 피그마 `wreath/needle-*` */
 const NEEDLE = ['#16291f', '#1f3a2a', '#2a4f36', '#3a6a45'] as const;

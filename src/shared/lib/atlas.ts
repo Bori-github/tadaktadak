@@ -1,6 +1,6 @@
 import { FilterMode, MipmapMode, Skia, type SkImage, type SkRect, type SkRSXform } from '@shopify/react-native-skia';
 
-/** 도트를 키워도 칸 사이가 흐려지지 않음. 가장 가까운 원본 픽셀 하나의 색을 그대로 씀. `DESIGN.md` §6 */
+/** 도트를 키워도 칸 사이가 흐려지지 않음. 가장 가까운 원본 픽셀 하나의 색을 그대로 사용. `DESIGN.md` §6 */
 export const DOT_SAMPLING = { filter: FilterMode.Nearest, mipmap: MipmapMode.None };
 
 /** 빛 번짐을 키울 때는 가장자리를 흐림. 가까운 원본 픽셀 넷을 거리 비율로 섞음. `DESIGN.md` §6 */

@@ -3,7 +3,6 @@ import { memo, useEffect, useMemo } from 'react';
 import { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { DIAL_ITEM_STYLES } from '../config/items';
-import { DOT_SAMPLING, SOFT_SAMPLING, drawSprites, packSprites } from '../lib/atlas';
 import { TICK_NUMBERS } from '../config/ticks';
 import { BLOOM_ALPHA, BLOOM_RADIUS, CENTER_BLOOM_ALPHA, CENTER_BLOOM_RATIO, HALO_ALPHA, HALO_RADIUS, bloomRadius, drawBloom, getBloomGradient, glowSprites } from '../lib/bloom';
 import { pointOnDial } from '../lib/geometry';
@@ -12,7 +11,7 @@ import { useFlickerStep } from '../model/flicker';
 import { useDisplayedTheme } from '@/entities/theme';
 import { ignitionProgress } from '@/entities/timer';
 import { DOT_SIZE, type MajorItemHeightInDots } from '@/shared/constants';
-import { topLeftOnGrid, type Palette } from '@/shared/lib';
+import { DOT_SAMPLING, SOFT_SAMPLING, drawSprites, packSprites, topLeftOnGrid, type Palette } from '@/shared/lib';
 import { MARKER, getSpriteColors } from '@/shared/ui/dot-sprite';
 
 /** 아틀라스 내 스프라이트 인덱스. `FIRST_FRAME`부터 1분 눈금, 5분 눈금 `frames` 순 */
