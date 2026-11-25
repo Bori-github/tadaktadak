@@ -69,7 +69,8 @@ export const App = (): JSX.Element => {
             </SplashVisibleContext.Provider>
           </Sentry.ErrorBoundary>
         </PaletteContext.Provider>
-        {isSplashVisible ? <Splash onHidden={() => setIsSplashVisible(false)} /> : null}
+        {/* 테마별 Lottie를 고르도록 테마 복원 후 마운트. 마운트 전까지 네이티브 스플래시 유지 */}
+        {isSplashVisible && isThemeRestored ? <Splash onHidden={() => setIsSplashVisible(false)} /> : null}
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

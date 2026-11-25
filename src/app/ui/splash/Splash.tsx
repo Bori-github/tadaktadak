@@ -4,16 +4,19 @@ import { StyleSheet, View } from 'react-native';
 import BootSplash, { type Manifest } from 'react-native-bootsplash';
 import Animated, { useAnimatedStyle, useFrameCallback, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
+import campfireSplash from '@assets/lottie/splash-campfire.json';
+import winterSplash from '@assets/lottie/splash-winter.json';
 
-import splash from '@assets/lottie/splash-campfire.json';
+import { type ThemeId, useDisplayedTheme } from '@/entities/theme';
 
 const manifest: Manifest = require('../../../../assets/bootsplash/manifest.json');
 
-const LAST_FRAME = splash.op - 1;
+const SPLASH_ANIMATIONS: Record<ThemeId, typeof campfireSplash | typeof winterSplash> = {
+  campfire: campfireSplash,
+  winter: winterSplash,
+};
 
 const FADE_MS = 300;
-// Lottie 마지막 프레임에서 페이드아웃이 끝나도록 Lottie 길이에서 계산
-const FADE_DELAY_MS = (splash.op / splash.fr) * 1000 - FADE_MS;
 
 interface SplashProps {
   onHidden: () => void;
@@ -25,16 +28,22 @@ interface SplashProps {
  * @returns 네이티브 스플래시 로고에서 이어 재생하고 사라지는 애니메이션 화면
  */
 export const Splash = ({ onHidden }: SplashProps): JSX.Element => {
+  const splash = SPLASH_ANIMATIONS[useDisplayedTheme()];
   // 언마운트 뒤 GC 대상이 되도록 컴포넌트 안에서 생성
   // Skottie.Make는 JSON 파싱 실패 시 null을 반환하는데 반환 타입에 빠져 있어서 null 포함으로 선언
-  const animation = useMemo<SkSkottieAnimation | null>(() => Skia.Skottie.Make(JSON.stringify(splash)), []);
+  const animation = useMemo<SkSkottieAnimation | null>(() => Skia.Skottie.Make(JSON.stringify(splash)), [splash]);
   const frame = useSharedValue(0);
   const opacity = useSharedValue(1);
   const logoOpacity = useSharedValue(1);
 
+  const { fr: frameRate, op: endFrame } = splash;
+  const lastFrame = endFrame - 1;
+  // Lottie 마지막 프레임에서 페이드아웃이 끝나도록 Lottie 길이에서 계산
+  const fadeDelayMs = (endFrame / frameRate) * 1000 - FADE_MS;
+
   const playing = useFrameCallback((info) => {
     'worklet';
-    frame.value = Math.min((info.timeSinceFirstFrame / 1000) * splash.fr, LAST_FRAME);
+    frame.value = Math.min((info.timeSinceFirstFrame / 1000) * frameRate, lastFrame);
   }, false);
 
   const { container, logo } = BootSplash.useHideAnimation({
@@ -47,7 +56,7 @@ export const Splash = ({ onHidden }: SplashProps): JSX.Element => {
         playing.setActive(true);
         // withTiming이 취소돼도(finished false) 스플래시가 남지 않게 onHidden 호출
         opacity.value = withDelay(
-          FADE_DELAY_MS,
+          fadeDelayMs,
           withTiming(0, { duration: FADE_MS }, () => {
             'worklet';
             scheduleOnRN(onHidden);
@@ -70,7 +79,7 @@ export const Splash = ({ onHidden }: SplashProps): JSX.Element => {
       <Animated.Image {...logo} style={[logo.style, logoStyle]} />
       {animation === null ? null : (
         <View style={[styles.stage, { transform: [{ scale: logoScale }] }]} pointerEvents="none">
-          <Canvas style={styles.canvas}>
+          <Canvas style={{ width: splash.w, height: splash.h }}>
             <Skottie animation={animation} frame={frame} />
           </Canvas>
         </View>
@@ -84,9 +93,5 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  canvas: {
-    width: splash.w,
-    height: splash.h,
   },
 });
