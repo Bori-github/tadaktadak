@@ -97,7 +97,18 @@ export const drawDots = (widthInDots: number, heightInDots: number, dots: readon
 
   for (const [color, sameColorDots] of dotsByColor) {
     paint.setColor(Skia.Color(color));
-    for (const dot of sameColorDots) canvas.drawRect(Skia.XYWHRect(dot.x, dot.y, 1, 1), paint);
+
+    // x가 같고 y가 연속인 도트를 1×n 사각형으로 병합해 `drawRect` 호출 수 감소
+    sameColorDots.sort((a, b) => a.x - b.x || a.y - b.y);
+    let runStart = sameColorDots[0];
+    for (let index = 1; index <= sameColorDots.length; index += 1) {
+      const previous = sameColorDots[index - 1];
+      const current = sameColorDots[index];
+      if (current && previous && current.x === previous.x && current.y === previous.y + 1) continue;
+
+      if (runStart && previous) canvas.drawRect(Skia.XYWHRect(runStart.x, runStart.y, 1, previous.y - runStart.y + 1), paint);
+      runStart = current;
+    }
   }
 
   surface.flush();
