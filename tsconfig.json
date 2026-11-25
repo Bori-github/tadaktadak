@@ -4,7 +4,8 @@
     "strict": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@modules/*": ["./modules/*"]
+      "@modules/*": ["./modules/*"],
+      "@assets/*": ["./assets/*"]
     },
     "noUncheckedIndexedAccess": true,
     "noFallthroughCasesInSwitch": true,
