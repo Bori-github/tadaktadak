@@ -7,6 +7,15 @@ const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(ts|tsx)'],
   // preview.tsx의 LoadSkiaWeb 요청 경로 `/canvaskit.wasm`으로 제공
   staticDirs: [{ from: '../node_modules/canvaskit-wasm/bin/full', to: '/' }],
+  typescript: {
+    reactDocgen: 'react-docgen-typescript',
+    reactDocgenTypescriptOptions: {
+      // 문자열 리터럴 유니온 타입을 select 컨트롤로 표시
+      shouldExtractLiteralValuesFromEnum: true,
+      // node_modules에 선언된 props(React Native 기본 props) 제외
+      propFilter: (prop) => (prop.parent ? !prop.parent.fileName.includes('node_modules') : true),
+    },
+  },
   framework: {
     name: '@storybook/react-native-web-vite',
     options: {
