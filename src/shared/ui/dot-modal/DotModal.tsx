@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DOT_SIZE } from '@/shared/constants';
 import { usePalette } from '@/shared/lib';
 
-import { BACK_ICON, CLOSE_ICON, IconButton } from '@/shared/ui/icon-button';
+import { IconButton, createBackIcon, createCloseIcon } from '@/shared/ui/icon-button';
 
 /** 배율 1의 논리 픽셀. 피그마 `설정 화면 · 페이지` */
 export const CONTENT_WIDTH = 342;
@@ -57,8 +57,8 @@ export const DotModal = ({ dotSize, onClose, onBack, children, footer }: DotModa
           {footer}
         </View>
       ) : null}
-      {onBack === undefined ? null : <IconButton testID="modal-back" dotSize={dotSize} icon={BACK_ICON} style={[styles.button, backButtonStyle]} onPress={onBack} />}
-      <IconButton testID="modal-close" dotSize={dotSize} icon={CLOSE_ICON} style={[styles.button, closeButtonStyle]} onPress={onClose} />
+      {onBack === undefined ? null : <IconButton testID="modal-back" dotSize={dotSize} icon={createBackIcon} style={[styles.button, backButtonStyle]} onPress={onBack} />}
+      <IconButton testID="modal-close" dotSize={dotSize} icon={createCloseIcon} style={[styles.button, closeButtonStyle]} onPress={onClose} />
     </View>
   );
 };
