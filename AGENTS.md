@@ -38,6 +38,8 @@
 
 - `pnpm check`: lint, typecheck, format:check
 - `pnpm test`: Jest
+- `pnpm storybook`: 웹 스토리북 개발 서버(포트 6006)
+- `pnpm build-storybook`: 웹 스토리북 정적 빌드
 - `pnpm e2e:ios`: Maestro
 - `pnpm e2e:android`: Maestro
 
@@ -49,6 +51,7 @@
   - 코드와 문서는 색 값 대신 변수 이름을 사용한다
 - 상수를 바꿀 때: `DESIGN.md`에서 그 값을 쓰는 표를 같은 커밋에서 고친다. Layout 겹침 검산의 개체 중심 반지름 하한 표와 Responsive Behavior의 구간별 결과는 상수에서 파생된 값이라 함께 틀어진다
 - 시계판에 개체를 추가할 때: `src/shared/lib/overlap.test.ts`의 원주 방향 검사에 새 개체의 쌍을 추가한다
+- `src/shared/ui` 컴포넌트를 추가하거나 props를 변경할 때: 같은 폴더의 `*.stories.tsx`에 스토리를 추가하거나 수정한다
 
 ## 확인받을 것
 
