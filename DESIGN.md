@@ -198,14 +198,6 @@ bundle_id: "com.boriguri.tadaktadak"
 
 브레이크포인트는 없다. **도트 크기는 정수 포인트만 사용한다.** 배율은 1과 1.5이며 1.5배(도트 3pt)는 짧은 변 657 이상에만 사용한다. 시계판 지름은 짧은 변에 선형 비례한다. 휴대폰은 기준 화면 비율, 태블릿은 짧은 변의 70%다. 태블릿은 iPad와 기기 화면 짧은 변 600 이상 Android이며, 앱 창이 아니라 기기로 판정해서 분할 화면에서도 70%다. 가로 회전과 iPad 멀티태스킹(Split View·Stage Manager)을 지원한다.
 
-### 확정값
-
-| 값                    | 확정          | 코드                      |
-| --------------------- | ------------- | ------------------------- |
-| medium 최소 짧은 변   | 360 논리 픽셀 | `MEDIUM_MIN_SHORT_SIDE`   |
-| expanded 최소 짧은 변 | 657 논리 픽셀 | `EXPANDED_MIN_SHORT_SIDE` |
-| 도트 크기 (배율 1)    | 2 논리 픽셀   | `DOT_SIZE`                |
-
 ### 계산 순서
 
 짧은 변은 화면 너비와 높이 중 작은 쪽이다. 7번을 뺀 나머지는 논리 픽셀이다.
@@ -249,22 +241,25 @@ bundle_id: "com.boriguri.tadaktadak"
 
 기준 화면에서 safe area 높이가 632 미만이면 `버튼 기본 거리 150`을 줄여 버튼과 시계판을 함께 아래로 이동한다. `버튼 기본 거리`의 하한은 `버튼 반높이 + 16`이며, 하한에서 버튼 아래 끝과 safe area 아래 경계의 간격은 배율과 무관하게 16이다. 기준 화면의 하한은 44, 하한 적용 시점은 safe area 높이 526이다. 이 구간에서 휴대폰은 시계판 위 끝이 safe area 위 끝에 붙는다. 태블릿은 `버튼 기본 거리`를 사용하지 않고 시계판 위 여백과 버튼 아래 여백을 같게 둔다.
 
-계산 순서와 규격에 나오는 이름은 이 값들이다.
+계산 순서와 규격에 나오는 이름과 코드 상수의 대응이다. 값은 코드 상수를 따른다.
 
-| 이름                  | 값      | 계산 순서   | 코드                             |
-| --------------------- | ------- | ----------- | -------------------------------- |
-| 가장자리 여백         | 8       | —           | `EDGE_MARGIN`                    |
-| 숫자 간격             | 6       | 5           | `NUMERAL_GAP`                    |
-| 숫자 반높이           | 7       | 5           | `NUMERAL_HALF_HEIGHT`            |
-| 호 여백               | 13      | 6           | `ARC_GAP`                        |
-| 버튼 한 변            | 28      | 9           | `BUTTON_SIZE_IN_DOTS`            |
-| 시계판 아래 여백      | 90      | 10          | `DIAL_TO_BUTTON_GAP`             |
-| 버튼 기본 거리        | 150     | 11          | `BUTTON_OFFSET_FROM_SAFE_AREA`   |
-| 버튼 아래 여백 하한   | 16      | 11          | `BUTTON_BOTTOM_MARGIN_MIN`       |
-| 시계판 safe area 여백 | 8       | 배치 선택 2 | `DIAL_SAFE_AREA_MARGIN`          |
-| 버튼 중심 간격        | 44 도트 | 배치 선택 4 | `BUTTON_CENTER_DISTANCE_IN_DOTS` |
-| 원 버튼 지름          | 24      | —           | `ROUND_BUTTON_DIAMETER_IN_DOTS`  |
-| 버튼 터치 여백        | 8       | —           | `BUTTON_TOUCH_PADDING`           |
+| 이름                  | 계산 순서   | 코드                             |
+| --------------------- | ----------- | -------------------------------- |
+| medium 최소 짧은 변   | 1           | `MEDIUM_MIN_SHORT_SIDE`          |
+| expanded 최소 짧은 변 | 1           | `EXPANDED_MIN_SHORT_SIDE`        |
+| 도트 크기 (배율 1)    | 3, 9        | `DOT_SIZE`                       |
+| 가장자리 여백         | —           | `EDGE_MARGIN`                    |
+| 숫자 간격             | 5           | `NUMERAL_GAP`                    |
+| 숫자 반높이           | 5           | `NUMERAL_HALF_HEIGHT`            |
+| 호 여백               | 6           | `ARC_GAP`                        |
+| 버튼 한 변            | 9           | `BUTTON_SIZE_IN_DOTS`            |
+| 시계판 아래 여백      | 10          | `DIAL_TO_BUTTON_GAP`             |
+| 버튼 기본 거리        | 11          | `BUTTON_OFFSET_FROM_SAFE_AREA`   |
+| 버튼 아래 여백 하한   | 11          | `BUTTON_BOTTOM_MARGIN_MIN`       |
+| 시계판 safe area 여백 | 배치 선택 2 | `DIAL_SAFE_AREA_MARGIN`          |
+| 버튼 중심 간격        | 배치 선택 4 | `BUTTON_CENTER_DISTANCE_IN_DOTS` |
+| 원 버튼 지름          | —           | `ROUND_BUTTON_DIAMETER_IN_DOTS`  |
+| 버튼 터치 여백        | —           | `BUTTON_TOUCH_PADDING`           |
 
 계산 순서 4의 153은 기준 화면 390의 개체 중심 반지름이다. 657은 태블릿에서 시계판 70%를 배율 1.5와 9 도트 5분 개체로 그릴 수 있는 최소 짧은 변이다.
 
