@@ -23,7 +23,7 @@ type MinutesInput = {
   max: number;
 };
 
-/** 시계판 위 한 점이 가리키는 분. `DESIGN.md` §8 */
+/** 시계판 위 한 점이 가리키는 분. `SPEC.md` 조작과 단계 전이 */
 export const minutesFromPoint = ({ centerX, centerY, x, y, previous, min, max }: MinutesInput): number => {
   'worklet';
   // atan2는 −180~180을 주므로 360을 더해 보정

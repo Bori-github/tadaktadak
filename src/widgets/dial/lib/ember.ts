@@ -110,7 +110,7 @@ export const emberAt = (ember: Ember, elapsedMs: number): EmberState => {
 };
 
 /**
- * 남은 수명에 대응하는 `EMBER_COLOR_KEYS` 인덱스. `DESIGN.md` §9
+ * 남은 수명에 대응하는 `EMBER_COLOR_KEYS` 인덱스
  *
  * @returns 수명 > 0.66이면 0, > 0.33이면 1, 그 외 2
  */
