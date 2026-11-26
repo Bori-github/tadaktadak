@@ -25,7 +25,7 @@ const FRONT = {
   body: WINTER['hill/front-body'],
   litRim: WINTER['hill/front-rim-lit'],
   rim: WINTER['hill/front-rim'],
-  litShade: WINTER['hill/front-rim'],
+  litShade: WINTER['hill/front-rim-lit-shade'],
   shade: WINTER['hill/front-rim-shade'],
 };
 /** 앞 언덕 디더링. `column % every === at`인 열의 테두리 아래 `rows`행 */
