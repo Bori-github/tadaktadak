@@ -94,6 +94,7 @@
     "bulb/cap-dark": "#6e5426",
     "bulb/glow": "#ffc266",
     "bulb/glow-inner": "#fff0c0",
+    "bulb/peak-glow": "#ffffff",
     "particle/start": "#ffffff",
     "particle/middle": "#fff0c0",
     "particle/end": "#ffcf70",

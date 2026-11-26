@@ -5,7 +5,7 @@ import { DIAL_ITEM_STYLES } from '../config/items';
 import { TICK_NUMBERS } from '../config/ticks';
 import { drawBloom, getBloomGradient, glowSprites, type GlowRadius } from '../lib/bloom';
 import { useChaseBoosts } from '../model/chase';
-import { DOT_SIZE } from '@/shared/constants';
+import { COLOR_TOKENS, DOT_SIZE } from '@/shared/constants';
 import { SOFT_SAMPLING, bulbCenter } from '@/shared/lib';
 
 type PeakGlowProps = {
@@ -31,7 +31,7 @@ const { glowOffsetInDots = 0 } = DIAL_ITEM_STYLES.winter;
 
 /** 완료 연출 중 최대 밝기 전구의 흰색 빛 번짐. 전구 스프라이트 아래 레이어 */
 export const PeakGlow = memo(({ centerX, centerY, radius, dotSize, settingMinutes, effectStartedAt }: PeakGlowProps) => {
-  const image = useMemo(() => drawBloom(getBloomGradient('#ffffff'), PEAK_GLOW_RADIUS), []);
+  const image = useMemo(() => drawBloom(getBloomGradient(COLOR_TOKENS.winter['bulb/peak-glow']), PEAK_GLOW_RADIUS), []);
 
   const glows = useMemo(
     () =>
