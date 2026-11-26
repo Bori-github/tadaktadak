@@ -1,14 +1,23 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { Skia } from '@shopify/react-native-skia';
 import * as Sentry from '@sentry/react-native';
 import { reloadAppAsync } from 'expo';
+import { StyleSheet } from 'react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { RootErrorScreen } from './RootErrorScreen';
 
 import { initLocalization } from '@/entities/language';
+import { THEME_IDS, useDisplayedTheme } from '@/entities/theme';
 
 jest.mock('expo', () => ({ reloadAppAsync: jest.fn(() => Promise.resolve()) }));
+
+jest.mock('@/entities/theme', () => ({
+  ...jest.requireActual<object>('@/entities/theme'),
+  useDisplayedTheme: jest.fn(() => 'campfire'),
+}));
 
 jest.mock('react-native-reanimated', () => ({
   cancelAnimation: () => {},
@@ -58,5 +67,17 @@ describe('에러 화면', () => {
     await fireEvent.press(screen.getByRole('button'));
 
     expect(reloadAppAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it('모든 테마에서 다시 시작 버튼이 Lottie 캔버스 안에 놓인다', async () => {
+    for (const themeId of THEME_IDS) {
+      jest.mocked(useDisplayedTheme).mockReturnValue(themeId);
+      const { h: canvasHeight } = JSON.parse(readFileSync(join(process.cwd(), 'assets/lottie', `error-${themeId}.json`), 'utf8'));
+      const { unmount } = await render(<RootErrorScreen />);
+      const { top, height } = StyleSheet.flatten(screen.getByRole('button').props.style);
+
+      expect(Number(top) + Number(height)).toBeLessThanOrEqual(canvasHeight);
+      unmount();
+    }
   });
 });
