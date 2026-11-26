@@ -15,14 +15,14 @@ type ThumbGridInput = {
 };
 
 /**
- * 손잡이가 반짝이는지 여부. `DESIGN.md` §8 손잡이 색과 움직임
+ * 손잡이가 반짝이는지 여부. `DESIGN.md` §8 손잡이 움직임
  *
  * @returns 집중 타이머가 도는 동안만 `true`
  */
 export const isThumbTwinkling = ({ isResting, phase }: TwinklingInput): boolean => phase === 'running' && !isResting;
 
 /**
- * 손잡이가 이번 프레임에 그릴 도트 격자. `DESIGN.md` §4 손잡이, §8 손잡이 색과 움직임
+ * 손잡이가 이번 프레임에 그릴 도트 격자. `DESIGN.md` §4 손잡이, §8 손잡이 움직임
  *
  * @returns 반짝이지 않는 동안은 A
  */

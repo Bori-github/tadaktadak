@@ -17,7 +17,7 @@ type ThumbProps = {
   /** 손잡이가 가리키는 분 */
   minutes: SharedValue<number>;
   mode: TimerMode;
-  /** 반짝임 여부. `DESIGN.md` §8 손잡이 색과 움직임 */
+  /** 반짝임 여부. `DESIGN.md` §8 손잡이 움직임 */
   isTwinkling: boolean;
   palette: Palette;
 };
