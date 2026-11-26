@@ -19,7 +19,7 @@ type DialDragInput = {
   minutes: number;
   /** 끌어서 설정할 타이머 */
   mode: TimerMode;
-  /** 손잡이를 끌 수 있는지 여부. `DESIGN.md` §8 조작 */
+  /** 손잡이를 끌 수 있는지 여부. `SPEC.md` 조작과 단계 전이 */
   enabled: boolean;
   onChange: (minutes: number) => void;
   onChangeEnd: (minutes: number) => void;
