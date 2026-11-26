@@ -2,11 +2,8 @@ import { createContext, useContext } from 'react';
 
 import { COLOR_TOKENS } from '@/shared/constants';
 
-type CampfireTokenName = keyof typeof COLOR_TOKENS.campfire;
-type WinterTokenName = keyof typeof COLOR_TOKENS.winter;
-
 /** 모든 테마 컬렉션에 있는 피그마 변수 이름 */
-type PaletteTokenName = Extract<CampfireTokenName, WinterTokenName>;
+type PaletteTokenName = keyof typeof COLOR_TOKENS.campfire & keyof typeof COLOR_TOKENS.winter;
 
 /**
  * 피그마 테마 컬렉션의 색 토큰으로 팔레트 생성
