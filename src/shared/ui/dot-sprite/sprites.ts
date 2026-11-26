@@ -1,28 +1,32 @@
+import { COLOR_TOKENS } from '@/shared/constants';
 import { type Palette } from '@/shared/lib';
 
-/** 모닥불 스프라이트 글자별 색. 피그마 `fire/*` */
+const CAMPFIRE = COLOR_TOKENS.campfire;
+const WINTER = COLOR_TOKENS.winter;
+
+/** 모닥불 스프라이트 글자별 색 */
 export const CAMPFIRE_SPRITE_COLORS: Record<string, string> = {
-  f: '#ffd94a',
-  F: '#ff9d2e',
-  y: '#fff2a8',
-  o: '#ffb43c',
-  r: '#e04a2b',
-  W: '#8a6238',
-  D: '#4a3220',
+  f: CAMPFIRE['fire/ignite-bright'],
+  F: CAMPFIRE['fire/ignite-mid'],
+  y: CAMPFIRE['fire/core'],
+  o: CAMPFIRE['fire/mid'],
+  r: CAMPFIRE['fire/base'],
+  W: CAMPFIRE['fire/log'],
+  D: CAMPFIRE['fire/log-shade'],
 };
 
-/** 전구 스프라이트 글자별 색. 피그마 `bulb/*`. 소문자 꺼짐, 대문자 켜짐 */
+/** 전구 스프라이트 글자별 색. 소문자 꺼짐, 대문자 켜짐 */
 export const WINTER_SPRITE_COLORS: Record<string, string> = {
-  g: '#c9a55a',
-  G: '#6e5426',
-  a: '#7a6440',
-  b: '#5e4a2c',
-  d: '#4e3c24',
-  e: '#3a2c1a',
-  A: '#ffffff',
-  B: '#fffae0',
-  D: '#ffeaa6',
-  E: '#ffcf70',
+  g: WINTER['bulb/cap-light'],
+  G: WINTER['bulb/cap-dark'],
+  a: WINTER['bulb/off-highlight'],
+  b: WINTER['bulb/off-core'],
+  d: WINTER['bulb/off-mid'],
+  e: WINTER['bulb/off-edge'],
+  A: WINTER['bulb/on-highlight'],
+  B: WINTER['bulb/on-core'],
+  D: WINTER['bulb/on-mid'],
+  E: WINTER['bulb/on-edge'],
 };
 
 /**

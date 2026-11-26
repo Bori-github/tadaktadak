@@ -5,6 +5,7 @@ import { GLINT_COUNT, glintPositions, hillBaseline, hillDots, isGlintLit } from 
 import { FLAKE_COUNT, createFlakes, flakePosition } from '../lib/snow';
 import { useBackdropElapsed } from '../model/backdrop';
 import { useDisplayedTheme, type ThemeId } from '@/entities/theme';
+import { COLOR_TOKENS } from '@/shared/constants';
 import { DOT_SAMPLING, drawPlacedDots, drawSprites, packSprites } from '@/shared/lib';
 
 type BackdropProps = {
@@ -18,7 +19,8 @@ type BackdropProps = {
 
 /** 파티클 격자. f 눈송이, l 반짝임 점등, d 반짝임 소등. 눈송이 알파는 `colors`로 적용 */
 const PARTICLE_GRIDS = [['f'], ['l'], ['d']];
-const PARTICLE_COLORS: Record<string, string> = { f: '#dfe8f5', l: '#f2f6ff', d: '#5a6a92' };
+const WINTER = COLOR_TOKENS.winter;
+const PARTICLE_COLORS: Record<string, string> = { f: WINTER['snow/flake'], l: WINTER['hill/glint'], d: WINTER['hill/glint-dim'] };
 const PACKED_PARTICLES = packSprites(PARTICLE_GRIDS);
 const particleLeft = (index: number) => PACKED_PARTICLES.boxes[index]?.left ?? 0;
 const LIT_GLINT_LEFT = particleLeft(1);

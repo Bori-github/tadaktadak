@@ -1,4 +1,7 @@
+import { COLOR_TOKENS } from '@/shared/constants';
 import { gridDots, noise, topLeftOnGrid, type ColoredDot } from '@/shared/lib';
+
+const WINTER = COLOR_TOKENS.winter;
 
 /** 화면 하단에서 뒤 언덕 평균선까지 거리 (배율 1). 390×844 기준 */
 const BASELINE_FROM_BOTTOM = 102;
@@ -12,25 +15,25 @@ const PINE_SINK = 6;
 /** 소나무 스프라이트. g 솔잎, s 눈, t 줄기. 피그마 `pine-big`, `pine-small` */
 const PINE_BIG = ['....s....', '...sgs...', '..sgggs..', '...ggg...', '..sgggs..', '.sgggggs.', '..ggggg..', '.sgggggs.', 'sgggggggs', '.ggggggg.', '....t....', '....t....'];
 const PINE_SMALL = ['...s...', '..sgs..', '.sgggs.', '..ggg..', '.sgggs.', 'sgggggs', '...t...'];
-const PINE_COLORS: Record<string, string> = { g: '#102028', s: '#8fa2c4', t: '#1c1612' };
+const PINE_COLORS: Record<string, string> = { g: WINTER['pine/needle'], s: WINTER['pine/snow'], t: WINTER['pine/trunk'] };
 /** 소나무 중심 x (배율 1). 양수는 화면 왼쪽 끝, 음수는 오른쪽 끝 기준. 짝수 인덱스는 `PINE_BIG` */
 const PINE_POSITIONS = [24, 44, 64, -90, -68, -42, -20];
 
 /** 피그마 `snow-hill-strip` */
-const BACK = { body: '#121a2e', rim: '#3e4c6c', shade: '#26324e' };
+const BACK = { body: WINTER['hill/back-body'], rim: WINTER['hill/back-rim'], shade: WINTER['hill/back-dither'] };
 const FRONT = {
-  body: '#36456a',
-  litRim: '#c4d2ec',
-  rim: '#8a9abc',
-  litShade: '#8a9abc',
-  shade: '#6474a0',
+  body: WINTER['hill/front-body'],
+  litRim: WINTER['hill/front-rim-lit'],
+  rim: WINTER['hill/front-rim'],
+  litShade: WINTER['hill/front-rim'],
+  shade: WINTER['hill/front-rim-shade'],
 };
 /** 앞 언덕 디더링. `column % every === at`인 열의 테두리 아래 `rows`행 */
 const FRONT_DITHER = [
-  { every: 2, at: 0, rows: 2, color: '#52618a' },
-  { every: 2, at: 1, rows: 3, color: '#4c5b84' },
-  { every: 4, at: 0, rows: 5, color: '#46557e' },
-  { every: 4, at: 2, rows: 7, color: '#425079' },
+  { every: 2, at: 0, rows: 2, color: WINTER['hill/front-dither-1'] },
+  { every: 2, at: 1, rows: 3, color: WINTER['hill/front-dither-2'] },
+  { every: 4, at: 0, rows: 5, color: WINTER['hill/front-dither-3'] },
+  { every: 4, at: 2, rows: 7, color: WINTER['hill/front-dither-4'] },
 ];
 
 type BaselineInput = {

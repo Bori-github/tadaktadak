@@ -1,7 +1,8 @@
 import { pointOnDial } from './geometry';
+import { COLOR_TOKENS } from '@/shared/constants';
 import { bulbCenter, type ColoredDot, type DialPlacement } from '@/shared/lib';
 
-const WIRE_COLOR = '#1c2a1a';
+const WIRE_COLOR = COLOR_TOKENS.winter['wreath/wire'];
 
 /** 구간당 표본 간격 수. 구간 길이 50 dot 초과 시 도트 누락 */
 const SAMPLES_PER_SEGMENT = 50;
