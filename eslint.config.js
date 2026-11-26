@@ -34,7 +34,7 @@ module.exports = [
   ...expoConfig,
   prettierConfig,
   {
-    ignores: ['ios/', 'android/', 'targets/*/Assets.xcassets/', 'node_modules/', 'references/'],
+    ignores: ['ios/', 'android/', 'targets/*/Assets.xcassets/', 'node_modules/', 'references/', 'storybook-static/'],
   },
   {
     files: ['src/**/*.{ts,tsx}'],
