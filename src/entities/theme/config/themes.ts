@@ -1,6 +1,5 @@
-import { WINTER_PALETTE } from './winterPalette';
-import { DEFAULT_PALETTE } from '@/shared/constants';
-import { type Palette } from '@/shared/lib';
+import { COLOR_TOKENS } from '@/shared/constants';
+import { DEFAULT_PALETTE, createPalette, type Palette } from '@/shared/lib';
 
 /** 테마 선택 화면 표시 순서 */
 export const THEME_IDS = ['campfire', 'winter'] as const;
@@ -33,7 +32,7 @@ export const THEMES: Record<ThemeId, ThemeDefinition> = {
     palette: DEFAULT_PALETTE,
   },
   winter: {
-    palette: WINTER_PALETTE,
+    palette: createPalette(COLOR_TOKENS.winter),
     // 종료일 2월 29일로 윤년 포함
     period: { start: { month: 12, day: 1 }, end: { month: 2, day: 29 }, priority: 1 },
   },

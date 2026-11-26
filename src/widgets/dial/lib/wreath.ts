@@ -1,14 +1,17 @@
 import { pointOnDial } from './geometry';
+import { COLOR_TOKENS } from '@/shared/constants';
 import { gridDots, noise, topLeftOnGrid, type ColoredDot } from '@/shared/lib';
 
-/** 솔잎 4단계 색. 명도 오름차순. 피그마 `wreath/needle-*` */
-const NEEDLE = ['#16291f', '#1f3a2a', '#2a4f36', '#3a6a45'] as const;
-const OUTLINE = '#0c1a12';
-const HIGHLIGHT = '#5f9e5c';
+const WINTER = COLOR_TOKENS.winter;
 
-/** 열매 스프라이트. o 테두리, H 반사광, B 몸통. 피그마 `berry/*` */
+/** 솔잎 4단계 색. 명도 오름차순 */
+const NEEDLE = [WINTER['wreath/needle-1'], WINTER['wreath/needle-2'], WINTER['wreath/needle-3'], WINTER['wreath/needle-4']] as const;
+const OUTLINE = WINTER['wreath/outline'];
+const HIGHLIGHT = WINTER['wreath/highlight'];
+
+/** 열매 스프라이트. o 테두리, H 반사광, B 몸통 */
 const BERRY = ['.oo.', 'oHBo', 'oBBo', '.oo.'];
-const BERRY_COLORS: Record<string, string> = { o: '#4a0f18', H: '#ff8a7a', B: '#b8303a' };
+const BERRY_COLORS: Record<string, string> = { o: WINTER['berry/outline'], H: WINTER['berry/highlight'], B: WINTER['berry/fill'] };
 const BERRY_SIZE = BERRY.length;
 
 /** 열매 묶음 내 3개 위치 (dot). 접선 방향, 안쪽 법선 방향 오프셋 순 */

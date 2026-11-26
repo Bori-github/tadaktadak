@@ -4,7 +4,7 @@ export { topLeftOnGrid } from './grid';
 export { noise } from './noise';
 export type { RootStackParamList } from './navigation';
 export { resolveLayout, getFormFactor } from './responsive';
-export { PaletteContext, usePalette, type Palette } from './palette';
+export { DEFAULT_PALETTE, PaletteContext, createPalette, usePalette, type Palette } from './palette';
 export { useIsScreenVisible } from './screen';
 export { SplashVisibleContext } from './splash';
 export { useDismissibleNotice } from './notice';

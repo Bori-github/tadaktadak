@@ -1,5 +1,5 @@
 import { type ThemeId } from '@/entities/theme';
-import { type MajorItemHeightInDots } from '@/shared/constants';
+import { COLOR_TOKENS, type MajorItemHeightInDots } from '@/shared/constants';
 import { bulbCenter, type DialPlacement } from '@/shared/lib';
 import {
   BONFIRE_COLD_7,
@@ -64,8 +64,8 @@ export const DIAL_ITEM_STYLES: Record<ThemeId, DialItemStyle> = {
     major: { 7: BULB_MAJOR, 9: BULB_MAJOR },
     colors: WINTER_SPRITE_COLORS,
     frameMs: 500,
-    bloomColor: '#ffc266',
-    haloColor: '#fff0c0',
+    bloomColor: COLOR_TOKENS.winter['bulb/glow'],
+    haloColor: COLOR_TOKENS.winter['bulb/glow-inner'],
     // 전구 유리 중심
     glowOffsetInDots: 1,
     isOutOfSettingVisible: false,

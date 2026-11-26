@@ -2,7 +2,7 @@ import { type TimerMode } from '../model/mode';
 
 export const MINUTE_IN_MS = 60_000;
 
-/** 타이머 시간 범위 (분). `DESIGN.md` §8 */
+/** 타이머 시간 범위 (분). `SPEC.md` 조작과 단계 전이 */
 export const TIMER_RANGE: Record<TimerMode, { min: number; max: number }> = {
   focus: { min: 1, max: 60 },
   rest: { min: 0, max: 60 },

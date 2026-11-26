@@ -139,7 +139,7 @@ extension TimerActivityAttributes.ContentState {
     }
 }
 
-// `colors` 없는 Activity와 Xcode 미리보기용. `src/shared/constants/defaultPalette.ts`의 `DEFAULT_PALETTE` 값 복제
+// `colors` 없는 Activity와 Xcode 미리보기용. `src/shared/constants/colorTokens.json`의 `campfire` 값 복제(`canvas`, `focus/numeral`, `focus/text`, `focus/arc`, `rest/text`, `rest/arc`, `text/primary`)
 extension TimerActivityColors {
     fileprivate static func campfire(_ mode: TimerActivityMode) -> Self {
         mode == .focus
