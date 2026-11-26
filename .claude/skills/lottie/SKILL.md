@@ -134,19 +134,18 @@ description: 스플래시나 에러 화면의 Lottie를 만들거나 바꿀 때 
 - 같은 색 도트를 그룹 하나로 묶고 가로로 연속된 도트를 사각형 하나로 병합 → 파일 크기 감소
 - 움직이는 도트 위치 키프레임: `"p": { "a": 1, "k": [{ "t": 0, "s": [0, 0, 0], "h": 1 }, { "t": 6, "s": [0, 2, 0], "h": 1 }] }`
 
-### 그림 하단 확인
+### 규칙 검사
 
-- 모든 `assets/lottie/error-*.json`에 `getLottieDotBottom` 실행
-- `null` = 계산 대상 사각형 도트 없음
-- 결과와 실제 그림의 최하단 도트 하단이 다르면 위 규칙 위반
+- `src/app/lib/lottieAssets.test.ts`: 파일 존재, 캔버스 크기/프레임 속도 통일, 스플래시 0프레임, 그림 하단 계산 가능 여부, 도트 레이어 변환, 홀드 키프레임
+- `src/app/ui/root-error-screen/RootErrorScreen.test.tsx`: 모든 테마에서 버튼이 캔버스 안에 배치되는지
+- 테스트가 확인하지 않는 규칙(비표시 구간 도트 위치, 2px 단위 좌표, 배경색 레이어, 마지막 `FADE_MS` 구간)은 실기기에서 확인
 
 ## 4. 적용 순서
 
 1. 위 규칙으로 스플래시/에러 화면 Lottie 작성
 2. `assets/lottie/splash-<테마 ID>.json`, `assets/lottie/error-<테마 ID>.json`으로 저장
 3. 새 테마면 `SPLASH_ANIMATIONS`, `ERROR_ANIMATIONS`에 항목 추가
-4. 에러 화면 Lottie 그림 하단 확인
-5. `pnpm check`, `pnpm test` 실행
-6. 실기기 확인
+4. `pnpm check`, `pnpm test` 실행
+5. 실기기 확인
    - 스플래시: 앱에서 대상 테마 선택 → 앱 종료 후 다시 진입 → 네이티브 로고에서 Lottie로 끊김 없이 전환되는지 확인
    - 에러 화면: 개발 빌드의 개발 패널 「에러」 버튼 → LogBox 「Dismiss」 → 문구/버튼이 그림 바로 아래에 겹치지 않는지 확인
