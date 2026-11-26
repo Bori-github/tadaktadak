@@ -13,28 +13,7 @@ tokens:
     dot_size: 2          # 배율 1에서 논리 픽셀
     scale: [1, 1.5]      # 도트 2pt·3pt. 정수 포인트만
     antialias: false     # 개체와 숫자. 호와 빛 번짐은 예외
-  colors:
-    canvas: "#141021"
-    log: "#8a6238"
-    log-shade: "#4a3220"
-    fire-core: "#fff2a8"
-    fire-mid: "#ffb43c"
-    fire-base: "#e04a2b"
-    ignite-bright: "#ffd94a"
-    ignite-mid: "#ff9d2e"
-    glow: "#ff9d2e"
-    toggle-on: "#ffb43c"
-    particle-start: "#fff2a8"
-    particle-middle: "#ffb43c"
-    particle-end: "#e04a2b"
-    focus-arc: "#6a5b9c"
-    focus-text: "#f4ead6"
-    rest-arc: "#3f9aa6"
-    rest-text: "#8fdbe4"
-    numeral: "#7a6ea8"
-    marker: "#5c5180"
-    stone-face: "#6b6280"
-    stone-edge: "#2b2638"
+  colors: src/shared/constants/colorTokens.json   # 피그마 변수에서 내보낸 테마별 색
   typography:
     family: "시스템 폰트. 시계판 숫자만 5×7 도트 비트맵"
     glyphs: "0~9와 콜론"
