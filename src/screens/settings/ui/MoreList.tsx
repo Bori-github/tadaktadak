@@ -2,8 +2,6 @@ import { memo } from 'react';
 import { Linking, StyleSheet, Text } from 'react-native';
 import Constants from 'expo-constants';
 
-import { SettingsRow } from './SettingsRow';
-
 import { showPrivacyOptions, usePrivacyOptionsRequired } from '@/entities/advertisement';
 import { translate, useLanguage } from '@/entities/language';
 
@@ -11,6 +9,7 @@ import { DOT_SIZE } from '@/shared/constants';
 import { usePalette } from '@/shared/lib';
 
 import { ChevronIcon } from '@/shared/ui/dot-icon';
+import { DotModalRow } from '@/shared/ui/dot-modal';
 
 const PRIVACY_POLICY_URL = 'https://hello-tadaktadak.vercel.app/privacy';
 
@@ -38,19 +37,19 @@ export const MoreList = memo(({ dotSize }: MoreListProps) => {
 
   return (
     <>
-      <SettingsRow dotSize={dotSize}>
+      <DotModalRow dotSize={dotSize}>
         <Text style={[styles.label, labelStyle]}>{translate('more.appVersion', language)}</Text>
         <Text style={valueStyle}>{Constants.expoConfig?.version}</Text>
-      </SettingsRow>
-      <SettingsRow dotSize={dotSize} testID="more-privacy-policy" onPress={openPrivacyPolicy}>
+      </DotModalRow>
+      <DotModalRow dotSize={dotSize} testID="more-privacy-policy" onPress={openPrivacyPolicy}>
         <Text style={[styles.label, labelStyle]}>{translate('more.privacyPolicy', language)}</Text>
         <ChevronIcon dotSize={dotSize} />
-      </SettingsRow>
+      </DotModalRow>
       {isPrivacyOptionsRequired ? (
-        <SettingsRow dotSize={dotSize} testID="more-privacy-options" onPress={showPrivacyOptions}>
+        <DotModalRow dotSize={dotSize} testID="more-privacy-options" onPress={showPrivacyOptions}>
           <Text style={[styles.label, labelStyle]}>{translate('more.privacyOptions', language)}</Text>
           <ChevronIcon dotSize={dotSize} />
-        </SettingsRow>
+        </DotModalRow>
       ) : null}
     </>
   );

@@ -6,14 +6,14 @@ import { DOT_SIZE } from '@/shared/constants';
 /** 배율 1의 논리 픽셀. 피그마 `설정 화면 · 페이지` */
 const ROW_HEIGHT = 56;
 
-type SettingsRowProps = {
+type DotModalRowProps = {
   dotSize: number;
   onPress?: () => void;
   testID?: string;
   children: ReactNode;
 };
 
-export const SettingsRow = ({ dotSize, onPress, testID, children }: SettingsRowProps): JSX.Element => {
+export const DotModalRow = ({ dotSize, onPress, testID, children }: DotModalRowProps): JSX.Element => {
   const scale = dotSize / DOT_SIZE;
   const rowStyle = { height: ROW_HEIGHT * scale, paddingHorizontal: 20 * scale };
 
