@@ -38,7 +38,7 @@
 
 - `pnpm check`: lint, typecheck, format:check
 - `pnpm test`: Jest
-- `pnpm storybook`: 웹 스토리북 개발 서버(포트 6006)
+- `pnpm storybook:dev`: 웹 스토리북 개발 서버(포트 6006)
 - `pnpm build-storybook`: 웹 스토리북 정적 빌드
 - `pnpm e2e:ios`: Maestro
 - `pnpm e2e:android`: Maestro

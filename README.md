@@ -31,7 +31,7 @@ pnpm android:device    # Android 실기기 개발 빌드
 `src/shared/ui` 컴포넌트를 브라우저에서 확인한다.
 
 ```bash
-pnpm storybook         # 개발 서버, http://localhost:6006
+pnpm storybook:dev     # 개발 서버, http://localhost:6006
 pnpm build-storybook   # storybook-static/ 정적 빌드
 ```
 
