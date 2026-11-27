@@ -2,7 +2,6 @@ import { type JSX } from 'react';
 import { StyleSheet, Text, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { type NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Canvas } from '@shopify/react-native-skia';
 
 import { AdvertisementFooter } from './AdvertisementFooter';
 import { LanguageList } from './LanguageList';
@@ -16,7 +15,7 @@ import { isHapticsSupported, previewVibration, setVibrationEnabled, TOGGLE_PATTE
 import { DOT_SIZE } from '@/shared/constants';
 import { resolveLayout, getFormFactor, usePalette, type RootStackParamList } from '@/shared/lib';
 
-import { ChevronIcon, LANGUAGE_ICON, MORE_ICON, RectIconShape, THEME_ICON, VIBRATION_ICON } from '@/shared/ui/dot-icon';
+import { ChevronIcon, LANGUAGE_ICON, MORE_ICON, THEME_ICON, VIBRATION_ICON } from '@/shared/ui/dot-icon';
 import { DotModalRow, DotModalStack, MODAL_CONTENT_WIDTH, type DotModalScreen } from '@/shared/ui/dot-modal';
 import { DotToggle } from '@/shared/ui/dot-toggle';
 
@@ -45,32 +44,22 @@ export const SettingsScreen = ({ navigation }: SettingsScreenProps): JSX.Element
   const palette = usePalette();
   const scale = dotSize / DOT_SIZE;
 
-  const iconSize = LANGUAGE_ICON.boxSize * scale;
   const valueStyle = { color: palette.text.secondary, fontSize: 16 * scale, marginRight: 13 * scale };
 
   const screens: Record<SettingsView, DotModalScreen<SettingsView>> = {
     settings: {
       render: ({ open }) => (
         <>
-          <DotModalRow dotSize={dotSize} testID="settings-language" onPress={() => open('language')}>
-            <Canvas style={{ width: iconSize, height: iconSize }}>
-              <RectIconShape icon={LANGUAGE_ICON} left={0} top={0} dotSize={dotSize} color={palette.icon.default} />
-            </Canvas>
+          <DotModalRow dotSize={dotSize} icon={LANGUAGE_ICON} testID="settings-language" onPress={() => open('language')}>
             <Text style={[styles.value, valueStyle]}>{selected === null ? translate('language.system', language) : translate('language.name', selected)}</Text>
             <ChevronIcon dotSize={dotSize} />
           </DotModalRow>
-          <DotModalRow dotSize={dotSize} testID="settings-theme" onPress={() => open('theme')}>
-            <Canvas style={{ width: iconSize, height: iconSize }}>
-              <RectIconShape icon={THEME_ICON} left={0} top={0} dotSize={dotSize} color={palette.icon.default} />
-            </Canvas>
+          <DotModalRow dotSize={dotSize} icon={THEME_ICON} testID="settings-theme" onPress={() => open('theme')}>
             <Text style={[styles.value, valueStyle]}>{translate(`theme.${displayedTheme}`, language)}</Text>
             <ChevronIcon dotSize={dotSize} />
           </DotModalRow>
           {isHapticsSupported() ? (
-            <DotModalRow dotSize={dotSize}>
-              <Canvas style={{ width: iconSize, height: iconSize }}>
-                <RectIconShape icon={VIBRATION_ICON} left={0} top={0} dotSize={dotSize} color={palette.icon.default} />
-              </Canvas>
+            <DotModalRow dotSize={dotSize} icon={VIBRATION_ICON}>
               <DotToggle
                 testID="settings-vibration"
                 dotSize={dotSize}
@@ -81,10 +70,7 @@ export const SettingsScreen = ({ navigation }: SettingsScreenProps): JSX.Element
               />
             </DotModalRow>
           ) : null}
-          <DotModalRow dotSize={dotSize} testID="settings-more" onPress={() => open('more')}>
-            <Canvas style={{ width: iconSize, height: iconSize }}>
-              <RectIconShape icon={MORE_ICON} left={0} top={0} dotSize={dotSize} color={palette.icon.default} />
-            </Canvas>
+          <DotModalRow dotSize={dotSize} icon={MORE_ICON} testID="settings-more" onPress={() => open('more')}>
             <ChevronIcon dotSize={dotSize} style={styles.trailing} />
           </DotModalRow>
         </>
