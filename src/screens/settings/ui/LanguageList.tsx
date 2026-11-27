@@ -1,8 +1,8 @@
 import { memo } from 'react';
 
-import { CheckRow } from './CheckRow';
-
 import { selectLanguage, SUPPORTED_LANGUAGES, translate, useLanguage, useSelectedLanguage, type Language } from '@/entities/language';
+
+import { DotModalCheckRow } from '@/shared/ui/dot-modal';
 
 /** `null`: 시스템 언어 */
 const LANGUAGE_OPTIONS: readonly (Language | null)[] = [null, ...SUPPORTED_LANGUAGES];
@@ -18,7 +18,7 @@ export const LanguageList = memo(({ dotSize }: LanguageListProps) => {
   return (
     <>
       {LANGUAGE_OPTIONS.map((option) => (
-        <CheckRow
+        <DotModalCheckRow
           key={option ?? 'system'}
           dotSize={dotSize}
           name={option === null ? translate('language.system', language) : translate('language.name', option)}

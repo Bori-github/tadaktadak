@@ -1,9 +1,9 @@
 import { memo } from 'react';
 
-import { CheckRow } from './CheckRow';
-
 import { translate, useLanguage } from '@/entities/language';
 import { selectTheme, THEME_IDS, useDisplayedTheme } from '@/entities/theme';
+
+import { DotModalCheckRow } from '@/shared/ui/dot-modal';
 
 type ThemeListProps = {
   dotSize: number;
@@ -16,7 +16,7 @@ export const ThemeList = memo(({ dotSize }: ThemeListProps) => {
   return (
     <>
       {THEME_IDS.map((id) => (
-        <CheckRow key={id} dotSize={dotSize} name={translate(`theme.${id}`, language)} checked={id === displayed} testID={`theme-${id}`} onPress={() => selectTheme(id)} />
+        <DotModalCheckRow key={id} dotSize={dotSize} name={translate(`theme.${id}`, language)} checked={id === displayed} testID={`theme-${id}`} onPress={() => selectTheme(id)} />
       ))}
     </>
   );

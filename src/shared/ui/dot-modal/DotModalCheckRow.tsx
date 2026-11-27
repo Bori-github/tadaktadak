@@ -2,14 +2,14 @@ import { type JSX } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 
+import { DotModalRow } from './DotModalRow';
 import { DOT_SIZE } from '@/shared/constants';
 import { usePalette } from '@/shared/lib';
 
 import { CHECK_ICON } from '@/shared/ui/dot-icon';
-import { DotModalRow } from '@/shared/ui/dot-modal';
 import { DotSprite } from '@/shared/ui/dot-sprite';
 
-type CheckRowProps = {
+type DotModalCheckRowProps = {
   dotSize: number;
   name: string;
   description?: string;
@@ -18,7 +18,7 @@ type CheckRowProps = {
   testID: string;
 };
 
-export const CheckRow = ({ dotSize, name, description, checked, onPress, testID }: CheckRowProps): JSX.Element => {
+export const DotModalCheckRow = ({ dotSize, name, description, checked, onPress, testID }: DotModalCheckRowProps): JSX.Element => {
   const palette = usePalette();
   const scale = dotSize / DOT_SIZE;
 
