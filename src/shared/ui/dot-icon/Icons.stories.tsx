@@ -4,12 +4,13 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 import { type Meta, type StoryObj } from '@storybook/react-native-web-vite';
 
-import { RectIconShape } from './RectIconShape';
-import { type GridIcon, type RectIcon } from './types';
 import { DOT_SIZE } from '@/shared/constants';
 import { type Palette, usePalette } from '@/shared/lib';
 
 import { DotSprite } from '@/shared/ui/dot-sprite';
+
+import { RectIconShape } from './RectIconShape';
+import { type GridIcon, type RectIcon } from './types';
 
 // 아이콘 파일을 추가하면 목록에 자동 반영. index.ts는 같은 아이콘을 다시 내보내므로 제외
 const ICON_MODULES = import.meta.glob<Record<string, unknown>>(['./*.ts', '!./index.ts', '!./*.test.ts'], { eager: true });

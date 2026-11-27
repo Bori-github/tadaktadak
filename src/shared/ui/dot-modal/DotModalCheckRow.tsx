@@ -2,12 +2,13 @@ import { type JSX } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 
-import { DotModalRow } from './DotModalRow';
 import { DOT_SIZE } from '@/shared/constants';
 import { usePalette } from '@/shared/lib';
 
 import { CHECK_ICON } from '@/shared/ui/dot-icon';
 import { DotSprite } from '@/shared/ui/dot-sprite';
+
+import { DotModalRow } from './DotModalRow';
 
 type DotModalCheckRowProps = {
   dotSize: number;
