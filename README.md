@@ -26,6 +26,18 @@ pnpm ios:device        # iOS 실기기 개발 빌드
 pnpm android:device    # Android 실기기 개발 빌드
 ```
 
+## 스토리북
+
+`src/shared/ui` 컴포넌트를 브라우저에서 확인한다.
+
+```bash
+pnpm storybook:dev     # 개발 서버, http://localhost:6006
+pnpm build-storybook   # storybook-static/ 정적 빌드
+```
+
+- 브랜치 푸시마다 Chromatic이 스토리북을 빌드하고 이전 빌드와 화면을 비교해 PR에 결과를 표시한다
+- `main` 스토리북: https://main--6b092b6f57ce2c11edacad10.chromatic.com
+
 ## 개발 환경
 
 | 항목           | 값                                                             |

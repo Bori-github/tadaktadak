@@ -22,7 +22,7 @@
 | `.claude/docs/rendering-optimization.md` | 드래그 시 화면 반영 지연 문제와 원인, 해결, 측정 결과와 방법               |
 | `.claude/docs/terms.md`                  | 용어 정리                                                                  |
 
-- 보이는 값은 피그마를 원본으로 하고, 개발 과정에서 변경이 생기면 피그마와 `DESIGN.md`를 함께 고친다
+- 보이는 값은 피그마를 원본으로 하고, 개발 과정에서 변경이 발생하면 피그마와 `DESIGN.md`를 함께 수정한다
 - 피그마에 없는 배율, 반응형 구간, 겹침 검산, 상태, 모션은 `DESIGN.md`를 참고한다
 
 ## 규칙
@@ -38,20 +38,23 @@
 
 - `pnpm check`: lint, typecheck, format:check
 - `pnpm test`: Jest
+- `pnpm storybook:dev`: 웹 스토리북 개발 서버(포트 6006)
+- `pnpm build-storybook`: 웹 스토리북 정적 빌드
 - `pnpm e2e:ios`: Maestro
 - `pnpm e2e:android`: Maestro
 
 ## 작업 순서
 
-- 디자인 결정을 바꿀 때: 피그마와 `DESIGN.md` 중 한쪽을 고치면 다른 쪽도 같은 작업에서 맞춘다
-- 색을 바꿀 때
+- 디자인 결정을 변경할 때: 피그마와 `DESIGN.md` 중 한쪽을 수정하면 다른 쪽도 같은 작업에서 수정한다
+- 색을 변경할 때
   - 피그마 변수를 수정하고, 같은 이름과 값을 `src/shared/constants/colorTokens.json`에 반영한다
   - 코드와 문서는 색 값 대신 변수 이름을 사용한다
-- 상수를 바꿀 때: `DESIGN.md`에서 그 값을 쓰는 표를 같은 커밋에서 고친다. Layout 겹침 검산의 개체 중심 반지름 하한 표와 Responsive Behavior의 구간별 결과는 상수에서 파생된 값이라 함께 틀어진다
+- 상수를 변경할 때: `DESIGN.md`에서 그 값을 사용하는 표를 같은 커밋에서 수정한다. Layout 겹침 검산의 개체 중심 반지름 하한 표와 Responsive Behavior의 구간별 결과는 상수에서 파생된 값이므로 함께 수정한다
 - 시계판에 개체를 추가할 때: `src/shared/lib/overlap.test.ts`의 원주 방향 검사에 새 개체의 쌍을 추가한다
+- `src/shared/ui` 컴포넌트를 추가하거나 props를 변경할 때: 같은 폴더의 `*.stories.tsx`에 스토리를 추가하거나 수정한다
 
 ## 확인받을 것
 
-- GitHub 계정명, 저작권자, 이메일 같은 신원 값은 확인받고 채운다
-- 완성 판정 기준은 확인받고 만든다. 만든 기준을 사용자 요구인 것처럼 인용하지 않는다
+- GitHub 계정명, 저작권자, 이메일 같은 신원 값은 확인받은 뒤 입력한다
+- 완성 판정 기준은 확인받은 뒤 작성한다. 작성한 기준을 사용자 요구인 것처럼 인용하지 않는다
 - 프로젝트 생성과 패키지 설치 전에 착수 여부를 확인한다

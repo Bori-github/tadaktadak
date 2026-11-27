@@ -1,0 +1,42 @@
+name: chromatic
+
+# 태그 push 제외
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'src/**'
+      - '.storybook/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/chromatic.yml'
+
+concurrency:
+  group: chromatic-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  chromatic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: 의존성 설치
+        run: pnpm install --frozen-lockfile
+
+      - name: 시각 검사
+        uses: chromaui/action@v18
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          onlyChanged: true
+          autoAcceptChanges: main
+          skip: 'dependabot/**'
