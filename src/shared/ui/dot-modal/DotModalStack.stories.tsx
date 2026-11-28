@@ -1,105 +1,85 @@
-import { type JSX, type ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState, type JSX } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Canvas } from '@shopify/react-native-skia';
 import { type Meta, type StoryObj } from '@storybook/react-native-web-vite';
 
 import { DOT_SIZE } from '@/shared/constants';
 import { usePalette } from '@/shared/lib';
 
-import { ChevronIcon, LANGUAGE_ICON, RectIconShape, THEME_ICON, type RectIcon } from '@/shared/ui/dot-icon';
+import { ChevronIcon, LANGUAGE_ICON, THEME_ICON, VIBRATION_ICON } from '@/shared/ui/dot-icon';
+import { DotToggle } from '@/shared/ui/dot-toggle';
 
+import { DotModalCheckRow } from './DotModalCheckRow';
+import { DotModalRow } from './DotModalRow';
 import { DotModalStack, type DotModalScreen } from './DotModalStack';
 
 type ModalView = 'main' | 'language' | 'theme';
 
-/** 배율 1의 논리 픽셀. 피그마 `설정 화면 · 페이지` 행 높이 */
-const ROW_HEIGHT = 56;
+const LANGUAGES = ['시스템 설정', '한국어', 'English'];
+const THEMES = ['모닥불', '겨울'];
 
-type RowProps = {
-  dotSize: number;
-  onPress?: () => void;
-  children: ReactNode;
-};
-
-const Row = ({ dotSize, onPress, children }: RowProps): JSX.Element => {
-  const scale = dotSize / DOT_SIZE;
-
-  return (
-    <Pressable style={[styles.row, { height: ROW_HEIGHT * scale, paddingHorizontal: 20 * scale }]} onPress={onPress}>
-      {children}
-    </Pressable>
-  );
-};
-
-type MenuRowProps = {
-  dotSize: number;
-  icon: RectIcon;
-  value: string;
-  onPress: () => void;
-};
-
-const MenuRow = ({ dotSize, icon, value, onPress }: MenuRowProps): JSX.Element => {
+const ModalStackPreview = ({ dotSize }: { dotSize: number }): JSX.Element => {
   const palette = usePalette();
+  const [language, setLanguage] = useState(LANGUAGES[0]);
+  const [theme, setTheme] = useState(THEMES[0]);
+  const [isVibrationEnabled, setVibrationEnabled] = useState(true);
   const scale = dotSize / DOT_SIZE;
-  const iconSize = icon.boxSize * scale;
+  const valueStyle = { color: palette.text.secondary, fontSize: 16 * scale, marginRight: 13 * scale };
+
+  const screens: Record<ModalView, DotModalScreen<ModalView>> = {
+    main: {
+      render: ({ open }) => (
+        <>
+          <DotModalRow dotSize={dotSize} icon={LANGUAGE_ICON} onPress={() => open('language')}>
+            <Text style={[styles.value, valueStyle]}>{language}</Text>
+            <ChevronIcon dotSize={dotSize} />
+          </DotModalRow>
+          <DotModalRow dotSize={dotSize} icon={THEME_ICON} onPress={() => open('theme')}>
+            <Text style={[styles.value, valueStyle]}>{theme}</Text>
+            <ChevronIcon dotSize={dotSize} />
+          </DotModalRow>
+          <DotModalRow dotSize={dotSize} icon={VIBRATION_ICON}>
+            <DotToggle dotSize={dotSize} value={isVibrationEnabled} style={styles.trailing} onValueChange={setVibrationEnabled} />
+          </DotModalRow>
+        </>
+      ),
+    },
+    language: {
+      render: () => (
+        <>
+          {LANGUAGES.map((option, index) => (
+            <DotModalCheckRow
+              key={option}
+              dotSize={dotSize}
+              name={option}
+              description={index === 0 ? '지원하지 않는 언어는 영어로 표시' : undefined}
+              checked={option === language}
+              testID={option}
+              onPress={() => setLanguage(option)}
+            />
+          ))}
+        </>
+      ),
+    },
+    theme: {
+      render: () => (
+        <>
+          {THEMES.map((option) => (
+            <DotModalCheckRow key={option} dotSize={dotSize} name={option} checked={option === theme} testID={option} onPress={() => setTheme(option)} />
+          ))}
+        </>
+      ),
+    },
+  };
 
   return (
-    <Row dotSize={dotSize} onPress={onPress}>
-      <Canvas style={{ width: iconSize, height: iconSize }}>
-        <RectIconShape icon={icon} left={0} top={0} dotSize={dotSize} color={palette.icon.default} />
-      </Canvas>
-      <Text style={[styles.value, { color: palette.text.secondary, fontSize: 16 * scale, marginRight: 13 * scale }]}>{value}</Text>
-      <ChevronIcon dotSize={dotSize} />
-    </Row>
+    <SafeAreaProvider>
+      <View style={styles.frame}>
+        <DotModalStack dotSize={dotSize} initial="main" screens={screens} onClose={() => {}} />
+      </View>
+    </SafeAreaProvider>
   );
 };
-
-const OptionRow = ({ dotSize, label }: { dotSize: number; label: string }): JSX.Element => {
-  const palette = usePalette();
-
-  return (
-    <Row dotSize={dotSize}>
-      <Text style={{ color: palette.text.primary, fontSize: (16 * dotSize) / DOT_SIZE }}>{label}</Text>
-    </Row>
-  );
-};
-
-const createScreens = (dotSize: number): Record<ModalView, DotModalScreen<ModalView>> => ({
-  main: {
-    render: ({ open }) => (
-      <>
-        <MenuRow dotSize={dotSize} icon={LANGUAGE_ICON} value="한국어" onPress={() => open('language')} />
-        <MenuRow dotSize={dotSize} icon={THEME_ICON} value="모닥불" onPress={() => open('theme')} />
-      </>
-    ),
-  },
-  language: {
-    render: () => (
-      <>
-        <OptionRow dotSize={dotSize} label="시스템 설정" />
-        <OptionRow dotSize={dotSize} label="한국어" />
-        <OptionRow dotSize={dotSize} label="English" />
-      </>
-    ),
-  },
-  theme: {
-    render: () => (
-      <>
-        <OptionRow dotSize={dotSize} label="모닥불" />
-        <OptionRow dotSize={dotSize} label="겨울" />
-      </>
-    ),
-  },
-});
-
-const ModalStackPreview = ({ dotSize }: { dotSize: number }): JSX.Element => (
-  <SafeAreaProvider>
-    <View style={styles.frame}>
-      <DotModalStack dotSize={dotSize} initial="main" screens={createScreens(dotSize)} onClose={() => {}} />
-    </View>
-  </SafeAreaProvider>
-);
 
 const meta: Meta<typeof ModalStackPreview> = {
   component: ModalStackPreview,
@@ -114,12 +94,11 @@ const styles = StyleSheet.create({
   frame: {
     height: 600,
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   value: {
     flex: 1,
     textAlign: 'right',
+  },
+  trailing: {
+    marginLeft: 'auto',
   },
 });

@@ -2,15 +2,15 @@ import { type JSX } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 
-import { SettingsRow } from './SettingsRow';
-
 import { DOT_SIZE } from '@/shared/constants';
 import { usePalette } from '@/shared/lib';
 
 import { CHECK_ICON } from '@/shared/ui/dot-icon';
 import { DotSprite } from '@/shared/ui/dot-sprite';
 
-type CheckRowProps = {
+import { DotModalRow } from './DotModalRow';
+
+type DotModalCheckRowProps = {
   dotSize: number;
   name: string;
   description?: string;
@@ -19,7 +19,7 @@ type CheckRowProps = {
   testID: string;
 };
 
-export const CheckRow = ({ dotSize, name, description, checked, onPress, testID }: CheckRowProps): JSX.Element => {
+export const DotModalCheckRow = ({ dotSize, name, description, checked, onPress, testID }: DotModalCheckRowProps): JSX.Element => {
   const palette = usePalette();
   const scale = dotSize / DOT_SIZE;
 
@@ -28,7 +28,7 @@ export const CheckRow = ({ dotSize, name, description, checked, onPress, testID 
   const checkToName = 12 * scale;
 
   return (
-    <SettingsRow dotSize={dotSize} testID={testID} onPress={onPress}>
+    <DotModalRow dotSize={dotSize} testID={testID} onPress={onPress}>
       <View style={styles.column}>
         <View style={styles.line}>
           <View style={{ width: checkWidth, height: checkHeight, marginRight: checkToName }}>
@@ -44,7 +44,7 @@ export const CheckRow = ({ dotSize, name, description, checked, onPress, testID 
           <Text style={{ color: palette.text.tertiary, fontSize: 13 * scale, marginTop: 4 * scale, marginLeft: checkWidth + checkToName }}>{description}</Text>
         )}
       </View>
-    </SettingsRow>
+    </DotModalRow>
   );
 };
 
